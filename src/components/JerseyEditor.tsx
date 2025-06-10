@@ -84,7 +84,7 @@ export default function JerseyEditor() {
         <div className="mb-4 p-3 rounded-lg">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm font-medium text-gray-900">
+            <span className="text-sm font-medium text-gray-300">
               API DALL-E 3: {apiStatus ? 'Online' : 'Offline'}
             </span>
           </div>
@@ -93,18 +93,18 @@ export default function JerseyEditor() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Coluna da Esquerda - Customização */}
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-lg border">
-              <h2 className="text-2xl font-bold mb-6 text-gray-800">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+              <h2 className="text-2xl font-bold mb-6 text-white">
                 🎨 Gerador de Jersey DALL-E 3
               </h2>
               
               {/* Seleção de Time */}
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-400 mb-2">
                   Time *
                 </label>
                 <select
-                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                  className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
                   value={selectedTeam}
                   onChange={(e) => setSelectedTeam(e.target.value)}
                   disabled={!apiStatus}
@@ -120,13 +120,13 @@ export default function JerseyEditor() {
 
               {/* Nome do Jogador */}
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-400 mb-2">
                   Nome do Jogador *
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder:text-gray-500"
-                  style={{ color: '#000' }}
+                  className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
+                  style={{ color: '#FFF' }}
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
                   placeholder="Ex: GABRIEL, PEDRO, MARIO"
@@ -137,13 +137,13 @@ export default function JerseyEditor() {
 
               {/* Número do Jogador */}
               <div className="mb-4">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-400 mb-2">
                   Número do Jogador *
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder:text-gray-500"
-                  style={{ color: '#000' }}
+                  className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
+                  style={{ color: '#FFF' }}
                   value={playerNumber}
                   onChange={(e) => setPlayerNumber(e.target.value)}
                   placeholder="Ex: 10, 7, 23"
@@ -155,17 +155,17 @@ export default function JerseyEditor() {
 
               {/* Qualidade */}
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-gray-400 mb-2">
                   Qualidade
                 </label>
-                <div className="flex gap-4">
+                <div className="flex gap-4 text-gray-300">
                   <label className="flex items-center">
                     <input
                       type="radio"
                       value="standard"
                       checked={quality === 'standard'}
                       onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                      className="mr-2"
+                      className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
                       disabled={!apiStatus}
                     />
                     <span className="text-sm">Standard ($0.04)</span>
@@ -176,7 +176,7 @@ export default function JerseyEditor() {
                       value="hd"
                       checked={quality === 'hd'}
                       onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                      className="mr-2"
+                      className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
                       disabled={!apiStatus}
                     />
                     <span className="text-sm">HD ($0.08)</span>
@@ -185,14 +185,14 @@ export default function JerseyEditor() {
               </div>
 
               {/* Botões */}
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={generateJersey}
                   disabled={isLoading || !selectedTeam || !playerName || !playerNumber || !apiStatus}
                   className={`flex-1 py-3 px-4 rounded-lg text-white font-semibold transition-colors ${
                     isLoading || !selectedTeam || !playerName || !playerNumber || !apiStatus
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-blue-600 hover:bg-blue-700'
+                      ? 'bg-gray-600 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700'
                   }`}
                 >
                   {isLoading ? '🎨 Gerando...' : '🚀 Gerar Jersey'}
@@ -200,7 +200,7 @@ export default function JerseyEditor() {
 
                 <button
                   onClick={resetForm}
-                  className="px-4 py-3 border-2 border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="px-4 py-3 border-2 border-gray-600 rounded-lg text-gray-300 hover:bg-gray-700 transition-colors"
                   disabled={isLoading}
                 >
                   🔄 Limpar
@@ -209,8 +209,8 @@ export default function JerseyEditor() {
 
               {/* Custo da Geração */}
               {generationCost && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm text-green-700">
+                <div className="mt-4 p-3 bg-green-900/50 border border-green-700 rounded-lg">
+                  <p className="text-sm text-green-300">
                     💰 Custo da geração: ${generationCost.toFixed(3)}
                   </p>
                 </div>
@@ -218,15 +218,15 @@ export default function JerseyEditor() {
 
               {/* Erro */}
               {error && (
-                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-700 font-medium">❌ {error}</p>
+                <div className="mt-4 p-4 bg-red-900/50 border border-red-700 rounded-lg">
+                  <p className="text-red-300 font-medium">❌ {error}</p>
                 </div>
               )}
 
               {/* Informações */}
-              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="font-semibold text-blue-800 mb-2">ℹ️ Informações:</h3>
-                <ul className="text-sm text-blue-700 space-y-1">
+              <div className="mt-6 p-4 bg-gray-700/50 border border-gray-600 rounded-lg">
+                <h3 className="font-semibold text-gray-200 mb-2">ℹ️ Informações:</h3>
+                <ul className="text-sm text-gray-300 space-y-1">
                   <li>• Vista das costas com nome e número</li>
                   <li>• Qualidade DALL-E 3 profissional</li>
                   <li>• Formato baseado em referências reais</li>
@@ -238,15 +238,15 @@ export default function JerseyEditor() {
 
           {/* Coluna da Direita - Preview */}
           <div className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-lg border">
-              <h3 className="text-xl font-bold mb-4 text-gray-800">
+            <div className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+              <h3 className="text-xl font-bold mb-4 text-white">
                 🖼️ Jersey Gerado
               </h3>
               
               {isLoading && (
-                <div className="flex flex-col items-center justify-center h-96 bg-gray-50 rounded-lg">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                  <p className="text-gray-600">Gerando jersey com DALL-E 3...</p>
+                <div className="flex flex-col items-center justify-center h-96 bg-gray-900 rounded-lg">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
+                  <p className="text-gray-400">Gerando jersey com DALL-E 3...</p>
                   <p className="text-sm text-gray-500 mt-2">Isso pode levar alguns segundos</p>
                 </div>
               )}
