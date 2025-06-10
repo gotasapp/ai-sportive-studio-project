@@ -13,7 +13,8 @@ export const TEAMS_DATABASE: TeamData[] = [
     promptPattern: 'classic football jersey with red and black stripes',
     league: 'Brasileirão',
     country: 'Brazil',
-    description: 'Time tradicional do futebol brasileiro'
+    description: 'Time tradicional do futebol brasileiro',
+    jerseys: []
   },
   {
     id: 'palmeiras',
@@ -27,7 +28,8 @@ export const TEAMS_DATABASE: TeamData[] = [
     promptPattern: 'classic football jersey in green and white',
     league: 'Brasileirão',
     country: 'Brazil',
-    description: 'Time tradicional do futebol brasileiro'
+    description: 'Time tradicional do futebol brasileiro',
+    jerseys: []
   },
   {
     id: 'corinthians',
@@ -41,7 +43,8 @@ export const TEAMS_DATABASE: TeamData[] = [
     promptPattern: 'classic football jersey in black and white',
     league: 'Brasileirão',
     country: 'Brazil',
-    description: 'Time tradicional do futebol brasileiro'
+    description: 'Time tradicional do futebol brasileiro',
+    jerseys: []
   },
   {
     id: 'sao-paulo',
@@ -55,6 +58,7 @@ export const TEAMS_DATABASE: TeamData[] = [
     promptPattern: 'classic football jersey with red and white stripes',
     league: 'Brasileirão',
     country: 'Brazil',
-    description: 'Time tradicional do futebol brasileiro'
+    description: 'Time tradicional do futebol brasileiro',
+    jerseys: []
   }
 ] 
