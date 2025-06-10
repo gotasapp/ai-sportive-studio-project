@@ -1,23 +1,7 @@
 /**
  * Serviço para integração com API DALL-E 3
  */
-
-export interface Dalle3Request {
-  team_name: string;
-  player_name: string;
-  player_number: string;
-  quality?: 'standard' | 'hd';
-}
-
-export interface Dalle3Response {
-  success: boolean;
-  image_base64?: string;
-  team_name?: string;
-  player_name?: string;
-  player_number?: string;
-  cost_usd?: number;
-  error?: string;
-}
+import { Dalle3Request, Dalle3Response } from '@/types';
 
 export class Dalle3Service {
   private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
