@@ -1,0 +1,9 @@
+export const API_CONFIG = {
+  DEFAULT_MODEL: 'Xenova/stable-diffusion-xl-base-1.0',
+  DEFAULT_SAMPLER: 'DPM++ 2M Karras',
+  DEFAULT_STEPS: 30,
+  DEFAULT_CFG_SCALE: 7,
+  DEFAULT_WIDTH: 768,
+  DEFAULT_HEIGHT: 768,
+  DEFAULT_SEED: -1
+} 
