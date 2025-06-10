@@ -46,7 +46,7 @@ export class StandardizedPromptEngine {
         return 'front view'
       case 'back':
         return 'back view'
-      case 'full':
+      case 'complete':
         return 'full body view'
       default:
         return ''
