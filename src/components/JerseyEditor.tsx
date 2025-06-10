@@ -84,7 +84,7 @@ export default function JerseyEditor() {
         <div className="mb-4 p-3 rounded-lg">
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium text-gray-900">
               API DALL-E 3: {apiStatus ? 'Online' : 'Offline'}
             </span>
           </div>
@@ -126,6 +126,7 @@ export default function JerseyEditor() {
                 <input
                   type="text"
                   className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder:text-gray-500"
+                  style={{ color: '#000' }}
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
                   placeholder="Ex: GABRIEL, PEDRO, MARIO"
@@ -142,6 +143,7 @@ export default function JerseyEditor() {
                 <input
                   type="text"
                   className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-gray-900 placeholder:text-gray-500"
+                  style={{ color: '#000' }}
                   value={playerNumber}
                   onChange={(e) => setPlayerNumber(e.target.value)}
                   placeholder="Ex: 10, 7, 23"
