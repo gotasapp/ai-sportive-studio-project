@@ -48,6 +48,8 @@ export default function JerseyEditor() {
         quality: quality
       };
 
+      console.log("Valores sendo enviados para a API:", request);
+
       const result = await Dalle3Service.generateJersey(request);
 
       if (result.success && result.image_base64) {

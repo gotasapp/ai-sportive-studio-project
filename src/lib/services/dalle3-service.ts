@@ -4,7 +4,7 @@
 import { Dalle3Request, Dalle3Response } from '@/types';
 
 export class Dalle3Service {
-  private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+  private static readonly API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
 
   /**
    * Gera jersey usando DALL-E 3
