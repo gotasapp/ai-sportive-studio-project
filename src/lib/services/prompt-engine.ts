@@ -98,7 +98,6 @@ export class PromptEngine {
     const colorParts = [];
     if (colors.primary) colorParts.push(colors.primary);
     if (colors.secondary) colorParts.push(colors.secondary);
-    if (colors.accent) colorParts.push(colors.accent);
     
     return colorParts.length > 0
       ? `in ${colorParts.join(' and ')} colors`
