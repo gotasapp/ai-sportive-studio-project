@@ -132,7 +132,8 @@ class TheSportsDBService {
       },
       founded: team.intFormedYear,
       shortName: team.strTeamShort,
-      alternateNames: team.strAlternate ? [team.strAlternate] : []
+      alternateNames: team.strAlternate ? [team.strAlternate] : [],
+      jerseys: team.strTeamJersey ? [team.strTeamJersey] : []
     };
   }
 
