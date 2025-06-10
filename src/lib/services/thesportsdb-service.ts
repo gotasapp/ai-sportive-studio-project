@@ -95,17 +95,11 @@ class TheSportsDBService {
     const alternateJersey = equipment.find(e => e.strType === 'Away');
 
     return {
-      team: teamData,
-      officialJersey: officialJersey ? {
-        url: officialJersey.strEquipment,
-        season: officialJersey.strSeason,
-        type: 'home'
-      } : undefined,
-      alternateJersey: alternateJersey ? {
-        url: alternateJersey.strEquipment,
-        season: alternateJersey.strSeason,
-        type: 'away'
-      } : undefined
+      id: teamData.id,
+      team: teamData.name,
+      season: officialJersey?.strSeason || 'Unknown',
+      imageUrl: officialJersey?.strEquipment || teamData.jerseyUrl || '',
+      description: teamData.description || `${teamData.name} jersey`
     };
   }
 
