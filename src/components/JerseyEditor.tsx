@@ -125,7 +125,7 @@ export default function JerseyEditor() {
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-black"
                   value={playerName}
                   onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
                   placeholder="Ex: GABRIEL, PEDRO, MARIO"
@@ -141,7 +141,7 @@ export default function JerseyEditor() {
                 </label>
                 <input
                   type="text"
-                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none"
+                  className="w-full p-3 border-2 rounded-lg focus:border-blue-500 focus:outline-none text-black"
                   value={playerNumber}
                   onChange={(e) => setPlayerNumber(e.target.value)}
                   placeholder="Ex: 10, 7, 23"
