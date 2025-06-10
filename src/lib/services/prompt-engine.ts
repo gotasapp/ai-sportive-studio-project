@@ -19,7 +19,7 @@ export class PromptEngine {
     customization: Customization,
     referenceJersey: string | null = null
   ): PromptResult {
-    const viewPrompt = this.generateViewPrompt(customization.position);
+    const viewPrompt = this.generateViewPrompt(customization.view);
     const stylePrompt = this.generateStylePrompt(teamData, customization.style);
     const materialPrompt = this.generateMaterialPrompt(customization.material);
     
@@ -53,14 +53,14 @@ export class PromptEngine {
     };
   }
 
-  private static generateViewPrompt(position: string): string {
-    switch (position) {
+  private static generateViewPrompt(view: Customization['view']): string {
+    switch (view) {
       case 'front':
         return 'front view';
       case 'back':
         return 'back view';
-      case 'side':
-        return 'side view';
+      case 'complete':
+        return 'complete view';
       default:
         return 'front view';
     }
