@@ -1,4 +1,0 @@
-{
-  "env": {
-    "NEXT_PUBLIC_API_URL": "https://jersey-api-dalle3.onrender.com"
-  }
