@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Dalle3Service, Dalle3Request } from '@/lib/services/dalle3-service'
+import { Dalle3Service } from '@/lib/services/dalle3-service'
+import { Dalle3Request, Dalle3Response } from '@/types'
 
 export default function JerseyEditor() {
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
