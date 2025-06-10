@@ -1,0 +1,36 @@
+{
+  "total_samples": 3,
+  "best_result": {
+    "team": "Vasco",
+    "prompt": "A hyper-realistic black jersey with white diagonal sash soccer jersey, back view, with diagonal sash design, player name JEFF and number 8 in red with gold outline, small cross symbol, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "mse": 0.08197442442178726,
+    "filename": "analysis_2_Vasco.png"
+  },
+  "worst_result": {
+    "team": "Flamengo",
+    "prompt": "A hyper-realistic red and black soccer jersey, back view, with red and black stripes, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "mse": 0.254989355802536,
+    "filename": "analysis_3_Flamengo.png"
+  },
+  "average_mse": 0.1737628256281217,
+  "all_results": [
+    {
+      "team": "Vasco",
+      "prompt": "A hyper-realistic black jersey with white diagonal sash soccer jersey, back view, with diagonal sash design, player name JEFF and number 8 in red with gold outline, small cross symbol, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+      "mse": 0.08197442442178726,
+      "filename": "analysis_2_Vasco.png"
+    },
+    {
+      "team": "Palmeiras",
+      "prompt": "A hyper-realistic green soccer jersey, back view, with white collar and cuffs, Crefisa sponsor logo, player name ARIEL and number 10 in yellow, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+      "mse": 0.1843246966600418,
+      "filename": "analysis_1_Palmeiras.png"
+    },
+    {
+      "team": "Flamengo",
+      "prompt": "A hyper-realistic red and black soccer jersey, back view, with red and black stripes, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+      "mse": 0.254989355802536,
+      "filename": "analysis_3_Flamengo.png"
+    }
+  ]
+}

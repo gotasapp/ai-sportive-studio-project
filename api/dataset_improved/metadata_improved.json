@@ -1,0 +1,142 @@
+[
+  {
+    "filename": "Palmeiras_back.png",
+    "type": "reference",
+    "team_name": "Palmeiras",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "green",
+      "secondary": "white"
+    },
+    "detailed_prompt": "A hyper-realistic green soccer jersey, back view, with white collar and cuffs, Crefisa sponsor logo, player name ARIEL and number 10 in yellow, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "sponsor_logos",
+      "player_name",
+      "player_number",
+      "white_collar",
+      "white_cuffs",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "Vasco_back.png",
+    "type": "reference",
+    "team_name": "Vasco",
+    "jersey_type": "away",
+    "colors": {
+      "primary": "black",
+      "secondary": "white"
+    },
+    "detailed_prompt": "A hyper-realistic black jersey with white diagonal sash soccer jersey, back view, with diagonal sash design, player name JEFF and number 8 in red with gold outline, small cross symbol, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "diagonal_stripe",
+      "player_name",
+      "player_number",
+      "cross_symbol",
+      "red_numbers",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "Flamengo_back.jpeg",
+    "type": "reference",
+    "team_name": "Flamengo",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "red",
+      "secondary": "black"
+    },
+    "detailed_prompt": "A hyper-realistic red and black soccer jersey, back view, with red and black stripes, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "red_black_stripes",
+      "player_name",
+      "player_number",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "barcelona_improved.jpg",
+    "type": "home",
+    "team_name": "Barcelona",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "blue",
+      "secondary": "red"
+    },
+    "detailed_prompt": "A hyper-realistic blue and red striped soccer jersey, back view, vertical stripes, Barcelona FC, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "vertical_stripes",
+      "player_name",
+      "player_number",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "real_madrid_improved.jpg",
+    "type": "home",
+    "team_name": "Real Madrid",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "white",
+      "secondary": "gold"
+    },
+    "detailed_prompt": "A hyper-realistic white soccer jersey, back view, with gold accents, Real Madrid CF, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "solid_white",
+      "gold_accents",
+      "player_name",
+      "player_number",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "manchester_united_improved.jpg",
+    "type": "home",
+    "team_name": "Manchester United",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "detailed_prompt": "A hyper-realistic red soccer jersey, back view, with white collar, Manchester United, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "solid_red",
+      "white_collar",
+      "player_name",
+      "player_number",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  },
+  {
+    "filename": "liverpool_improved.jpg",
+    "type": "home",
+    "team_name": "Liverpool",
+    "jersey_type": "home",
+    "colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "detailed_prompt": "A hyper-realistic red soccer jersey, back view, with white accents, Liverpool FC, player name and number, premium fabric texture, professional soccer jersey fit, clean dark background, studio lighting, photorealistic rendering, 4K quality, official soccer merchandise style",
+    "style_elements": [
+      "back_view",
+      "solid_red",
+      "white_accents",
+      "player_name",
+      "player_number",
+      "hyper_realistic"
+    ],
+    "quality_level": "high"
+  }
+]

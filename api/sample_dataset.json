@@ -1,0 +1,16 @@
+[
+  {
+    "team_name": "Real Madrid",
+    "jersey_home": "https://logos-world.net/wp-content/uploads/2020/06/Real-Madrid-Logo.png",
+    "jersey_away": "https://logoeps.com/wp-content/uploads/2013/03/real-madrid-vector-logo.png",
+    "colors": "White",
+    "league": "La Liga"
+  },
+  {
+    "team_name": "Barcelona",
+    "jersey_home": "https://logoeps.com/wp-content/uploads/2013/03/barcelona-vector-logo.png",
+    "jersey_away": "https://logos-world.net/wp-content/uploads/2020/06/Barcelona-Logo.png",
+    "colors": "Blue/Red",
+    "league": "La Liga"
+  }
+]

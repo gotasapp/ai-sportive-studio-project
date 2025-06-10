@@ -1,0 +1,26 @@
+{
+  "dataset_info": {
+    "total_images": 3,
+    "quality": "high",
+    "source": "user_reference_only",
+    "style": "dalle3_quality"
+  },
+  "training_config": {
+    "resolution": 512,
+    "batch_size": 1,
+    "num_epochs": 15,
+    "learning_rate": 5e-05,
+    "gradient_accumulation_steps": 8
+  },
+  "lora_config": {
+    "rank": 32,
+    "alpha": 64,
+    "target_modules": [
+      "to_k",
+      "to_q",
+      "to_v",
+      "to_out.0"
+    ],
+    "dropout": 0.1
+  }
+}

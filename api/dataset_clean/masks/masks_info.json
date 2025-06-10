@@ -1,0 +1,9 @@
+{
+  "masks": {
+    "Palmeiras": "mask_reference_1_Palmeiras_back.png",
+    "Vasco da Gama": "mask_reference_2_Vasco_back.png",
+    "Flamengo": "mask_reference_3_Flamengo_back.png"
+  },
+  "description": "ControlNet masks for jersey generation",
+  "type": "canny_edges"
+}

@@ -1,0 +1,63 @@
+{
+  "method": "controlnet_with_masks",
+  "total_tests": 6,
+  "successful_generations": 6,
+  "teams_tested": [
+    "Palmeiras",
+    "Vasco da Gama",
+    "Flamengo"
+  ],
+  "advantages": [
+    "uses_reference_images_as_skeleton",
+    "no_training_required",
+    "instant_results",
+    "perfect_shape_preservation"
+  ],
+  "results": [
+    {
+      "team": "Palmeiras",
+      "generated_file": "controlnet_Palmeiras.png",
+      "mask_file": "mask_Palmeiras.png",
+      "method": "controlnet_simulation",
+      "status": "success"
+    },
+    {
+      "team": "Vasco da Gama",
+      "generated_file": "controlnet_Vasco_da_Gama.png",
+      "mask_file": "mask_Vasco_da_Gama.png",
+      "method": "controlnet_simulation",
+      "status": "success"
+    },
+    {
+      "team": "Flamengo",
+      "generated_file": "controlnet_Flamengo.png",
+      "mask_file": "mask_Flamengo.png",
+      "method": "controlnet_simulation",
+      "status": "success"
+    },
+    {
+      "team": "Vasco da Gama",
+      "custom_name": "PEDRO",
+      "custom_number": "7",
+      "generated_file": "custom_Vasco_da_Gama_PEDRO_7.png",
+      "method": "controlnet_custom",
+      "status": "success"
+    },
+    {
+      "team": "Palmeiras",
+      "custom_name": "GABRIEL",
+      "custom_number": "23",
+      "generated_file": "custom_Palmeiras_GABRIEL_23.png",
+      "method": "controlnet_custom",
+      "status": "success"
+    },
+    {
+      "team": "Flamengo",
+      "custom_name": "BRUNO",
+      "custom_number": "11",
+      "generated_file": "custom_Flamengo_BRUNO_11.png",
+      "method": "controlnet_custom",
+      "status": "success"
+    }
+  ]
+}

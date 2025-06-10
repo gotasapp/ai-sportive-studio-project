@@ -1,0 +1,246 @@
+{
+  "training_summary": {
+    "total_teams": 3,
+    "total_variations": 15,
+    "best_overall_score": 0.0666005061101433,
+    "average_mse": 0.21111018260320027,
+    "average_color_similarity": 0.8038214804379423
+  },
+  "best_configurations": {
+    "Palmeiras": {
+      "team": "Palmeiras",
+      "variation_id": 4,
+      "filename": "Palmeiras_var_4.png",
+      "config": {
+        "steps": 20,
+        "guidance": 9.0
+      },
+      "mse": 0.15472231805324554,
+      "color_similarity": 0.8308208951570654,
+      "quality_score": 0.071640228537539,
+      "is_best": true
+    },
+    "Vasco da Gama": {
+      "team": "Vasco da Gama",
+      "variation_id": 4,
+      "filename": "Vasco_da_Gama_var_4.png",
+      "config": {
+        "steps": 20,
+        "guidance": 9.0
+      },
+      "mse": 0.15131720900535583,
+      "color_similarity": 0.8471670289521253,
+      "quality_score": 0.0666005061101433,
+      "is_best": true
+    },
+    "Flamengo": {
+      "team": "Flamengo",
+      "variation_id": 3,
+      "filename": "Flamengo_var_3.png",
+      "config": {
+        "steps": 30,
+        "guidance": 7.0
+      },
+      "mse": 0.18821728229522705,
+      "color_similarity": 0.7557650989420214,
+      "quality_score": 0.11264077240102491,
+      "is_best": true
+    }
+  },
+  "all_results": [
+    {
+      "team": "Palmeiras",
+      "variation_id": 1,
+      "filename": "Palmeiras_var_1.png",
+      "config": {
+        "steps": 20,
+        "guidance": 7.5
+      },
+      "mse": 0.1689910739660263,
+      "color_similarity": 0.7826675142064922,
+      "quality_score": 0.09072432254537709
+    },
+    {
+      "team": "Palmeiras",
+      "variation_id": 2,
+      "filename": "Palmeiras_var_2.png",
+      "config": {
+        "steps": 25,
+        "guidance": 8.0
+      },
+      "mse": 0.15241609513759613,
+      "color_similarity": 0.7930301758136045,
+      "quality_score": 0.07311307755623568
+    },
+    {
+      "team": "Palmeiras",
+      "variation_id": 3,
+      "filename": "Palmeiras_var_3.png",
+      "config": {
+        "steps": 30,
+        "guidance": 7.0
+      },
+      "mse": 0.20817440748214722,
+      "color_similarity": 0.8005274535608102,
+      "quality_score": 0.12812166212606618
+    },
+    {
+      "team": "Palmeiras",
+      "variation_id": 4,
+      "filename": "Palmeiras_var_4.png",
+      "config": {
+        "steps": 20,
+        "guidance": 9.0
+      },
+      "mse": 0.15472231805324554,
+      "color_similarity": 0.8308208951570654,
+      "quality_score": 0.071640228537539,
+      "is_best": true
+    },
+    {
+      "team": "Palmeiras",
+      "variation_id": 5,
+      "filename": "Palmeiras_var_5.png",
+      "config": {
+        "steps": 35,
+        "guidance": 7.5
+      },
+      "mse": 0.18273623287677765,
+      "color_similarity": 0.7718676274589433,
+      "quality_score": 0.10554947013088331
+    },
+    {
+      "team": "Vasco da Gama",
+      "variation_id": 1,
+      "filename": "Vasco_da_Gama_var_1.png",
+      "config": {
+        "steps": 20,
+        "guidance": 7.5
+      },
+      "mse": 0.23375453054904938,
+      "color_similarity": 0.9029052569274497,
+      "quality_score": 0.1434640048563044
+    },
+    {
+      "team": "Vasco da Gama",
+      "variation_id": 2,
+      "filename": "Vasco_da_Gama_var_2.png",
+      "config": {
+        "steps": 25,
+        "guidance": 8.0
+      },
+      "mse": 0.17217056453227997,
+      "color_similarity": 0.8516665860718713,
+      "quality_score": 0.08700390592509283
+    },
+    {
+      "team": "Vasco da Gama",
+      "variation_id": 3,
+      "filename": "Vasco_da_Gama_var_3.png",
+      "config": {
+        "steps": 30,
+        "guidance": 7.0
+      },
+      "mse": 0.22854109108448029,
+      "color_similarity": 0.8636999388316959,
+      "quality_score": 0.1421710972013107
+    },
+    {
+      "team": "Vasco da Gama",
+      "variation_id": 4,
+      "filename": "Vasco_da_Gama_var_4.png",
+      "config": {
+        "steps": 20,
+        "guidance": 9.0
+      },
+      "mse": 0.15131720900535583,
+      "color_similarity": 0.8471670289521253,
+      "quality_score": 0.0666005061101433,
+      "is_best": true
+    },
+    {
+      "team": "Vasco da Gama",
+      "variation_id": 5,
+      "filename": "Vasco_da_Gama_var_5.png",
+      "config": {
+        "steps": 35,
+        "guidance": 7.5
+      },
+      "mse": 0.25470849871635437,
+      "color_similarity": 0.8364218288477652,
+      "quality_score": 0.17106631583157783
+    },
+    {
+      "team": "Flamengo",
+      "variation_id": 1,
+      "filename": "Flamengo_var_1.png",
+      "config": {
+        "steps": 20,
+        "guidance": 7.5
+      },
+      "mse": 0.2765038311481476,
+      "color_similarity": 0.7410624053653063,
+      "quality_score": 0.20239759061161694
+    },
+    {
+      "team": "Flamengo",
+      "variation_id": 2,
+      "filename": "Flamengo_var_2.png",
+      "config": {
+        "steps": 25,
+        "guidance": 8.0
+      },
+      "mse": 0.29406556487083435,
+      "color_similarity": 0.8323648153331954,
+      "quality_score": 0.21082908333751482
+    },
+    {
+      "team": "Flamengo",
+      "variation_id": 3,
+      "filename": "Flamengo_var_3.png",
+      "config": {
+        "steps": 30,
+        "guidance": 7.0
+      },
+      "mse": 0.18821728229522705,
+      "color_similarity": 0.7557650989420214,
+      "quality_score": 0.11264077240102491,
+      "is_best": true
+    },
+    {
+      "team": "Flamengo",
+      "variation_id": 4,
+      "filename": "Flamengo_var_4.png",
+      "config": {
+        "steps": 20,
+        "guidance": 9.0
+      },
+      "mse": 0.2926294505596161,
+      "color_similarity": 0.735433270849053,
+      "quality_score": 0.2190861234747108
+    },
+    {
+      "team": "Flamengo",
+      "variation_id": 5,
+      "filename": "Flamengo_var_5.png",
+      "config": {
+        "steps": 35,
+        "guidance": 7.5
+      },
+      "mse": 0.2077045887708664,
+      "color_similarity": 0.7119223102517346,
+      "quality_score": 0.13651235774569292
+    }
+  ],
+  "recommended_settings": {
+    "best_config": "steps_20_guidance_9.0",
+    "best_average_score": 0.11910895270746436,
+    "all_config_averages": {
+      "steps_20_guidance_7.5": 0.14552863933776614,
+      "steps_25_guidance_8.0": 0.12364868893961445,
+      "steps_30_guidance_7.0": 0.12764451057613393,
+      "steps_20_guidance_9.0": 0.11910895270746436,
+      "steps_35_guidance_7.5": 0.13770938123605136
+    }
+  }
+}
