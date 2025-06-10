@@ -248,13 +248,14 @@ export default function JerseyEditor() {
 
               {generatedImage && !isLoading && (
                 <div className="space-y-4">
-                  <div className="relative">
-                    <img
-                      src={generatedImage}
-                      alt="Jersey gerado"
-                      className="w-full h-auto rounded-lg shadow-md"
-                    />
-                  </div>
+                                     <div className="relative">
+                     {/* eslint-disable-next-line @next/next/no-img-element */}
+                     <img
+                       src={generatedImage}
+                       alt="Jersey gerado"
+                       className="w-full h-auto rounded-lg shadow-md"
+                     />
+                   </div>
                   
                   {/* Informações da geração */}
                   <div className="bg-gray-50 p-4 rounded-lg">

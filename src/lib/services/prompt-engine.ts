@@ -108,12 +108,10 @@ export class PromptEngine {
     switch (pattern) {
       case 'striped':
         return 'with vertical stripes';
-      case 'hoops':
-        return 'with horizontal stripes';
       case 'checkered':
         return 'with checkered pattern';
-      case 'custom':
-        return 'with custom pattern';
+      case 'solid':
+        return 'solid color';
       default:
         return 'solid color';
     }
