@@ -83,7 +83,7 @@ export default function JerseyEditor() {
 
   const buildPrompt = (): string => {
     const basePrompts = {
-      jersey: `A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name "${playerName.upper()}" in bold uppercase letters. Below it, a large centered number "${playerNumber}". The jersey must exactly match the official home design of the "${selectedTeam}" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability.`,
+      jersey: `A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name "${playerName.toUpperCase()}" in bold uppercase letters. Below it, a large centered number "${playerNumber}". The jersey must exactly match the official home design of the "${selectedTeam}" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability.`,
       
       stadium: `A spectacular aerial view of a football stadium for ${selectedTeam}, captured during golden hour with dramatic lighting. The stadium should be packed with fans wearing team colors, creating a sea of support. Include the surrounding cityscape and architectural details that reflect the team's identity and location.`,
       
