@@ -3,7 +3,7 @@
  */
 import { ImageGenerationRequest, Dalle3Response } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://chz-backend.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
 
 export const Dalle3Service = {
   /**
