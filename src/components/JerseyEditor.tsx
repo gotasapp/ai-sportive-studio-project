@@ -82,23 +82,31 @@ export default function JerseyEditor() {
   }, []);
 
   const buildPrompt = (): string => {
-    const basePrompts = {
-      jersey: `A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name "${playerName.toUpperCase()}" in bold uppercase letters. Below it, a large centered number "${playerNumber}". The jersey must exactly match the official home design of the "${selectedTeam}" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability.`,
-      
-      stadium: `A spectacular aerial view of a football stadium for ${selectedTeam}, captured during golden hour with dramatic lighting. The stadium should be packed with fans wearing team colors, creating a sea of support. Include the surrounding cityscape and architectural details that reflect the team's identity and location.`,
-      
-      logo: `A professional sports logo design for ${selectedTeam}, suitable for official merchandise and branding. The logo should be circular or shield-shaped, featuring the team's iconic colors and symbols. Clean vector-style design on a transparent or white background, perfect for embroidery and printing.`
-    }
-
+    // Estilos que modificam a aparência
     const styleModifiers = {
-      modern: 'with a sleek, minimalist aesthetic, clean lines, vibrant colors, and contemporary design elements',
-      retro: 'with vintage 1980s-1990s styling, aged textures, classic typography, and nostalgic color grading',
-      urban: 'with street art influences, graffiti-style elements, bold urban typography, and edgy design',
-      national: 'incorporating Brazilian national colors (green, yellow, blue), cultural symbols, and patriotic elements',
-      classic: 'with timeless, elegant design, traditional patterns, premium materials, and sophisticated styling'
-    }
+      modern: 'with a sleek, minimalist aesthetic, clean lines, and contemporary design elements',
+      retro: 'with vintage 1980s styling, aged textures, and classic typography',
+      urban: 'with street art influences, graffiti-style lettering, and edgy design',
+      national: 'incorporating national colors (like green, yellow, blue for Brazil), cultural symbols, and patriotic elements',
+      classic: 'with a timeless, elegant design, traditional patterns, and sophisticated styling'
+    };
 
-    return `${basePrompts[generationType]} ${styleModifiers[selectedStyle]}. High quality, professional photography, 4K resolution.`
+    // Prompt base para cada tipo de geração
+    const basePrompts = {
+      jersey: `A professional soccer jersey for the team "${selectedTeam}". The style is ${styleModifiers[selectedStyle]}. The jersey should have a photorealistic texture, with authentic team colors, official patterns, and sponsor logos. Use realistic lighting and high contrast for the text.
+
+CRITICAL INSTRUCTIONS:
+- The view MUST be the BACK of the jersey, perfectly centered and laid flat.
+- The player name "${playerName.toUpperCase()}" MUST appear EXACTLY as written at the top.
+- The number "${playerNumber}" MUST appear EXACTLY as written below the name.
+- DO NOT show any human, mannequin, or hanger. The background MUST be a clean, neutral studio background.`,
+      
+      stadium: `A spectacular aerial view of a football stadium for ${selectedTeam}, captured during golden hour with dramatic lighting. The stadium should be packed with fans wearing team colors, creating a sea of support. The style is ${styleModifiers[selectedStyle]}. Include the surrounding cityscape and architectural details that reflect the team's identity and location.`,
+      
+      logo: `A professional sports logo or emblem for ${selectedTeam}. The style is ${styleModifiers[selectedStyle]}. The design should be clean, iconic, and suitable for official merchandise and branding. It must be on a clean white background.`
+    };
+
+    return `${basePrompts[generationType]} High quality, 4K resolution.`;
   }
 
   const generateContent = async () => {
