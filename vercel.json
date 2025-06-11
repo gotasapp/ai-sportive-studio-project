@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "name": "ai-football-jersey-generator",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/"
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_API_URL": "http://localhost:8000"
+  }
+} 

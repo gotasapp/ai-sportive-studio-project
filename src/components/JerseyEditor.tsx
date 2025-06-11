@@ -58,7 +58,6 @@ export default function JerseyEditor() {
   const [playerName, setPlayerName] = useState<string>('')
   const [playerNumber, setPlayerNumber] = useState<string>('')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
-  const [generationType, setGenerationType] = useState<GenerationType>('jersey')
   const [selectedStyle, setSelectedStyle] = useState<StyleFilter>('modern')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -68,13 +67,27 @@ export default function JerseyEditor() {
 
   useEffect(() => {
     const loadData = async () => {
-      const [teams, health] = await Promise.all([
-        Dalle3Service.getAvailableTeams(),
-        Dalle3Service.checkHealth()
-      ]);
-      
-      setAvailableTeams(teams);
-      setApiStatus(health);
+      try {
+        console.log('Carregando dados da API...');
+        const health = await Dalle3Service.checkHealth();
+        console.log('Health check result:', health);
+        setApiStatus(health);
+
+        if (health) {
+          const teams = await Dalle3Service.getAvailableTeams();
+          console.log('Teams loaded:', teams);
+          setAvailableTeams(teams);
+          
+          // Define o primeiro time como selecionado se a lista não estiver vazia
+          if (teams.length > 0 && !selectedTeam) {
+            setSelectedTeam(teams[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        setApiStatus(false);
+        setAvailableTeams([]);
+      }
     };
 
     loadData();
@@ -85,8 +98,7 @@ export default function JerseyEditor() {
       setError('Please select a team')
       return
     }
-
-    if (generationType === 'jersey' && (!playerName || !playerNumber)) {
+    if (!playerName || !playerNumber) {
       setError('For jerseys, please fill in the player name and number')
       return
     }
@@ -95,9 +107,18 @@ export default function JerseyEditor() {
     setError(null)
     setGenerationCost(null)
 
+    // Lógica Híbrida para definir o model_id
+    let model_id = `${selectedTeam.toLowerCase()}_${selectedStyle}`;
+    if (selectedTeam === 'Flamengo' && selectedStyle === 'retro') {
+      model_id = 'flamengo_1981';
+    } else if (selectedTeam === 'Corinthians' && selectedStyle === 'retro') {
+      model_id = 'corinthians_2022'; // Assumindo que 2022 é o 'retro' para o Corinthians
+    }
+    // Adicionar outras lógicas de mapeamento aqui se necessário
+
     try {
       const request: ImageGenerationRequest = {
-        model_id: "corinthians_2022", 
+        model_id: model_id,
         player_name: playerName,
         player_number: playerNumber,
         quality: quality
@@ -114,10 +135,9 @@ export default function JerseyEditor() {
       }
     } catch (err) {
       console.error('Error generating content:', err);
-      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
-      setError(`Failed to connect to the API. Details: ${errorMessage}`);
+      setError('Error connecting to the API. Please check if the server is running.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Apenas o isLoading é resetado aqui!
     }
   }
 
@@ -177,101 +197,97 @@ export default function JerseyEditor() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <Tabs value={generationType} onValueChange={(value) => setGenerationType(value as GenerationType)}>
+                <Tabs value={selectedTeam} onValueChange={(value) => setSelectedTeam(value as string)}>
                   <TabsList className="grid w-full grid-cols-3 bg-gray-700">
-                    <TabsTrigger value="jersey" className="data-[state=active]:bg-purple-600">
+                    <TabsTrigger value="corinthians_2022" className="data-[state=active]:bg-purple-600">
                       👕 Jersey
                     </TabsTrigger>
-                    <TabsTrigger value="stadium" className="data-[state=active]:bg-purple-600">
+                    <TabsTrigger value="flamengo_1981" className="data-[state=active]:bg-purple-600">
                       🏟️ Stadium
                     </TabsTrigger>
                     <TabsTrigger value="logo" className="data-[state=active]:bg-purple-600">
                       🏆 Logo
                     </TabsTrigger>
                   </TabsList>
-                  <TabsContent value={generationType} className="mt-4">
+                  <TabsContent value={selectedTeam} className="mt-4">
                     <div className="p-4 bg-gray-700/50 rounded-lg">
-                      <h4 className="font-semibold text-white mb-2">{getTypeLabel(generationType)}</h4>
-                      <p className="text-sm text-gray-400">{getTypeDescription(generationType)}</p>
+                      <h4 className="font-semibold text-white mb-2">{getTypeLabel(selectedTeam as GenerationType)}</h4>
+                      <p className="text-sm text-gray-400">{getTypeDescription(selectedTeam as GenerationType)}</p>
                     </div>
                   </TabsContent>
                 </Tabs>
-
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-3">
-                    Visual Style
-                  </label>
-                  <ToggleGroup 
-                    type="single" 
-                    value={selectedStyle} 
-                    onValueChange={(value) => value && setSelectedStyle(value as StyleFilter)}
-                    className="grid grid-cols-2 gap-2"
-                  >
-                    {STYLE_FILTERS.map((style) => (
-                      <ToggleGroupItem 
-                        key={style.id}
-                        value={style.id}
-                        className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
-                      >
-                        <span className="text-2xl">{style.emoji}</span>
-                        <span className="font-semibold">{style.label}</span>
-                        <span className="text-xs">{style.description}</span>
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                </div>
 
                 <Card className="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
                   <CardContent className="p-0">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2">
-                          Team Selection
-                        </label>
-                        <p className="text-xs text-gray-500 mb-2">
-                          Choose the team for generation
-                        </p>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2">Team</label>
                         <select 
                           value={selectedTeam} 
                           onChange={(e) => setSelectedTeam(e.target.value)}
                           className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          disabled={availableTeams.length === 0}
                         >
-                          <option value="" disabled>Select a team...</option>
-                          {availableTeams.map((team) => (
-                            <option key={team} value={team}>{team}</option>
-                          ))}
+                          {availableTeams.length > 0 ? (
+                            availableTeams.map(team => (
+                              <option key={team} value={team}>{team}</option>
+                            ))
+                          ) : (
+                            <option>Loading teams...</option>
+                          )}
                         </select>
                       </div>
 
-                      {generationType === 'jersey' && (
-                         <div className="space-y-4 pt-4 border-t border-gray-700/50">
-                          <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                              <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
-                              <input
-                                id="playerName"
-                                type="text"
-                                value={playerName}
-                                onChange={(e) => setPlayerName(e.target.value)}
-                                placeholder="e.g., RONALDO"
-                                className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                              />
-                            </div>
-                            <div>
-                              <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
-                              <input
-                                id="playerNumber"
-                                type="text"
-                                value={playerNumber}
-                                onChange={(e) => setPlayerNumber(e.target.value)}
-                                placeholder="e.g., 9"
-                                className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                              />
-                            </div>
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-3">
+                          Visual Style
+                        </label>
+                        <ToggleGroup 
+                          type="single" 
+                          value={selectedStyle} 
+                          onValueChange={(value) => value && setSelectedStyle(value as StyleFilter)}
+                          className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+                        >
+                          {STYLE_FILTERS.map((style) => (
+                            <ToggleGroupItem 
+                              key={style.id}
+                              value={style.id}
+                              className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
+                            >
+                              <span className="text-2xl">{style.emoji}</span>
+                              <span className="font-semibold">{style.label}</span>
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      </div>
+
+                      <div className="space-y-4 pt-4">
+                        <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
+                            <input
+                              id="playerName"
+                              type="text"
+                              value={playerName}
+                              onChange={(e) => setPlayerName(e.target.value)}
+                              placeholder="e.g., RONALDO"
+                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
+                            <input
+                              id="playerNumber"
+                              type="text"
+                              value={playerNumber}
+                              onChange={(e) => setPlayerNumber(e.target.value)}
+                              placeholder="e.g., 9"
+                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                            />
                           </div>
                         </div>
-                      )}
+                      </div>
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
@@ -320,6 +336,19 @@ export default function JerseyEditor() {
                     <p>Awaiting your creation...</p>
                   )}
                 </div>
+                {generatedImage && (
+                  <Button
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = generatedImage;
+                      link.download = `jersey-${selectedTeam}-${playerName || 'player'}-${playerNumber || '0'}.png`;
+                      link.click();
+                    }}
+                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
+                  >
+                    📥 Download Image
+                  </Button>
+                )}
                 {generationCost && (
                   <div className="mt-4 text-center text-sm text-gray-400">
                     <p>Generation Cost: ~${generationCost.toFixed(4)} USD</p>

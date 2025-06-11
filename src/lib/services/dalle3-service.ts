@@ -3,15 +3,15 @@
  */
 import { ImageGenerationRequest, Dalle3Response } from '@/types';
 
-export class Dalle3Service {
-  private static readonly API_BASE_URL = 'https://jersey-api-dalle3.onrender.com';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+export const Dalle3Service = {
   /**
    * Gera imagem usando DALL-E 3
    */
-  static async generateImage(request: ImageGenerationRequest): Promise<Dalle3Response> {
+  generateImage: async (request: ImageGenerationRequest): Promise<Dalle3Response> => {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/generate`, {
+      const response = await fetch(`${API_BASE_URL}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -36,43 +36,43 @@ export class Dalle3Service {
         error: error instanceof Error ? error.message : 'Erro desconhecido'
       };
     }
-  }
+  },
 
   /**
    * Lista times disponíveis
    */
-  static async getAvailableTeams(): Promise<string[]> {
+  getAvailableTeams: async (): Promise<string[]> => {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/teams`);
+      const response = await fetch(`${API_BASE_URL}/teams`);
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
+        console.error("Failed to fetch teams:", response.statusText);
+        return [];
       }
-      
-      const data = await response.json();
-      return data.teams || [];
+      const teams = await response.json();
+      return teams;
     } catch (error) {
-      console.error('Erro ao buscar times:', error);
+      console.error("Error fetching teams:", error);
       return [];
     }
-  }
+  },
 
   /**
    * Verifica saúde da API
    */
-  static async checkHealth(): Promise<boolean> {
+  checkHealth: async (): Promise<boolean> => {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/health`);
+      const response = await fetch(`${API_BASE_URL}/health`);
       return response.ok;
     } catch (error) {
-      console.error('Erro no health check:', error);
+      console.error("API health check failed:", error);
       return false;
     }
-  }
+  },
 
   /**
    * Converte imagem base64 para URL
    */
-  static base64ToImageUrl(base64: string): string {
-    return `data:image/png;base64,${base64}`;
+  base64ToImageUrl: (base64String: string): string => {
+    return `data:image/png;base64,${base64String}`;
   }
-} 
+}; 
