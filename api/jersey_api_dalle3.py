@@ -30,22 +30,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class JerseyRequest(BaseModel):
-    team_name: str
-    player_name: str
-    player_number: str
-    quality: str = "standard"  # "standard" ou "hd"
+class GenerationRequest(BaseModel):
+    prompt: str
+    quality: str = "standard"
 
-class JerseyResponse(BaseModel):
+class GenerationResponse(BaseModel):
     success: bool
     image_base64: str = None
-    team_name: str = None
-    player_name: str = None
-    player_number: str = None
     cost_usd: float = None
     error: str = None
 
-class JerseyGenerator:
+class Dalle3Generator:
     """Gerador DALL-E 3 para API"""
     
     def __init__(self):
@@ -55,33 +50,15 @@ class JerseyGenerator:
         
         self.client = OpenAI(api_key=self.api_key)
         
-        # Times disponíveis
+        # Times disponíveis - ainda útil para o seletor do frontend
         self.available_teams = [
             "Vasco da Gama", "Palmeiras", "São Paulo", 
             "Flamengo", "Corinthians", "Santos",
             "Barcelona", "Real Madrid", "Manchester United"
         ]
         
-        # Template otimizado
-        self.prompt_template = """A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name "{PLAYER_NAME}" in bold uppercase letters. Below it, a large centered number "{PLAYER_NUMBER}".
-
-The jersey must exactly match the official home design of the "{TEAM_NAME}" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.
-
-Do not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with "JEFF" and number "8". Keep the name and number aligned and consistent in size across all generations. 4K resolution."""
-    
-    def generate_jersey(self, team_name: str, player_name: str, player_number: str, quality: str = "standard"):
-        """Gera jersey usando DALL-E 3"""
-        
-        # Validações
-        if team_name not in self.available_teams:
-            raise ValueError(f"Time não disponível. Times: {', '.join(self.available_teams)}")
-        
-        # Cria prompt
-        prompt = self.prompt_template.format(
-            PLAYER_NAME=player_name.upper(),
-            PLAYER_NUMBER=player_number,
-            TEAM_NAME=team_name
-        )
+    def generate_image(self, prompt: str, quality: str = "standard"):
+        """Gera imagem usando DALL-E 3 a partir de um prompt direto"""
         
         try:
             # Gera imagem
@@ -112,7 +89,7 @@ Do not show any mannequin, human body, hanger, or background elements. No angled
             raise Exception(f"Erro DALL-E 3: {str(e)}")
 
 # Inicializa gerador
-generator = JerseyGenerator()
+generator = Dalle3Generator()
 
 @app.get("/")
 async def root():
@@ -132,28 +109,23 @@ async def get_teams():
         "total": len(generator.available_teams)
     }
 
-@app.post("/generate-jersey", response_model=JerseyResponse)
-async def generate_jersey(request: JerseyRequest):
-    """Gera jersey personalizado"""
+@app.post("/generate", response_model=GenerationResponse)
+async def generate_image_endpoint(request: GenerationRequest):
+    """Gera imagem personalizada a partir de um prompt"""
     
     try:
         # Calcula custo
         cost = 0.040 if request.quality == "standard" else 0.080
         
-        # Gera jersey
-        image_base64 = generator.generate_jersey(
-            team_name=request.team_name,
-            player_name=request.player_name,
-            player_number=request.player_number,
+        # Gera imagem
+        image_base64 = generator.generate_image(
+            prompt=request.prompt,
             quality=request.quality
         )
         
-        return JerseyResponse(
+        return GenerationResponse(
             success=True,
             image_base64=image_base64,
-            team_name=request.team_name,
-            player_name=request.player_name,
-            player_number=request.player_number,
             cost_usd=cost
         )
         

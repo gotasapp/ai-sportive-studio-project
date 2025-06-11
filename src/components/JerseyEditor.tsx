@@ -117,16 +117,13 @@ export default function JerseyEditor() {
     setGenerationCost(null)
 
     try {
+      const prompt = buildPrompt();
       const request: Dalle3Request = {
-        team_name: selectedTeam,
-        player_name: playerName || 'PLAYER',
-        player_number: playerNumber || '10',
+        prompt,
         quality: quality
       };
 
-      // Aqui substituiremos o prompt padrão pelo nosso prompt customizado
-      // Por enquanto, vamos usar a API atual e depois modificaremos o backend
-      const result = await Dalle3Service.generateJersey(request);
+      const result = await Dalle3Service.generateImage(request);
 
       if (result.success && result.image_base64) {
         const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);

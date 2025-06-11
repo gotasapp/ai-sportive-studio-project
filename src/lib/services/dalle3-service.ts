@@ -7,11 +7,11 @@ export class Dalle3Service {
   private static readonly API_BASE_URL = 'https://jersey-api-dalle3.onrender.com';
 
   /**
-   * Gera jersey usando DALL-E 3
+   * Gera imagem usando DALL-E 3
    */
-  static async generateJersey(request: Dalle3Request): Promise<Dalle3Response> {
+  static async generateImage(request: Dalle3Request): Promise<Dalle3Response> {
     try {
-      const response = await fetch(`${this.API_BASE_URL}/generate-jersey`, {
+      const response = await fetch(`${this.API_BASE_URL}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
