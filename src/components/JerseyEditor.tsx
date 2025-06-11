@@ -22,33 +22,33 @@ interface StyleConfig {
 const STYLE_FILTERS: StyleConfig[] = [
   {
     id: 'modern',
-    label: 'Moderno',
+    label: 'Modern',
     emoji: '⚡',
-    description: 'Design limpo e futurista'
+    description: 'Clean and futuristic design'
   },
   {
     id: 'retro',
-    label: 'Retrô',
+    label: 'Retro',
     emoji: '📼',
-    description: 'Estilo vintage anos 80/90'
+    description: 'Vintage 80s/90s style'
   },
   {
     id: 'urban',
-    label: 'Urbano',
+    label: 'Urban',
     emoji: '🏙️',
-    description: 'Streetwear e grafite'
+    description: 'Streetwear and graffiti'
   },
   {
     id: 'national',
-    label: 'Nacional',
+    label: 'National',
     emoji: '🇧🇷',
-    description: 'Cores e símbolos nacionais'
+    description: 'National colors and symbols'
   },
   {
     id: 'classic',
-    label: 'Clássico',
+    label: 'Classic',
     emoji: '👑',
-    description: 'Tradicional e elegante'
+    description: 'Traditional and elegant'
   }
 ]
 
@@ -111,12 +111,12 @@ CRITICAL INSTRUCTIONS:
 
   const generateContent = async () => {
     if (!selectedTeam) {
-      setError('Selecione um time')
+      setError('Please select a team')
       return
     }
 
     if (generationType === 'jersey' && (!playerName || !playerNumber)) {
-      setError('Para jerseys, preencha o nome e número do jogador')
+      setError('For jerseys, please fill in the player name and number')
       return
     }
 
@@ -140,11 +140,11 @@ CRITICAL INSTRUCTIONS:
         setGeneratedImage(imageUrl);
         setGenerationCost(result.cost_usd || null);
       } else {
-        setError(result.error || 'Erro desconhecido ao gerar conteúdo');
+        setError(result.error || 'Unknown error during generation');
       }
     } catch (err) {
-      console.error('Erro ao gerar conteúdo:', err);
-      setError('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+      console.error('Error generating content:', err);
+      setError('Error connecting to the API. Please check if the server is running.');
     } finally {
       setIsLoading(false);
     }
@@ -162,17 +162,17 @@ CRITICAL INSTRUCTIONS:
   const getTypeLabel = (type: GenerationType) => {
     const labels = {
       jersey: 'Jersey',
-      stadium: 'Estádio', 
-      logo: 'Logo/Emblema'
+      stadium: 'Stadium', 
+      logo: 'Logo/Emblem'
     }
     return labels[type]
   }
 
   const getTypeDescription = (type: GenerationType) => {
     const descriptions = {
-      jersey: 'Gere camisas personalizadas com nome e número',
-      stadium: 'Crie imagens épicas de estádios de futebol',
-      logo: 'Desenvolva logos e emblemas profissionais'
+      jersey: 'Generate custom jerseys with name and number',
+      stadium: 'Create epic images of football stadiums',
+      logo: 'Develop professional logos and emblems'
     }
     return descriptions[type]
   }
@@ -186,11 +186,11 @@ CRITICAL INSTRUCTIONS:
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
               <span className="text-sm font-medium text-gray-300">
-                API DALL-E 3: {apiStatus ? 'Online' : 'Offline'}
+                DALL-E 3 API: {apiStatus ? 'Online' : 'Offline'}
               </span>
               {apiStatus && (
                 <Badge variant="secondary" className="ml-auto">
-                  {availableTeams.length} times disponíveis
+                  {availableTeams.length} teams available
                 </Badge>
               )}
             </div>
@@ -202,9 +202,9 @@ CRITICAL INSTRUCTIONS:
           <div className="space-y-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white">🎨 Gerador de Conteúdo Sports IA</CardTitle>
+                <CardTitle className="text-white">AI Sports Content Generator</CardTitle>
                 <CardDescription className="text-gray-400">
-                  Crie jerseys, estádios e logos usando inteligência artificial
+                  Create jerseys, stadiums, and logos using artificial intelligence
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -216,7 +216,7 @@ CRITICAL INSTRUCTIONS:
                       👕 Jersey
                     </TabsTrigger>
                     <TabsTrigger value="stadium" className="data-[state=active]:bg-purple-600">
-                      🏟️ Estádio
+                      🏟️ Stadium
                     </TabsTrigger>
                     <TabsTrigger value="logo" className="data-[state=active]:bg-purple-600">
                       🏆 Logo
@@ -234,7 +234,7 @@ CRITICAL INSTRUCTIONS:
                 {/* Filtros de Estilo */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-400 mb-3">
-                    Estilo Visual
+                    Visual Style
                   </label>
                   <ToggleGroup 
                     type="single" 
@@ -261,211 +261,97 @@ CRITICAL INSTRUCTIONS:
                 {/* Seleção de Time */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-400 mb-2">
-                    Time *
+                    Team Selection
                   </label>
-                  <select
-                    className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
-                    value={selectedTeam}
+                  <p className="text-xs text-gray-500 mb-2">
+                    Choose the team for generation
+                  </p>
+                  <select 
+                    value={selectedTeam} 
                     onChange={(e) => setSelectedTeam(e.target.value)}
-                    disabled={!apiStatus}
+                    className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
                   >
-                    <option value="">Selecione um time</option>
-                    {availableTeams.map(team => (
-                      <option key={team} value={team}>
-                        {team}
-                      </option>
+                    <option value="" disabled>Select a team...</option>
+                    {availableTeams.map((team) => (
+                      <option key={team} value={team}>{team}</option>
                     ))}
                   </select>
                 </div>
 
                 {/* Campos específicos para Jersey */}
                 {generationType === 'jersey' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-400 mb-2">
-                        Nome do Jogador *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
-                        style={{ color: '#FFF' }}
-                        value={playerName}
-                        onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
-                        placeholder="Ex: GABRIEL, PEDRO, MARIO"
-                        maxLength={15}
-                        disabled={!apiStatus}
-                      />
+                  <div className="space-y-4 pt-4 border-t border-gray-700/50">
+                    <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
+                        <input
+                          id="playerName"
+                          type="text"
+                          value={playerName}
+                          onChange={(e) => setPlayerName(e.target.value)}
+                          placeholder="e.g., RONALDO"
+                          className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
+                        <input
+                          id="playerNumber"
+                          type="text"
+                          value={playerNumber}
+                          onChange={(e) => setPlayerNumber(e.target.value)}
+                          placeholder="e.g., 9"
+                          className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                        />
+                      </div>
                     </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-400 mb-2">
-                        Número do Jogador *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
-                        style={{ color: '#FFF' }}
-                        value={playerNumber}
-                        onChange={(e) => setPlayerNumber(e.target.value)}
-                        placeholder="Ex: 10, 7, 23"
-                        maxLength={2}
-                        pattern="[0-9]*"
-                        disabled={!apiStatus}
-                      />
-                    </div>
-                  </>
+                  </div>
                 )}
 
                 {/* Qualidade */}
                 <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-2">
-                    Qualidade
-                  </label>
-                  <div className="flex gap-4 text-gray-300">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="standard"
-                        checked={quality === 'standard'}
-                        onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                        className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
-                        disabled={!apiStatus}
-                      />
-                      <span className="text-sm">Standard ($0.04)</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="hd"
-                        checked={quality === 'hd'}
-                        onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                        className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
-                        disabled={!apiStatus}
-                      />
-                      <span className="text-sm">HD ($0.08)</span>
-                    </label>
-                  </div>
+                  <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
+                  <ToggleGroup type="single" value={quality} onValueChange={(value: 'standard' | 'hd') => value && setQuality(value)} className="grid grid-cols-2 gap-2">
+                     <ToggleGroupItem value="standard" className="data-[state=on]:bg-purple-600">Standard</ToggleGroupItem>
+                     <ToggleGroupItem value="hd" className="data-[state=on]:bg-purple-600">HD (More expensive)</ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
-
-                {/* Botões */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={generateContent}
-                    disabled={isLoading || !selectedTeam || (generationType === 'jersey' && (!playerName || !playerNumber)) || !apiStatus}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600"
-                  >
-                    {isLoading ? '🎨 Gerando...' : `🚀 Gerar ${getTypeLabel(generationType)}`}
-                  </Button>
-
-                  <Button
-                    onClick={resetForm}
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    disabled={isLoading}
-                  >
-                    🔄 Limpar
-                  </Button>
-                </div>
-
-                {/* Custo da Geração */}
-                {generationCost && (
-                  <Card className="bg-green-900/50 border-green-700">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-300 text-sm">
-                          💰 Custo da geração: ${generationCost.toFixed(3)}
-                        </span>
-                        <Badge variant="secondary" className="bg-green-800 text-green-300">
-                          {quality === 'hd' ? 'HD' : 'Standard'}
-                        </Badge>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Erro */}
-                {error && (
-                  <Card className="bg-red-900/50 border-red-700">
-                    <CardContent className="pt-6">
-                      <p className="text-red-300 font-medium">❌ {error}</p>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Informações */}
-                <Card className="bg-gray-700/50 border-gray-600">
-                  <CardContent className="pt-6">
-                    <h4 className="font-semibold text-gray-200 mb-2">ℹ️ Informações:</h4>
-                    <ul className="text-sm text-gray-300 space-y-1">
-                      <li>• {generationType === 'jersey' ? 'Vista das costas com nome e número' : 
-                              generationType === 'stadium' ? 'Visão aérea épica do estádio' :
-                              'Logo profissional para merchandising'}</li>
-                      <li>• Qualidade DALL-E 3 profissional</li>
-                      <li>• Estilos personalizáveis</li>
-                      <li>• Cores e padrões oficiais dos times</li>
-                    </ul>
-                  </CardContent>
-                </Card>
               </CardContent>
             </Card>
           </div>
 
-          {/* Coluna da Direita - Preview */}
-          <div className="space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
+          {/* Coluna da Direita - Resultado */}
+          <div>
+            <Card className="sticky top-8 bg-gray-800 border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  🖼️ {getTypeLabel(generationType)} Gerado
-                  {selectedStyle && (
-                    <Badge variant="secondary" className="bg-purple-900 text-purple-300">
-                      {STYLE_FILTERS.find(s => s.id === selectedStyle)?.emoji} {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-                    </Badge>
-                  )}
-                </CardTitle>
+                <CardTitle className="text-white">Generation Result</CardTitle>
+                <CardDescription className="text-gray-400">The generated image will appear here.</CardDescription>
               </CardHeader>
               <CardContent>
-                {isLoading && (
-                  <div className="flex flex-col items-center justify-center h-96 bg-gray-900 rounded-lg">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-gray-400">Gerando {getTypeLabel(generationType).toLowerCase()} com DALL-E 3...</p>
-                    <p className="text-sm text-gray-500 mt-2">Isso pode levar alguns segundos</p>
-                  </div>
-                )}
-
-                {!isLoading && !generatedImage && (
-                  <div className="flex flex-col items-center justify-center h-96 bg-gray-900 rounded-lg border-2 border-dashed border-gray-700">
-                    <div className="text-6xl mb-4">
-                      {generationType === 'jersey' ? '👕' : generationType === 'stadium' ? '🏟️' : '🏆'}
+                <div className="aspect-square bg-gray-900 rounded-lg flex items-center justify-center text-gray-500">
+                  {isLoading ? (
+                    <div className="text-center">
+                      <svg className="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <p className="mt-2">Generating image... Please wait.</p>
                     </div>
-                    <p className="text-gray-400 text-center">
-                      Seu {getTypeLabel(generationType).toLowerCase()} aparecerá aqui
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2 text-center">
-                      Selecione um time e configure as opções acima
-                    </p>
-                  </div>
-                )}
-
-                {generatedImage && (
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <img
-                        src={generatedImage}
-                        alt={`${getTypeLabel(generationType)} gerado`}
-                        className="w-full h-auto rounded-lg shadow-lg"
-                      />
+                  ) : error ? (
+                    <div className="p-4 text-red-400">
+                      <p className="font-semibold">Error generating image:</p>
+                      <pre className="text-xs whitespace-pre-wrap">{error}</pre>
                     </div>
-                    <Button
-                      onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = generatedImage;
-                        link.download = `${generationType}-${selectedTeam}-${selectedStyle}.png`;
-                        link.click();
-                      }}
-                      className="w-full bg-green-600 hover:bg-green-700"
-                    >
-                      📥 Baixar Imagem
-                    </Button>
+                  ) : generatedImage ? (
+                    <img src={generatedImage} alt="Generated content" className="rounded-lg w-full h-full object-contain" />
+                  ) : (
+                    <p>Awaiting your creation...</p>
+                  )}
+                </div>
+                {generationCost && (
+                  <div className="mt-4 text-center text-sm text-gray-400">
+                    <p>Generation Cost: ~${generationCost.toFixed(4)} USD</p>
                   </div>
                 )}
               </CardContent>

@@ -21,7 +21,11 @@ export class Dalle3Service {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.detail || `HTTP ${response.status}`);
+        // FastAPI sends detailed validation errors in `errorData.detail`
+        const errorMessage = typeof errorData.detail === 'string' 
+          ? errorData.detail
+          : JSON.stringify(errorData.detail);
+        throw new Error(errorMessage || `HTTP ${response.status}`);
       }
 
       return await response.json();
