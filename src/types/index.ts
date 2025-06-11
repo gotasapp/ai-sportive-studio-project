@@ -1,5 +1,7 @@
-export interface Dalle3Request {
-  prompt: string;
+export interface ImageGenerationRequest {
+  model_id: string; // Ex: "corinthians_2022"
+  player_name: string;
+  player_number: string;
   quality?: "standard" | "hd";
 }
 

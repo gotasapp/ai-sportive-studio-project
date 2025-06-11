@@ -1,7 +1,7 @@
 /**
  * Serviço para integração com API DALL-E 3
  */
-import { Dalle3Request, Dalle3Response } from '@/types';
+import { ImageGenerationRequest, Dalle3Response } from '@/types';
 
 export class Dalle3Service {
   private static readonly API_BASE_URL = 'https://jersey-api-dalle3.onrender.com';
@@ -9,7 +9,7 @@ export class Dalle3Service {
   /**
    * Gera imagem usando DALL-E 3
    */
-  static async generateImage(request: Dalle3Request): Promise<Dalle3Response> {
+  static async generateImage(request: ImageGenerationRequest): Promise<Dalle3Response> {
     try {
       const response = await fetch(`${this.API_BASE_URL}/generate`, {
         method: 'POST',

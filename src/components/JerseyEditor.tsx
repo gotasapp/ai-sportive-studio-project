@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Dalle3Service } from '@/lib/services/dalle3-service'
-import { Dalle3Request, Dalle3Response } from '@/types'
+import { Dalle3Request, Dalle3Response, ImageGenerationRequest } from '@/types'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Button } from "@/components/ui/button"
@@ -125,9 +125,11 @@ CRITICAL INSTRUCTIONS:
     setGenerationCost(null)
 
     try {
-      const prompt = buildPrompt();
-      const request: Dalle3Request = {
-        prompt,
+      // Temporariamente, vamos usar um request direto para o novo sistema
+      const request: ImageGenerationRequest = {
+        model_id: "corinthians_2022", // Hardcoded para o nosso teste
+        player_name: playerName,
+        player_number: playerNumber,
         quality: quality
       };
 
