@@ -98,9 +98,18 @@ class JerseyGenerator:
 
 # --- Configuração da API FastAPI ---
 app = FastAPI(title="Jersey Generator API", version="2.0.0")
+
+# Lista de domínios permitidos
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "https://jersey-generator-ai2-git-master-jeffnight15s-projects.vercel.app",
+    "https://jersey-generator-ai2.vercel.app" # Adicionando o domínio principal também
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
