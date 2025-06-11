@@ -66,7 +66,6 @@ export default function JerseyEditor() {
   const [apiStatus, setApiStatus] = useState<boolean>(false)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
 
-  // Carrega times disponíveis e verifica API
   useEffect(() => {
     const loadData = async () => {
       const [teams, health] = await Promise.all([
@@ -80,34 +79,6 @@ export default function JerseyEditor() {
 
     loadData();
   }, []);
-
-  const buildPrompt = (): string => {
-    // Estilos que modificam a aparência
-    const styleModifiers = {
-      modern: 'with a sleek, minimalist aesthetic, clean lines, and contemporary design elements',
-      retro: 'with vintage 1980s styling, aged textures, and classic typography',
-      urban: 'with street art influences, graffiti-style lettering, and edgy design',
-      national: 'incorporating national colors (like green, yellow, blue for Brazil), cultural symbols, and patriotic elements',
-      classic: 'with a timeless, elegant design, traditional patterns, and sophisticated styling'
-    };
-
-    // Prompt base para cada tipo de geração
-    const basePrompts = {
-      jersey: `A professional soccer jersey for the team "${selectedTeam}". The style is ${styleModifiers[selectedStyle]}. The jersey should have a photorealistic texture, with authentic team colors, official patterns, and sponsor logos. Use realistic lighting and high contrast for the text.
-
-CRITICAL INSTRUCTIONS:
-- The view MUST be the BACK of the jersey, perfectly centered and laid flat.
-- The player name "${playerName.toUpperCase()}" MUST appear EXACTLY as written at the top.
-- The number "${playerNumber}" MUST appear EXACTLY as written below the name.
-- DO NOT show any human, mannequin, or hanger. The background MUST be a clean, neutral studio background.`,
-      
-      stadium: `A spectacular aerial view of a football stadium for ${selectedTeam}, captured during golden hour with dramatic lighting. The stadium should be packed with fans wearing team colors, creating a sea of support. The style is ${styleModifiers[selectedStyle]}. Include the surrounding cityscape and architectural details that reflect the team's identity and location.`,
-      
-      logo: `A professional sports logo or emblem for ${selectedTeam}. The style is ${styleModifiers[selectedStyle]}. The design should be clean, iconic, and suitable for official merchandise and branding. It must be on a clean white background.`
-    };
-
-    return `${basePrompts[generationType]} High quality, 4K resolution.`;
-  }
 
   const generateContent = async () => {
     if (!selectedTeam) {
@@ -125,9 +96,8 @@ CRITICAL INSTRUCTIONS:
     setGenerationCost(null)
 
     try {
-      // Temporariamente, vamos usar um request direto para o novo sistema
       const request: ImageGenerationRequest = {
-        model_id: "corinthians_2022", // Hardcoded para o nosso teste
+        model_id: "corinthians_2022", 
         player_name: playerName,
         player_number: playerNumber,
         quality: quality
@@ -144,7 +114,8 @@ CRITICAL INSTRUCTIONS:
       }
     } catch (err) {
       console.error('Error generating content:', err);
-      setError('Error connecting to the API. Please check if the server is running.');
+      const errorMessage = err instanceof Error ? err.message : 'An unknown error occurred.';
+      setError(`Failed to connect to the API. Details: ${errorMessage}`);
     } finally {
       setIsLoading(false);
     }
@@ -180,7 +151,6 @@ CRITICAL INSTRUCTIONS:
   return (
     <div className="container mx-auto p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Status da API */}
         <Card className="mb-6 bg-gray-800 border-gray-700">
           <CardContent className="pt-6">
             <div className="flex items-center gap-2">
@@ -198,7 +168,6 @@ CRITICAL INSTRUCTIONS:
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Coluna da Esquerda - Customização */}
           <div className="space-y-6">
             <Card className="bg-gray-800 border-gray-700">
               <CardHeader>
@@ -208,8 +177,6 @@ CRITICAL INSTRUCTIONS:
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                
-                {/* Tabs para Tipo de Geração */}
                 <Tabs value={generationType} onValueChange={(value) => setGenerationType(value as GenerationType)}>
                   <TabsList className="grid w-full grid-cols-3 bg-gray-700">
                     <TabsTrigger value="jersey" className="data-[state=active]:bg-purple-600">
@@ -222,7 +189,6 @@ CRITICAL INSTRUCTIONS:
                       🏆 Logo
                     </TabsTrigger>
                   </TabsList>
-                  
                   <TabsContent value={generationType} className="mt-4">
                     <div className="p-4 bg-gray-700/50 rounded-lg">
                       <h4 className="font-semibold text-white mb-2">{getTypeLabel(generationType)}</h4>
@@ -231,7 +197,6 @@ CRITICAL INSTRUCTIONS:
                   </TabsContent>
                 </Tabs>
 
-                {/* Filtros de Estilo */}
                 <div>
                   <label className="block text-sm font-semibold text-gray-400 mb-3">
                     Visual Style
@@ -248,80 +213,86 @@ CRITICAL INSTRUCTIONS:
                         value={style.id}
                         className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
                       >
-                        <span className="text-lg mb-1">{style.emoji}</span>
-                        <span className="text-xs font-medium">{style.label}</span>
+                        <span className="text-2xl">{style.emoji}</span>
+                        <span className="font-semibold">{style.label}</span>
+                        <span className="text-xs">{style.description}</span>
                       </ToggleGroupItem>
                     ))}
                   </ToggleGroup>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {STYLE_FILTERS.find(s => s.id === selectedStyle)?.description}
-                  </p>
                 </div>
 
-                {/* Seleção de Time */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-2">
-                    Team Selection
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    Choose the team for generation
-                  </p>
-                  <select 
-                    value={selectedTeam} 
-                    onChange={(e) => setSelectedTeam(e.target.value)}
-                    className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                  >
-                    <option value="" disabled>Select a team...</option>
-                    {availableTeams.map((team) => (
-                      <option key={team} value={team}>{team}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Campos específicos para Jersey */}
-                {generationType === 'jersey' && (
-                  <div className="space-y-4 pt-4 border-t border-gray-700/50">
-                    <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                  <CardContent className="p-0">
+                    <div className="space-y-4">
                       <div>
-                        <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
-                        <input
-                          id="playerName"
-                          type="text"
-                          value={playerName}
-                          onChange={(e) => setPlayerName(e.target.value)}
-                          placeholder="e.g., RONALDO"
-                          className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                        />
+                        <label className="block text-sm font-semibold text-gray-400 mb-2">
+                          Team Selection
+                        </label>
+                        <p className="text-xs text-gray-500 mb-2">
+                          Choose the team for generation
+                        </p>
+                        <select 
+                          value={selectedTeam} 
+                          onChange={(e) => setSelectedTeam(e.target.value)}
+                          className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                        >
+                          <option value="" disabled>Select a team...</option>
+                          {availableTeams.map((team) => (
+                            <option key={team} value={team}>{team}</option>
+                          ))}
+                        </select>
                       </div>
+
+                      {generationType === 'jersey' && (
+                         <div className="space-y-4 pt-4 border-t border-gray-700/50">
+                          <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                              <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
+                              <input
+                                id="playerName"
+                                type="text"
+                                value={playerName}
+                                onChange={(e) => setPlayerName(e.target.value)}
+                                placeholder="e.g., RONALDO"
+                                className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                              />
+                            </div>
+                            <div>
+                              <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
+                              <input
+                                id="playerNumber"
+                                type="text"
+                                value={playerNumber}
+                                onChange={(e) => setPlayerNumber(e.target.value)}
+                                placeholder="e.g., 9"
+                                className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div>
-                        <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
-                        <input
-                          id="playerNumber"
-                          type="text"
-                          value={playerNumber}
-                          onChange={(e) => setPlayerNumber(e.target.value)}
-                          placeholder="e.g., 9"
-                          className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                        />
+                        <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
+                        <ToggleGroup type="single" value={quality} onValueChange={(value: 'standard' | 'hd') => value && setQuality(value)} className="grid grid-cols-2 gap-2">
+                           <ToggleGroupItem value="standard" className="data-[state=on]:bg-purple-600">Standard</ToggleGroupItem>
+                           <ToggleGroupItem value="hd" className="data-[state=on]:bg-purple-600">HD (More expensive)</ToggleGroupItem>
+                        </ToggleGroup>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Qualidade */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
-                  <ToggleGroup type="single" value={quality} onValueChange={(value: 'standard' | 'hd') => value && setQuality(value)} className="grid grid-cols-2 gap-2">
-                     <ToggleGroupItem value="standard" className="data-[state=on]:bg-purple-600">Standard</ToggleGroupItem>
-                     <ToggleGroupItem value="hd" className="data-[state=on]:bg-purple-600">HD (More expensive)</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
+                  </CardContent>
+                </Card>
               </CardContent>
             </Card>
+            <div className="flex space-x-4">
+                <Button onClick={generateContent} disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-700">
+                    {isLoading ? 'Generating...' : 'Generate Content'}
+                </Button>
+                <Button onClick={resetForm} variant="outline" className="w-full text-white border-gray-600 hover:bg-gray-700">Clear</Button>
+            </div>
           </div>
 
-          {/* Coluna da Direita - Resultado */}
           <div>
             <Card className="sticky top-8 bg-gray-800 border-gray-700">
               <CardHeader>
