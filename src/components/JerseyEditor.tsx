@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Dalle3Service } from '@/lib/services/dalle3-service'
-import { Dalle3Request, Dalle3Response, ImageGenerationRequest } from '@/types'
+import { Dalle3Response, ImageGenerationRequest } from '@/types'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Button } from "@/components/ui/button"
