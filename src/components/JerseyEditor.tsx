@@ -1,10 +1,21 @@
 'use client'
 
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react'
 import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
 import Header from './Header.jsx'
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { Dalle3Request } from '../types'
+=======
+import { useState, useEffect } from 'react'
+import { Dalle3Service } from '@/lib/services/dalle3-service'
+import { Dalle3Response, ImageGenerationRequest } from '@/types'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -14,6 +25,7 @@ const STYLE_FILTERS = [
   { id: 'classic', label: 'Classic', icon: Crown }
 ]
 
+<<<<<<< HEAD
 const MARKETPLACE_ITEMS = [
   { id: 1, number: '10', price: '0.5 ETH', trending: true },
   { id: 2, number: '23', price: '0.3 ETH', trending: false },
@@ -21,6 +33,46 @@ const MARKETPLACE_ITEMS = [
   { id: 4, number: '11', price: '0.4 ETH', trending: false },
   { id: 5, number: '99', price: '1.2 ETH', trending: true },
   { id: 6, number: '88', price: '0.6 ETH', trending: false }
+=======
+interface StyleConfig {
+  id: StyleFilter
+  label: string
+  emoji: string
+  description: string
+}
+
+const STYLE_FILTERS: StyleConfig[] = [
+  {
+    id: 'modern',
+    label: 'Modern',
+    emoji: '⚡',
+    description: 'Clean and futuristic design'
+  },
+  {
+    id: 'retro',
+    label: 'Retro',
+    emoji: '📼',
+    description: 'Vintage 80s/90s style'
+  },
+  {
+    id: 'urban',
+    label: 'Urban',
+    emoji: '🏙️',
+    description: 'Streetwear and graffiti'
+  },
+  {
+    id: 'national',
+    label: 'National',
+    emoji: '🇧🇷',
+    description: 'National colors and symbols'
+  },
+  {
+    id: 'classic',
+    label: 'Classic',
+    emoji: '👑',
+    description: 'Traditional and elegant'
+  }
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 ]
 
 export default function JerseyEditor() {
@@ -29,24 +81,64 @@ export default function JerseyEditor() {
   const [playerName, setPlayerName] = useState<string>('JEFF')
   const [playerNumber, setPlayerNumber] = useState<string>('10')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
+<<<<<<< HEAD
   const [selectedStyle, setSelectedStyle] = useState<string>('modern')
+=======
+  const [selectedStyle, setSelectedStyle] = useState<StyleFilter>('modern')
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiStatus, setApiStatus] = useState<boolean>(false)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
+<<<<<<< HEAD
   const [royalties, setRoyalties] = useState<number>(10)
   const [editionSize, setEditionSize] = useState<number>(100)
   const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
+=======
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        console.log('Carregando dados da API...');
+        const health = await Dalle3Service.checkHealth();
+        console.log('Health check result:', health);
+        setApiStatus(health);
+
+        if (health) {
+          const teams = await Dalle3Service.getAvailableTeams();
+          console.log('Teams loaded:', teams);
+          setAvailableTeams(teams);
+          
+          // Define o primeiro time como selecionado se a lista não estiver vazia
+          if (teams.length > 0 && !selectedTeam) {
+            setSelectedTeam(teams[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar dados:', error);
+        setApiStatus(false);
+        setAvailableTeams([]);
+      }
+    };
+
+    loadData();
+  }, []);
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 
   const generateContent = async () => {
     if (!selectedTeam) {
-      setError('Selecione um time')
+      setError('Please select a team')
       return
     }
+<<<<<<< HEAD
 
     if (!playerName || !playerNumber) {
       setError('Preencha o nome e número do jogador')
+=======
+    if (!playerName || !playerNumber) {
+      setError('For jerseys, please fill in the player name and number')
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
       return
     }
 
@@ -54,15 +146,33 @@ export default function JerseyEditor() {
     setError(null)
     setGenerationCost(null)
 
+    // Lógica Híbrida para definir o model_id
+    let model_id = `${selectedTeam.toLowerCase()}_${selectedStyle}`;
+    if (selectedTeam === 'Flamengo' && selectedStyle === 'retro') {
+      model_id = 'flamengo_1981';
+    } else if (selectedTeam === 'Corinthians' && selectedStyle === 'retro') {
+      model_id = 'corinthians_2022'; // Assumindo que 2022 é o 'retro' para o Corinthians
+    }
+    // Adicionar outras lógicas de mapeamento aqui se necessário
+
     try {
+<<<<<<< HEAD
       const request: Dalle3Request = {
         team_name: selectedTeam,
+=======
+      const request: ImageGenerationRequest = {
+        model_id: model_id,
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
         player_name: playerName,
         player_number: playerNumber,
         quality: quality
       };
 
+<<<<<<< HEAD
       const result = await Dalle3Service.generateJersey(request);
+=======
+      const result = await Dalle3Service.generateImage(request);
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 
       if (result.success && result.image_base64) {
         const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
@@ -80,13 +190,13 @@ export default function JerseyEditor() {
         const blob = new Blob([byteArray], { type: 'image/png' });
         setGeneratedImageBlob(blob);
       } else {
-        setError(result.error || 'Erro desconhecido ao gerar conteúdo');
+        setError(result.error || 'Unknown error during generation');
       }
     } catch (err) {
-      console.error('Erro ao gerar conteúdo:', err);
-      setError('Erro ao conectar com a API. Verifique se o servidor está rodando.');
+      console.error('Error generating content:', err);
+      setError('Error connecting to the API. Please check if the server is running.');
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Apenas o isLoading é resetado aqui!
     }
   }
 
@@ -100,6 +210,7 @@ export default function JerseyEditor() {
     setGenerationCost(null);
   };
 
+<<<<<<< HEAD
   useEffect(() => {
     const loadTeams = async () => {
       try {
@@ -448,6 +559,210 @@ export default function JerseyEditor() {
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
+=======
+  const getTypeLabel = (type: GenerationType) => {
+    const labels = {
+      jersey: 'Jersey',
+      stadium: 'Stadium', 
+      logo: 'Logo/Emblem'
+    }
+    return labels[type]
+  }
+
+  const getTypeDescription = (type: GenerationType) => {
+    const descriptions = {
+      jersey: 'Generate custom jerseys with name and number',
+      stadium: 'Create epic images of football stadiums',
+      logo: 'Develop professional logos and emblems'
+    }
+    return descriptions[type]
+  }
+
+  return (
+    <div className="container mx-auto p-4">
+      <div className="max-w-6xl mx-auto">
+        <Card className="mb-6 bg-gray-800 border-gray-700">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2">
+              <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <span className="text-sm font-medium text-gray-300">
+                DALL-E 3 API: {apiStatus ? 'Online' : 'Offline'}
+              </span>
+              {apiStatus && (
+                <Badge variant="secondary" className="ml-auto">
+                  {availableTeams.length} teams available
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-6">
+            <Card className="bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">AI Sports Content Generator</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Create jerseys, stadiums, and logos using artificial intelligence
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <Tabs value={selectedTeam} onValueChange={(value) => setSelectedTeam(value as string)}>
+                  <TabsList className="grid w-full grid-cols-3 bg-gray-700">
+                    <TabsTrigger value="corinthians_2022" className="data-[state=active]:bg-purple-600">
+                      👕 Jersey
+                    </TabsTrigger>
+                    <TabsTrigger value="flamengo_1981" className="data-[state=active]:bg-purple-600">
+                      🏟️ Stadium
+                    </TabsTrigger>
+                    <TabsTrigger value="logo" className="data-[state=active]:bg-purple-600">
+                      🏆 Logo
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value={selectedTeam} className="mt-4">
+                    <div className="p-4 bg-gray-700/50 rounded-lg">
+                      <h4 className="font-semibold text-white mb-2">{getTypeLabel(selectedTeam as GenerationType)}</h4>
+                      <p className="text-sm text-gray-400">{getTypeDescription(selectedTeam as GenerationType)}</p>
+                    </div>
+                  </TabsContent>
+                </Tabs>
+
+                <Card className="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                  <CardContent className="p-0">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2">Team</label>
+                        <select 
+                          value={selectedTeam} 
+                          onChange={(e) => setSelectedTeam(e.target.value)}
+                          className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
+                          disabled={availableTeams.length === 0}
+                        >
+                          {availableTeams.length > 0 ? (
+                            availableTeams.map(team => (
+                              <option key={team} value={team}>{team}</option>
+                            ))
+                          ) : (
+                            <option>Loading teams...</option>
+                          )}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-3">
+                          Visual Style
+                        </label>
+                        <ToggleGroup 
+                          type="single" 
+                          value={selectedStyle} 
+                          onValueChange={(value) => value && setSelectedStyle(value as StyleFilter)}
+                          className="grid grid-cols-2 sm:grid-cols-3 gap-2"
+                        >
+                          {STYLE_FILTERS.map((style) => (
+                            <ToggleGroupItem 
+                              key={style.id}
+                              value={style.id}
+                              className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
+                            >
+                              <span className="text-2xl">{style.emoji}</span>
+                              <span className="font-semibold">{style.label}</span>
+                            </ToggleGroupItem>
+                          ))}
+                        </ToggleGroup>
+                      </div>
+
+                      <div className="space-y-4 pt-4">
+                        <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
+                            <input
+                              id="playerName"
+                              type="text"
+                              value={playerName}
+                              onChange={(e) => setPlayerName(e.target.value)}
+                              placeholder="e.g., RONALDO"
+                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                            />
+                          </div>
+                          <div>
+                            <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
+                            <input
+                              id="playerNumber"
+                              type="text"
+                              value={playerNumber}
+                              onChange={(e) => setPlayerNumber(e.target.value)}
+                              placeholder="e.g., 9"
+                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
+                        <ToggleGroup type="single" value={quality} onValueChange={(value: 'standard' | 'hd') => value && setQuality(value)} className="grid grid-cols-2 gap-2">
+                           <ToggleGroupItem value="standard" className="data-[state=on]:bg-purple-600">Standard</ToggleGroupItem>
+                           <ToggleGroupItem value="hd" className="data-[state=on]:bg-purple-600">HD (More expensive)</ToggleGroupItem>
+                        </ToggleGroup>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </CardContent>
+            </Card>
+            <div className="flex space-x-4">
+                <Button onClick={generateContent} disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-700">
+                    {isLoading ? 'Generating...' : 'Generate Content'}
+                </Button>
+                <Button onClick={resetForm} variant="outline" className="w-full text-white border-gray-600 hover:bg-gray-700">Clear</Button>
+            </div>
+          </div>
+
+          <div>
+            <Card className="sticky top-8 bg-gray-800 border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Generation Result</CardTitle>
+                <CardDescription className="text-gray-400">The generated image will appear here.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="aspect-square bg-gray-900 rounded-lg flex items-center justify-center text-gray-500">
+                  {isLoading ? (
+                    <div className="text-center">
+                      <svg className="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      <p className="mt-2">Generating image... Please wait.</p>
+                    </div>
+                  ) : error ? (
+                    <div className="p-4 text-red-400">
+                      <p className="font-semibold">Error generating image:</p>
+                      <pre className="text-xs whitespace-pre-wrap">{error}</pre>
+                    </div>
+                  ) : generatedImage ? (
+                    <img src={generatedImage} alt="Generated content" className="rounded-lg w-full h-full object-contain" />
+                  ) : (
+                    <p>Awaiting your creation...</p>
+                  )}
+                </div>
+                {generatedImage && (
+                  <Button
+                    onClick={() => {
+                      const link = document.createElement('a');
+                      link.href = generatedImage;
+                      link.download = `jersey-${selectedTeam}-${playerName || 'player'}-${playerNumber || '0'}.png`;
+                      link.click();
+                    }}
+                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
+                  >
+                    📥 Download Image
+                  </Button>
+                )}
+                {generationCost && (
+                  <div className="mt-4 text-center text-sm text-gray-400">
+                    <p>Generation Cost: ~${generationCost.toFixed(4)} USD</p>
+>>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
                   </div>
                 </div>
                 
