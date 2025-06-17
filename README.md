@@ -1,99 +1,222 @@
-# AI Football Jersey Generator
+# AI Sports NFT Generator 🏆⚽
 
-Generate unique football jerseys using AI and Stable Diffusion. This application allows you to create custom football jerseys by selecting a team, customizing the style, view, material, and adding player details.
+Um gerador de NFTs esportivos alimentado por IA, construído com Next.js, Python FastAPI e integração blockchain.
 
-## Features
+## 🚀 Visão Geral
 
-- Team selection from a database of football teams
-- Customization options for jersey style, view, and material
-- Player name and number customization
-- Sponsor logo support
-- Real-time jersey preview
-- Reference jersey search using TheSportsDB API
-- AI-powered image generation using Stable Diffusion
+Este projeto permite aos usuários gerar camisas de futebol personalizadas usando IA (DALL-E 3) e mintá-las como NFTs na blockchain. Com foco em times brasileiros e internacionais, oferece uma experiência completa de criação, customização e comercialização de NFTs esportivos.
 
-## Technologies Used
+## 🎯 Status Atual
 
-- Next.js 14
-- TypeScript
-- Tailwind CSS
-- Replicate API (Stable Diffusion)
-- TheSportsDB API
+✅ **Interface Cyberpunk NFT** - Design futurista completo  
+✅ **Geração de IA** - Integração com DALL-E 3 para camisas personalizadas  
+✅ **Sistema de Times** - Suporte a 9 times (Brasileiros + Internacionais)  
+✅ **Filtros de Estilo** - Modern, Retro, National, Urban, Classic  
+✅ **Preview 3D** - Área de visualização com efeitos cyberpunk  
+🔄 **Próximo:** Conexão com Wallet (WalletConnect)
 
-## Getting Started
+## 📋 Roadmap de Desenvolvimento
 
-### Prerequisites
+### 🔹 Milestone 1 – AI NFT Generator
+**📅 Duração: 3 Semanas** ✅ **CONCLUÍDO**
 
-- Node.js 18+ and npm
-- Replicate API token
-- TheSportsDB API key
+**Entregas:**
+- ✅ Pipeline de modelo de IA (DALL-E 3) ajustado para:
+  - ✅ Camisas de futebol
+  - 🔄 Logos/emblemas  
+  - 🔄 Visuais de estádio e torcida
+- ✅ Interface de prompt (entrada de imagem + texto)
+- ✅ Filtros de estilo (moderno, retrô, nacional, urbano, etc.)
+- 🔄 Upload IPFS/Arweave
+- ✅ Recursos básicos de revisão/edição de saída
 
-### Installation
+**Próxima Evolução - Modelo Personalizado:**
+- 🎯 **Treinamento de modelo customizado via Replicate**
+  - Dataset com camisas de futebol de alta qualidade
+  - Fine-tuning para melhor consistência de times brasileiros
+  - Maior controle sobre outputs e estilos
+  - Melhor qualidade nas gerações de logos e emblemas
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/ai-jersey-generator.git
-cd ai-jersey-generator
-```
+**Tecnologias:**
+- Frontend: Next.js 14, TypeScript, Tailwind CSS
+- Backend: Python FastAPI, OpenAI DALL-E 3 → **Replicate Custom Model**
+- UI: Shadcn/ui, Lucide Icons, Framer Motion
 
-2. Install dependencies:
+---
+
+### 🔹 Milestone 2 – Minting Engine + Wallet UX  
+**📅 Duração: 3 Semanas** 🔄 **EM ANDAMENTO**
+
+**Entregas:**
+- 🔄 **Módulo de mintagem de NFT (ERC-721 & 1155) via Thirdweb**
+- 🔄 **Configuração de tamanho de edição e royalties**
+- 🔄 **Onboarding de carteira via Thirdweb Connect**
+- 🔄 **Suporte à abstração de gas (gasless transactions)**
+- 🔄 **Preview de mint em tempo real com formatação de metadados**
+- 🔄 **Confirmação de mint e links de compartilhamento pós-mint**
+
+**Próximos Passos Imediatos:**
+1. **WalletConnect Integration** 🎯
+   - Instalação e configuração do WalletConnect v2
+   - Interface de conexão de carteira no Header
+   - Gerenciamento de estado da carteira
+   - Suporte a múltiplas redes (CHZ Chain, Ethereum, Polygon)
+
+2. **Thirdweb Integration** 
+   - Instalação e configuração do Thirdweb SDK
+   - Migração para ConnectWallet component (opcional)
+   - Deploy de contratos NFT via Thirdweb Dashboard
+   - Integração com WalletConnect existente
+
+3. **Smart Contract Development (Thirdweb)**
+   - Deploy ERC-721 Drop contract para NFTs únicos
+   - Deploy ERC-1155 Edition contract para edições limitadas
+   - Configuração de royalties via Thirdweb Dashboard
+   - Setup de claim conditions e pricing
+
+4. **IPFS Integration (Thirdweb Storage)**
+   - Upload de imagens via Thirdweb Storage
+   - Estrutura de metadados NFT padrão
+   - Integração automática com contratos
+
+**Tecnologias a Implementar:**
+- **WalletConnect v2** - Conexão de carteira (PRIMEIRO)
+- **Ethers.js / Viem** - Interação blockchain
+- **Thirdweb SDK** - Infraestrutura Web3 completa
+- **Thirdweb Storage** - IPFS integrado
+- **Thirdweb Contracts** - Smart contracts pré-auditados
+- CHZ Chain integration
+
+---
+
+### 🔹 Milestone 3 – Marketplace + Drop Mechanics
+**📅 Duração: 3 Semanas** 📋 **PLANEJADO**
+
+**Entregas:**
+- 📋 **Marketplace via Thirdweb Marketplace contract**
+- 📋 Página de exploração para listagens (por criador, esporte, time, tag)
+- 📋 Fluxo de compra/venda em CHZ + suporte opcional a Fan Token
+- 📋 Dashboards do criador: histórico de mint, ganhos, royalties
+- 📋 **Launchpad com Thirdweb Drop mechanics**
+- 📋 Sistema de votação ou upvote para drops em destaque
+- 📋 Opcional: drops com token-gate (ex: apenas detentores de $BAR podem mintar)
+
+**Recursos Avançados (Thirdweb):**
+- Marketplace descentralizado via Thirdweb contracts
+- Sistema de leilões (English & Dutch auctions)
+- Drops temporários com claim conditions
+- Integração com Fan Tokens via allowlists
+- Analytics via Thirdweb Dashboard
+- Gasless transactions para melhor UX
+
+---
+
+## 🔧 Tecnologias Utilizadas
+
+### Frontend
+- **Next.js 14** - Framework React
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Estilização utilitária
+- **Framer Motion** - Animações
+- **Shadcn/ui** - Componentes UI
+
+### Backend
+- **Python FastAPI** - API REST
+- **OpenAI DALL-E 3** - Geração de IA
+- **PostgreSQL** - Banco de dados (planejado)
+
+### Blockchain
+- **Thirdweb SDK** - Infraestrutura Web3 completa
+- **Thirdweb Connect** - Conexão de carteira
+- **Thirdweb Storage** - IPFS integrado
+- **Thirdweb Contracts** - Smart contracts pré-auditados
+- **CHZ Chain** - Blockchain principal
+- **Ethereum & Polygon** - Redes adicionais
+
+## 🚀 Como Executar
+
+### Pré-requisitos
+- Node.js 18+
+- Python 3.8+
+- OpenAI API Key
+
+### Frontend
 ```bash
 npm install
-```
-
-3. Create a `.env.local` file in the root directory with your API keys:
-```
-NEXT_PUBLIC_REPLICATE_API_TOKEN=your_replicate_api_token_here
-NEXT_PUBLIC_SPORTSDB_API_KEY=your_sportsdb_api_key_here
-```
-
-4. Start the development server:
-```bash
 npm run dev
 ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser.
-
-## Usage
-
-1. Select a team from the dropdown menu
-2. Customize the jersey:
-   - Choose a style (Classic, Modern, or Retro)
-   - Select a view (Front, Back, or Full)
-   - Pick a material (Cotton, Polyester, or Mesh)
-   - Add a sponsor name (optional)
-   - Enter player name and number (optional)
-3. Click "Generate Jersey" to create your custom jersey
-4. View the generated jersey and reference jerseys below
-
-## Project Structure
-
-```
-src/
-  ├── app/                 # Next.js app directory
-  │   ├── page.tsx        # Main page component
-  │   ├── layout.tsx      # Root layout
-  │   └── globals.css     # Global styles
-  ├── components/         # React components
-  │   └── JerseyEditor.tsx # Main jersey editor component
-  ├── lib/               # Utility functions and services
-  │   ├── teams-database.ts    # Team data
-  │   ├── jersey-search-service.ts # TheSportsDB API integration
-  │   ├── prompt-engine.ts     # Prompt generation
-  │   └── services/           # External service integrations
-  │       └── stable-diffusion-service.ts # Replicate API integration
-  └── types/             # TypeScript type definitions
-      └── index.ts       # Shared types
+### Backend
+```bash
+cd api
+pip install -r requirements.txt
+python jersey_api_dalle3.py
 ```
 
-## Contributing
+## 🌟 Próximas Funcionalidades
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+### Curto Prazo (1-2 semanas)
+- 🎯 **Thirdweb Integration**
+- 🎯 **IPFS Upload System**
+- 🎯 **Smart Contract Development**
 
-## License
+### Médio Prazo (1-2 meses)
+- 📊 **Marketplace Completo via Thirdweb**
+- 🎨 **Editor de NFT Avançado**
+- 🏆 **Sistema de Drops e Leilões**
+- 🤖 **Modelo IA Personalizado (Replicate)**
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Longo Prazo (3-6 meses)
+- 🌍 **Expansão para outros esportes**
+- 🎮 **Gamificação e recompensas**
+- 🏅 **Integração com Fan Tokens**
+
+## 🤝 Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
+
+## 🔗 Links Úteis
+
+- [CHZ Chain Documentation](https://docs.chiliz.com/)
+- [WalletConnect Documentation](https://docs.walletconnect.com/)
+- [OpenAI DALL-E API](https://platform.openai.com/docs/guides/images)
+- [Next.js Documentation](https://nextjs.org/docs)
+
+---
+
+**Desenvolvido com ❤️ para a comunidade esportiva** 🏆
+
+## 🤖 Roadmap IA - Modelo Personalizado
+
+### Fase 1: Preparação do Dataset
+- **Coleta de imagens:** Camisas de alta resolução dos times brasileiros
+- **Anotação:** Metadados detalhados (time, ano, tipo, patrocinador)
+- **Organização:** Estrutura padronizada para treinamento
+- **Qualidade:** Filtros para garantir consistência visual
+
+### Fase 2: Treinamento no Replicate
+- **Base model:** SDXL ou Flux como foundation
+- **Fine-tuning:** Especialização em camisas esportivas
+- **Parâmetros:** Otimização para logos, números e nomes
+- **Validação:** Testes de qualidade e consistência
+
+### Fase 3: Integração e Deploy
+- **API Integration:** Migração de DALL-E 3 para modelo customizado
+- **Performance:** Otimização de velocidade e custo
+- **A/B Testing:** Comparação de qualidade entre modelos
+- **Rollout:** Deploy gradual para produção
+
+**Vantagens do Modelo Personalizado:**
+- ✅ **Maior precisão** nas cores e designs dos times
+- ✅ **Consistência** visual entre gerações
+- ✅ **Controle total** sobre outputs
+- ✅ **Custo otimizado** para alto volume
+- ✅ **Especialização** em elementos esportivos brasileiros

@@ -1,0 +1,19 @@
+[33mcommit c4bac74f64ebac3072081f9f8242d0102fb3e7e0[m
+Author: Jeff Vieira <myjeff22vieira@gmail.com>
+Date:   Wed Jun 11 10:44:45 2025 +0100
+
+    feat: Complete UI overhaul with shadcn/ui - Add content types and style filters
+
+A	components.json
+M	package-lock.json
+M	package.json
+M	src/app/globals.css
+M	src/components/JerseyEditor.tsx
+A	src/components/ui/badge.tsx
+A	src/components/ui/button.tsx
+A	src/components/ui/card.tsx
+A	src/components/ui/tabs.tsx
+A	src/components/ui/toggle-group.tsx
+A	src/components/ui/toggle.tsx
+A	src/lib/utils.ts
+M	tailwind.config.js

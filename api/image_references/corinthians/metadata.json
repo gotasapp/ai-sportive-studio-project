@@ -1,0 +1,16 @@
+{
+  "home": {
+    "TEAM_NAME": "Sport Club Corinthians Paulista (Uniforme 1)",
+    "TEAM_COLORS": "branco puro com detalhes em preto",
+    "PATTERN_DESCRIPTION": "um design clean, predominantemente branco, com gola e punhos em preto",
+    "COLLAR_STYLE": "gola arredondada preta",
+    "TEXT_COLOR": "black"
+  },
+  "away": {
+    "TEAM_NAME": "Sport Club Corinthians Paulista (Uniforme 2)",
+    "TEAM_COLORS": "preto com listras verticais brancas",
+    "PATTERN_DESCRIPTION": "um design listrado com listras verticais brancas sobre um fundo preto",
+    "COLLAR_STYLE": "gola em V preta",
+    "TEXT_COLOR": "white"
+  }
+} 

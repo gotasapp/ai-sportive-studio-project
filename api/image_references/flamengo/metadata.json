@@ -1,0 +1,16 @@
+{
+  "home": {
+    "TEAM_NAME": "Clube de Regatas do Flamengo (Uniforme 1)",
+    "TEAM_COLORS": "vermelho vibrante e preto profundo",
+    "PATTERN_DESCRIPTION": "listras horizontais grossas de largura igual",
+    "COLLAR_STYLE": "gola em V vermelha",
+    "TEXT_COLOR": "white"
+  },
+  "away": {
+    "TEAM_NAME": "Clube de Regatas do Flamengo (Uniforme 2)",
+    "TEAM_COLORS": "branco com detalhes em vermelho e preto",
+    "PATTERN_DESCRIPTION": "design predominantemente branco com finas listras horizontais em vermelho e preto no peito",
+    "COLLAR_STYLE": "gola arredondada branca",
+    "TEXT_COLOR": "black"
+  }
+} 

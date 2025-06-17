@@ -4,7 +4,7 @@
 import { Dalle3Request, Dalle3Response } from '@/types';
 
 export class Dalle3Service {
-  private static readonly API_BASE_URL = 'https://jersey-api-dalle3.onrender.com';
+  private static readonly API_BASE_URL = 'http://localhost:8000';
 
   /**
    * Gera jersey usando DALL-E 3
@@ -69,6 +69,10 @@ export class Dalle3Service {
    * Converte imagem base64 para URL
    */
   static base64ToImageUrl(base64: string): string {
+    // Se já for uma URL, retorna como está
+    if (base64.startsWith('http://') || base64.startsWith('https://')) {
+      return base64;
+    }
     return `data:image/png;base64,${base64}`;
   }
 } 

@@ -1,0 +1,16 @@
+{
+  "home": {
+    "TEAM_NAME": "Santos Futebol Clube (Uniforme 1)",
+    "TEAM_COLORS": "branco puro com detalhes em preto",
+    "PATTERN_DESCRIPTION": "design limpo e tradicional, predominantemente branco",
+    "COLLAR_STYLE": "gola em V simples branca com detalhes em preto",
+    "TEXT_COLOR": "black"
+  },
+  "away": {
+    "TEAM_NAME": "Santos Futebol Clube (Uniforme 2)",
+    "TEAM_COLORS": "preto e branco",
+    "PATTERN_DESCRIPTION": "design com listras verticais pretas e brancas",
+    "COLLAR_STYLE": "gola arredondada preta",
+    "TEXT_COLOR": "black"
+  }
+} 

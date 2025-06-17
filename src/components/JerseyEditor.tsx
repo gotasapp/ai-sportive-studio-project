@@ -1,105 +1,43 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Dalle3Service } from '@/lib/services/dalle3-service'
-import { Dalle3Request, Dalle3Response } from '@/types'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import React, { useState, useEffect } from 'react'
+import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
+import Header from './Header.jsx'
+import { Dalle3Service } from '../lib/services/dalle3-service'
+import { Dalle3Request } from '../types'
 
-type GenerationType = 'jersey' | 'stadium' | 'logo'
-type StyleFilter = 'modern' | 'retro' | 'urban' | 'national' | 'classic'
+const STYLE_FILTERS = [
+  { id: 'modern', label: 'Modern', icon: Zap },
+  { id: 'retro', label: 'Retro', icon: Gamepad2 },
+  { id: 'national', label: 'National', icon: Globe },
+  { id: 'urban', label: 'Urban', icon: Palette },
+  { id: 'classic', label: 'Classic', icon: Crown }
+]
 
-interface StyleConfig {
-  id: StyleFilter
-  label: string
-  emoji: string
-  description: string
-}
-
-const STYLE_FILTERS: StyleConfig[] = [
-  {
-    id: 'modern',
-    label: 'Moderno',
-    emoji: '⚡',
-    description: 'Design limpo e futurista'
-  },
-  {
-    id: 'retro',
-    label: 'Retrô',
-    emoji: '📼',
-    description: 'Estilo vintage anos 80/90'
-  },
-  {
-    id: 'urban',
-    label: 'Urbano',
-    emoji: '🏙️',
-    description: 'Streetwear e grafite'
-  },
-  {
-    id: 'national',
-    label: 'Nacional',
-    emoji: '🇧🇷',
-    description: 'Cores e símbolos nacionais'
-  },
-  {
-    id: 'classic',
-    label: 'Clássico',
-    emoji: '👑',
-    description: 'Tradicional e elegante'
-  }
+const MARKETPLACE_ITEMS = [
+  { id: 1, number: '10', price: '0.5 ETH', trending: true },
+  { id: 2, number: '23', price: '0.3 ETH', trending: false },
+  { id: 3, number: '07', price: '0.8 ETH', trending: true },
+  { id: 4, number: '11', price: '0.4 ETH', trending: false },
+  { id: 5, number: '99', price: '1.2 ETH', trending: true },
+  { id: 6, number: '88', price: '0.6 ETH', trending: false }
 ]
 
 export default function JerseyEditor() {
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<string>('')
-  const [playerName, setPlayerName] = useState<string>('')
-  const [playerNumber, setPlayerNumber] = useState<string>('')
+  const [playerName, setPlayerName] = useState<string>('JEFF')
+  const [playerNumber, setPlayerNumber] = useState<string>('10')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
-  const [generationType, setGenerationType] = useState<GenerationType>('jersey')
-  const [selectedStyle, setSelectedStyle] = useState<StyleFilter>('modern')
+  const [selectedStyle, setSelectedStyle] = useState<string>('modern')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiStatus, setApiStatus] = useState<boolean>(false)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
-
-  // Carrega times disponíveis e verifica API
-  useEffect(() => {
-    const loadData = async () => {
-      const [teams, health] = await Promise.all([
-        Dalle3Service.getAvailableTeams(),
-        Dalle3Service.checkHealth()
-      ]);
-      
-      setAvailableTeams(teams);
-      setApiStatus(health);
-    };
-
-    loadData();
-  }, []);
-
-  const buildPrompt = (): string => {
-    const basePrompts = {
-      jersey: `A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name "${playerName.upper()}" in bold uppercase letters. Below it, a large centered number "${playerNumber}". The jersey must exactly match the official home design of the "${selectedTeam}" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability.`,
-      
-      stadium: `A spectacular aerial view of a football stadium for ${selectedTeam}, captured during golden hour with dramatic lighting. The stadium should be packed with fans wearing team colors, creating a sea of support. Include the surrounding cityscape and architectural details that reflect the team's identity and location.`,
-      
-      logo: `A professional sports logo design for ${selectedTeam}, suitable for official merchandise and branding. The logo should be circular or shield-shaped, featuring the team's iconic colors and symbols. Clean vector-style design on a transparent or white background, perfect for embroidery and printing.`
-    }
-
-    const styleModifiers = {
-      modern: 'with a sleek, minimalist aesthetic, clean lines, vibrant colors, and contemporary design elements',
-      retro: 'with vintage 1980s-1990s styling, aged textures, classic typography, and nostalgic color grading',
-      urban: 'with street art influences, graffiti-style elements, bold urban typography, and edgy design',
-      national: 'incorporating Brazilian national colors (green, yellow, blue), cultural symbols, and patriotic elements',
-      classic: 'with timeless, elegant design, traditional patterns, premium materials, and sophisticated styling'
-    }
-
-    return `${basePrompts[generationType]} ${styleModifiers[selectedStyle]}. High quality, professional photography, 4K resolution.`
-  }
+  const [royalties, setRoyalties] = useState<number>(10)
+  const [editionSize, setEditionSize] = useState<number>(100)
+  const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
 
   const generateContent = async () => {
     if (!selectedTeam) {
@@ -107,8 +45,8 @@ export default function JerseyEditor() {
       return
     }
 
-    if (generationType === 'jersey' && (!playerName || !playerNumber)) {
-      setError('Para jerseys, preencha o nome e número do jogador')
+    if (!playerName || !playerNumber) {
+      setError('Preencha o nome e número do jogador')
       return
     }
 
@@ -119,19 +57,28 @@ export default function JerseyEditor() {
     try {
       const request: Dalle3Request = {
         team_name: selectedTeam,
-        player_name: playerName || 'PLAYER',
-        player_number: playerNumber || '10',
+        player_name: playerName,
+        player_number: playerNumber,
         quality: quality
       };
 
-      // Aqui substituiremos o prompt padrão pelo nosso prompt customizado
-      // Por enquanto, vamos usar a API atual e depois modificaremos o backend
       const result = await Dalle3Service.generateJersey(request);
 
       if (result.success && result.image_base64) {
         const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
         setGeneratedImage(imageUrl);
         setGenerationCost(result.cost_usd || null);
+        
+        // Convert base64 to blob for minting
+        const base64Data = result.image_base64.replace(/^data:image\/[a-z]+;base64,/, '');
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/png' });
+        setGeneratedImageBlob(blob);
       } else {
         setError(result.error || 'Erro desconhecido ao gerar conteúdo');
       }
@@ -148,321 +95,415 @@ export default function JerseyEditor() {
     setPlayerName('');
     setPlayerNumber('');
     setGeneratedImage(null);
+    setGeneratedImageBlob(null);
     setError(null);
     setGenerationCost(null);
   };
 
-  const getTypeLabel = (type: GenerationType) => {
-    const labels = {
-      jersey: 'Jersey',
-      stadium: 'Estádio', 
-      logo: 'Logo/Emblema'
-    }
-    return labels[type]
-  }
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const teams = await Dalle3Service.getAvailableTeams();
+        if (teams.length > 0) {
+          setAvailableTeams(teams);
+          setSelectedTeam(teams[0]); // Selecionar o primeiro time automaticamente
+        } else {
+          // Times padrão se a API não retornar nenhum
+          const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
+          setAvailableTeams(defaultTeams);
+          setSelectedTeam(defaultTeams[0]);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar times:', err);
+        // Times padrão em caso de erro
+        const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
+        setAvailableTeams(defaultTeams);
+        setSelectedTeam(defaultTeams[0]);
+      }
+    };
 
-  const getTypeDescription = (type: GenerationType) => {
-    const descriptions = {
-      jersey: 'Gere camisas personalizadas com nome e número',
-      stadium: 'Crie imagens épicas de estádios de futebol',
-      logo: 'Desenvolva logos e emblemas profissionais'
-    }
-    return descriptions[type]
-  }
+    const checkApiStatus = async () => {
+      try {
+        const status = await Dalle3Service.checkHealth();
+        setApiStatus(status);
+      } catch (err) {
+        console.error('Erro ao verificar status da API:', err);
+        setApiStatus(false);
+      }
+    };
+
+    loadTeams();
+    checkApiStatus();
+  }, []);
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="max-w-6xl mx-auto">
-        {/* Status da API */}
-        <Card className="mb-6 bg-gray-800 border-gray-700">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-sm font-medium text-gray-300">
-                API DALL-E 3: {apiStatus ? 'Online' : 'Offline'}
-              </span>
-              {apiStatus && (
-                <Badge variant="secondary" className="ml-auto">
-                  {availableTeams.length} times disponíveis
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Coluna da Esquerda - Customização */}
-          <div className="space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">🎨 Gerador de Conteúdo Sports IA</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Crie jerseys, estádios e logos usando inteligência artificial
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
+    <div className="min-h-screen" style={{
+      background: '#000518',
+      backgroundImage: `
+        radial-gradient(ellipse at top left, #000720 0%, transparent 40%),
+        radial-gradient(ellipse at top right, #000924 0%, transparent 40%),
+        radial-gradient(ellipse at bottom left, #000720 0%, transparent 40%),
+        radial-gradient(ellipse at bottom right, #000A29 0%, transparent 40%),
+        radial-gradient(ellipse at center, #00081D 0%, transparent 60%),
+        radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.03) 0%, transparent 50%)
+      `
+    }}>
+      <Header />
+      
+      <div className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          
+          {/* Left Column - AI Generation */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* AI Generation Card */}
+            <div className="gradient-border">
+              <div className="gradient-border-content p-6">
+                <h2 className="text-xl font-bold text-white mb-6">AI Generation</h2>
                 
-                {/* Tabs para Tipo de Geração */}
-                <Tabs value={generationType} onValueChange={(value) => setGenerationType(value as GenerationType)}>
-                  <TabsList className="grid w-full grid-cols-3 bg-gray-700">
-                    <TabsTrigger value="jersey" className="data-[state=active]:bg-purple-600">
-                      👕 Jersey
-                    </TabsTrigger>
-                    <TabsTrigger value="stadium" className="data-[state=active]:bg-purple-600">
-                      🏟️ Estádio
-                    </TabsTrigger>
-                    <TabsTrigger value="logo" className="data-[state=active]:bg-purple-600">
-                      🏆 Logo
-                    </TabsTrigger>
-                  </TabsList>
-                  
-                  <TabsContent value={generationType} className="mt-4">
-                    <div className="p-4 bg-gray-700/50 rounded-lg">
-                      <h4 className="font-semibold text-white mb-2">{getTypeLabel(generationType)}</h4>
-                      <p className="text-sm text-gray-400">{getTypeDescription(generationType)}</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                {/* Filtros de Estilo */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-3">
-                    Estilo Visual
-                  </label>
-                  <ToggleGroup 
-                    type="single" 
-                    value={selectedStyle} 
-                    onValueChange={(value) => value && setSelectedStyle(value as StyleFilter)}
-                    className="grid grid-cols-2 gap-2"
+                {/* Upload Area */}
+                <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
+                  <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                  <p className="text-gray-300 mb-2">Upload image or enter text</p>
+                  <input 
+                    type="file" 
+                    className="hidden" 
+                    id="file-upload"
+                    accept="image/*"
+                  />
+                  <label 
+                    htmlFor="file-upload" 
+                    className="text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors"
                   >
-                    {STYLE_FILTERS.map((style) => (
-                      <ToggleGroupItem 
-                        key={style.id}
-                        value={style.id}
-                        className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
-                      >
-                        <span className="text-lg mb-1">{style.emoji}</span>
-                        <span className="text-xs font-medium">{style.label}</span>
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {STYLE_FILTERS.find(s => s.id === selectedStyle)?.description}
-                  </p>
+                    Choose file
+                  </label>
                 </div>
 
-                {/* Seleção de Time */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-2">
-                    Time *
-                  </label>
-                  <select
-                    className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none"
+                {/* Style Filters */}
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-lg font-semibold text-white">Style</h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    {STYLE_FILTERS.map((style) => {
+                      const IconComponent = style.icon;
+                      return (
+                        <button
+                          key={style.id}
+                          onClick={() => setSelectedStyle(style.id)}
+                          className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex items-center space-x-2 transition-all`}
+                        >
+                          <IconComponent className="w-4 h-4" />
+                          <span className="text-sm font-medium">{style.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Team Selection */}
+                <div className="space-y-4 mb-6">
+                  <label className="text-sm font-medium text-gray-300">Team</label>
+                  <select 
                     value={selectedTeam}
                     onChange={(e) => setSelectedTeam(e.target.value)}
-                    disabled={!apiStatus}
+                    className="cyber-input w-full px-4 py-3 rounded-lg"
                   >
-                    <option value="">Selecione um time</option>
-                    {availableTeams.map(team => (
-                      <option key={team} value={team}>
+                    <option value="">Select Team</option>
+                    {availableTeams.map((team) => (
+                      <option key={team} value={team} className="bg-gray-800">
                         {team}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* Campos específicos para Jersey */}
-                {generationType === 'jersey' && (
-                  <>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-400 mb-2">
-                        Nome do Jogador *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
-                        style={{ color: '#FFF' }}
-                        value={playerName}
-                        onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
-                        placeholder="Ex: GABRIEL, PEDRO, MARIO"
-                        maxLength={15}
-                        disabled={!apiStatus}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-400 mb-2">
-                        Número do Jogador *
-                      </label>
-                      <input
-                        type="text"
-                        className="w-full p-3 bg-gray-700 border-2 border-gray-600 rounded-lg text-white focus:border-purple-500 focus:outline-none placeholder:text-gray-500"
-                        style={{ color: '#FFF' }}
-                        value={playerNumber}
-                        onChange={(e) => setPlayerNumber(e.target.value)}
-                        placeholder="Ex: 10, 7, 23"
-                        maxLength={2}
-                        pattern="[0-9]*"
-                        disabled={!apiStatus}
-                      />
-                    </div>
-                  </>
-                )}
-
-                {/* Qualidade */}
-                <div>
-                  <label className="block text-sm font-semibold text-gray-400 mb-2">
-                    Qualidade
-                  </label>
-                  <div className="flex gap-4 text-gray-300">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="standard"
-                        checked={quality === 'standard'}
-                        onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                        className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
-                        disabled={!apiStatus}
-                      />
-                      <span className="text-sm">Standard ($0.04)</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        value="hd"
-                        checked={quality === 'hd'}
-                        onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                        className="mr-2 h-4 w-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500"
-                        disabled={!apiStatus}
-                      />
-                      <span className="text-sm">HD ($0.08)</span>
-                    </label>
+                {/* Player Info */}
+                <div className="grid grid-cols-2 gap-4 mb-6">
+                  <div>
+                    <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
+                    <input
+                      type="text"
+                      value={playerName}
+                      onChange={(e) => setPlayerName(e.target.value)}
+                      className="cyber-input w-full px-4 py-3 rounded-lg"
+                      placeholder="JEFF"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
+                    <input
+                      type="text"
+                      value={playerNumber}
+                      onChange={(e) => setPlayerNumber(e.target.value)}
+                      className="cyber-input w-full px-4 py-3 rounded-lg"
+                      placeholder="10"
+                    />
                   </div>
                 </div>
 
-                {/* Botões */}
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Button
-                    onClick={generateContent}
-                    disabled={isLoading || !selectedTeam || (generationType === 'jersey' && (!playerName || !playerNumber)) || !apiStatus}
-                    className="flex-1 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600"
-                  >
-                    {isLoading ? '🎨 Gerando...' : `🚀 Gerar ${getTypeLabel(generationType)}`}
-                  </Button>
-
-                  <Button
-                    onClick={resetForm}
-                    variant="outline"
-                    className="border-gray-600 text-gray-300 hover:bg-gray-700"
-                    disabled={isLoading}
-                  >
-                    🔄 Limpar
-                  </Button>
+                {/* Controls */}
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-300">Royalties</span>
+                    <span className="text-cyan-400 font-semibold">{royalties}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={royalties}
+                    onChange={(e) => setRoyalties(Number(e.target.value))}
+                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
+                  />
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-300">Gas fee</span>
+                    <span className="text-white">0.22</span>
+                  </div>
                 </div>
 
-                {/* Custo da Geração */}
-                {generationCost && (
-                  <Card className="bg-green-900/50 border-green-700">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-300 text-sm">
-                          💰 Custo da geração: ${generationCost.toFixed(3)}
+                {/* Generate Button */}
+                <button
+                  onClick={generateContent}
+                  disabled={isLoading || !selectedTeam}
+                  className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoading ? 'Generating...' : 'Generate Jersey'}
+                </button>
+              </div>
+            </div>
+
+            {/* Mint NFT Card */}
+            <div className="gradient-border">
+              <div className="gradient-border-content p-6">
+                <h2 className="text-xl font-bold text-white mb-6">Mint NFT</h2>
+                
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-300">Edition Size</span>
+                      <span className="text-cyan-400 font-semibold">{editionSize}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="1000"
+                      value={editionSize}
+                      onChange={(e) => setEditionSize(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-300">Gas Fee</span>
+                    <span className="text-white">0.02 CHZ</span>
+                  </div>
+
+                  <button 
+                    className="cyber-button w-full py-4 rounded-lg font-semibold"
+                    disabled={!generatedImage}
+                  >
+                    {generatedImage ? 'Mint NFT' : 'Generate First'}
+                  </button>
+
+                  {/* Status */}
+                  <div className="pt-6 border-t border-gray-700">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${apiStatus ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                        <span className="text-sm text-gray-300">
+                          API Status: {apiStatus ? 'Online' : 'Offline'}
                         </span>
-                        <Badge variant="secondary" className="bg-green-800 text-green-300">
-                          {quality === 'hd' ? 'HD' : 'Standard'}
-                        </Badge>
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Erro */}
-                {error && (
-                  <Card className="bg-red-900/50 border-red-700">
-                    <CardContent className="pt-6">
-                      <p className="text-red-300 font-medium">❌ {error}</p>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Informações */}
-                <Card className="bg-gray-700/50 border-gray-600">
-                  <CardContent className="pt-6">
-                    <h4 className="font-semibold text-gray-200 mb-2">ℹ️ Informações:</h4>
-                    <ul className="text-sm text-gray-300 space-y-1">
-                      <li>• {generationType === 'jersey' ? 'Vista das costas com nome e número' : 
-                              generationType === 'stadium' ? 'Visão aérea épica do estádio' :
-                              'Logo profissional para merchandising'}</li>
-                      <li>• Qualidade DALL-E 3 profissional</li>
-                      <li>• Estilos personalizáveis</li>
-                      <li>• Cores e padrões oficiais dos times</li>
-                    </ul>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            </Card>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${apiStatus ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+                        <span className="text-sm text-gray-300">
+                          DALL-E 3: {apiStatus ? 'Ready' : 'Offline'}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-400">
+                        Status: AI Generation Ready
+                      </div>
+                      
+                      {generationCost && (
+                        <div className="text-xs text-gray-400">
+                          Last generation: ${generationCost.toFixed(4)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Coluna da Direita - Preview */}
-          <div className="space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  🖼️ {getTypeLabel(generationType)} Gerado
-                  {selectedStyle && (
-                    <Badge variant="secondary" className="bg-purple-900 text-purple-300">
-                      {STYLE_FILTERS.find(s => s.id === selectedStyle)?.emoji} {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-                    </Badge>
-                  )}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading && (
-                  <div className="flex flex-col items-center justify-center h-96 bg-gray-900 rounded-lg">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500 mb-4"></div>
-                    <p className="text-gray-400">Gerando {getTypeLabel(generationType).toLowerCase()} com DALL-E 3...</p>
-                    <p className="text-sm text-gray-500 mt-2">Isso pode levar alguns segundos</p>
+          {/* Right Column - Jersey Preview + Marketplace */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Jersey Preview - MAIOR */}
+            <div className="gradient-border">
+              <div className="gradient-border-content p-8">
+                <h3 className="text-xl font-bold text-white mb-6 text-center">Jersey Preview</h3>
+                
+                {/* Jersey Display Container - Preview MAIOR */}
+                <div className="flex justify-center">
+                  <div className="relative w-96 h-[28rem] rounded-2xl overflow-hidden" style={{
+                    background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
+                    border: '2px solid rgba(0, 212, 255, 0.3)'
+                  }}>
+                    
+                    {isLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-20 h-20 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-6"></div>
+                        <p className="text-cyan-400 text-xl font-semibold">Generating your jersey...</p>
+                        <div className="mt-4 w-40 h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                        <div className="text-center">
+                          <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
+                            <span className="text-red-400 text-3xl">⚠</span>
+                          </div>
+                          <p className="text-red-400 mb-6 text-center text-lg">{error}</p>
+                          <button 
+                            onClick={() => setError(null)}
+                            className="px-6 py-3 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
+                          >
+                            Try again
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 p-6">
+                        <img 
+                          src={generatedImage} 
+                          alt="Generated Jersey" 
+                          className="w-full h-full object-contain rounded-lg"
+                        />
+                        {/* NFT Frame Effect */}
+                        <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
+                        <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                        
+                        {/* NFT Info Overlay */}
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 rounded-b-lg">
+                          <div className="text-white">
+                            <p className="font-bold text-2xl">{playerName} #{playerNumber}</p>
+                            <p className="text-cyan-400 text-lg">{selectedTeam}</p>
+                            <div className="flex items-center mt-2 space-x-4">
+                              <span className="text-sm text-gray-300">Style: {selectedStyle}</span>
+                              <span className="text-sm text-gray-300">Quality: {quality}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                        <div className="text-center">
+                          {/* Jersey Placeholder MAIOR */}
+                          <div className="w-40 h-48 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 mx-auto">
+                            <div className="text-center">
+                              <Upload className="w-12 h-12 text-cyan-400/50 mx-auto mb-3" />
+                              <p className="text-sm text-gray-400">Jersey</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-lg">Your generated jersey will appear here</p>
+                          <p className="text-cyan-400/70 text-sm mt-3">Perfect NFT proportions (4:5 ratio)</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+              </div>
+            </div>
 
-                {!isLoading && !generatedImage && (
-                  <div className="flex flex-col items-center justify-center h-96 bg-gray-900 rounded-lg border-2 border-dashed border-gray-700">
-                    <div className="text-6xl mb-4">
-                      {generationType === 'jersey' ? '👕' : generationType === 'stadium' ? '🏟️' : '🏆'}
-                    </div>
-                    <p className="text-gray-400 text-center">
-                      Seu {getTypeLabel(generationType).toLowerCase()} aparecerá aqui
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2 text-center">
-                      Selecione um time e configure as opções acima
-                    </p>
-                  </div>
-                )}
-
-                {generatedImage && (
-                  <div className="space-y-4">
-                    <div className="relative">
-                      <img
-                        src={generatedImage}
-                        alt={`${getTypeLabel(generationType)} gerado`}
-                        className="w-full h-auto rounded-lg shadow-lg"
-                      />
-                    </div>
-                    <Button
+            {/* Marketplace - MENOR com CARROSSEL */}
+            <div className="gradient-border">
+              <div className="gradient-border-content p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-bold text-white">Marketplace</h2>
+                  <div className="flex items-center space-x-2">
+                    <button 
+                      className="p-2 rounded-lg border border-cyan-400/30 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
                       onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = generatedImage;
-                        link.download = `${generationType}-${selectedTeam}-${selectedStyle}.png`;
-                        link.click();
+                        const container = document.getElementById('marketplace-scroll');
+                        if (container) container.scrollLeft -= 200;
                       }}
-                      className="w-full bg-green-600 hover:bg-green-700"
                     >
-                      📥 Baixar Imagem
-                    </Button>
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <button 
+                      className="p-2 rounded-lg border border-cyan-400/30 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
+                      onClick={() => {
+                        const container = document.getElementById('marketplace-scroll');
+                        if (container) container.scrollLeft += 200;
+                      }}
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </div>
+                
+                {/* Carrossel Horizontal */}
+                <div 
+                  id="marketplace-scroll"
+                  className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  {MARKETPLACE_ITEMS.concat(MARKETPLACE_ITEMS).map((item, index) => (
+                    <div key={`${item.id}-${index}`} className="flex-shrink-0 group cursor-pointer">
+                      <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300 hover:scale-105">
+                        {/* NFT Card MENOR com proporção 4:5 */}
+                        <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden border border-cyan-400/20">
+                          {item.trending && (
+                            <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
+                          )}
+                          
+                          {/* Jersey Preview */}
+                          <div className="relative w-full h-full flex items-center justify-center">
+                            <div className="text-4xl font-bold text-cyan-400/60">{item.number}</div>
+                            
+                            {/* Jersey shape outline */}
+                            <div className="absolute inset-3 border border-dashed border-cyan-400/20 rounded"></div>
+                            
+                            {/* Glow effect */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-cyan-400/10 via-transparent to-purple-400/10 rounded-lg"></div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <p className="text-xs text-gray-400 group-hover:text-cyan-400 transition-colors font-medium">
+                            Jersey #{item.number}
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <span className="text-cyan-400 font-bold text-sm">{item.price}</span>
+                            {item.trending && (
+                              <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded text-xs">
+                                🔥
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Ver Mais */}
+                <div className="mt-4 text-center">
+                  <button className="px-4 py-2 border border-cyan-400/30 text-cyan-400 rounded-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all text-sm">
+                    View All NFTs
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

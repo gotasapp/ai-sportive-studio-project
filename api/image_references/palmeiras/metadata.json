@@ -1,0 +1,16 @@
+{
+  "home": {
+    "TEAM_NAME": "Sociedade Esportiva Palmeiras (Uniforme 1)",
+    "TEAM_COLORS": "verde esmeralda com detalhes em branco",
+    "PATTERN_DESCRIPTION": "um tom sólido de verde com texturas geométricas sutis em relevo",
+    "COLLAR_STYLE": "gola em V branca",
+    "TEXT_COLOR": "white"
+  },
+  "away": {
+    "TEAM_NAME": "Sociedade Esportiva Palmeiras (Uniforme 2)",
+    "TEAM_COLORS": "branco com detalhes em verde",
+    "PATTERN_DESCRIPTION": "design predominantemente branco com uma faixa verde no peito",
+    "COLLAR_STYLE": "gola arredondada verde",
+    "TEXT_COLOR": "green"
+  }
+} 

@@ -1,27 +1,18 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  webpack: (config, { isServer }) => {
-    // Configuração para arquivos binários
-    config.module.rules.push({
-      test: /\.node$/,
-      use: 'node-loader',
-    })
-
-    // Configuração para arquivos WASM
-    config.experiments = {
-      ...config.experiments,
-      asyncWebAssembly: true,
-    }
-
-    // Configuração para arquivos ONNX
-    config.resolve.fallback = {
-      ...config.resolve.fallback,
-      fs: false,
-      path: false,
-      crypto: false,
-    }
-
-    return config
+  webpack: (config) => {
+    // AppKit requires these externals for proper browser functionality
+    config.externals.push("pino-pretty", "lokijs", "encoding");
+    
+    return config;
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
 }
 

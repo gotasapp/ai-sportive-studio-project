@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-
-const inter = Inter({ subsets: ["latin"] });
+import AppKitProvider from "@/lib/AppKitProvider";
+import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
-  title: "AI Football Jersey Generator",
-  description: "Generate unique football jerseys using AI",
+  title: "AI Sports NFT Generator",
+  description: "Generate and mint sports NFTs with AI on Chiliz Chain",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
+  const headersObj = await headers();
+  const cookies = headersObj.get('cookie');
+
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body className="antialiased">
+        <AppKitProvider cookies={cookies}>
+          {children}
+        </AppKitProvider>
+      </body>
     </html>
   );
 }
