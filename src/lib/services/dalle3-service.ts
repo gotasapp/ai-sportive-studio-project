@@ -3,12 +3,7 @@
  */
 import { ImageGenerationRequest, Dalle3Response } from '@/types';
 
-<<<<<<< HEAD
-export class Dalle3Service {
-  private static readonly API_BASE_URL = 'http://localhost:8000';
-=======
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export const Dalle3Service = {
   /**
@@ -77,16 +72,11 @@ export const Dalle3Service = {
   /**
    * Converte imagem base64 para URL
    */
-<<<<<<< HEAD
-  static base64ToImageUrl(base64: string): string {
-    // Se já for uma URL, retorna como está
-    if (base64.startsWith('http://') || base64.startsWith('https://')) {
-      return base64;
-    }
-    return `data:image/png;base64,${base64}`;
-=======
   base64ToImageUrl: (base64String: string): string => {
+    // Se já for uma URL, retorna como está
+    if (base64String.startsWith('http://') || base64String.startsWith('https://')) {
+      return base64String;
+    }
     return `data:image/png;base64,${base64String}`;
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
   }
 }; 

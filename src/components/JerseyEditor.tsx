@@ -1,21 +1,12 @@
 'use client'
 
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react'
-import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
+import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
+import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react'
 import Header from './Header.jsx'
 import { Dalle3Service } from '../lib/services/dalle3-service'
-import { Dalle3Request } from '../types'
-=======
-import { useState, useEffect } from 'react'
-import { Dalle3Service } from '@/lib/services/dalle3-service'
-import { Dalle3Response, ImageGenerationRequest } from '@/types'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
+import { IPFSService } from '../lib/services/ipfs-service'
+import { ImageGenerationRequest } from '../types'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -25,7 +16,6 @@ const STYLE_FILTERS = [
   { id: 'classic', label: 'Classic', icon: Crown }
 ]
 
-<<<<<<< HEAD
 const MARKETPLACE_ITEMS = [
   { id: 1, number: '10', price: '0.5 ETH', trending: true },
   { id: 2, number: '23', price: '0.3 ETH', trending: false },
@@ -33,112 +23,93 @@ const MARKETPLACE_ITEMS = [
   { id: 4, number: '11', price: '0.4 ETH', trending: false },
   { id: 5, number: '99', price: '1.2 ETH', trending: true },
   { id: 6, number: '88', price: '0.6 ETH', trending: false }
-=======
-interface StyleConfig {
-  id: StyleFilter
-  label: string
-  emoji: string
-  description: string
-}
-
-const STYLE_FILTERS: StyleConfig[] = [
-  {
-    id: 'modern',
-    label: 'Modern',
-    emoji: '⚡',
-    description: 'Clean and futuristic design'
-  },
-  {
-    id: 'retro',
-    label: 'Retro',
-    emoji: '📼',
-    description: 'Vintage 80s/90s style'
-  },
-  {
-    id: 'urban',
-    label: 'Urban',
-    emoji: '🏙️',
-    description: 'Streetwear and graffiti'
-  },
-  {
-    id: 'national',
-    label: 'National',
-    emoji: '🇧🇷',
-    description: 'National colors and symbols'
-  },
-  {
-    id: 'classic',
-    label: 'Classic',
-    emoji: '👑',
-    description: 'Traditional and elegant'
-  }
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 ]
 
 export default function JerseyEditor() {
+  // AppKit hooks for wallet connection
+  const { open } = useAppKit()
+  const { address, isConnected, status } = useAppKitAccount()
+  const { caipNetwork, chainId } = useAppKitNetwork()
+
+  // Component state
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<string>('')
   const [playerName, setPlayerName] = useState<string>('JEFF')
   const [playerNumber, setPlayerNumber] = useState<string>('10')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
-<<<<<<< HEAD
   const [selectedStyle, setSelectedStyle] = useState<string>('modern')
-=======
-  const [selectedStyle, setSelectedStyle] = useState<StyleFilter>('modern')
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiStatus, setApiStatus] = useState<boolean>(false)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
-<<<<<<< HEAD
   const [royalties, setRoyalties] = useState<number>(10)
   const [editionSize, setEditionSize] = useState<number>(100)
   const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
-=======
+  
+  // IPFS state
+  const [ipfsUrl, setIpfsUrl] = useState<string | null>(null)
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false)
+  const [ipfsError, setIpfsError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        console.log('Carregando dados da API...');
-        const health = await Dalle3Service.checkHealth();
-        console.log('Health check result:', health);
-        setApiStatus(health);
+  // CHZ Chain validation
+  const isOnChzChain = chainId === 88888
+  const canMint = isConnected && isOnChzChain && generatedImage
 
-        if (health) {
-          const teams = await Dalle3Service.getAvailableTeams();
-          console.log('Teams loaded:', teams);
-          setAvailableTeams(teams);
-          
-          // Define o primeiro time como selecionado se a lista não estiver vazia
-          if (teams.length > 0 && !selectedTeam) {
-            setSelectedTeam(teams[0]);
-          }
-        }
-      } catch (error) {
-        console.error('Erro ao carregar dados:', error);
-        setApiStatus(false);
-        setAvailableTeams([]);
-      }
-    };
+  // Upload para IPFS
+  const uploadToIPFS = async () => {
+    if (!generatedImageBlob) {
+      setIpfsError('No image to upload')
+      return
+    }
 
-    loadData();
-  }, []);
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
+    if (!IPFSService.isConfigured()) {
+      setIpfsError('IPFS not configured. Please add Pinata credentials.')
+      return
+    }
+
+    setIsUploadingToIPFS(true)
+    setIpfsError(null)
+
+    try {
+      const name = `${selectedTeam} ${playerName} #${playerNumber}`
+      const description = `AI-generated ${selectedTeam} jersey for ${playerName} #${playerNumber}. Style: ${selectedStyle}.`
+
+      const result = await IPFSService.uploadComplete(
+        generatedImageBlob,
+        name,
+        description,
+        selectedTeam,
+        selectedStyle,
+        playerName,
+        playerNumber
+      )
+
+      setIpfsUrl(result.imageUrl)
+      console.log('🎉 Upload completo:', result)
+      
+    } catch (error) {
+      console.error('❌ IPFS upload failed:', error)
+      setIpfsError(error instanceof Error ? error.message : 'Upload failed')
+    } finally {
+      setIsUploadingToIPFS(false)
+    }
+  }
 
   const generateContent = async () => {
     if (!selectedTeam) {
       setError('Please select a team')
       return
     }
-<<<<<<< HEAD
 
     if (!playerName || !playerNumber) {
       setError('Preencha o nome e número do jogador')
-=======
-    if (!playerName || !playerNumber) {
-      setError('For jerseys, please fill in the player name and number')
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
+      return
+    }
+
+    // Web3 validation (optional for generation, but good UX)
+    if (isConnected && !isOnChzChain) {
+      setError('Please switch to CHZ Chain for the best experience')
       return
     }
 
@@ -156,23 +127,14 @@ export default function JerseyEditor() {
     // Adicionar outras lógicas de mapeamento aqui se necessário
 
     try {
-<<<<<<< HEAD
-      const request: Dalle3Request = {
-        team_name: selectedTeam,
-=======
       const request: ImageGenerationRequest = {
-        model_id: model_id,
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
+        model_id: `${selectedTeam.toLowerCase()}_${selectedStyle}`,
         player_name: playerName,
         player_number: playerNumber,
         quality: quality
       };
 
-<<<<<<< HEAD
-      const result = await Dalle3Service.generateJersey(request);
-=======
       const result = await Dalle3Service.generateImage(request);
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
 
       if (result.success && result.image_base64) {
         const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
@@ -210,7 +172,6 @@ export default function JerseyEditor() {
     setGenerationCost(null);
   };
 
-<<<<<<< HEAD
   useEffect(() => {
     const loadTeams = async () => {
       try {
@@ -410,10 +371,27 @@ export default function JerseyEditor() {
                   </div>
 
                   <button 
-                    className="cyber-button w-full py-4 rounded-lg font-semibold"
-                    disabled={!generatedImage}
+                    className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
+                      canMint 
+                        ? 'opacity-100 cursor-pointer' 
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
+                    disabled={!canMint}
+                    onClick={() => {
+                      if (!isConnected) {
+                        open({ view: 'Connect' })
+                      } else if (!isOnChzChain) {
+                        open({ view: 'Networks' })
+                      } else if (canMint) {
+                        // TODO: Implement mint functionality
+                        alert('Mint functionality will be implemented in Step 2!')
+                      }
+                    }}
                   >
-                    {generatedImage ? 'Mint NFT' : 'Generate First'}
+                    {!isConnected ? 'Connect Wallet to Mint' :
+                     !isOnChzChain ? 'Switch to CHZ Chain' :
+                     !generatedImage ? 'Generate Jersey First' :
+                     'Mint NFT'}
                   </button>
 
                   {/* Status */}
@@ -455,6 +433,87 @@ export default function JerseyEditor() {
             <div className="gradient-border">
               <div className="gradient-border-content p-8">
                 <h3 className="text-xl font-bold text-white mb-6 text-center">Jersey Preview</h3>
+                
+                {/* Wallet Status Section */}
+                <div className="mb-6 p-4 rounded-lg border border-cyan-400/20 bg-slate-800/30">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-white flex items-center">
+                      <Wallet className="w-4 h-4 mr-2" />
+                      Web3 Status
+                    </h4>
+                    {!isConnected && (
+                      <button
+                        onClick={() => open({ view: 'Connect' })}
+                        className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
+                      >
+                        Connect
+                      </button>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    {/* Connection Status */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Wallet</span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                        <span className="text-xs text-gray-300">
+                          {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {/* Network Status */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Network</span>
+                      <div className="flex items-center space-x-2">
+                        {isConnected ? (
+                          <>
+                            <div className={`w-2 h-2 rounded-full ${isOnChzChain ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+                            <span className="text-xs text-gray-300">
+                              {caipNetwork?.name || 'Unknown'}
+                            </span>
+                            {!isOnChzChain && (
+                              <button
+                                onClick={() => open({ view: 'Networks' })}
+                                className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
+                              >
+                                Switch to CHZ
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <span className="text-xs text-gray-300">Connect wallet first</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Mint Readiness */}
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Mint Ready</span>
+                      <div className="flex items-center space-x-2">
+                        {canMint ? (
+                          <>
+                            <Check className="w-3 h-3 text-green-400" />
+                            <span className="text-xs text-green-400">Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-yellow-400">
+                              {!isConnected ? 'Connect wallet' : 
+                               !isOnChzChain ? 'Switch to CHZ' : 
+                               !generatedImage ? 'Generate jersey' : 'Not ready'}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
                 {/* Jersey Display Container - Preview MAIOR */}
                 <div className="flex justify-center">
@@ -532,6 +591,90 @@ export default function JerseyEditor() {
                     )}
                   </div>
                 </div>
+
+                {/* IPFS Upload Section */}
+                {generatedImage && (
+                  <div className="mt-6 p-4 rounded-lg border border-green-400/20 bg-green-500/5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-white flex items-center">
+                        🌐 IPFS Upload
+                      </h4>
+                      {IPFSService.isConfigured() ? (
+                        <span className="text-xs text-green-400">Configured</span>
+                      ) : (
+                        <span className="text-xs text-yellow-400">Not configured</span>
+                      )}
+                    </div>
+                    
+                    {/* Upload Button */}
+                    <div className="space-y-3">
+                      <button
+                        onClick={uploadToIPFS}
+                        disabled={!generatedImageBlob || isUploadingToIPFS || !IPFSService.isConfigured()}
+                        className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                          isUploadingToIPFS 
+                            ? 'bg-blue-600/20 text-blue-400 cursor-not-allowed' 
+                            : ipfsUrl 
+                              ? 'bg-green-600/20 text-green-400 border border-green-400/30'
+                              : 'bg-green-600/20 text-green-400 border border-green-400/30 hover:bg-green-600/30'
+                        }`}
+                      >
+                        {isUploadingToIPFS ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Uploading to IPFS...
+                          </div>
+                        ) : ipfsUrl ? (
+                          '✅ Uploaded to IPFS'
+                        ) : (
+                          '📤 Upload to IPFS'
+                        )}
+                      </button>
+                      
+                      {/* IPFS URL Display */}
+                      {ipfsUrl && (
+                        <div className="p-3 bg-gray-800/50 rounded-lg">
+                          <p className="text-xs text-gray-400 mb-2">IPFS URL:</p>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={ipfsUrl}
+                              readOnly
+                              className="flex-1 bg-gray-700/50 text-gray-300 text-xs p-2 rounded border border-gray-600"
+                            />
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(ipfsUrl)
+                                // TODO: Add toast notification
+                              }}
+                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                            >
+                              Copy
+                            </button>
+                            <button
+                              onClick={() => window.open(ipfsUrl, '_blank')}
+                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Error Display */}
+                      {ipfsError && (
+                        <div className="p-3 bg-red-500/10 border border-red-400/20 rounded-lg">
+                          <p className="text-red-400 text-sm">❌ {ipfsError}</p>
+                          {!IPFSService.isConfigured() && (
+                            <p className="text-yellow-400 text-xs mt-2">
+                              💡 Add PINATA_JWT to .env.local to enable IPFS upload
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -559,210 +702,6 @@ export default function JerseyEditor() {
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
-=======
-  const getTypeLabel = (type: GenerationType) => {
-    const labels = {
-      jersey: 'Jersey',
-      stadium: 'Stadium', 
-      logo: 'Logo/Emblem'
-    }
-    return labels[type]
-  }
-
-  const getTypeDescription = (type: GenerationType) => {
-    const descriptions = {
-      jersey: 'Generate custom jerseys with name and number',
-      stadium: 'Create epic images of football stadiums',
-      logo: 'Develop professional logos and emblems'
-    }
-    return descriptions[type]
-  }
-
-  return (
-    <div className="container mx-auto p-4">
-      <div className="max-w-6xl mx-auto">
-        <Card className="mb-6 bg-gray-800 border-gray-700">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
-              <span className="text-sm font-medium text-gray-300">
-                DALL-E 3 API: {apiStatus ? 'Online' : 'Offline'}
-              </span>
-              {apiStatus && (
-                <Badge variant="secondary" className="ml-auto">
-                  {availableTeams.length} teams available
-                </Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">AI Sports Content Generator</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Create jerseys, stadiums, and logos using artificial intelligence
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <Tabs value={selectedTeam} onValueChange={(value) => setSelectedTeam(value as string)}>
-                  <TabsList className="grid w-full grid-cols-3 bg-gray-700">
-                    <TabsTrigger value="corinthians_2022" className="data-[state=active]:bg-purple-600">
-                      👕 Jersey
-                    </TabsTrigger>
-                    <TabsTrigger value="flamengo_1981" className="data-[state=active]:bg-purple-600">
-                      🏟️ Stadium
-                    </TabsTrigger>
-                    <TabsTrigger value="logo" className="data-[state=active]:bg-purple-600">
-                      🏆 Logo
-                    </TabsTrigger>
-                  </TabsList>
-                  <TabsContent value={selectedTeam} className="mt-4">
-                    <div className="p-4 bg-gray-700/50 rounded-lg">
-                      <h4 className="font-semibold text-white mb-2">{getTypeLabel(selectedTeam as GenerationType)}</h4>
-                      <p className="text-sm text-gray-400">{getTypeDescription(selectedTeam as GenerationType)}</p>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-
-                <Card className="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
-                  <CardContent className="p-0">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2">Team</label>
-                        <select 
-                          value={selectedTeam} 
-                          onChange={(e) => setSelectedTeam(e.target.value)}
-                          className="w-full bg-gray-700 text-white p-2 rounded-md focus:ring-purple-500 focus:border-purple-500"
-                          disabled={availableTeams.length === 0}
-                        >
-                          {availableTeams.length > 0 ? (
-                            availableTeams.map(team => (
-                              <option key={team} value={team}>{team}</option>
-                            ))
-                          ) : (
-                            <option>Loading teams...</option>
-                          )}
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-3">
-                          Visual Style
-                        </label>
-                        <ToggleGroup 
-                          type="single" 
-                          value={selectedStyle} 
-                          onValueChange={(value) => value && setSelectedStyle(value as StyleFilter)}
-                          className="grid grid-cols-2 sm:grid-cols-3 gap-2"
-                        >
-                          {STYLE_FILTERS.map((style) => (
-                            <ToggleGroupItem 
-                              key={style.id}
-                              value={style.id}
-                              className="flex flex-col items-center p-3 h-auto data-[state=on]:bg-purple-600 data-[state=on]:text-white"
-                            >
-                              <span className="text-2xl">{style.emoji}</span>
-                              <span className="font-semibold">{style.label}</span>
-                            </ToggleGroupItem>
-                          ))}
-                        </ToggleGroup>
-                      </div>
-
-                      <div className="space-y-4 pt-4">
-                        <h4 className="text-md font-semibold text-white">Jersey Parameters</h4>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="playerName" className="block text-sm font-medium text-gray-400">Player Name</label>
-                            <input
-                              id="playerName"
-                              type="text"
-                              value={playerName}
-                              onChange={(e) => setPlayerName(e.target.value)}
-                              placeholder="e.g., RONALDO"
-                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                            />
-                          </div>
-                          <div>
-                            <label htmlFor="playerNumber" className="block text-sm font-medium text-gray-400">Jersey Number</label>
-                            <input
-                              id="playerNumber"
-                              type="text"
-                              value={playerNumber}
-                              onChange={(e) => setPlayerNumber(e.target.value)}
-                              placeholder="e.g., 9"
-                              className="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm text-white p-2"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-semibold text-gray-400 mb-2">Image Quality</label>
-                        <ToggleGroup type="single" value={quality} onValueChange={(value: 'standard' | 'hd') => value && setQuality(value)} className="grid grid-cols-2 gap-2">
-                           <ToggleGroupItem value="standard" className="data-[state=on]:bg-purple-600">Standard</ToggleGroupItem>
-                           <ToggleGroupItem value="hd" className="data-[state=on]:bg-purple-600">HD (More expensive)</ToggleGroupItem>
-                        </ToggleGroup>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </CardContent>
-            </Card>
-            <div className="flex space-x-4">
-                <Button onClick={generateContent} disabled={isLoading} className="w-full bg-purple-600 hover:bg-purple-700">
-                    {isLoading ? 'Generating...' : 'Generate Content'}
-                </Button>
-                <Button onClick={resetForm} variant="outline" className="w-full text-white border-gray-600 hover:bg-gray-700">Clear</Button>
-            </div>
-          </div>
-
-          <div>
-            <Card className="sticky top-8 bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Generation Result</CardTitle>
-                <CardDescription className="text-gray-400">The generated image will appear here.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="aspect-square bg-gray-900 rounded-lg flex items-center justify-center text-gray-500">
-                  {isLoading ? (
-                    <div className="text-center">
-                      <svg className="animate-spin h-8 w-8 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <p className="mt-2">Generating image... Please wait.</p>
-                    </div>
-                  ) : error ? (
-                    <div className="p-4 text-red-400">
-                      <p className="font-semibold">Error generating image:</p>
-                      <pre className="text-xs whitespace-pre-wrap">{error}</pre>
-                    </div>
-                  ) : generatedImage ? (
-                    <img src={generatedImage} alt="Generated content" className="rounded-lg w-full h-full object-contain" />
-                  ) : (
-                    <p>Awaiting your creation...</p>
-                  )}
-                </div>
-                {generatedImage && (
-                  <Button
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = generatedImage;
-                      link.download = `jersey-${selectedTeam}-${playerName || 'player'}-${playerNumber || '0'}.png`;
-                      link.click();
-                    }}
-                    className="w-full mt-4 bg-green-600 hover:bg-green-700"
-                  >
-                    📥 Download Image
-                  </Button>
-                )}
-                {generationCost && (
-                  <div className="mt-4 text-center text-sm text-gray-400">
-                    <p>Generation Cost: ~${generationCost.toFixed(4)} USD</p>
->>>>>>> 494d2538ca996862767808e81399901fc4b31e1b
                   </div>
                 </div>
                 
