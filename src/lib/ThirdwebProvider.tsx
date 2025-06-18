@@ -1,49 +1,27 @@
 'use client'
 
 import { ThirdwebProvider as Thirdweb, metamaskWallet, coinbaseWallet } from '@thirdweb-dev/react';
-import { ChainId, Ethereum, Polygon } from '@thirdweb-dev/chains';
+import { Polygon, PolygonAmoyTestnet } from '@thirdweb-dev/chains';
 import { ReactNode } from 'react';
-import { thirdwebConfig } from './config';
+import { web3Config } from './config';
 
 interface ThirdwebProviderProps {
   children: ReactNode;
 }
 
-// Configure CHZ Chain
-const chzChain = {
-  chainId: 88888,
-  name: 'Chiliz Chain',
-  nativeCurrency: {
-    name: 'Chiliz',
-    symbol: 'CHZ',
-    decimals: 18,
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.ankr.com/chiliz'],
-    },
-    public: {
-      http: ['https://rpc.ankr.com/chiliz'],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: 'ChilizScan',
-      url: 'https://scan.chiliz.com',
-    },
-  },
-  testnet: false,
-};
-
 export function ThirdwebProvider({ children }: ThirdwebProviderProps) {
+  // Use active network from config
+  const activeChain = web3Config.usePolygon 
+    ? (web3Config.isTestnet ? PolygonAmoyTestnet : Polygon)
+    : web3Config.activeNetwork;
+
   return (
     <Thirdweb
-      clientId={thirdwebConfig.clientId}
-      activeChain={chzChain}
+      clientId={process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || 'your-client-id'}
+      activeChain={activeChain}
       supportedChains={[
-        chzChain,
-        Ethereum,
         Polygon,
+        PolygonAmoyTestnet,
       ]}
       supportedWallets={[
         metamaskWallet(),
@@ -52,8 +30,8 @@ export function ThirdwebProvider({ children }: ThirdwebProviderProps) {
       dAppMeta={{
         name: 'AI Sports NFT Generator',
         description: 'Generate and mint sports NFTs with AI',
-        logoUrl: 'https://ai-sports-nft.vercel.app/icon.png',
-        url: 'https://ai-sports-nft.vercel.app',
+        logoUrl: '/icon.png',
+        url: 'http://localhost:3000',
         isDarkMode: true,
       }}
     >

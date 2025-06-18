@@ -10,31 +10,72 @@ export const API_CONFIG = {
   DEFAULT_SEED: -1
 }
 
-// WalletConnect Configuration
+// Network Configuration
+const USE_TESTNET = process.env.NEXT_PUBLIC_USE_TESTNET === 'true'
+const USE_POLYGON = process.env.NEXT_PUBLIC_USE_POLYGON === 'true'
+
+// Supported Networks (CHZ + Polygon only)
+const NETWORKS = {
+  // CHZ Networks (Primary)
+  chz_mainnet: {
+    chainId: 88888,
+    name: 'Chiliz Chain',
+    currency: 'CHZ',
+    explorerUrl: 'https://scan.chiliz.com',
+    rpcUrl: 'https://rpc.ankr.com/chiliz',
+    faucet: null,
+    isTestnet: false
+  },
+  chz_testnet: {
+    chainId: 88882,
+    name: 'CHZ Spicy Testnet',
+    currency: 'CHZ',
+    explorerUrl: 'https://spicy.chzscan.com',
+    rpcUrl: 'https://spicy-rpc.chiliz.com',
+    faucet: 'https://faucet.chiliz.com',
+    isTestnet: true
+  },
+  
+  // Polygon Networks (Alternative)
+  polygon_mainnet: {
+    chainId: 137,
+    name: 'Polygon',
+    currency: 'MATIC',
+    explorerUrl: 'https://polygonscan.com',
+    rpcUrl: 'https://polygon.llamarpc.com',
+    faucet: null,
+    isTestnet: false
+  },
+  polygon_testnet: {
+    chainId: 80002,
+    name: 'Polygon Amoy Testnet',
+    currency: 'MATIC',
+    explorerUrl: 'https://amoy.polygonscan.com',
+    rpcUrl: 'https://rpc-amoy.polygon.technology',
+    faucet: 'https://faucet.polygon.technology',
+    isTestnet: true
+  }
+}
+
+// Get active network based on configuration
+const getActiveNetwork = () => {
+  const networkType = USE_POLYGON ? 'polygon' : 'chz'
+  const networkSuffix = USE_TESTNET ? '_testnet' : '_mainnet'
+  return NETWORKS[networkType + networkSuffix]
+}
+
+const ACTIVE_NETWORK = getActiveNetwork()
+
+// WalletConnect Configuration (CHZ + Polygon only)
 export const walletConnectConfig = {
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id-here',
   chains: [
-    {
-      chainId: 88888, // CHZ Chain (Chiliz)
-      name: 'Chiliz Chain',
-      currency: 'CHZ',
-      explorerUrl: 'https://scan.chiliz.com',
-      rpcUrl: 'https://rpc.ankr.com/chiliz'
-    },
-    {
-      chainId: 1, // Ethereum Mainnet
-      name: 'Ethereum',
-      currency: 'ETH',
-      explorerUrl: 'https://etherscan.io',
-      rpcUrl: 'https://eth.llamarpc.com'
-    },
-    {
-      chainId: 137, // Polygon
-      name: 'Polygon',
-      currency: 'MATIC',
-      explorerUrl: 'https://polygonscan.com',
-      rpcUrl: 'https://polygon.llamarpc.com'
-    }
+    ACTIVE_NETWORK, // Primary active network
+    // All supported networks (CHZ + Polygon)
+    NETWORKS.chz_mainnet,
+    NETWORKS.chz_testnet,
+    NETWORKS.polygon_mainnet,
+    NETWORKS.polygon_testnet
   ],
   metadata: {
     name: 'AI Sports NFT Generator',
@@ -56,56 +97,84 @@ export const thirdwebConfig = {
     // CHZ Chain será adicionado customizado
   ],
   
-  // Custom CHZ Chain configuration
-  chzChain: {
-    chainId: 88888,
-    name: 'Chiliz Chain',
+  // Custom Active Chain configuration (Dynamic based on environment)
+  activeChain: {
+    chainId: ACTIVE_NETWORK.chainId,
+    name: ACTIVE_NETWORK.name,
     nativeCurrency: {
-      name: 'Chiliz',
-      symbol: 'CHZ',
+      name: ACTIVE_NETWORK.currency,
+      symbol: ACTIVE_NETWORK.currency,
       decimals: 18,
     },
     rpcUrls: {
       default: {
-        http: ['https://rpc.ankr.com/chiliz'],
+        http: [ACTIVE_NETWORK.rpcUrl],
       },
       public: {
-        http: ['https://rpc.ankr.com/chiliz'],
+        http: [ACTIVE_NETWORK.rpcUrl],
       },
     },
     blockExplorers: {
       default: {
-        name: 'ChilizScan',
-        url: 'https://scan.chiliz.com',
+        name: ACTIVE_NETWORK.name + ' Explorer',
+        url: ACTIVE_NETWORK.explorerUrl,
       },
     },
   },
   
-  // NFT Contract configurations
+  // NFT Contract configurations (Dynamic based on environment and network)
   contracts: {
     // ERC-721 Drop contract for unique NFTs
     nftDrop: {
-      address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT || '',
-      chainId: 88888, // CHZ Chain
+      address: USE_TESTNET 
+        ? (USE_POLYGON 
+            ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || ''
+            : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ_TESTNET || ''
+          )
+        : (USE_POLYGON 
+            ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON || ''
+            : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ || ''
+          ),
+      chainId: ACTIVE_NETWORK.chainId,
     },
     
     // ERC-1155 Edition contract for limited editions
     nftEdition: {
-      address: process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT || '',
-      chainId: 88888, // CHZ Chain
+      address: USE_TESTNET 
+        ? (USE_POLYGON 
+            ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET || ''
+            : process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_CHZ_TESTNET || ''
+          )
+        : (USE_POLYGON 
+            ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON || ''
+            : process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_CHZ || ''
+          ),
+      chainId: ACTIVE_NETWORK.chainId,
     },
     
-    // Marketplace contract
+    // Marketplace contract (optional - will be implemented later)
     marketplace: {
-      address: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '',
-      chainId: 88888, // CHZ Chain
+      address: '', // Deixar vazio por enquanto - será implementado no Milestone 3
+      chainId: ACTIVE_NETWORK.chainId,
     }
   }
 };
 
-// Combined configuration
+// Combined configuration (simplified for CHZ + Polygon)
 export const web3Config = {
   walletConnect: walletConnectConfig,
   thirdweb: thirdwebConfig,
-  defaultChain: 88888, // CHZ Chain as default
+  defaultChain: ACTIVE_NETWORK.chainId,
+  activeNetwork: ACTIVE_NETWORK,
+  isTestnet: USE_TESTNET,
+  usePolygon: USE_POLYGON,
+  networks: NETWORKS,
+  supportedNetworks: ['CHZ', 'Polygon'],
+  availableTestnets: ['chz_testnet', 'polygon_testnet'],
+};
+
+// Validation function for supported networks (CHZ + Polygon only)
+export const isValidChainId = (chainId: number): boolean => {
+  const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Polygon networks
+  return supportedChainIds.includes(chainId)
 }; 

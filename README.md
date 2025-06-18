@@ -2,33 +2,47 @@
 
 Um gerador de NFTs esportivos alimentado por IA, construído com Next.js, Python FastAPI e integração blockchain.
 
+## 🏆 Conquistas Recentes
+
+🎉 **MILESTONE 1 COMPLETADO!** - AI NFT Generator totalmente funcional  
+✅ Sistema de geração IA com DALL-E 3 operacional  
+✅ Upload IPFS via Pinata implementado e testado  
+✅ Web3 integration com Reown AppKit + CHZ Chain  
+✅ Interface completa com validações e preview em tempo real  
+
 ## 🚀 Visão Geral
 
 Este projeto permite aos usuários gerar camisas de futebol personalizadas usando IA (DALL-E 3) e mintá-las como NFTs na blockchain. Com foco em times brasileiros e internacionais, oferece uma experiência completa de criação, customização e comercialização de NFTs esportivos.
 
 ## 🎯 Status Atual
 
+✅ **MILESTONE 1 COMPLETADO** - AI NFT Generator 100% funcional  
 ✅ **Interface Cyberpunk NFT** - Design futurista completo  
 ✅ **Geração de IA** - Integração com DALL-E 3 para camisas personalizadas  
 ✅ **Sistema de Times** - Suporte a 9 times (Brasileiros + Internacionais)  
 ✅ **Filtros de Estilo** - Modern, Retro, National, Urban, Classic  
+✅ **Web3 Integration** - Reown AppKit + CHZ Chain validation  
+✅ **IPFS Upload** - Sistema completo via Pinata  
 ✅ **Preview 3D** - Área de visualização com efeitos cyberpunk  
-🔄 **Próximo:** Conexão com Wallet (WalletConnect)
+🚀 **Próximo:** Milestone 2 - Minting Engine (Thirdweb)
 
 ## 📋 Roadmap de Desenvolvimento
 
 ### 🔹 Milestone 1 – AI NFT Generator
-**📅 Duração: 3 Semanas** ✅ **CONCLUÍDO**
+**📅 Duração: 3 Semanas** ✅ **CONCLUÍDO COM SUCESSO**
 
-**Entregas:**
-- ✅ Pipeline de modelo de IA (DALL-E 3) ajustado para:
-  - ✅ Camisas de futebol
-  - 🔄 Logos/emblemas  
-  - 🔄 Visuais de estádio e torcida
-- ✅ Interface de prompt (entrada de imagem + texto)
-- ✅ Filtros de estilo (moderno, retrô, nacional, urbano, etc.)
-- 🔄 Upload IPFS/Arweave
-- ✅ Recursos básicos de revisão/edição de saída
+**Entregas Realizadas:**
+- ✅ **Pipeline de modelo de IA (DALL-E 3)** completo para:
+  - ✅ Camisas de futebol personalizadas  
+  - ✅ Sistema de prompts otimizado
+  - ✅ Qualidade HD e Standard
+- ✅ **Interface de geração** (entrada de dados + preview)
+- ✅ **Filtros de estilo** (Modern, Retro, National, Urban, Classic)
+- ✅ **Upload IPFS/Pinata** - Sistema completo funcional
+- ✅ **Web3 Integration** - Reown AppKit + CHZ Chain
+- ✅ **Preview em tempo real** com efeitos cyberpunk
+- ✅ **Validação de rede** e conexão wallet
+- ✅ **Sistema de times** brasileiro e internacional
 
 **Próxima Evolução - Modelo Personalizado:**
 - 🎯 **Treinamento de modelo customizado via Replicate**
@@ -45,7 +59,7 @@ Este projeto permite aos usuários gerar camisas de futebol personalizadas usand
 ---
 
 ### 🔹 Milestone 2 – Minting Engine + Wallet UX  
-**📅 Duração: 3 Semanas** 🔄 **EM ANDAMENTO**
+**📅 Duração: 3 Semanas** 🚀 **PRÓXIMO OBJETIVO**
 
 **Entregas:**
 - 🔄 **Módulo de mintagem de NFT (ERC-721 & 1155) via Thirdweb**

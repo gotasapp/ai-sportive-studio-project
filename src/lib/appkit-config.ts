@@ -1,6 +1,6 @@
 import { cookieStorage, createStorage } from '@wagmi/core'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { mainnet, arbitrum, polygon } from '@reown/appkit/networks'
+import { mainnet, arbitrum, polygon, polygonAmoy } from '@reown/appkit/networks'
 import { defineChain } from '@reown/appkit/networks'
 
 // Get projectId from environment
@@ -35,7 +35,7 @@ const chzChain = defineChain({
 })
 
 // Supported networks
-export const networks = [chzChain, mainnet, polygon, arbitrum]
+export const networks = [chzChain, mainnet, polygon, polygonAmoy, arbitrum]
 
 // Set up the Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({

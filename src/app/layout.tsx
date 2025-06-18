@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import AppKitProvider from "@/lib/AppKitProvider";
+import AppProviders from "@/lib/AppProviders";
 import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
@@ -19,9 +19,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased">
-        <AppKitProvider cookies={cookies}>
+        <AppProviders cookies={cookies}>
           {children}
-        </AppKitProvider>
+        </AppProviders>
       </body>
     </html>
   );
