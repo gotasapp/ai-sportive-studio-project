@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Thirdweb Engine
+  engine:
+    image: thirdweb/engine:latest
+    ports:
+      - "3005:3005"
+    environment:
+      # Database
+      - DATABASE_URL=postgresql://engine:engine_password@postgres:5432/engine
+      
+      # Thirdweb Configuration
+      - THIRDWEB_API_SECRET_KEY=${THIRDWEB_API_SECRET_KEY}
+      - ENGINE_URL=http://localhost:3005
+      - ADMIN_WALLET_ADDRESS=${ADMIN_WALLET_ADDRESS}
+      - ACCESS_CONTROL_ALLOW_ORIGIN=*
+      
+      # Backend Wallets (for gasless transactions)
+      - ENABLE_HTTPS=false
+      - LOG_LEVEL=debug
+      
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - engine_data:/app/data
+
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=engine
+      - POSTGRES_USER=engine
+      - POSTGRES_PASSWORD=engine_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis (opcional, para cache)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  engine_data:
+  postgres_data:
+  redis_data: 

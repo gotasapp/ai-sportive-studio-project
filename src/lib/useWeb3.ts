@@ -1,11 +1,12 @@
 'use client'
 
 import { ThirdwebSDK } from '@thirdweb-dev/sdk';
-import { useAppKit } from '@reown/appkit/react';
+import { useAppKit, useAppKitAccount, useAppKitProvider } from '@reown/appkit/react';
 import { ethers } from 'ethers';
 
 export function useWeb3() {
-  const { walletProvider, address, isConnected } = useAppKit();
+  const { address, isConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider('eip155');
 
   // Legacy SDK for all operations
   const getSDK = async () => {
@@ -19,7 +20,7 @@ export function useWeb3() {
           const sdk = new ThirdwebSDK(
         ethersProvider,
         {
-          chainId: 80001, // Mumbai instead of Amoy
+          chainId: 80002, // Polygon Amoy
           clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '',
         }
       );
@@ -74,7 +75,17 @@ export function useWeb3() {
       console.log('📄 Description:', description);
       console.log('🎨 Attributes:', attributes);
       
+      // Debug wallet state
+      console.log('🔍 Wallet Debug:');
+      console.log('   - Address:', address);
+      console.log('   - isConnected:', isConnected);
+      console.log('   - walletProvider:', walletProvider);
+      console.log('   - walletProvider type:', typeof walletProvider);
+      
       if (!walletProvider || !address) {
+        console.error('❌ Wallet connection issue:');
+        console.error('   - Address:', address);
+        console.error('   - WalletProvider:', walletProvider);
         throw new Error('Wallet not connected');
       }
 
@@ -98,8 +109,8 @@ export function useWeb3() {
         const chainId = parseInt(network, 16);
         console.log('🌐 Current network:', chainId);
         
-        if (chainId !== 80001) {
-          console.log('⚠️ Note: Contract is on Polygon Mumbai (80001), current network is:', chainId);
+        if (chainId !== 80002) {
+          console.log('⚠️ Note: Contract is on Polygon Amoy (80002), current network is:', chainId);
         }
       } catch (networkError) {
         console.log('⚠️ Could not check network:', networkError);
@@ -293,17 +304,75 @@ export function useWeb3() {
     }
   };
 
-  return {
-    // Connection state
-    address,
-    isConnected,
-    
-    // Functions
-    uploadToIPFS,
-    createNFTMetadata,
-    mintNFTWithMetadata,
-    setClaimConditions,
-    setTokenURI,
-    getSDK,
+  // 🆕 Lazy Mint function (if needed for the new contract)
+  const lazyMint = async (quantity: number = 100, baseURI: string = '') => {
+    try {
+      if (!address) throw new Error('Wallet not connected');
+      
+      const sdk = await getSDK();
+      const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || 
+                              '0x7822698cE3728Ccd54e36E60c413a70b665A1407';
+      const contract = await sdk.getContract(CONTRACT_ADDRESS);
+      
+      console.log(`🎯 Lazy minting ${quantity} tokens...`);
+      console.log(`📋 Base URI: ${baseURI}`);
+      
+      // Try different lazy mint function signatures
+      const possibleFunctions = [
+        'lazyMint',
+        'batchMint', 
+        'mint',
+        'createBatch'
+      ];
+      
+      for (const funcName of possibleFunctions) {
+        try {
+          console.log(`🔍 Trying function: ${funcName}`);
+          
+          let tx;
+          if (funcName === 'lazyMint') {
+            // Standard lazy mint with quantity and base URI
+            tx = await contract.call(funcName, [
+              quantity,
+              baseURI || '',
+              '0x' // encrypted data (empty)
+            ]);
+          } else if (funcName === 'batchMint') {
+            tx = await contract.call(funcName, [quantity, baseURI || '']);
+          } else {
+            // Try simpler versions
+            tx = await contract.call(funcName, [quantity]);
+          }
+          
+          console.log(`✅ ${funcName} successful:`, tx.receipt.transactionHash);
+          return tx;
+          
+        } catch (funcError) {
+          console.log(`⚠️ ${funcName} failed:`, funcError.message);
+          continue;
+        }
+      }
+      
+      throw new Error('❌ No lazy mint function found. This contract might not need lazy minting.');
+      
+    } catch (error) {
+      console.error('❌ Lazy mint failed:', error.message);
+      throw error;
+    }
   };
+
+      return {
+      // Connection state
+      address,
+      isConnected,
+      
+      // Functions
+      uploadToIPFS,
+      createNFTMetadata,
+      mintNFTWithMetadata,
+      setClaimConditions,
+      setTokenURI,
+      lazyMint, // 🆕 NEW: Lazy mint function
+      getSDK,
+    };
 } 
