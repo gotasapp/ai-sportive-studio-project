@@ -8,7 +8,7 @@ export interface MintRequest {
   chain: string;
   contractAddress: string;
   to: string;
-  metadata: any;
+  metadataUri: string;
 }
 
 export interface EngineResponse {

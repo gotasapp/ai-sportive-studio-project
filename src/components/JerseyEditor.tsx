@@ -190,7 +190,7 @@ export default function JerseyEditor() {
       console.log('🎯 Recipient:', address)
       console.log('💳 Backend pays gas')
 
-      // 1. Upload image to IPFS first
+      // 1. Upload image and metadata to IPFS first
       const ipfsResult = await IPFSService.uploadComplete(
         generatedImageBlob,
         nftName,
@@ -199,33 +199,18 @@ export default function JerseyEditor() {
         selectedStyle,
         playerName,
         playerNumber
-      )
+      );
 
-      console.log('✅ IPFS upload completed:', ipfsResult.imageUrl)
+      console.log('✅ IPFS upload completed:', ipfsResult.metadataUrl);
 
-      // 2. Create metadata
-      const metadata = createNFTMetadata(
-        nftName,
-        nftDescription,
-        ipfsResult.imageUrl,
-        attributes
-      )
-
-      // 3. Normal mint via Engine API (backend pays, user receives)
-      const contractAddress = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || 
-                             '0xfF973a4aFc5A96DEc81366461A461824c4f80254'
-
-      const backendWalletAddress = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS || process.env.BACKEND_WALLET_ADDRESS || '0x...'
-
+      // 2. Call the Engine API with the metadata URI
       const result = await mintGasless({
-        chain: 'amoy',
-        contractAddress,
         to: address,
-        metadata
-      })
+        metadataUri: ipfsResult.metadataUrl,
+      });
 
-      console.log('✅ ENGINE MINT (GASLESS): Mint iniciado com sucesso:', result)
-      setMintSuccess(result.message || `Mint bem-sucedido! Queue ID: ${result.queueId}`)
+      console.log('✅ ENGINE MINT (GASLESS): Mint iniciado com sucesso:', result);
+      setMintSuccess(result.message || `Mint bem-sucedido! Queue ID: ${result.queueId}`);
       setMintedTokenId(result.queueId)
       
       // Reset após 10 segundos

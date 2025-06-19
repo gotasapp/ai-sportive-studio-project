@@ -1,76 +1,83 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { EngineService } from '@/lib/services/engine-service';
+import { createThirdwebClient, getContract, Engine } from 'thirdweb';
+import { defineChain } from 'thirdweb/chains';
+import { mintTo } from 'thirdweb/extensions/erc721';
 
-// Tipagem para o corpo da requisição que vem do frontend
 interface MintApiRequest {
-  chain: string;
-  contractAddress: string;
   to: string;
-  metadata: any;
+  metadataUri: string;
 }
 
-/**
- * Rota de API Segura para Mint Gasless com Engine
- * Esta rota age como um backend seguro que:
- * 1. Recebe o pedido do frontend.
- * 2. Lê as chaves secretas e o endereço da carteira de backend do ambiente do servidor.
- * 3. Chama o Thirdweb Engine para executar o mint.
- * 
- * NENHUMA chave secreta é exposta ao frontend.
- */
+// Define a chain Amoy usando seu ID
+const amoy = defineChain(80002);
+
+const THIRDWEB_SECRET_KEY = process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY;
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
+const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+const VAULT_ACCESS_TOKEN = process.env.NEXT_PUBLIC_VAULT_ACCESS_TOKEN;
+
 export async function POST(request: NextRequest) {
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !VAULT_ACCESS_TOKEN) {
+    console.error("❌ Server-side configuration error: Missing environment variables.");
+    return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
+  }
+
   try {
-    // 1. Ler os dados do corpo da requisição (do frontend)
     const body: MintApiRequest = await request.json();
-    const { chain, contractAddress, to, metadata } = body;
+    const { to, metadataUri } = body;
 
-    // 2. Validar dados de entrada
-    if (!chain || !contractAddress || !to || !metadata) {
-      return NextResponse.json(
-        { error: 'Dados insuficientes para o mint (chain, contractAddress, to, metadata).' },
-        { status: 400 }
-      );
+    if (!to || !metadataUri) {
+      return NextResponse.json({ error: '"to" address and "metadataUri" are required.' }, { status: 400 });
     }
 
-    // 3. Ler o endereço da carteira de backend do ambiente (lendo a versão pública por enquanto)
-    const backendWalletAddress = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
-    if (!backendWalletAddress) {
-      console.error('❌ API ERRO: NEXT_PUBLIC_BACKEND_WALLET_ADDRESS não está configurado no servidor.');
-      return NextResponse.json(
-        { error: 'Configuração do servidor incompleta. Verifique NEXT_PUBLIC_BACKEND_WALLET_ADDRESS.' },
-        { status: 500 }
-      );
-    }
-
-    console.log('✅ API: Requisição de mint recebida. Chamando EngineService...');
-    console.log(`   - Para: ${to}`);
-    console.log(`   - Contrato: ${contractAddress}`);
-
-    // 4. Chamar o serviço do Engine para executar o mint
-    const result = await EngineService.mintAsGift({
-      chain,
-      contractAddress,
-      to,
-      metadata,
-      backendWalletAddress // Passando o endereço seguro
+    const client = createThirdwebClient({
+      secretKey: THIRDWEB_SECRET_KEY,
     });
 
-    console.log('✅ API: Mint bem-sucedido. Retornando para o frontend.');
+    const contract = getContract({
+      client,
+      chain: amoy,
+      address: CONTRACT_ADDRESS,
+    });
+
+    const transaction = mintTo({
+      contract,
+      to,
+      nft: metadataUri,
+    });
     
-    // 5. Retornar o sucesso para o frontend
-    return NextResponse.json(result);
+    console.log("✅ API: Transaction prepared with existing metadata URI.");
+
+    const serverWallet = Engine.serverWallet({
+      address: BACKEND_WALLET_ADDRESS,
+      client: client,
+      vaultAccessToken: THIRDWEB_SECRET_KEY,
+    });
+
+    const response = await serverWallet.enqueueTransaction({
+      transaction,
+    });
+    
+    console.log("✅ API: Transaction enqueued successfully! Response:", response);
+    
+    if (!response || !response.transactionId) {
+      console.error("❌ API ERROR: A resposta da Engine não continha o 'transactionId' esperado.", response);
+      throw new Error("A resposta da Engine é inválida.");
+    }
+
+    return NextResponse.json({ queueId: response.transactionId });
 
   } catch (error) {
-    // Tratamento de erro robusto
-    const errorMessage = error instanceof Error ? error.message : 'Um erro desconhecido ocorreu.';
-    console.error('❌ API ERRO CRÍTICO:', error);
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    console.error('❌ API CRITICAL ERROR:', {
+        message: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        cause: error instanceof Error ? error.cause : undefined,
+    });
     
     return NextResponse.json(
-      { 
-        error: 'Falha ao processar o mint no servidor.',
-        details: errorMessage
-      },
+      { error: 'Failed to process mint request on the server.', details: errorMessage },
       { status: 500 }
     );
   }
-} 
+}

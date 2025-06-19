@@ -73,6 +73,7 @@ export class EngineService {
     }
   }
 
+  /*
   // 🎁 ADMIN GIFT - Server wallet pays gas (gasless for user)
   static async mintAsGift(params: {
     chain: string;
@@ -137,6 +138,7 @@ export class EngineService {
       throw new Error(`Gift mint failed: ${error.message}`);
     }
   }
+  */
 
   // 📊 Check transaction status
   static async getTransactionStatus(queueId: string) {
