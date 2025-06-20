@@ -85,9 +85,26 @@ export function useEngine() {
     };
   }, []);
 
+  // Função para checar o status da transação
+  const getTransactionStatus = async (queueId: string) => {
+    try {
+      const response = await fetch(`/api/engine/status/${queueId}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to fetch status');
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('❌ Engine Hook: Falha ao buscar status da transação', err);
+      // Retornar um objeto de erro padronizado
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+  };
+
   return {
     isLoading,
     error,
+    getTransactionStatus,
     mintGasless,
     createNFTMetadata,
     userAddress: address

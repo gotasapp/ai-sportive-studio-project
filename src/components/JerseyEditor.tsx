@@ -45,7 +45,8 @@ export default function JerseyEditor() {
     mintGasless,
     createNFTMetadata,
     isLoading: isEngineLoading,
-    error: engineError 
+    error: engineError,
+    getTransactionStatus,
   } = useEngine()
 
   // Component state
@@ -74,6 +75,8 @@ export default function JerseyEditor() {
   const [mintError, setMintError] = useState<string | null>(null)
   const [mintSuccess, setMintSuccess] = useState<string | null>(null)
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null)
+  const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
 
   // Network validation (simplified for CHZ + Polygon)
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
@@ -122,8 +125,6 @@ export default function JerseyEditor() {
     }
   }
 
-
-
   // Função para configurar Claim Conditions (Admin)
   const handleSetClaimConditions = async () => {
     if (!isConnected) {
@@ -142,7 +143,7 @@ export default function JerseyEditor() {
       setMintSuccess('Claim conditions set! Now users can mint NFTs.')
       
       setTimeout(() => setMintSuccess(null), 8000)
-      } catch (error) {
+    } catch (error) {
       console.error('❌ Set claim conditions failed:', error)
       setMintError(error instanceof Error ? error.message : 'Set claim conditions failed')
       setTimeout(() => setMintError(null), 8000)
@@ -150,10 +151,6 @@ export default function JerseyEditor() {
       setIsMinting(false)
     }
   }
-
-
-
-
 
   // ⚡ ENGINE NORMAL MINT - Backend pays gas, user receives NFT
   const handleEngineNormalMint = async () => {
@@ -210,27 +207,63 @@ export default function JerseyEditor() {
       });
 
       console.log('✅ ENGINE MINT (GASLESS): Mint iniciado com sucesso:', result);
-      setMintSuccess(result.message || `Mint bem-sucedido! Queue ID: ${result.queueId}`);
-      setMintedTokenId(result.queueId)
+      setMintStatus('pending');
+      setMintSuccess(`Transação enviada! Verificando status... Queue ID: ${result.queueId}`);
+      setMintedTokenId(result.queueId);
       
-      // Reset após 10 segundos
-      setTimeout(() => {
-        setMintSuccess(null)
-        setMintedTokenId(null)
-      }, 10000)
+      // Reset após 10 segundos foi removido para dar lugar ao polling
 
     } catch (error) {
       console.error('❌ ENGINE MINT (GASLESS): Falha no mint:', error)
       setMintError(error instanceof Error ? error.message : 'Falha no Engine Mint (Gasless)')
+      setMintStatus('error');
       
       // Reset erro após 10 segundos
-      setTimeout(() => setMintError(null), 10000)
+      setTimeout(() => {
+        setMintError(null);
+        setMintStatus('idle');
+      }, 10000)
     } finally {
       setIsMinting(false)
     }
   }
 
-  // 🎯 LEGACY MINT - Direct SDK (fallback)
+  // Efeito para fazer o polling do status da transação
+  useEffect(() => {
+    if (mintStatus === 'pending' && mintedTokenId) {
+      const interval = setInterval(async () => {
+        console.log(`🔎 Verificando status para queueId: ${mintedTokenId}`);
+        const statusResult = await getTransactionStatus(mintedTokenId);
+        
+        if (statusResult.result) { // A resposta da Engine aninha o resultado
+            const { status, transactionHash: finalTxHash, errorMessage } = statusResult.result;
+            console.log('Status da Engine:', status);
+
+            if (status === 'mined') {
+                setMintStatus('success');
+                setMintSuccess('NFT criado com sucesso na blockchain!');
+                setTransactionHash(finalTxHash);
+                clearInterval(interval);
+            } else if (status === 'errored' || status === 'cancelled') {
+                setMintStatus('error');
+                setMintError(`Falha na transação: ${errorMessage || 'Erro desconhecido'}`);
+                clearInterval(interval);
+            }
+            // Se for 'queued' ou 'sent', continua o polling
+        } else if (statusResult.error) {
+            // Se a nossa API de status retornar um erro
+            setMintStatus('error');
+            setMintError(`Erro ao verificar status: ${statusResult.error}`);
+            clearInterval(interval);
+        }
+
+      }, 3000); // Verifica a cada 3 segundos
+
+      return () => clearInterval(interval); // Limpa o intervalo se o componente for desmontado
+    }
+  }, [mintStatus, mintedTokenId, getTransactionStatus]);
+
+  // 🎯 LEGACY MINT - Direct SDK (fallback) - O FLUXO PRINCIPAL DO USUÁRIO
   const handleMintNFT = async () => {
     if (!generatedImageBlob || !selectedTeam || !playerName || !playerNumber) {
       setMintError('Missing required data for minting')
@@ -240,6 +273,7 @@ export default function JerseyEditor() {
     setIsMinting(true)
     setMintError(null)
     setMintSuccess(null)
+    setMintStatus('pending'); // Inicia o status de pendente
 
     try {
       const nftName = `${selectedTeam} ${playerName} #${playerNumber}`
@@ -268,27 +302,20 @@ export default function JerseyEditor() {
       )
 
       console.log('✅ Legacy mint successful:', result)
-      setMintSuccess(`🎉 Legacy mint successful! Strategy: ${result.strategy || 'Unknown'}`)
-      setMintedTokenId(result?.receipt?.transactionHash || result?.tokenId || 'Success')
+      setMintStatus('success');
+      setMintSuccess(`🎉 Mint successful!`)
+      setTransactionHash(result?.receipt?.transactionHash || 'N/A')
       
-      // Reset após 10 segundos
-      setTimeout(() => {
-        setMintSuccess(null)
-        setMintedTokenId(null)
-      }, 10000)
-
     } catch (error) {
       console.error('❌ Legacy mint failed:', error)
+      setMintStatus('error');
       
-      // Show specific error message if it's about needing a new contract
       if (error.message.includes('Please deploy a new NFT Collection contract')) {
         setMintError('❌ Current contract only supports batch URI. Please deploy a new NFT Collection contract with individual tokenURI support.')
       } else {
         setMintError(error instanceof Error ? error.message : 'Minting failed')
       }
       
-      // Reset erro após 10 segundos
-      setTimeout(() => setMintError(null), 10000)
     } finally {
       setIsMinting(false)
     }
@@ -577,9 +604,8 @@ export default function JerseyEditor() {
                     {isMinting ? 'Processing...' : '⚙️ Admin: Set Claim Conditions'}
                   </button>
 
-                  {/* Dual Mint Buttons - Engine vs Legacy */}
+                  {/* Botão de Mint Principal para o Usuário */}
                   <div className="space-y-3">
-                    {/* 🚀 ENGINE MINT BUTTON (New) */}
                     <button 
                       className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
                         canMint && !isMinting
@@ -593,89 +619,67 @@ export default function JerseyEditor() {
                         } else if (!isOnSupportedChain) {
                           open({ view: 'Networks' })
                         } else if (canMint) {
-                          handleMintNFT()
+                          handleMintNFT() // Chama a função legacy
                         }
                       }}
                     >
-                      {isMinting ? (
+                      {isMinting && mintStatus === 'pending' ? (
                         <div className="flex items-center justify-center">
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting via Engine...
+                          Minting...
                         </div>
                       ) : !isConnected ? 'Connect Wallet to Mint' :
                         !isOnSupportedChain ? 'Switch to Supported Network' :
                         !generatedImage ? 'Generate Jersey First' :
-                        '🚀 Mint NFT (Working SDK)'}
+                        '🚀 Mint your NFT'}
                     </button>
-
-
-
-                    {/* ⚡ ENGINE NORMAL MINT BUTTON */}
-                    <button 
-                      className={`cyber-button w-full py-3 rounded-lg font-semibold transition-all text-sm ${
-                        canMint && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-400/30' 
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      disabled={!canMint || isMinting}
-                      onClick={() => {
-                        if (!isConnected) {
-                          open({ view: 'Connect' })
-                        } else if (!isOnSupportedChain) {
-                          open({ view: 'Networks' })
-                        } else if (canMint) {
-                          handleEngineNormalMint()
-                        }
-                      }}
-                    >
-                      {isMinting ? (
-                        <div className="flex items-center justify-center">
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Engine Minting...
-                        </div>
-                      ) : !isConnected ? 'Connect Wallet' :
-                        !isOnSupportedChain ? 'Switch Network' :
-                        !generatedImage ? 'Generate Jersey First' :
-                        '⚡ Engine Mint (Gasless)'}
-                    </button>
-
-
+                    {/* O botão Gasless foi removido da UI principal do usuário, mas a lógica permanece para uso futuro no painel de admin */}
                   </div>
 
-                  {/* Mint Status Feedback */}
-                  {(mintSuccess || mintError) && (
+                  {/* Feedback de Status do Mint */}
+                  {(mintStatus !== 'idle') && (
                     <div className={`p-3 rounded-lg border ${
-                      mintSuccess 
-                        ? 'bg-green-500/10 border-green-400/20' 
-                        : 'bg-red-500/10 border-red-400/20'
+                      mintStatus === 'success'
+                        ? 'bg-green-500/10 border-green-400/20'
+                        : mintStatus === 'error'
+                        ? 'bg-red-500/10 border-red-400/20'
+                        : 'bg-yellow-500/10 border-yellow-400/20'
                     }`}>
-                      <p className={`text-sm ${mintSuccess ? 'text-green-400' : 'text-red-400'}`}>
-                        {mintSuccess ? '✅ ' + mintSuccess : '❌ ' + mintError}
+                      <p className={`text-sm ${
+                        mintStatus === 'success' ? 'text-green-400' : 
+                        mintStatus === 'error' ? 'text-red-400' : 
+                        'text-yellow-400'
+                      }`}>
+                        {mintStatus === 'pending' && (
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Aguardando confirmação na sua wallet...
+                          </div>
+                        )}
+                        {mintStatus === 'success' && `✅ ${mintSuccess}`}
+                        {mintStatus === 'error' && `❌ ${mintError}`}
                       </p>
-                      {mintedTokenId && (
+                      {transactionHash && (
                         <div className="mt-2">
                           <p className="text-xs text-gray-400 mb-1">Transaction Hash:</p>
                           <div className="flex items-center space-x-2">
                             <input
                               type="text"
-                              value={mintedTokenId}
+                              value={transactionHash}
                               readOnly
                               className="flex-1 bg-gray-700/50 text-gray-300 text-xs p-2 rounded border border-gray-600"
                             />
                             <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(mintedTokenId)
-                                // TODO: Add toast notification
-                              }}
+                              onClick={() => navigator.clipboard.writeText(transactionHash)}
                               className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
                             >
                               Copy
                             </button>
                             <button
-                              onClick={() => window.open(`https://scan.chiliz.com/tx/${mintedTokenId}`, '_blank')}
-                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                                onClick={() => window.open(`https://amoy.polygonscan.com/tx/${transactionHash}`, '_blank')}
+                                className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
                             >
-                              View
+                                View
                             </button>
                           </div>
                         </div>
@@ -893,7 +897,7 @@ export default function JerseyEditor() {
                       ) : (
                         <span className="text-xs text-yellow-400">Not configured</span>
                       )}
-              </div>
+                    </div>
                     
                     {/* Upload Button */}
                     <div className="space-y-3">
@@ -991,7 +995,7 @@ export default function JerseyEditor() {
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
-            </div>
+                  </div>
                 </div>
                 
                 {/* Carrossel Horizontal */}
