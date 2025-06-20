@@ -11,14 +11,21 @@ interface MintApiRequest {
 // Define a chain Amoy usando seu ID
 const amoy = defineChain(80002);
 
-const THIRDWEB_SECRET_KEY = process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY;
+const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
-const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
-const VAULT_ACCESS_TOKEN = process.env.NEXT_PUBLIC_VAULT_ACCESS_TOKEN;
+const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
+const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 
 export async function POST(request: NextRequest) {
   if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !VAULT_ACCESS_TOKEN) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
+    const missing = [
+      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
+      !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET",
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
+      !VAULT_ACCESS_TOKEN && "VAULT_ACCESS_TOKEN"
+    ].filter(Boolean).join(", ");
+    console.error(`Missing: ${missing}`);
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
   }
 
@@ -51,7 +58,7 @@ export async function POST(request: NextRequest) {
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: client,
-      vaultAccessToken: THIRDWEB_SECRET_KEY,
+      vaultAccessToken: VAULT_ACCESS_TOKEN,
     });
 
     const response = await serverWallet.enqueueTransaction({
