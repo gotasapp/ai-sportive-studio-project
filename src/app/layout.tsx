@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import AppProviders from "@/lib/AppProviders";
-import { headers } from 'next/headers';
 
 export const metadata: Metadata = {
   title: "AI Sports NFT Generator",
@@ -13,13 +12,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const headersObj = await headers();
-  const cookies = headersObj.get('cookie');
-
   return (
     <html lang="en">
       <body className="antialiased">
-        <AppProviders cookies={cookies}>
+        <AppProviders>
           {children}
         </AppProviders>
       </body>

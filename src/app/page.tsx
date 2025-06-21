@@ -1,19 +1,44 @@
 'use client';
 
-import dynamic from 'next/dynamic'
-
-const JerseyEditor = dynamic(() => import('@/components/JerseyEditor'), {
-  ssr: false,
-  loading: () => (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-cyan-400 text-lg">Loading AI Sports NFT...</p>
-      </div>
-    </div>
-  )
-})
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useActiveAccount } from 'thirdweb/react';
+import JerseyEditor from '@/components/JerseyEditor';
+import Header from '@/components/Header';
 
 export default function Home() {
-  return <JerseyEditor />;
+  const account = useActiveAccount();
+  const router = useRouter();
+  const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
+
+  useEffect(() => {
+    // O hook `useActiveAccount` leva um momento para determinar o status.
+    // Damos um pequeno tempo para ele resolver antes de tomar uma decisão.
+    const timer = setTimeout(() => {
+      if (!account) {
+        router.push('/login');
+      } else {
+        setIsAuthCheckComplete(true);
+      }
+    }, 250); // Aumentar se necessário em conexões lentas
+
+    return () => clearTimeout(timer);
+  }, [account, router]);
+
+  // Enquanto a verificação não estiver completa, mostramos um loader.
+  if (!isAuthCheckComplete) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+        <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  // Se a verificação estiver completa e a conta existir, renderiza a página.
+  return (
+    <main className="flex min-h-screen flex-col items-center">
+      <Header />
+      <JerseyEditor />
+    </main>
+  );
 }

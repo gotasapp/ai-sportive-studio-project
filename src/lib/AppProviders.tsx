@@ -1,20 +1,16 @@
 'use client'
 
 import { ReactNode } from 'react'
-import AppKitProvider from './AppKitProvider'
 import { ThirdwebProvider } from './ThirdwebProvider'
 
 interface AppProvidersProps {
   children: ReactNode
-  cookies?: string | null
 }
 
-export default function AppProviders({ children, cookies }: AppProvidersProps) {
+export default function AppProviders({ children }: AppProvidersProps) {
   return (
-    <AppKitProvider cookies={cookies}>
-      <ThirdwebProvider>
-        {children}
-      </ThirdwebProvider>
-    </AppKitProvider>
+    <ThirdwebProvider>
+      {children}
+    </ThirdwebProvider>
   )
 } 

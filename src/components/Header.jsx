@@ -1,19 +1,91 @@
 'use client'
 
-import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react'
+import { ConnectButton } from "thirdweb/react";
+import { createThirdwebClient } from "thirdweb";
+import { defineChain } from "thirdweb/chains";
+import { polygon, mainnet } from "thirdweb/chains";
+
+// Cliente Thirdweb simples
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
+
+// Define custom CHZ chains
+const chzMainnet = defineChain({
+  id: 88888,
+  name: 'Chiliz Chain',
+  nativeCurrency: {
+    name: 'Chiliz',
+    symbol: 'CHZ',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc.ankr.com/chiliz'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'ChilizScan',
+      url: 'https://scan.chiliz.com',
+    },
+  },
+});
+
+const chzTestnet = defineChain({
+  id: 88882,
+  name: 'CHZ Spicy Testnet',
+  nativeCurrency: {
+    name: 'Chiliz',
+    symbol: 'CHZ',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://spicy-rpc.chiliz.com'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'CHZ Spicy Explorer',
+      url: 'https://spicy.chzscan.com',
+    },
+  },
+});
+
+const polygonAmoy = defineChain({
+  id: 80002,
+  name: 'Polygon Amoy Testnet',
+  nativeCurrency: {
+    name: 'MATIC',
+    symbol: 'MATIC',
+    decimals: 18,
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc-amoy.polygon.technology'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: 'Polygon Amoy Explorer',
+      url: 'https://amoy.polygonscan.com',
+    },
+  },
+});
+
+// All supported chains
+const supportedChains = [
+  mainnet,
+  polygon,
+  chzMainnet,
+  chzTestnet,
+  polygonAmoy
+];
 
 export default function Header() {
-  const { open } = useAppKit()
-  const { address, isConnected } = useAppKitAccount()
-  const { caipNetwork } = useAppKitNetwork()
-
-  const formatAddress = (addr) => {
-    if (!addr) return ''
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-  }
-
   return (
-    <header className="border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
+    <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
@@ -37,40 +109,13 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
-          {/* Network Info */}
-          {isConnected && caipNetwork && (
-            <div className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800/50 border border-cyan-500/20">
-              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-              <span className="text-sm text-gray-300">{caipNetwork.name}</span>
-            </div>
-          )}
-
-          {/* Connection Status */}
-          {isConnected ? (
-            <div className="flex items-center space-x-3">
-              <div className="hidden sm:flex items-center space-x-2 px-3 py-2 rounded-lg bg-slate-800/50 border border-cyan-500/20">
-                <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-gray-300">
-                  {formatAddress(address)}
-                </span>
-              </div>
-              <button
-                onClick={() => open({ view: 'Account' })}
-                className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg font-medium transition-all duration-200 border border-cyan-500/30 hover:border-cyan-400/50 shadow-lg hover:shadow-cyan-500/25"
-              >
-                Account
-              </button>
-            </div>
-          ) : (
-            <button
-              onClick={() => open({ view: 'Connect' })}
-              className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg font-medium transition-all duration-200 border border-cyan-500/30 hover:border-cyan-400/50 shadow-lg hover:shadow-cyan-500/25"
-            >
-              Connect Wallet
-            </button>
-          )}
+          <ConnectButton
+            client={client}
+            chains={supportedChains}
+            theme="dark"
+          />
         </div>
       </div>
     </header>
-  )
+  );
 } 

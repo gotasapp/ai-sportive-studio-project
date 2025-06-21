@@ -1,12 +1,10 @@
 'use client'
 
 import { useState, useCallback } from 'react';
-import { useAppKitAccount } from '@reown/appkit/react';
+import { useActiveAccount } from 'thirdweb/react';
 
 // Tipos para comunicação Frontend <-> API
 export interface MintRequest {
-  chain: string;
-  contractAddress: string;
   to: string;
   metadataUri: string;
 }
@@ -20,7 +18,8 @@ export interface EngineResponse {
 }
 
 export function useEngine() {
-  const { address } = useAppKitAccount();
+  const account = useActiveAccount();
+  const address = account?.address;
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -66,25 +66,6 @@ const getActiveNetwork = () => {
 
 const ACTIVE_NETWORK = getActiveNetwork()
 
-// WalletConnect Configuration (CHZ + Polygon only)
-export const walletConnectConfig = {
-  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id-here',
-  chains: [
-    ACTIVE_NETWORK, // Primary active network
-    // All supported networks (CHZ + Polygon)
-    NETWORKS.chz_mainnet,
-    NETWORKS.chz_testnet,
-    NETWORKS.polygon_mainnet,
-    NETWORKS.polygon_testnet
-  ],
-  metadata: {
-    name: 'AI Sports NFT Generator',
-    description: 'Generate and mint sports NFTs with AI',
-    url: 'https://ai-sports-nft.vercel.app',
-    icons: ['https://ai-sports-nft.vercel.app/icon.png']
-  }
-};
-
 // Thirdweb Configuration
 export const thirdwebConfig = {
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || 'your-thirdweb-client-id',
@@ -160,9 +141,8 @@ export const thirdwebConfig = {
   }
 };
 
-// Combined configuration (simplified for CHZ + Polygon)
+// Simplified configuration (only Thirdweb)
 export const web3Config = {
-  walletConnect: walletConnectConfig,
   thirdweb: thirdwebConfig,
   defaultChain: ACTIVE_NETWORK.chainId,
   activeNetwork: ACTIVE_NETWORK,

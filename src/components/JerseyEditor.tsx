@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react'
 import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
-import { useAppKit, useAppKitAccount, useAppKitNetwork } from '@reown/appkit/react'
-import Header from './Header.jsx'
+import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
+
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
 import { useWeb3 } from '../lib/useWeb3'
@@ -28,11 +28,15 @@ const MARKETPLACE_ITEMS = [
 ]
 
 export default function JerseyEditor() {
-  // AppKit hooks for wallet connection
-  const { open } = useAppKit()
-  const { address, isConnected, status } = useAppKitAccount()
-  const { caipNetwork, chainId } = useAppKitNetwork()
-
+  // Thirdweb v5 hooks for wallet connection
+  const account = useActiveAccount()
+  const chain = useActiveWalletChain()
+  
+  // Use account data directly
+  const address = account?.address
+  const isConnected = !!account
+  const chainId = chain?.id
+  
   // Thirdweb hooks for minting  
   const { 
     mintNFTWithMetadata, 
@@ -83,7 +87,10 @@ export default function JerseyEditor() {
   const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
   const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
   const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
-  const canMint = isConnected && isOnSupportedChain && generatedImage
+  
+  // Mint conditions
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy precisa wallet
+  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber // Gasless só precisa dados
 
   // Upload para IPFS
   const uploadToIPFS = async () => {
@@ -117,7 +124,7 @@ export default function JerseyEditor() {
       setIpfsUrl(result.imageUrl)
       console.log('🎉 Upload completo:', result)
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ IPFS upload failed:', error)
       setIpfsError(error instanceof Error ? error.message : 'Upload failed')
     } finally {
@@ -143,7 +150,7 @@ export default function JerseyEditor() {
       setMintSuccess('Claim conditions set! Now users can mint NFTs.')
       
       setTimeout(() => setMintSuccess(null), 8000)
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Set claim conditions failed:', error)
       setMintError(error instanceof Error ? error.message : 'Set claim conditions failed')
       setTimeout(() => setMintError(null), 8000)
@@ -211,14 +218,11 @@ export default function JerseyEditor() {
       setMintSuccess(`Transação enviada! Verificando status... Queue ID: ${result.queueId}`);
       setMintedTokenId(result.queueId);
       
-      // Reset após 10 segundos foi removido para dar lugar ao polling
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ ENGINE MINT (GASLESS): Falha no mint:', error)
       setMintError(error instanceof Error ? error.message : 'Falha no Engine Mint (Gasless)')
       setMintStatus('error');
       
-      // Reset erro após 10 segundos
       setTimeout(() => {
         setMintError(null);
         setMintStatus('idle');
@@ -235,7 +239,7 @@ export default function JerseyEditor() {
         console.log(`🔎 Verificando status para queueId: ${mintedTokenId}`);
         const statusResult = await getTransactionStatus(mintedTokenId);
         
-        if (statusResult.result) { // A resposta da Engine aninha o resultado
+        if (statusResult.result) {
             const { status, transactionHash: finalTxHash, errorMessage } = statusResult.result;
             console.log('Status da Engine:', status);
 
@@ -249,17 +253,15 @@ export default function JerseyEditor() {
                 setMintError(`Falha na transação: ${errorMessage || 'Erro desconhecido'}`);
                 clearInterval(interval);
             }
-            // Se for 'queued' ou 'sent', continua o polling
         } else if (statusResult.error) {
-            // Se a nossa API de status retornar um erro
             setMintStatus('error');
             setMintError(`Erro ao verificar status: ${statusResult.error}`);
             clearInterval(interval);
         }
 
-      }, 3000); // Verifica a cada 3 segundos
+      }, 3000);
 
-      return () => clearInterval(interval); // Limpa o intervalo se o componente for desmontado
+      return () => clearInterval(interval);
     }
   }, [mintStatus, mintedTokenId, getTransactionStatus]);
 
@@ -273,7 +275,7 @@ export default function JerseyEditor() {
     setIsMinting(true)
     setMintError(null)
     setMintSuccess(null)
-    setMintStatus('pending'); // Inicia o status de pendente
+    setMintStatus('pending');
 
     try {
       const nftName = `${selectedTeam} ${playerName} #${playerNumber}`
@@ -293,24 +295,27 @@ export default function JerseyEditor() {
       console.log('📝 Description:', nftDescription)
       console.log('🎨 Attributes:', attributes)
 
+      // Convert blob to File for the mint function
+      const imageFile = new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' });
+      
       const result = await mintNFTWithMetadata(
         nftName,
         nftDescription,
-        new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' }),
+        imageFile,
         attributes,
         editionSize
       )
 
       console.log('✅ Legacy mint successful:', result)
       setMintStatus('success');
-      setMintSuccess(`🎉 Mint successful!`)
-      setTransactionHash(result?.receipt?.transactionHash || 'N/A')
+      setMintSuccess(`🎉 Legacy mint successful! Transaction: ${result.transactionHash}`)
+      setTransactionHash(result.transactionHash || 'N/A')
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Legacy mint failed:', error)
       setMintStatus('error');
       
-      if (error.message.includes('Please deploy a new NFT Collection contract')) {
+      if (error?.message?.includes('Please deploy a new NFT Collection contract')) {
         setMintError('❌ Current contract only supports batch URI. Please deploy a new NFT Collection contract with individual tokenURI support.')
       } else {
         setMintError(error instanceof Error ? error.message : 'Minting failed')
@@ -332,7 +337,6 @@ export default function JerseyEditor() {
       return
     }
 
-    // Web3 validation (optional for generation, but good UX)
     if (isConnected && !isOnSupportedChain) {
       setError('Please switch to a supported network (CHZ or Polygon)')
       return
@@ -342,14 +346,12 @@ export default function JerseyEditor() {
     setError(null)
     setGenerationCost(null)
 
-    // Lógica Híbrida para definir o model_id
     let model_id = `${selectedTeam.toLowerCase()}_${selectedStyle}`;
     if (selectedTeam === 'Flamengo' && selectedStyle === 'retro') {
       model_id = 'flamengo_1981';
     } else if (selectedTeam === 'Corinthians' && selectedStyle === 'retro') {
-      model_id = 'corinthians_2022'; // Assumindo que 2022 é o 'retro' para o Corinthians
+      model_id = 'corinthians_2022';
     }
-    // Adicionar outras lógicas de mapeamento aqui se necessário
 
     try {
       const request: ImageGenerationRequest = {
@@ -366,7 +368,6 @@ export default function JerseyEditor() {
         setGeneratedImage(imageUrl);
         setGenerationCost(result.cost_usd || null);
         
-        // Convert base64 to blob for minting
         const base64Data = result.image_base64.replace(/^data:image\/[a-z]+;base64,/, '');
         const byteCharacters = atob(base64Data);
         const byteNumbers = new Array(byteCharacters.length);
@@ -379,11 +380,11 @@ export default function JerseyEditor() {
       } else {
         setError(result.error || 'Unknown error during generation');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error generating content:', err);
       setError('Error connecting to the API. Please check if the server is running.');
     } finally {
-      setIsLoading(false); // Apenas o isLoading é resetado aqui!
+      setIsLoading(false);
     }
   }
 
@@ -403,16 +404,14 @@ export default function JerseyEditor() {
         const teams = await Dalle3Service.getAvailableTeams();
         if (teams.length > 0) {
           setAvailableTeams(teams);
-          setSelectedTeam(teams[0]); // Selecionar o primeiro time automaticamente
+          setSelectedTeam(teams[0]);
         } else {
-          // Times padrão se a API não retornar nenhum
           const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
           setAvailableTeams(defaultTeams);
           setSelectedTeam(defaultTeams[0]);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Erro ao carregar times:', err);
-        // Times padrão em caso de erro
         const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
         setAvailableTeams(defaultTeams);
         setSelectedTeam(defaultTeams[0]);
@@ -423,7 +422,7 @@ export default function JerseyEditor() {
       try {
         const status = await Dalle3Service.checkHealth();
         setApiStatus(status);
-      } catch (err) {
+      } catch (err: any) {
         console.error('Erro ao verificar status da API:', err);
         setApiStatus(false);
       }
@@ -446,19 +445,16 @@ export default function JerseyEditor() {
         radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.03) 0%, transparent 50%)
       `
     }}>
-      <Header />
+      
       
       <div className="container mx-auto px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           
-          {/* Left Column - AI Generation */}
           <div className="lg:col-span-1 space-y-6">
-            {/* AI Generation Card */}
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
                 <h2 className="text-xl font-bold text-white mb-6">AI Generation</h2>
                 
-                {/* Upload Area */}
                 <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
                   <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                   <p className="text-gray-300 mb-2">Upload image or enter text</p>
@@ -476,7 +472,6 @@ export default function JerseyEditor() {
                   </label>
                 </div>
 
-                {/* Style Filters */}
                 <div className="space-y-4 mb-6">
                   <h3 className="text-lg font-semibold text-white">Style</h3>
                   <div className="grid grid-cols-2 gap-3">
@@ -496,7 +491,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
 
-                {/* Team Selection */}
                 <div className="space-y-4 mb-6">
                   <label className="text-sm font-medium text-gray-300">Team</label>
                   <select 
@@ -513,7 +507,6 @@ export default function JerseyEditor() {
                   </select>
                 </div>
 
-                {/* Player Info */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
                     <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
@@ -537,7 +530,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
 
-                {/* Controls */}
                 <div className="space-y-4 mb-6">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-300">Royalties</span>
@@ -558,7 +550,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
 
-                {/* Generate Button */}
                 <button
                   onClick={generateContent}
                   disabled={isLoading || !selectedTeam}
@@ -569,7 +560,6 @@ export default function JerseyEditor() {
               </div>
             </div>
 
-            {/* Mint NFT Card */}
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
                 <h2 className="text-xl font-bold text-white mb-6">Mint NFT</h2>
@@ -595,7 +585,6 @@ export default function JerseyEditor() {
                     <span className="text-white">0.02 CHZ</span>
                   </div>
 
-                  {/* Admin: Set Claim Conditions Button */}
                   <button 
                     className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-200 border border-orange-400/30 mb-3"
                     disabled={!isConnected || isMinting}
@@ -604,39 +593,61 @@ export default function JerseyEditor() {
                     {isMinting ? 'Processing...' : '⚙️ Admin: Set Claim Conditions'}
                   </button>
 
-                  {/* Botão de Mint Principal para o Usuário */}
                   <div className="space-y-3">
+                    {/* 🚀 ENGINE GASLESS MINT - Backend pays gas */}
                     <button 
                       className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
-                        canMint && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-cyan-600/20 border-purple-400/30' 
+                        canMintGasless && !isMinting
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
-                      disabled={!canMint || isMinting}
+                      disabled={!canMintGasless || isMinting}
                       onClick={() => {
-                        if (!isConnected) {
-                          open({ view: 'Connect' })
-                        } else if (!isOnSupportedChain) {
-                          open({ view: 'Networks' })
-                        } else if (canMint) {
-                          handleMintNFT() // Chama a função legacy
+                        if (canMintGasless) {
+                          handleEngineNormalMint()
                         }
                       }}
                     >
                       {isMinting && mintStatus === 'pending' ? (
                         <div className="flex items-center justify-center">
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting...
+                          Minting (Gasless)...
+                        </div>
+                      ) : !generatedImage ? 'Generate Jersey First' :
+                        !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
+                        '🚀 Mint via Engine (Gasless)'}
+                    </button>
+
+                    {/* 🎯 LEGACY MINT - User pays gas (fallback) */}
+                    <button 
+                      className={`cyber-button w-full py-3 rounded-lg font-medium transition-all ${
+                        canMintLegacy && !isMinting
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-gray-600/20 border-purple-400/30' 
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                      disabled={!canMintLegacy || isMinting}
+                      onClick={() => {
+                        if (!isConnected) {
+                          alert('Please connect your wallet first')
+                        } else if (!isOnSupportedChain) {
+                          alert('Please switch to a supported network')
+                        } else if (canMintLegacy) {
+                          handleMintNFT()
+                        }
+                      }}
+                    >
+                      {isMinting && mintStatus === 'pending' ? (
+                        <div className="flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Minting (Legacy)...
                         </div>
                       ) : !isConnected ? 'Connect Wallet to Mint' :
                         !isOnSupportedChain ? 'Switch to Supported Network' :
                         !generatedImage ? 'Generate Jersey First' :
-                        '🚀 Mint your NFT'}
+                        '🎯 Legacy Mint (User Pays Gas)'}
                     </button>
-                    {/* O botão Gasless foi removido da UI principal do usuário, mas a lógica permanece para uso futuro no painel de admin */}
                   </div>
 
-                  {/* Feedback de Status do Mint */}
                   {(mintStatus !== 'idle') && (
                     <div className={`p-3 rounded-lg border ${
                       mintStatus === 'success'
@@ -687,7 +698,6 @@ export default function JerseyEditor() {
                     </div>
                   )}
 
-                  {/* Status */}
                   <div className="pt-6 border-t border-gray-700">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
@@ -720,14 +730,11 @@ export default function JerseyEditor() {
             </div>
           </div>
 
-          {/* Right Column - Jersey Preview + Marketplace */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Jersey Preview - MAIOR */}
             <div className="gradient-border">
               <div className="gradient-border-content p-8">
                 <h3 className="text-xl font-bold text-white mb-6 text-center">Jersey Preview</h3>
                 
-                {/* Wallet Status Section */}
                 <div className="mb-6 p-4 rounded-lg border border-cyan-400/20 bg-slate-800/30">
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="text-sm font-semibold text-white flex items-center">
@@ -736,7 +743,7 @@ export default function JerseyEditor() {
                     </h4>
                     {!isConnected && (
                       <button
-                        onClick={() => open({ view: 'Connect' })}
+                        onClick={() => alert('Please connect your wallet using the button in the header')}
                         className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
                       >
                         Connect
@@ -745,7 +752,6 @@ export default function JerseyEditor() {
                   </div>
                   
                   <div className="space-y-2">
-                    {/* Connection Status */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400">Wallet</span>
                       <div className="flex items-center space-x-2">
@@ -756,7 +762,6 @@ export default function JerseyEditor() {
                       </div>
                     </div>
                     
-                    {/* Network Status */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-400">Network</span>
                       <div className="flex items-center space-x-2">
@@ -764,11 +769,11 @@ export default function JerseyEditor() {
                           <>
                             <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
                             <span className="text-xs text-gray-300">
-                              {caipNetwork?.name || 'Unknown'}
+                              {chain?.name || 'Unknown'}
                             </span>
                             {!isOnSupportedChain && (
                               <button
-                                onClick={() => open({ view: 'Networks' })}
+                                onClick={() => alert('Please switch network using your wallet')}
                                 className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
                               >
                                 Switch Network
@@ -784,11 +789,30 @@ export default function JerseyEditor() {
                       </div>
                     </div>
                     
-                    {/* Mint Readiness */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Mint Ready</span>
+                      <span className="text-xs text-gray-400">Gasless Mint</span>
                       <div className="flex items-center space-x-2">
-                        {canMint ? (
+                        {canMintGasless ? (
+                          <>
+                            <Check className="w-3 h-3 text-green-400" />
+                            <span className="text-xs text-green-400">Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-yellow-400">
+                              {!generatedImage ? 'Generate jersey' : 
+                               !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Legacy Mint</span>
+                      <div className="flex items-center space-x-2">
+                        {canMintLegacy ? (
                           <>
                             <Check className="w-3 h-3 text-green-400" />
                             <span className="text-xs text-green-400">Ready</span>
@@ -808,7 +832,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
                 
-                {/* Jersey Display Container - Preview MAIOR */}
                 <div className="flex justify-center">
                   <div className="relative w-96 h-[28rem] rounded-2xl overflow-hidden" style={{
                     background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
@@ -849,11 +872,9 @@ export default function JerseyEditor() {
                           alt="Generated Jersey" 
                           className="w-full h-full object-contain rounded-lg"
                         />
-                        {/* NFT Frame Effect */}
                         <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
                         
-                        {/* NFT Info Overlay */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 rounded-b-lg">
                           <div className="text-white">
                             <p className="font-bold text-2xl">{playerName} #{playerNumber}</p>
@@ -870,7 +891,6 @@ export default function JerseyEditor() {
                     {!generatedImage && !isLoading && !error && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
                         <div className="text-center">
-                          {/* Jersey Placeholder MAIOR */}
                           <div className="w-40 h-48 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 mx-auto">
                             <div className="text-center">
                               <Upload className="w-12 h-12 text-cyan-400/50 mx-auto mb-3" />
@@ -885,7 +905,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
 
-                {/* IPFS Upload Section */}
                 {generatedImage && (
                   <div className="mt-6 p-4 rounded-lg border border-green-400/20 bg-green-500/5">
                     <div className="flex items-center justify-between mb-3">
@@ -899,7 +918,6 @@ export default function JerseyEditor() {
                       )}
                     </div>
                     
-                    {/* Upload Button */}
                     <div className="space-y-3">
                       <button
                         onClick={uploadToIPFS}
@@ -924,7 +942,6 @@ export default function JerseyEditor() {
                         )}
                       </button>
                       
-                      {/* IPFS URL Display */}
                       {ipfsUrl && (
                         <div className="p-3 bg-gray-800/50 rounded-lg">
                           <p className="text-xs text-gray-400 mb-2">IPFS URL:</p>
@@ -938,7 +955,6 @@ export default function JerseyEditor() {
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText(ipfsUrl)
-                                // TODO: Add toast notification
                               }}
                               className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
                             >
@@ -954,7 +970,6 @@ export default function JerseyEditor() {
                         </div>
                       )}
                       
-                      {/* Error Display */}
                       {ipfsError && (
                         <div className="p-3 bg-red-500/10 border border-red-400/20 rounded-lg">
                           <p className="text-red-400 text-sm">❌ {ipfsError}</p>
@@ -971,7 +986,6 @@ export default function JerseyEditor() {
               </div>
             </div>
 
-            {/* Marketplace - MENOR com CARROSSEL */}
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -998,7 +1012,6 @@ export default function JerseyEditor() {
                   </div>
                 </div>
                 
-                {/* Carrossel Horizontal */}
                 <div 
                   id="marketplace-scroll"
                   className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
@@ -1007,20 +1020,16 @@ export default function JerseyEditor() {
                   {MARKETPLACE_ITEMS.concat(MARKETPLACE_ITEMS).map((item, index) => (
                     <div key={`${item.id}-${index}`} className="flex-shrink-0 group cursor-pointer">
                       <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300 hover:scale-105">
-                        {/* NFT Card MENOR com proporção 4:5 */}
                         <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden border border-cyan-400/20">
                           {item.trending && (
                             <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
                           )}
                           
-                          {/* Jersey Preview */}
                           <div className="relative w-full h-full flex items-center justify-center">
                             <div className="text-4xl font-bold text-cyan-400/60">{item.number}</div>
                             
-                            {/* Jersey shape outline */}
                             <div className="absolute inset-3 border border-dashed border-cyan-400/20 rounded"></div>
                             
-                            {/* Glow effect */}
                             <div className="absolute inset-0 bg-gradient-to-t from-cyan-400/10 via-transparent to-purple-400/10 rounded-lg"></div>
                           </div>
                         </div>
@@ -1043,7 +1052,6 @@ export default function JerseyEditor() {
                   ))}
                 </div>
                 
-                {/* Ver Mais */}
                 <div className="mt-4 text-center">
                   <button className="px-4 py-2 border border-cyan-400/30 text-cyan-400 rounded-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all text-sm">
                     View All NFTs
