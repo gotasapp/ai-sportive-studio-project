@@ -167,17 +167,17 @@ export default function StadiumEditor() {
 
             if (status === 'mined') {
                 setMintStatus('success');
-                setMintSuccess('NFT criado com sucesso na blockchain!');
+                setMintSuccess('NFT successfully created on blockchain!');
                 setTransactionHash(finalTxHash);
                 clearInterval(interval);
             } else if (status === 'errored' || status === 'cancelled') {
                 setMintStatus('error');
-                setMintError(`Falha na transação: ${errorMessage || 'Erro desconhecido'}`);
+                setMintError(`Transaction failed: ${errorMessage || 'Unknown error'}`);
                 clearInterval(interval);
             }
         } else if (statusResult.error) {
             setMintStatus('error');
-            setMintError(`Erro ao verificar status: ${statusResult.error}`);
+            setMintError(`Error checking status: ${statusResult.error}`);
             clearInterval(interval);
         }
 
@@ -209,7 +209,7 @@ export default function StadiumEditor() {
     }
   };
 
-  // Upload para IPFS
+  // Upload to IPFS
   const uploadToIPFS = async () => {
     if (!generatedImageBlob) {
       setIpfsError('No image to upload')
@@ -243,7 +243,7 @@ export default function StadiumEditor() {
       )
 
       setIpfsUrl(result.imageUrl)
-      console.log('🎉 Upload completo:', result)
+      console.log('🎉 Upload completed:', result)
       
     } catch (error: any) {
       console.error('❌ IPFS upload failed:', error)
@@ -253,7 +253,7 @@ export default function StadiumEditor() {
     }
   }
 
-  // Função para configurar Claim Conditions (Admin)
+  // Function to configure Claim Conditions (Admin)
   const handleSetClaimConditions = async () => {
     if (!isConnected) {
       setMintError('Connect wallet first')
@@ -340,14 +340,14 @@ export default function StadiumEditor() {
         metadataUri: ipfsResult.metadataUrl,
       });
 
-      console.log('✅ ENGINE MINT (GASLESS): Mint iniciado com sucesso:', result);
+      console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
       setMintStatus('pending');
-      setMintSuccess(`Transação enviada! Verificando status... Queue ID: ${result.queueId}`);
+      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId}`);
       setMintedTokenId(result.queueId);
       
     } catch (error: any) {
-      console.error('❌ ENGINE MINT (GASLESS): Falha no mint:', error)
-      setMintError(error instanceof Error ? error.message : 'Falha no Engine Mint (Gasless)')
+      console.error('❌ ENGINE MINT (GASLESS): Mint failed:', error)
+      setMintError(error instanceof Error ? error.message : 'Engine Mint (Gasless) failed')
       setMintStatus('error');
       
       setTimeout(() => {
@@ -359,7 +359,7 @@ export default function StadiumEditor() {
     }
   }
 
-  // 🎯 LEGACY MINT - Direct SDK (fallback) - O FLUXO PRINCIPAL DO USUÁRIO
+  // 🎯 LEGACY MINT - Direct SDK (fallback) - THE MAIN USER FLOW
   const handleMintNFT = async () => {
     if (!generatedImageBlob || !selectedStadium) {
       setMintError('Missing required data for minting')
@@ -1036,7 +1036,7 @@ export default function StadiumEditor() {
                         {mintStatus === 'pending' && (
                           <div className="flex items-center">
                             <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mr-2"></div>
-                            Aguardando confirmação na sua wallet...
+                            Waiting for confirmation in your wallet...
                           </div>
                         )}
                         {mintStatus === 'success' && `✅ ${mintSuccess}`}

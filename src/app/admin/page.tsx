@@ -19,7 +19,7 @@ import {
   Wifi
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const metrics = {
   nftsGenerated: {
     today: 47,

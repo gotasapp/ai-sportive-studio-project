@@ -27,7 +27,7 @@ import {
   RefreshCw
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const moderationData = {
   stats: {
     pendingReview: 23,

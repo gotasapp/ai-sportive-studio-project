@@ -25,7 +25,7 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const usersData = {
   stats: {
     totalUsers: 3429,

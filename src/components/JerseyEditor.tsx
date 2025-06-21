@@ -89,10 +89,10 @@ export default function JerseyEditor() {
   const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
   
   // Mint conditions
-  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy precisa wallet
-  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber // Gasless só precisa dados
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
+  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber // Gasless only needs data
 
-  // Upload para IPFS
+  // Upload to IPFS
   const uploadToIPFS = async () => {
     if (!generatedImageBlob) {
       setIpfsError('No image to upload')
@@ -132,7 +132,7 @@ export default function JerseyEditor() {
     }
   }
 
-  // Função para configurar Claim Conditions (Admin)
+  // Function to configure Claim Conditions (Admin)
   const handleSetClaimConditions = async () => {
     if (!isConnected) {
       setMintError('Connect wallet first')
@@ -213,14 +213,14 @@ export default function JerseyEditor() {
         metadataUri: ipfsResult.metadataUrl,
       });
 
-      console.log('✅ ENGINE MINT (GASLESS): Mint iniciado com sucesso:', result);
+      console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
       setMintStatus('pending');
-      setMintSuccess(`Transação enviada! Verificando status... Queue ID: ${result.queueId}`);
+      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId}`);
       setMintedTokenId(result.queueId);
       
     } catch (error: any) {
-      console.error('❌ ENGINE MINT (GASLESS): Falha no mint:', error)
-      setMintError(error instanceof Error ? error.message : 'Falha no Engine Mint (Gasless)')
+      console.error('❌ ENGINE MINT (GASLESS): Mint failed:', error)
+      setMintError(error instanceof Error ? error.message : 'Engine Mint (Gasless) failed')
       setMintStatus('error');
       
       setTimeout(() => {
@@ -232,11 +232,11 @@ export default function JerseyEditor() {
     }
   }
 
-  // Efeito para fazer o polling do status da transação
+  // Effect to poll transaction status
   useEffect(() => {
     if (mintStatus === 'pending' && mintedTokenId) {
       const interval = setInterval(async () => {
-        console.log(`🔎 Verificando status para queueId: ${mintedTokenId}`);
+        console.log(`🔎 Checking status for queueId: ${mintedTokenId}`);
         const statusResult = await getTransactionStatus(mintedTokenId);
         
         if (statusResult.result) {
@@ -245,17 +245,17 @@ export default function JerseyEditor() {
 
             if (status === 'mined') {
                 setMintStatus('success');
-                setMintSuccess('NFT criado com sucesso na blockchain!');
+                setMintSuccess('NFT successfully created on blockchain!');
                 setTransactionHash(finalTxHash);
                 clearInterval(interval);
             } else if (status === 'errored' || status === 'cancelled') {
                 setMintStatus('error');
-                setMintError(`Falha na transação: ${errorMessage || 'Erro desconhecido'}`);
+                setMintError(`Transaction failed: ${errorMessage || 'Unknown error'}`);
                 clearInterval(interval);
             }
         } else if (statusResult.error) {
             setMintStatus('error');
-            setMintError(`Erro ao verificar status: ${statusResult.error}`);
+            setMintError(`Error checking status: ${statusResult.error}`);
             clearInterval(interval);
         }
 
@@ -265,7 +265,7 @@ export default function JerseyEditor() {
     }
   }, [mintStatus, mintedTokenId, getTransactionStatus]);
 
-  // 🎯 LEGACY MINT - Direct SDK (fallback) - O FLUXO PRINCIPAL DO USUÁRIO
+  // 🎯 LEGACY MINT - Direct SDK (fallback) - THE MAIN USER FLOW
   const handleMintNFT = async () => {
     if (!generatedImageBlob || !selectedTeam || !playerName || !playerNumber) {
       setMintError('Missing required data for minting')
@@ -333,7 +333,7 @@ export default function JerseyEditor() {
     }
 
     if (!playerName || !playerNumber) {
-      setError('Preencha o nome e número do jogador')
+      setError('Please fill in the player name and number')
       return
     }
 
@@ -411,7 +411,7 @@ export default function JerseyEditor() {
           setSelectedTeam(defaultTeams[0]);
         }
       } catch (err: any) {
-        console.error('Erro ao carregar times:', err);
+        console.error('Error loading teams:', err);
         const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
         setAvailableTeams(defaultTeams);
         setSelectedTeam(defaultTeams[0]);
@@ -423,7 +423,7 @@ export default function JerseyEditor() {
         const status = await Dalle3Service.checkHealth();
         setApiStatus(status);
       } catch (err: any) {
-        console.error('Erro ao verificar status da API:', err);
+        console.error('Error checking API status:', err);
         setApiStatus(false);
       }
     };
@@ -664,7 +664,7 @@ export default function JerseyEditor() {
                         {mintStatus === 'pending' && (
                           <div className="flex items-center">
                             <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mr-2"></div>
-                            Aguardando confirmação na sua wallet...
+                            Waiting for confirmation in your wallet...
                           </div>
                         )}
                         {mintStatus === 'success' && `✅ ${mintSuccess}`}

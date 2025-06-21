@@ -24,7 +24,7 @@ import {
   Trophy
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const analyticsData = {
   overview: {
     totalNFTs: 15847,

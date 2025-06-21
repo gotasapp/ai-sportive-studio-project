@@ -111,8 +111,8 @@ export default function LoginPage() {
     }
   }, [account, router]);
 
-  // Não renderizar a página de login se o usuário já estiver logado
-  // Isso evita um flash da página de login antes do redirecionamento
+  // Don't render the login page if user is already logged in
+  // This prevents a flash of the login page before redirect
   if (account) {
     return null; 
   }
@@ -120,9 +120,9 @@ export default function LoginPage() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
       <div className="w-full max-w-md text-center">
-        <h1 className="text-4xl font-bold mb-4">Bem-vindo</h1>
+        <h1 className="text-4xl font-bold mb-4">Welcome</h1>
         <p className="text-gray-300 mb-8">
-          Conecte sua carteira ou use uma conta social para continuar.
+          Connect your wallet or use a social account to continue.
         </p>
         
         <ConnectButton
@@ -161,12 +161,12 @@ export default function LoginPage() {
           theme="dark"
           connectModal={{
             size: "wide",
-            title: "Escolha seu Login",
+            title: "Choose your Login",
           }}
         />
 
         <p className="text-xs text-gray-500 mt-4 max-w-xs mx-auto">
-          Ao usar login social (Google, Email, etc.), uma nova carteira inteligente será criada para você de forma segura.
+          When using social login (Google, Email, etc.), a new smart wallet will be securely created for you.
         </p>
       </div>
     </div>

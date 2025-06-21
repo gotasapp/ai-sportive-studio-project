@@ -29,7 +29,7 @@ import {
   BarChart3
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const logsData = {
   stats: {
     totalLogs: 12847,

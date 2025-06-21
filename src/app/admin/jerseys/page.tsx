@@ -22,7 +22,7 @@ import {
   CheckCircle
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs/banco
+// Mock data - in production will come from APIs/database
 const initialConfig = {
   basePrompt: "professional football jersey, high quality fabric, realistic sports uniform, official team design",
   suffixPrompt: "studio lighting, clean background, HD, professional photography, vibrant colors",

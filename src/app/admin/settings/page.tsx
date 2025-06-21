@@ -31,7 +31,7 @@ import {
   Trash2
 } from 'lucide-react'
 
-// Mock data - em produção virá de APIs
+// Mock data - in production will come from APIs
 const settingsData = {
   general: {
     siteName: 'CHZ Sports NFT Generator',
