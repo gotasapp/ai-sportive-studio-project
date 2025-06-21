@@ -1,0 +1,28 @@
+# Sistema de Geração de Estádios - Dependências Simplificadas
+# Versão compatível com Python 3.13 sem necessidade de compilação
+
+# API Framework (versões mais recentes compatíveis)
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+
+# HTTP Clients
+requests>=2.31.0
+httpx>=0.26.0
+
+# Imagem (já instalado)
+Pillow>=10.1.0
+
+# OpenAI (já instalado)
+openai>=1.3.0
+
+# Utilitários (já instalados)
+python-dotenv>=1.0.0
+colorama>=0.4.6
+numpy>=1.24.0
+
+# Arquivos async
+aiofiles>=23.2.1
+
+# CORS
+fastapi-cors>=0.0.6 

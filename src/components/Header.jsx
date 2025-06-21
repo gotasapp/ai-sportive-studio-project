@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link';
 import { ConnectButton } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
@@ -97,9 +98,12 @@ export default function Header() {
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
-            Generate
-          </a>
+          <Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors">
+            Jerseys
+          </Link>
+          <Link href="/stadiums" className="text-gray-300 hover:text-cyan-400 transition-colors">
+            Stadiums
+          </Link>
           <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
             Marketplace
           </a>

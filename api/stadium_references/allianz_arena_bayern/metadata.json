@@ -1,0 +1,173 @@
+{
+  "stadium_info": {
+    "name": "Allianz Arena Bayern",
+    "id": "allianz_arena_bayern",
+    "architecture_style": "moderno",
+    "dominant_colors": [
+      "branco",
+      "azul",
+      "verde",
+      "vermelho",
+      "cinza"
+    ],
+    "architectural_features": [
+      "cobertura curva",
+      "estrutura curva",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "design curvo",
+      "tribunas em camadas"
+    ]
+  },
+  "atmosphere_variants": {
+    "night_packed_vibrant": {
+      "description": "Noite vibrante no Allianz Arena Bayern com torcida animada",
+      "lighting": "artificial intensa",
+      "crowd_energy": "alta",
+      "colors": [
+        "branco",
+        "azul",
+        "verde"
+      ]
+    },
+    "day_classic_atmosphere": {
+      "description": "Atmosfera clássica diurna no Allianz Arena Bayern",
+      "lighting": "natural",
+      "crowd_energy": "média",
+      "colors": [
+        "branco",
+        "azul",
+        "verde"
+      ]
+    },
+    "sunset_golden_hour": {
+      "description": "Pôr do sol dourado no Allianz Arena Bayern",
+      "lighting": "dourada natural",
+      "crowd_energy": "média-alta",
+      "colors": [
+        "dourado",
+        "laranja",
+        "branco",
+        "azul"
+      ]
+    }
+  },
+  "reference_images": [
+    {
+      "filename": "bayern_atmosphere.jpg",
+      "type": "atmosphere",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "branco",
+          "azul"
+        ],
+        "architectural_features": [
+          "estrutura curva",
+          "iluminação LED"
+        ],
+        "unique_elements": "design icônico com cobertura em forma de concha"
+      }
+    },
+    {
+      "filename": "bayern_day_light.jpg",
+      "type": "day_crowd",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "fechada",
+        "lighting_quality": "natural",
+        "crowd_density": "vazio",
+        "atmosphere_type": "calma",
+        "time_of_day": "tarde",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "branco",
+          "cinza"
+        ],
+        "architectural_features": [
+          "estrutura metálica exposta",
+          "design curvo"
+        ],
+        "unique_elements": "iluminação LED que muda de cor"
+      }
+    },
+    {
+      "filename": "bayern_night_light2.jpg",
+      "type": "night_lights",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "parcial",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "branco",
+          "verde"
+        ],
+        "architectural_features": [
+          "estrutura curva",
+          "tribunas em camadas"
+        ],
+        "unique_elements": "uso de bandeiras e cartazes na torcida"
+      }
+    },
+    {
+      "filename": "bayern_night_light.png",
+      "type": "night_lights",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "branco",
+          "azul"
+        ],
+        "architectural_features": [
+          "cobertura curva",
+          "iluminação LED"
+        ],
+        "unique_elements": "design em forma de bolha, exibição de cores da torcida"
+      }
+    }
+  ],
+  "generation_prompts": {
+    "base_description": "Estádio moderno com arquitetura característica",
+    "atmosphere_modifiers": [
+      "cobertura curva",
+      "estrutura curva",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "design curvo",
+      "tribunas em camadas"
+    ],
+    "color_palette": [
+      "branco",
+      "azul",
+      "verde",
+      "vermelho",
+      "cinza"
+    ]
+  },
+  "created_at": "2024-12-19",
+  "version": "1.0"
+}

@@ -1,0 +1,173 @@
+{
+  "stadium_info": {
+    "name": "Maracana",
+    "id": "maracana",
+    "architecture_style": "moderno",
+    "dominant_colors": [
+      "branco",
+      "dourado",
+      "preto",
+      "verde",
+      "vermelho"
+    ],
+    "architectural_features": [
+      "estrutura circular",
+      "estrutura de suporte exposta",
+      "grande fachada de vidro",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "estrutura metálica"
+    ]
+  },
+  "atmosphere_variants": {
+    "night_packed_vibrant": {
+      "description": "Noite vibrante no Maracana com torcida animada",
+      "lighting": "artificial intensa",
+      "crowd_energy": "alta",
+      "colors": [
+        "branco",
+        "dourado",
+        "preto"
+      ]
+    },
+    "day_classic_atmosphere": {
+      "description": "Atmosfera clássica diurna no Maracana",
+      "lighting": "natural",
+      "crowd_energy": "média",
+      "colors": [
+        "branco",
+        "dourado",
+        "preto"
+      ]
+    },
+    "sunset_golden_hour": {
+      "description": "Pôr do sol dourado no Maracana",
+      "lighting": "dourada natural",
+      "crowd_energy": "média-alta",
+      "colors": [
+        "dourado",
+        "laranja",
+        "branco",
+        "dourado"
+      ]
+    }
+  },
+  "reference_images": [
+    {
+      "filename": "maracana_night_lights.jpg",
+      "type": "night_lights",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "fechada",
+        "lighting_quality": "mista",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "preto",
+          "verde"
+        ],
+        "architectural_features": [
+          "estrutura metálica",
+          "iluminação LED"
+        ],
+        "unique_elements": "cobertura retrátil"
+      }
+    },
+    {
+      "filename": "maracana_night_lights2.jpg",
+      "type": "night_lights",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "branco",
+          "verde"
+        ],
+        "architectural_features": [
+          "estrutura metálica exposta",
+          "iluminação LED"
+        ],
+        "unique_elements": "cobertura iluminada em vermelho"
+      }
+    },
+    {
+      "filename": "maracana_atsmosphere.png",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "preto",
+          "verde"
+        ],
+        "architectural_features": [
+          "estrutura de suporte exposta",
+          "iluminação LED"
+        ],
+        "unique_elements": "design de cobertura em forma de concha"
+      }
+    },
+    {
+      "filename": "maracana_day_light.png",
+      "type": "day_crowd",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "retrátil",
+        "lighting_quality": "mista",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "crepúsculo",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "verde",
+          "cinza",
+          "dourado"
+        ],
+        "architectural_features": [
+          "estrutura circular",
+          "grande fachada de vidro"
+        ],
+        "unique_elements": "cobertura retrátil com design inovador"
+      }
+    }
+  ],
+  "generation_prompts": {
+    "base_description": "Estádio moderno com arquitetura característica",
+    "atmosphere_modifiers": [
+      "estrutura circular",
+      "estrutura de suporte exposta",
+      "grande fachada de vidro",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "estrutura metálica"
+    ],
+    "color_palette": [
+      "branco",
+      "dourado",
+      "preto",
+      "verde",
+      "vermelho"
+    ]
+  },
+  "created_at": "2024-12-19",
+  "version": "1.0"
+}

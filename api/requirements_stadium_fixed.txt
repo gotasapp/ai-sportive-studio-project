@@ -1,0 +1,34 @@
+# Stadium Vision + DALL-E 3 System Requirements
+# Fixed for Python 3.13 compatibility
+
+# Core API Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+python-multipart==0.0.6
+pydantic==2.4.2
+
+# HTTP Requests & API Communication
+requests==2.31.0
+httpx==0.25.0
+
+# Image Processing - Fixed versions for Python 3.13
+Pillow>=10.1.0
+opencv-python>=4.8.0.0
+
+# OpenAI Integration (DALL-E 3)
+openai>=1.3.0
+
+# Environment & Configuration
+python-dotenv==1.0.0
+
+# CORS & Security
+fastapi-cors==0.0.6
+
+# Async Support
+aiofiles==23.2.1
+
+# Logging & Monitoring
+colorama==0.4.6
+
+# Optional: Image Enhancement
+numpy>=1.24.0 
