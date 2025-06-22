@@ -172,10 +172,10 @@ export default function ContentGenerator() {
 
     try {
       const request: ImageGenerationRequest = {
+        model_id: `${selectedTeam}_${selectedJerseyStyle}`.toLowerCase(),
         team: selectedTeam,
         player_name: playerName,
         player_number: playerNumber,
-        style: selectedJerseyStyle,
         quality: quality
       }
 
