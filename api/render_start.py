@@ -4,12 +4,12 @@ Unified API - Jersey + Stadium
 """
 import os
 import uvicorn
-from main import app
+from jersey_api_dalle3 import app
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(
-        "main:app",
+        "jersey_api_dalle3:app",
         host="0.0.0.0",
         port=port,
         log_level="info"
