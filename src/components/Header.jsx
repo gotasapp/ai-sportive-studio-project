@@ -94,9 +94,11 @@ export default function Header() {
     <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
-            <span className="text-black font-bold text-sm">AI</span>
-          </div>
+          <img 
+            src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1750634725/th_24_vaq5es.jpg" 
+            alt="Chiliz Fan NFT Logo" 
+            className="w-8 h-8 rounded-lg object-cover"
+          />
           <h1 className="text-sm md:text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
             Chiliz Fan NFT
           </h1>

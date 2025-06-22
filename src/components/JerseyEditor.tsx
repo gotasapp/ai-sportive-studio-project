@@ -469,7 +469,7 @@ export default function JerseyEditor() {
           <div className="lg:col-span-1 space-y-6">
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
-                <h2 className="text-xl font-bold text-white mb-6">AI Generation</h2>
+                <h2 className="text-xl font-bold text-white mb-6">NFT Generation</h2>
                 
                 <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
                   <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
@@ -731,7 +731,7 @@ export default function JerseyEditor() {
                       </div>
                       
                       <div className="text-xs text-gray-400">
-                        Status: AI Generation Ready
+                        Status: NFT Generation Ready
                       </div>
                       
                       {generationCost && (

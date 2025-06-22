@@ -1092,7 +1092,7 @@ export default function StadiumEditor() {
                       </div>
                       
                       <div className="text-xs text-gray-400">
-                        Status: AI Generation Ready
+                        Status: NFT Generation Ready
                       </div>
                       
                       {generationCost && (
