@@ -16,7 +16,19 @@ const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTN
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 
+// Método GET para debug
+export async function GET() {
+  return NextResponse.json({ 
+    message: 'Engine Mint API is running',
+    configured: !!(THIRDWEB_SECRET_KEY && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS && VAULT_ACCESS_TOKEN),
+    contract: CONTRACT_ADDRESS,
+    backendWallet: BACKEND_WALLET_ADDRESS
+  });
+}
+
 export async function POST(request: NextRequest) {
+  console.log('🔄 Engine Mint API: POST request received');
+  
   if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !VAULT_ACCESS_TOKEN) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
     const missing = [
@@ -31,6 +43,8 @@ export async function POST(request: NextRequest) {
 
   try {
     const body: MintApiRequest = await request.json();
+    console.log('📦 Engine Mint API: Request body:', body);
+    
     const { to, metadataUri } = body;
 
     if (!to || !metadataUri) {

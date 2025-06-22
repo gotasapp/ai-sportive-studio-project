@@ -3,7 +3,8 @@
  */
 import { ImageGenerationRequest, Dalle3Response } from '@/types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
+// Usar API proxy local para resolver CORS
+const API_BASE_URL = '/api';
 
 export const Dalle3Service = {
   /**
@@ -11,6 +12,8 @@ export const Dalle3Service = {
    */
   generateImage: async (request: ImageGenerationRequest): Promise<Dalle3Response> => {
     try {
+      console.log('🎨 DALL-E 3: Generating image via proxy...');
+      
       const response = await fetch(`${API_BASE_URL}/generate`, {
         method: 'POST',
         headers: {
@@ -28,9 +31,11 @@ export const Dalle3Service = {
         throw new Error(errorMessage || `HTTP ${response.status}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('✅ DALL-E 3: Image generated successfully');
+      return result;
     } catch (error) {
-      console.error('Erro no serviço DALL-E 3:', error);
+      console.error('❌ Erro no serviço DALL-E 3:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erro desconhecido'
@@ -61,7 +66,7 @@ export const Dalle3Service = {
    */
   checkHealth: async (): Promise<boolean> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/health`);
+      const response = await fetch(`${API_BASE_URL}/generate`);
       return response.ok;
     } catch (error) {
       console.error("API health check failed:", error);
