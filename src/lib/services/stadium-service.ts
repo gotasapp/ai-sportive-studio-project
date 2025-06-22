@@ -48,8 +48,8 @@ export interface StadiumResponse {
   prompt_used?: string;
 }
 
-class StadiumService {
-  private baseUrl = 'http://localhost:8000'; // API Unificada
+export class StadiumService {
+  private baseUrl = 'https://jersey-api-dalle3.onrender.com'; // API Unificada
   
   async getAvailableStadiums(): Promise<StadiumInfo[]> {
     try {
@@ -221,5 +221,8 @@ class StadiumService {
     return sections
   }
 }
+
+// Export default instance
+export default new StadiumService();
 
 export const stadiumService = new StadiumService(); 

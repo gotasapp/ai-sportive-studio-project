@@ -15,11 +15,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
-import { StadiumService, StadiumGenerationRequest } from '../lib/services/stadium-service'
+import { StadiumService } from '../lib/services/stadium-service'
 import { IPFSService } from '../lib/services/ipfs-service'
 import { useWeb3 } from '../lib/useWeb3'
 import { useEngine } from '../lib/useEngine'
-import { ImageGenerationRequest } from '../types'
+import { ImageGenerationRequest, StadiumGenerationRequest, StadiumResponse } from '../types'
 
 // Filtros para jerseys
 const JERSEY_STYLE_FILTERS = [
