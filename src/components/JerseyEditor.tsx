@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
 import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
+import Image from 'next/image'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -868,11 +869,7 @@ export default function JerseyEditor() {
                     
                     {generatedImage && !isLoading && !error && (
                       <div className="absolute inset-0 p-6">
-                        <img 
-                          src={generatedImage} 
-                          alt="Generated Jersey" 
-                          className="w-full h-full object-contain rounded-lg"
-                        />
+                        <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
                         <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
                         

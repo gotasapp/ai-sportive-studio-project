@@ -130,10 +130,17 @@ export function useWeb3() {
     throw new Error('getSDK needs to be implemented with Thirdweb v5 SDK');
   };
 
+  const switchToChzChain = async () => {
+    // For now, just log - this would switch to CHZ chain in production
+    console.log('🔄 Switch to CHZ Chain requested (not implemented yet)');
+    return Promise.resolve();
+  };
+
   return {
     // Connection state
     address,
     isConnected,
+    connectionStatus,
     
     // Functions
     uploadToIPFS,
@@ -143,5 +150,6 @@ export function useWeb3() {
     setTokenURI,
     lazyMint,
     getSDK,
+    switchToChzChain,
   };
 } 

@@ -267,7 +267,7 @@ export class StadiumService {
   }
 }
 
-// Export default instance
-export default new StadiumService();
+const instance = new StadiumService();
+export default instance;
 
 export const stadiumService = new StadiumService(); 

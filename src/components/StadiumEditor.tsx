@@ -13,6 +13,7 @@ import { stadiumService, StadiumInfo, StadiumResponse } from '@/lib/services/sta
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
+import Image from 'next/image';
 
 const STADIUM_STYLE_FILTERS = [
   { id: 'realistic', label: 'Realistic', icon: Eye },
@@ -109,7 +110,7 @@ export default function StadiumEditor() {
   // IPFS state
   const [ipfsUrl, setIpfsUrl] = useState('');
   const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false);
-  const [ipfsError, setIpfsError] = useState('');
+  const [ipfsError, setIpfsError] = useState<string | null>(null);
   const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null);
 
   // Mint state
@@ -597,11 +598,7 @@ export default function StadiumEditor() {
                   </div>
                   {customReferencePreview && (
                     <div className="mt-2">
-                      <img 
-                        src={customReferencePreview} 
-                        alt="Reference preview" 
-                        className="w-full h-20 object-cover rounded border border-cyan-400/30"
-                      />
+                      <Image src={customReferencePreview} alt="Reference preview" width={100} height={50} className="w-full h-20 object-cover rounded border border-cyan-400/30" />
                     </div>
                   )}
                 </div>
@@ -813,11 +810,7 @@ export default function StadiumEditor() {
                     
                     {generatedImage && !isGenerating && !error && (
                       <div className="absolute inset-0 p-6">
-                        <img 
-                          src={generatedImage} 
-                          alt="Generated Stadium" 
-                          className="w-full h-full object-contain rounded-lg"
-                        />
+                        <Image src={generatedImage} alt="Generated Stadium" width={1024} height={1024} className="w-full h-full object-contain rounded-lg" />
                         <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
                         

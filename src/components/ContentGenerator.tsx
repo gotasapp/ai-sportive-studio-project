@@ -13,6 +13,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import Image from 'next/image'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { StadiumService } from '../lib/services/stadium-service'
@@ -481,6 +482,10 @@ export default function ContentGenerator() {
     checkApiStatus()
   }, [contentType])
 
+  useEffect(() => {
+    // ... existing code ...
+  }, [selectedTeam]);
+
   return (
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
       {/* Header with Content Type Selector */}
@@ -647,9 +652,11 @@ export default function ContentGenerator() {
                   >
                     {referenceImagePreview ? (
                       <div className="space-y-4">
-                        <img 
+                        <Image 
                           src={referenceImagePreview} 
                           alt="Reference" 
+                          width={256}
+                          height={256}
                           className="max-w-full max-h-64 mx-auto rounded-lg shadow-sm"
                         />
                         <p className="text-sm text-gray-400">
@@ -822,9 +829,11 @@ export default function ContentGenerator() {
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-center">
-                <img
+                <Image
                   src={`data:image/png;base64,${generatedImage}`}
                   alt={`Generated ${contentType}`}
+                  width={512}
+                  height={512}
                   className="max-w-full h-auto rounded-lg shadow-lg"
                 />
               </div>
