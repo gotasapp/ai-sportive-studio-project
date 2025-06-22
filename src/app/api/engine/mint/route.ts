@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createThirdwebClient, getContract, Engine } from 'thirdweb';
+import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 
@@ -11,31 +11,34 @@ interface MintApiRequest {
 // Define a chain Amoy usando seu ID
 const amoy = defineChain(80002);
 
-const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
+// Engine Configuration
+const ENGINE_URL = process.env.ENGINE_URL || 'http://localhost:3005';
+const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
-const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 
 // Método GET para debug
 export async function GET() {
   return NextResponse.json({ 
     message: 'Engine Mint API is running',
-    configured: !!(THIRDWEB_SECRET_KEY && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS && VAULT_ACCESS_TOKEN),
+    configured: !!(ENGINE_URL && ENGINE_ACCESS_TOKEN && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS),
+    engineUrl: ENGINE_URL,
     contract: CONTRACT_ADDRESS,
-    backendWallet: BACKEND_WALLET_ADDRESS
+    backendWallet: BACKEND_WALLET_ADDRESS,
+    hasAccessToken: !!ENGINE_ACCESS_TOKEN
   });
 }
 
 export async function POST(request: NextRequest) {
   console.log('🔄 Engine Mint API: POST request received');
   
-  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !VAULT_ACCESS_TOKEN) {
+  if (!ENGINE_URL || !ENGINE_ACCESS_TOKEN || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
     const missing = [
-      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
+      !ENGINE_URL && "ENGINE_URL",
+      !ENGINE_ACCESS_TOKEN && "ENGINE_ACCESS_TOKEN", 
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET",
-      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
-      !VAULT_ACCESS_TOKEN && "VAULT_ACCESS_TOKEN"
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
     console.error(`Missing: ${missing}`);
     return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
@@ -51,42 +54,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '"to" address and "metadataUri" are required.' }, { status: 400 });
     }
 
-    const client = createThirdwebClient({
-      secretKey: THIRDWEB_SECRET_KEY,
-    });
-
-    const contract = getContract({
-      client,
-      chain: amoy,
-      address: CONTRACT_ADDRESS,
-    });
-
-    const transaction = mintTo({
-      contract,
-      to,
-      nft: metadataUri,
-    });
+    // Usar Engine API diretamente
+    console.log('🚀 Calling Engine API:', `${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/erc721/mint-to`);
     
-    console.log("✅ API: Transaction prepared with existing metadata URI.");
-
-    const serverWallet = Engine.serverWallet({
-      address: BACKEND_WALLET_ADDRESS,
-      client: client,
-      vaultAccessToken: VAULT_ACCESS_TOKEN,
+    const engineResponse = await fetch(`${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/erc721/mint-to`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${ENGINE_ACCESS_TOKEN}`,
+        'x-backend-wallet-address': BACKEND_WALLET_ADDRESS,
+      },
+      body: JSON.stringify({
+        receiver: to,
+        metadata: {
+          name: 'Generated NFT',
+          description: 'AI Generated Sports NFT',
+          image: metadataUri.startsWith('ipfs://') ? metadataUri : `ipfs://${metadataUri}`,
+        },
+      }),
     });
 
-    const response = await serverWallet.enqueueTransaction({
-      transaction,
-    });
-    
-    console.log("✅ API: Transaction enqueued successfully! Response:", response);
-    
-    if (!response || !response.transactionId) {
-      console.error("❌ API ERROR: A resposta da Engine não continha o 'transactionId' esperado.", response);
-      throw new Error("A resposta da Engine é inválida.");
+    if (!engineResponse.ok) {
+      const errorText = await engineResponse.text();
+      console.error('❌ Engine API Error:', {
+        status: engineResponse.status,
+        statusText: engineResponse.statusText,
+        body: errorText
+      });
+      throw new Error(`Engine API error: ${engineResponse.status} - ${errorText}`);
     }
 
-    return NextResponse.json({ queueId: response.transactionId });
+    const engineResult = await engineResponse.json();
+    console.log('✅ Engine API Response:', engineResult);
+
+    return NextResponse.json({ 
+      queueId: engineResult.result?.queueId || engineResult.queueId,
+      transactionHash: engineResult.result?.transactionHash,
+      status: 'queued'
+    });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';

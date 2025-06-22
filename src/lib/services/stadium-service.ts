@@ -28,6 +28,7 @@ export interface CustomStadiumRequest {
   perspective?: string;
   atmosphere?: string;
   time_of_day?: string;
+  weather?: string;
   quality?: string;
 }
 
