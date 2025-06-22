@@ -130,6 +130,7 @@ class ImageGenerationRequest(BaseModel):
     quality: str = "standard"
     prompt: Optional[str] = None  # Para estádios
     type: str = "jersey"  # "jersey" ou "stadium"
+    reference_image_base64: Optional[str] = None  # Para análise com GPT-4 Vision
 
 class GenerationResponse(BaseModel):
     success: bool
@@ -178,9 +179,13 @@ class StadiumResponse(BaseModel):
 class UnifiedGenerator:
     def __init__(self):
         self.api_key = os.getenv('OPENAI_API_KEY')
+        self.openrouter_api_key = os.getenv('OPENROUTER_API_KEY')
         if not self.api_key:
             raise Exception("OPENAI_API_KEY não encontrada")
+        if not self.openrouter_api_key:
+            raise Exception("OPENROUTER_API_KEY não encontrada")
         self.client = OpenAI(api_key=self.api_key)
+        self.openrouter_base_url = "https://openrouter.ai/api/v1"
         self.setup_team_prompts()
 
     def setup_team_prompts(self):
@@ -220,16 +225,91 @@ class UnifiedGenerator:
         
         return self._generate_dalle3_image(final_prompt, request.quality)
 
+    def analyze_stadium_with_vision(self, image_base64: str, base_prompt: str) -> str:
+        """Analisa estádio usando GPT-4 Vision via OpenRouter"""
+        
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        prompt = f"""
+        Analyze this stadium image and enhance this base description: "{base_prompt}"
+        
+        Provide a detailed DALL-E 3 prompt that captures:
+        1. Architectural details you see
+        2. Atmosphere and crowd characteristics  
+        3. Lighting and time of day
+        4. Unique features and elements
+        5. Camera perspective and composition
+        
+        Enhance the base description with specific visual details from the image.
+        Return only the enhanced prompt text, no JSON or extra formatting.
+        """
+        
+        payload = {
+            "model": "openai/gpt-4o-mini",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": prompt
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{image_base64}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 500,
+            "temperature": 0.3
+        }
+        
+        try:
+            print(f"🔍 Analyzing stadium with GPT-4 Vision...")
+            
+            response = requests.post(
+                f"{self.openrouter_base_url}/chat/completions",
+                headers=headers,
+                json=payload,
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                enhanced_prompt = data['choices'][0]['message']['content']
+                print("✅ Stadium analysis completed")
+                return enhanced_prompt.strip()
+            else:
+                print(f"❌ OpenRouter error: {response.status_code}")
+                return base_prompt  # Fallback para prompt base
+                
+        except Exception as e:
+            print(f"❌ Vision analysis error: {str(e)}")
+            return base_prompt  # Fallback para prompt base
+
     def generate_stadium(self, request: ImageGenerationRequest) -> str:
-        """Gera um estádio usando o prompt fornecido."""
+        """Gera um estádio usando o prompt fornecido, com análise opcional de imagem de referência."""
         
         if not request.prompt:
             raise ValueError("Prompt é obrigatório para geração de estádios")
         
-        final_prompt = request.prompt
+        base_prompt = request.prompt
         
-        print(f"INFO: Gerando estádio com prompt customizado")
-        print(f"INFO: Prompt: {final_prompt[:100]}...")
+        # Se tem imagem de referência, usa GPT-4 Vision para analisar e melhorar o prompt
+        if request.reference_image_base64:
+            print(f"🔍 Stadium generation with reference image analysis...")
+            final_prompt = self.analyze_stadium_with_vision(request.reference_image_base64, base_prompt)
+        else:
+            print(f"🏟️ Stadium generation with text prompt only...")
+            final_prompt = base_prompt
+        
+        print(f"INFO: Final prompt: {final_prompt[:150]}...")
         
         return self._generate_dalle3_image(final_prompt, request.quality)
 
