@@ -20,11 +20,11 @@ load_dotenv()
 
 # --- Modelos de Dados ---
 class ImageGenerationRequest(BaseModel):
-    model_id: str = None
-    player_name: str = None
-    player_number: str = None
+    model_id: Optional[str] = None
+    player_name: Optional[str] = None
+    player_number: Optional[str] = None
     quality: str = "standard"
-    prompt: str = None  # Para estádios
+    prompt: Optional[str] = None  # Para estádios
     type: str = "jersey"  # "jersey" ou "stadium"
 
 class GenerationResponse(BaseModel):
@@ -158,11 +158,25 @@ async def generate_image_endpoint(request: ImageGenerationRequest):
         print(f"📦 Request: {request}")
         
         if request.type == "stadium":
+            # Validação para estádio
+            if not request.prompt:
+                return GenerationResponse(
+                    success=False,
+                    error="Prompt é obrigatório para geração de estádios"
+                )
+            
             # Geração de estádio
             print("🏟️ Generating stadium...")
             image_base64 = generator.generate_stadium(request)
             cost = 0.04 if request.quality == "standard" else 0.08
         else:
+            # Validação para jersey
+            if not request.model_id or not request.player_name or not request.player_number:
+                return GenerationResponse(
+                    success=False,
+                    error="model_id, player_name e player_number são obrigatórios para jerseys"
+                )
+            
             # Geração de jersey (padrão)
             print("👕 Generating jersey...")
             image_base64 = generator.generate_jersey(request)
