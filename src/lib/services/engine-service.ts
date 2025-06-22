@@ -69,7 +69,7 @@ export class EngineService {
       
     } catch (error) {
       console.error('❌ Engine: User mint failed:', error);
-      throw new Error(`User mint failed: ${error.message}`);
+      throw new Error(`User mint failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
