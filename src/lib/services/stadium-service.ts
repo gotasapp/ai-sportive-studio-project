@@ -96,7 +96,7 @@ const STADIUM_BASE_PROMPTS: Record<string, string> = {
 export class StadiumService {
   private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'; // API Local Unificada
   
-  async getAvailableStadiums(): Promise<StadiumInfo[]> {
+  static async getAvailableStadiums(): Promise<StadiumInfo[]> {
     try {
       // Temporariamente usando dados mock até resolver CORS
       console.log('🏟️ Loading stadium references from local data...');
@@ -126,8 +126,8 @@ export class StadiumService {
       
       // Construir prompt melhorado
       const enhancedPrompt = this.buildEnhancedPrompt({
-        baseDescription: basePrompt,
-        generation_style: request.generation_style,
+        architectural_analysis: basePrompt,
+        style: request.generation_style,
         perspective: request.perspective,
         atmosphere: request.atmosphere,
         time_of_day: request.time_of_day,
@@ -192,8 +192,8 @@ export class StadiumService {
     try {
       // Construir prompt melhorado
       const enhancedPrompt = this.buildEnhancedPrompt({
-        baseDescription: request.prompt,
-        generation_style: request.generation_style,
+        architectural_analysis: request.prompt,
+        style: request.generation_style,
         perspective: request.perspective,
         atmosphere: request.atmosphere,
         time_of_day: request.time_of_day,
@@ -248,23 +248,23 @@ export class StadiumService {
 
   // Método para construir prompt melhorado
   private buildEnhancedPrompt(params: {
-    baseDescription: string;
-    generation_style?: string;
+    architectural_analysis: string;
+    style?: string;
     perspective?: string;
     atmosphere?: string;
     time_of_day?: string;
     weather?: string;
   }): string {
-    let prompt = params.baseDescription;
+    let prompt = params.architectural_analysis;
     
     // Adicionar estilo
-    if (params.generation_style) {
+    if (params.style) {
       const styleMap: Record<string, string> = {
         'realistic': 'photorealistic, highly detailed',
         'cinematic': 'cinematic lighting, dramatic composition, movie-like quality',
         'dramatic': 'dramatic lighting, high contrast, epic atmosphere'
       };
-      prompt += `, ${styleMap[params.generation_style] || params.generation_style}`;
+      prompt += `, ${styleMap[params.style] || params.style}`;
     }
     
     // Adicionar perspectiva

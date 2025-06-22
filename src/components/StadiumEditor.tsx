@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { stadiumService, StadiumInfo, StadiumResponse } from '@/lib/services/stadium-service';
+import { StadiumService, StadiumInfo, StadiumResponse } from '@/lib/services/stadium-service';
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
@@ -190,7 +190,7 @@ export default function StadiumEditor() {
 
   const loadAvailableStadiums = async () => {
     try {
-      const stadiums = await stadiumService.getAvailableStadiums();
+      const stadiums = await StadiumService.getAvailableStadiums();
       setAvailableStadiums(stadiums);
       if (stadiums.length > 0) {
         setSelectedStadium(stadiums[0].id);
@@ -203,7 +203,7 @@ export default function StadiumEditor() {
 
   const checkApiStatus = async () => {
     try {
-      await stadiumService.checkHealth();
+      await StadiumService.checkHealth();
       setApiStatus(true);
     } catch (error) {
       setApiStatus(false);
@@ -483,7 +483,7 @@ export default function StadiumEditor() {
           custom_prompt: customPrompt || undefined,
           custom_reference_base64: customReferenceBase64 || undefined,
         };
-        response = await stadiumService.generateFromReference(request);
+        response = await StadiumService.generateFromReference(request);
       } else {
         // Generate custom only
         if (!customPrompt) {
@@ -501,7 +501,7 @@ export default function StadiumEditor() {
           time_of_day: timeOfDay,
           quality,
         };
-        response = await stadiumService.generateCustom(request);
+        response = await StadiumService.generateCustom(request);
       }
       
       if (response.success && response.generated_image_base64) {
