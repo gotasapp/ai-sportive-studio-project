@@ -5,7 +5,7 @@ import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette
 import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
 import Image from 'next/image'
 
-import { Dalle3Service } from '../lib/services/dalle3-service'
+// import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
 import { useWeb3 } from '../lib/useWeb3'
 import { useEngine } from '../lib/useEngine'

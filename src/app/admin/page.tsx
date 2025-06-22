@@ -1,5 +1,6 @@
 'use client'
 
+import AdminProtection from '@/components/AdminProtection'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -60,7 +61,8 @@ const systemAlerts = [
 
 export default function AdminDashboard() {
   return (
-    <div className="space-y-8">
+    <AdminProtection>
+      <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -285,5 +287,6 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
     </div>
+    </AdminProtection>
   )
 } 

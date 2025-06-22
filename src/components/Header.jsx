@@ -1,10 +1,12 @@
 'use client'
 
 import Link from 'next/link';
-import { ConnectButton } from "thirdweb/react";
+import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { polygon, mainnet } from "thirdweb/chains";
+import { Shield } from 'lucide-react';
+import { isAdmin } from '@/lib/admin-config';
 
 // Cliente Thirdweb simples
 const client = createThirdwebClient({
@@ -85,6 +87,9 @@ const supportedChains = [
 ];
 
 export default function Header() {
+  const account = useActiveAccount();
+  const userIsAdmin = isAdmin(account);
+  
   return (
     <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -110,9 +115,31 @@ export default function Header() {
           <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
             My NFTs
           </a>
+          
+          {/* Admin Panel - Only visible to admin users */}
+          {userIsAdmin && (
+            <Link 
+              href="/admin" 
+              className="flex items-center space-x-2 text-orange-400 hover:text-orange-300 transition-colors border border-orange-400/30 px-3 py-1 rounded-lg hover:border-orange-400/50 hover:bg-orange-400/10"
+            >
+              <Shield className="w-4 h-4" />
+              <span>Admin Panel</span>
+            </Link>
+          )}
         </nav>
 
         <div className="flex items-center space-x-4">
+          {/* Mobile Admin Button */}
+          {userIsAdmin && (
+            <Link 
+              href="/admin" 
+              className="md:hidden flex items-center space-x-1 text-orange-400 hover:text-orange-300 transition-colors border border-orange-400/30 px-2 py-1 rounded text-sm"
+            >
+              <Shield className="w-3 h-3" />
+              <span>Admin</span>
+            </Link>
+          )}
+          
           <ConnectButton
             client={client}
             chains={supportedChains}
