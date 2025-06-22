@@ -403,9 +403,9 @@ export default function ContentGenerator() {
       
       if (result.success) {
         console.log('✅ ENGINE NORMAL: Mint successful!', result)
-        setMintSuccess(`NFT minted successfully! Transaction: ${result.transactionHash}`)
-        setTransactionHash(result.transactionHash)
-        setMintedTokenId(result.tokenId)
+        setMintSuccess(`NFT minted successfully! Queue ID: ${result.queueId}`)
+        setTransactionHash(result.transactionHash || null)
+        setMintedTokenId(result.tokenId || null)
         setMintStatus('success')
       } else {
         throw new Error(result.error || 'Mint failed')
