@@ -94,7 +94,7 @@ const STADIUM_BASE_PROMPTS: Record<string, string> = {
 };
 
 export class StadiumService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com'; // API Unificada
+  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'; // API Local Unificada
   
   async getAvailableStadiums(): Promise<StadiumInfo[]> {
     try {
@@ -136,24 +136,35 @@ export class StadiumService {
 
       console.log('🏟️ Enhanced stadium prompt:', enhancedPrompt);
 
+      // Payload correto apenas para estádios
+      const payload = {
+        prompt: enhancedPrompt,
+        quality: request.quality || 'standard',
+        type: 'stadium'
+      };
+
+      console.log('📦 Stadium API Payload:', JSON.stringify(payload, null, 2));
+
       // Usar DALL-E 3 service diretamente por enquanto
       const response = await fetch(`${this.baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          prompt: enhancedPrompt,
-          quality: request.quality || 'standard',
-          type: 'stadium'
-        }),
+        body: JSON.stringify(payload),
       });
       
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
+      
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       
       const result = await response.json();
+      console.log('✅ API Success Response:', result);
       
       return {
         success: result.success,
@@ -187,16 +198,20 @@ export class StadiumService {
 
       console.log('🏟️ Custom stadium prompt:', enhancedPrompt);
 
+      const payload = {
+        prompt: enhancedPrompt,
+        quality: request.quality || 'standard',
+        type: 'stadium'
+      };
+
+      console.log('📦 Custom Stadium API Payload:', JSON.stringify(payload, null, 2));
+
       const response = await fetch(`${this.baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          prompt: enhancedPrompt,
-          quality: request.quality || 'standard',
-          type: 'stadium'
-        }),
+        body: JSON.stringify(payload),
       });
       
       if (!response.ok) {
