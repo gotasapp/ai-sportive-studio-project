@@ -396,7 +396,10 @@ export default function ContentGenerator() {
 
       console.log('🚀 Calling Engine mint...')
       
-      const result = await mintGasless(address, metadata)
+      const result = await mintGasless({
+        to: address,
+        metadataUri: ipfsResult.metadataUrl
+      })
       
       if (result.success) {
         console.log('✅ ENGINE NORMAL: Mint successful!', result)

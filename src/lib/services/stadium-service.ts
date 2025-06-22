@@ -121,6 +121,12 @@ export class StadiumService {
     }
   }
 
+  // Método estático para compatibilidade
+  static async checkHealth(): Promise<any> {
+    const instance = new StadiumService();
+    return instance.checkHealth();
+  }
+
   // Método estático para compatibilidade com código existente
   static async generateStadium(request: any): Promise<StadiumResponse> {
     const instance = new StadiumService();

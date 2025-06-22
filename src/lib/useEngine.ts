@@ -15,6 +15,8 @@ export interface EngineResponse {
   error?: string;
   details?: string;
   message?: string;
+  transactionHash?: string; // Para compatibilidade
+  tokenId?: string; // Para compatibilidade
 }
 
 export function useEngine() {
