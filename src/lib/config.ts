@@ -61,7 +61,8 @@ const NETWORKS = {
 const getActiveNetwork = () => {
   const networkType = USE_POLYGON ? 'polygon' : 'chz'
   const networkSuffix = USE_TESTNET ? '_testnet' : '_mainnet'
-  return NETWORKS[networkType + networkSuffix]
+  const networkKey = (networkType + networkSuffix) as keyof typeof NETWORKS
+  return NETWORKS[networkKey]
 }
 
 const ACTIVE_NETWORK = getActiveNetwork()
