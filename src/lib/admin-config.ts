@@ -4,6 +4,14 @@
  * Supports wallet, email, and social login admin access
  */
 
+import { getUserEmail } from 'thirdweb/wallets/in-app';
+import { createThirdwebClient } from 'thirdweb';
+
+// Cliente Thirdweb para acessar dados de usuário
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
+});
+
 // Admin wallet addresses - unified configuration
 // Supports both existing ADMIN_WALLET_ADDRESS and new NEXT_PUBLIC_ADMIN_WALLET_ADDRESS
 export const ADMIN_ADDRESSES = [
@@ -63,6 +71,38 @@ export function isAdmin(account: any): boolean {
   }
   
   // Future: Check other authentication methods
+  return false;
+}
+
+/**
+ * Check if user is admin with async email verification
+ * Use this for InApp wallets where email needs to be fetched
+ */
+export async function isAdminAsync(account: any, wallet: any): Promise<boolean> {
+  if (!account) return false;
+  
+  // Check wallet address first (faster)
+  if (account.address && isAdminAddress(account.address)) {
+    return true;
+  }
+  
+  // Check email from account object (if available)
+  if (account.email && isAdminEmail(account.email)) {
+    return true;
+  }
+  
+  // For InApp wallets, try to fetch email using getUserEmail
+  if (wallet && wallet.id === 'inApp') {
+    try {
+      const userEmail = await getUserEmail({ client });
+      if (userEmail && isAdminEmail(userEmail)) {
+        return true;
+      }
+    } catch (error) {
+      console.warn('Failed to fetch user email for admin check:', error);
+    }
+  }
+  
   return false;
 }
 

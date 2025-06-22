@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link';
-import { ConnectButton, useActiveAccount } from "thirdweb/react";
+import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { createThirdwebClient } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { polygon, mainnet } from "thirdweb/chains";
 import { Shield } from 'lucide-react';
-import { isAdmin } from '@/lib/admin-config';
+import { useState, useEffect } from 'react';
+import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 
 // Cliente Thirdweb simples
 const client = createThirdwebClient({
@@ -88,7 +89,42 @@ const supportedChains = [
 
 export default function Header() {
   const account = useActiveAccount();
-  const userIsAdmin = isAdmin(account);
+  const wallet = useActiveWallet();
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
+  const [adminCheckLoading, setAdminCheckLoading] = useState(false);
+
+  // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!account) {
+        setUserIsAdmin(false);
+        return;
+      }
+
+      setAdminCheckLoading(true);
+      
+      try {
+        // Primeiro, tenta verificação rápida (wallet address)
+        const quickCheck = isAdmin(account);
+        if (quickCheck) {
+          setUserIsAdmin(true);
+          setAdminCheckLoading(false);
+          return;
+        }
+
+        // Para InApp wallets, faz verificação async do email
+        const asyncCheck = await isAdminAsync(account, wallet);
+        setUserIsAdmin(asyncCheck);
+      } catch (error) {
+        console.error('Erro ao verificar status de admin no header:', error);
+        setUserIsAdmin(false);
+      } finally {
+        setAdminCheckLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [account, wallet]);
   
   return (
     <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
@@ -127,6 +163,14 @@ export default function Header() {
               <Shield className="w-4 h-4" />
               <span>Admin Panel</span>
             </Link>
+          )}
+          
+          {/* Loading indicator for admin check */}
+          {adminCheckLoading && account && (
+            <div className="flex items-center space-x-2 text-orange-400/50">
+              <div className="w-3 h-3 border border-orange-400/50 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-xs">Checking admin...</span>
+            </div>
           )}
         </nav>
 

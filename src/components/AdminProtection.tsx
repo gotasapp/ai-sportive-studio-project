@@ -1,9 +1,9 @@
 'use client';
 
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount, useActiveWallet } from 'thirdweb/react';
 import { Shield, Lock } from 'lucide-react';
-import { ReactNode } from 'react';
-import { isAdmin } from '@/lib/admin-config';
+import { ReactNode, useState, useEffect } from 'react';
+import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 
 interface AdminProtectionProps {
   children: ReactNode;
@@ -12,9 +12,45 @@ interface AdminProtectionProps {
 
 export default function AdminProtection({ children, fallback }: AdminProtectionProps) {
   const account = useActiveAccount();
+  const wallet = useActiveWallet();
+  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   const isConnected = !!account;
-  const userIsAdmin = isAdmin(account);
+
+  // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      setIsLoading(true);
+      
+      if (!account) {
+        setIsAdminUser(false);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // Primeiro, tenta verificação rápida (wallet address)
+        const quickCheck = isAdmin(account);
+        if (quickCheck) {
+          setIsAdminUser(true);
+          setIsLoading(false);
+          return;
+        }
+
+        // Para InApp wallets, faz verificação async do email
+        const asyncCheck = await isAdminAsync(account, wallet);
+        setIsAdminUser(asyncCheck);
+      } catch (error) {
+        console.error('Erro ao verificar status de admin:', error);
+        setIsAdminUser(false);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [account, wallet]);
   
   // Custom fallback component
   const defaultFallback = (
@@ -37,6 +73,15 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
                 <span className="text-sm">Connect wallet in the header</span>
               </div>
             </div>
+          ) : isLoading ? (
+            <div className="space-y-4">
+              <p className="text-gray-400">
+                Checking admin permissions...
+              </p>
+              <div className="flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            </div>
           ) : (
             <div className="space-y-4">
               <p className="text-gray-400">
@@ -50,10 +95,9 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
                       Wallet: {account.address}
                     </p>
                   )}
-                  {/* Email info may be available in future Thirdweb versions */}
-                  {(account as any)?.email && (
+                  {wallet?.id === 'inApp' && (
                     <p className="text-sm text-gray-300">
-                      Email: {(account as any).email}
+                      Login Type: Social/Email ({wallet.id})
                     </p>
                   )}
                 </div>
@@ -77,9 +121,21 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
       </div>
     </div>
   );
-  
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
+        <div className="flex items-center space-x-3 text-white">
+          <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+          <span>Checking admin permissions...</span>
+        </div>
+      </div>
+    );
+  }
+
   // Show fallback if not admin
-  if (!userIsAdmin) {
+  if (!isAdminUser) {
     return fallback || defaultFallback;
   }
   
@@ -96,7 +152,7 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
           <div className="text-xs text-orange-300">
             {account?.address ? 
               `${account.address.slice(0, 6)}...${account.address.slice(-4)}` :
-              (account as any)?.email || 'Social Login'
+              wallet?.id === 'inApp' ? 'Social Login' : 'Unknown'
             }
           </div>
         </div>
