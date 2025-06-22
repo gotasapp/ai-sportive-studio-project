@@ -17,7 +17,7 @@ if (!projectId) {
 const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks,
+  networks: networks as [typeof networks[0], ...typeof networks[]],
   defaultNetwork: networks[0], // CHZ Chain as default
   metadata: metadata,
   features: {
