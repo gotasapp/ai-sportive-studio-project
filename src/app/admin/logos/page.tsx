@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
-  LucideImage as Image,
+  LucideImage,
   Upload,
   Download,
   Edit,
@@ -25,6 +25,7 @@ import {
   FileImage,
   Zap
 } from 'lucide-react'
+import Image from 'next/image'
 
 // Mock data - in production will come from APIs
 const logosData = {
@@ -267,7 +268,7 @@ export default function LogosPage() {
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Total Logos</CardTitle>
-            <Image className="h-4 w-4 text-cyan-400" />
+            <LucideImage className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-cyan-300">{logosData.stats.totalLogos}</div>
@@ -425,7 +426,7 @@ export default function LogosPage() {
                   </div>
                   {/* Placeholder for logo image */}
                   <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                    <Image src={logo.url} alt={`${logo.name} logo`} width={64} height={64} className="w-16 h-16 text-gray-600" />
+                    <LucideImage className="w-16 h-16 text-gray-600" />
                   </div>
                 </div>
                 
