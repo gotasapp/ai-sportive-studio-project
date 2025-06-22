@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Upload, Eye, Wand2, Download, DollarSign, Clock, Camera, Zap } from 'lucide-react'
-import { StadiumService, stadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
+import { StadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
 import Image from 'next/image'
 
 export default function StadiumsPage() {
@@ -59,7 +59,7 @@ export default function StadiumsPage() {
     try {
       const processed = await StadiumService.processImageUpload(selectedFile)
       // Use generateCustom for analysis with custom reference
-      const result = await stadiumService.generateCustom({
+      const result = await StadiumService.generateCustom({
         prompt: 'Analyze this stadium image and describe its architecture, atmosphere, and characteristics',
         reference_image_base64: processed.base64,
         quality: 'standard'
@@ -86,7 +86,7 @@ export default function StadiumsPage() {
     try {
       const processed = await StadiumService.processImageUpload(selectedFile)
       // Use generateCustom for custom stadium generation
-      const result = await stadiumService.generateCustom({
+      const result = await StadiumService.generateCustom({
         prompt: `Generate a ${generationStyle} stadium with ${atmosphere} atmosphere during ${timeOfDay} with ${weather} weather conditions`,
         reference_image_base64: processed.base64,
         generation_style: generationStyle,
