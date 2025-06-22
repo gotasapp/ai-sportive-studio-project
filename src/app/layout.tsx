@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import AppProviders from "@/lib/AppProviders";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "AI Sports NFT Generator",
-  description: "Generate and mint sports NFTs with AI on Chiliz Chain",
+  title: "Chliz Fan NFT",
+  description: "Generate and mint sports NFTs with AI - Jerseys and Stadiums",
 };
 
 export default async function RootLayout({
@@ -17,6 +18,7 @@ export default async function RootLayout({
       <body className="antialiased">
         <AppProviders>
           {children}
+          <MobileBottomNav />
         </AppProviders>
       </body>
     </html>

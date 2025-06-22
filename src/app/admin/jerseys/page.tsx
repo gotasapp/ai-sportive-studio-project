@@ -95,7 +95,7 @@ export default function JerseysConfig() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold neon-text">Jersey Configuration</h1>
+          <h1 className="text-3xl font-bold text-gray-200">Jersey Configuration</h1>
           <p className="text-gray-400 mt-2">AI prompt engineering and generation settings</p>
         </div>
         <div className="flex items-center space-x-4">

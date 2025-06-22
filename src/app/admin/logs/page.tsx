@@ -210,7 +210,7 @@ export default function LogsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold neon-text">System Logs</h1>
+          <h1 className="text-3xl font-bold text-gray-200">System Logs</h1>
           <p className="text-gray-400 mt-2">Monitor system activity and audit trails</p>
         </div>
         <div className="flex items-center space-x-4">

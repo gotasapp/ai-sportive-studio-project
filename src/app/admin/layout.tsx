@@ -113,8 +113,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Shield className="w-5 h-5 text-black" />
               </div>
               <div>
-                <h1 className="text-lg font-bold neon-text">Admin Panel</h1>
-                <p className="text-xs text-cyan-400/70">AI Sports NFT</p>
+                <h1 className="text-lg font-bold text-gray-200">Admin Panel</h1>
+                <p className="text-xs text-cyan-400/70">Chliz Fan NFT</p>
               </div>
             </div>
             <Button
@@ -177,13 +177,16 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-4">
             <div className="flex items-center justify-between text-sm text-gray-400">
               <span>Admin User</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-gray-400 hover:text-red-400 p-2"
-              >
-                <LogOut className="w-4 h-4" />
-              </Button>
+              <Link href="/">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-gray-400 hover:text-red-400 p-2"
+                  title="Voltar à página inicial"
+                >
+                  <LogOut className="w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </div>

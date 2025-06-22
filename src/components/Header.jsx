@@ -97,12 +97,12 @@ export default function Header() {
           <div className="w-8 h-8 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-lg flex items-center justify-center">
             <span className="text-black font-bold text-sm">AI</span>
           </div>
-          <h1 className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-            Sports NFT Generator
+          <h1 className="text-sm md:text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+            Chliz Fan NFT
           </h1>
         </div>
 
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav className="hidden lg:flex items-center space-x-8">
           <Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors">
             Jerseys
           </Link>
@@ -129,17 +129,6 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
-          {/* Mobile Admin Button */}
-          {userIsAdmin && (
-            <Link 
-              href="/admin" 
-              className="md:hidden flex items-center space-x-1 text-orange-400 hover:text-orange-300 transition-colors border border-orange-400/30 px-2 py-1 rounded text-sm"
-            >
-              <Shield className="w-3 h-3" />
-              <span>Admin</span>
-            </Link>
-          )}
-          
           <ConnectButton
             client={client}
             chains={supportedChains}

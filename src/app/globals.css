@@ -443,3 +443,31 @@ body {
   color: rgba(0, 255, 255, 1);
   box-shadow: 0 0 12px rgba(0, 255, 255, 0.3);
 }
+
+/* Mobile Bottom Navigation Glassmorphism */
+.mobile-nav-glass {
+  background: rgba(0, 5, 24, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0, 255, 255, 0.2);
+  box-shadow: 
+    0 -4px 20px rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(0, 255, 255, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Mobile Navigation Auto-Hide Animation */
+.mobile-nav-autohide {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-nav-autohide.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+}
+
+.mobile-nav-autohide.visible {
+  transform: translateY(0);
+  opacity: 1;
+}

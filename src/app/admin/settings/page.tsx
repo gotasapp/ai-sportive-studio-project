@@ -128,7 +128,7 @@ export default function SettingsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold neon-text">System Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-200">System Settings</h1>
           <p className="text-gray-400 mt-2">Configure platform settings and integrations</p>
         </div>
         <div className="flex items-center space-x-4">
@@ -366,7 +366,7 @@ export default function SettingsPage() {
 
               {/* Rate Limits */}
               <div className="p-4 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
-                <h3 className="font-semibold text-cyan-300 mb-4">Rate Limits</h3>
+                <h3 className="font-semibold text-gray-200 mb-4">Rate Limits</h3>
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Per Minute</label>
@@ -574,7 +574,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-cyan-300">Notification Channels</h3>
+                  <h3 className="font-semibold text-gray-200">Notification Channels</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
@@ -615,7 +615,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-cyan-300">Alert Thresholds</h3>
+                  <h3 className="font-semibold text-gray-200">Alert Thresholds</h3>
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium mb-2">Error Rate (%)</label>
@@ -664,7 +664,7 @@ export default function SettingsPage() {
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-cyan-300">Authentication</h3>
+                  <h3 className="font-semibold text-gray-200">Authentication</h3>
                   <div className="space-y-3">
                     <div>
                       <label className="block text-sm font-medium mb-2">Session Timeout (hours)</label>
@@ -705,7 +705,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-cyan-300">CORS & Origins</h3>
+                  <h3 className="font-semibold text-gray-200">CORS & Origins</h3>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-sm">CORS Enabled</span>

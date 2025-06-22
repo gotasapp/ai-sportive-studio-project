@@ -102,7 +102,7 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold neon-text">Analytics & Insights</h1>
+          <h1 className="text-3xl font-bold text-gray-200">Analytics & Insights</h1>
           <p className="text-gray-400 mt-2">Performance metrics and business intelligence</p>
         </div>
         <div className="flex items-center space-x-4">

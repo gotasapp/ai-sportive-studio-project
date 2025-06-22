@@ -66,8 +66,8 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold neon-text">Dashboard</h1>
-          <p className="text-gray-400 mt-2">AI Sports NFT Generator - Control Center</p>
+          <h1 className="text-3xl font-bold text-gray-200">Dashboard</h1>
+          <p className="text-gray-400 mt-2">Chliz Fan NFT - Control Center</p>
         </div>
         <div className="flex items-center space-x-4">
           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -110,7 +110,7 @@ export default function AdminDashboard() {
             <Image className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-cyan-300">{metrics.nftsGenerated.today}</div>
+            <div className="text-2xl font-bold text-gray-200">{metrics.nftsGenerated.today}</div>
             <div className="text-xs text-gray-400 space-y-1">
               <div>Today: {metrics.nftsGenerated.today}</div>
               <div>This Week: {metrics.nftsGenerated.week}</div>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
             <Users className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-cyan-300">{metrics.users.active}</div>
+            <div className="text-2xl font-bold text-gray-200">{metrics.users.active}</div>
             <div className="text-xs text-gray-400 space-y-1">
               <div>Online Now: {metrics.users.active}</div>
               <div>New Today: {metrics.users.new}</div>
@@ -150,7 +150,7 @@ export default function AdminDashboard() {
             <CheckCircle className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-300">{metrics.system.successRate}%</div>
+            <div className="text-2xl font-bold text-gray-200">{metrics.system.successRate}%</div>
             <div className="text-xs text-gray-400 space-y-1">
               <div>Avg Generation: {metrics.system.avgGenerationTime}s</div>
               <div>System Uptime: {metrics.system.uptime}%</div>
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             <DollarSign className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-cyan-300">${metrics.revenue.today}</div>
+            <div className="text-2xl font-bold text-gray-200">${metrics.revenue.today}</div>
             <div className="text-xs text-gray-400 space-y-1">
               <div>Today: ${metrics.revenue.today}</div>
               <div>This Month: ${metrics.revenue.month}</div>

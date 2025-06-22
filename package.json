@@ -1,5 +1,5 @@
 {
-  "name": "ai-nft-jersey-generator",
+  "name": "chliz-fan-nft",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -61,7 +61,7 @@
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3"
   },
-  "description": "Este projeto é um gerador de NFTs de camisas de futebol usando Stable Diffusion com prompt base fixo para garantir consistência visual absoluta, enquanto injeta dinamicamente cores e logos oficiais dos times obtidos da API gratuita TheSportsDB.",
+  "description": "Chliz Fan NFT - Gerador de NFTs de camisas de futebol e estádios usando IA para criar tokens únicos de times de futebol.",
   "main": "postcss.config.js",
   "keywords": [],
   "author": "",
