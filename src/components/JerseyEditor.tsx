@@ -363,7 +363,21 @@ export default function JerseyEditor() {
         quality: quality
       };
 
-      const result = await Dalle3Service.generateImage(request);
+      // Usar API Render diretamente (mesmo que StadiumService)
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
+      const response = await fetch(`${baseUrl}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
 
       if (result.success && result.image_base64) {
         const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);

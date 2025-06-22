@@ -139,7 +139,11 @@ export default function StadiumEditor() {
 
   // Convert base64 to blob when image is generated
   useEffect(() => {
+    console.log('🔄 useEffect triggered for blob conversion');
+    console.log('📊 result?.generated_image_base64 exists:', !!result?.generated_image_base64);
+    
     if (result?.generated_image_base64) {
+      console.log('🔄 Converting base64 to blob...');
       try {
         const byteCharacters = atob(result.generated_image_base64);
         const byteNumbers = new Array(byteCharacters.length);
@@ -149,9 +153,12 @@ export default function StadiumEditor() {
         const byteArray = new Uint8Array(byteNumbers);
         const blob = new Blob([byteArray], { type: 'image/png' });
         setGeneratedImageBlob(blob);
+        console.log('✅ Blob created successfully, size:', blob.size);
       } catch (error) {
-        console.error('Error converting base64 to blob:', error);
+        console.error('❌ Error converting base64 to blob:', error);
       }
+    } else {
+      console.log('⚠️ No image data to convert to blob');
     }
   }, [result?.generated_image_base64]);
 
@@ -505,9 +512,13 @@ export default function StadiumEditor() {
       }
       
       if (response.success && response.generated_image_base64) {
+        console.log('✅ Stadium generation successful!');
+        console.log('📸 Image data length:', response.generated_image_base64.length);
         setGeneratedImage(`data:image/png;base64,${response.generated_image_base64}`);
         setResult(response);
+        console.log('🎯 Result set, useEffect should trigger blob conversion');
       } else {
+        console.log('❌ Stadium generation failed:', response.error);
         setError(response.error || 'Generation failed');
       }
     } catch (error) {

@@ -173,7 +173,7 @@ export class StadiumService {
       
       return {
         success: result.success,
-        generated_image_base64: result.image_url || result.generated_image_base64,
+        generated_image_base64: result.image_base64 || result.generated_image_base64 || result.image_url,
         reference_used: request.stadium_id,
         reference_source: 'predefined',
         cost_usd: 0.04, // DALL-E 3 cost
@@ -232,7 +232,7 @@ export class StadiumService {
       
       return {
         success: result.success,
-        generated_image_base64: result.image_url || result.generated_image_base64,
+        generated_image_base64: result.image_base64 || result.generated_image_base64 || result.image_url,
         reference_used: 'custom',
         reference_source: 'custom_prompt',
         cost_usd: 0.04,
