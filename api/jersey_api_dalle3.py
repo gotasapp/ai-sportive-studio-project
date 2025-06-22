@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-API FastAPI para Geração de Jerseys e Estádios com DALL-E 3
-Sistema baseado em prompts otimizados específicos para cada time e estádio.
+API Unificada - Jerseys + Stadiums para Render Deploy
+Combina as funcionalidades de geração de jerseys e estádios em uma única API
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,12 +13,116 @@ from io import BytesIO
 from PIL import Image
 import os
 from dotenv import load_dotenv
-from typing import Optional
+from typing import Optional, Dict, Any, List
 from pathlib import Path
 
 load_dotenv()
 
-# --- Modelos de Dados ---
+# Configurações
+OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+STADIUM_REFERENCES_PATH = Path("stadium_references")
+
+# --- STADIUM PROMPTS SYSTEM (inline for Render) ---
+STADIUM_NFT_BASE_PROMPT_EXTERNAL = """
+Create a premium NFT-quality stadium image featuring: {architectural_analysis}
+
+VISUAL REQUIREMENTS:
+- Stunning architectural photography showcasing stadium grandeur
+- Professional sports venue composition with perfect lighting
+- Ultra-high resolution detail suitable for NFT artwork
+- Dramatic perspective highlighting architectural excellence
+- Clean composition without text, logos, or distracting elements
+
+TECHNICAL SPECS:
+- Hyperrealistic architectural rendering
+- Premium NFT artwork quality with exceptional detail
+- Professional stadium photography aesthetic
+- Perfect lighting and atmospheric conditions
+"""
+
+STADIUM_STYLE_PROMPTS = {
+    "realistic_external": STADIUM_NFT_BASE_PROMPT_EXTERNAL,
+    "realistic": STADIUM_NFT_BASE_PROMPT_EXTERNAL,
+    "cinematic": STADIUM_NFT_BASE_PROMPT_EXTERNAL + "\nCINEMATIC: Wide-angle shot, dramatic depth of field, epic scale, movie-quality lighting.",
+    "dramatic": STADIUM_NFT_BASE_PROMPT_EXTERNAL + "\nDRAMATIC: High contrast lighting, intense floodlights, epic larger-than-life presentation.",
+}
+
+ATMOSPHERE_MODIFIERS = {
+    "packed": "Stadium filled with passionate fans, electric atmosphere",
+    "half_full": "Stadium moderately filled, balanced crowd energy", 
+    "empty": "Empty stadium showcasing pure architectural beauty"
+}
+
+TIME_MODIFIERS = {
+    "day": "Bright daylight, natural sun illumination, vibrant colors",
+    "night": "Stadium floodlights, dramatic night atmosphere, city lights",
+    "sunset": "Golden hour lighting, warm sunset colors, romantic atmosphere"
+}
+
+WEATHER_MODIFIERS = {
+    "clear": "Perfect clear weather, optimal visibility",
+    "dramatic": "Dramatic sky, interesting cloud formations, dynamic lighting",
+    "cloudy": "Overcast sky, soft diffused lighting, moody atmosphere"
+}
+
+def build_enhanced_stadium_prompt(
+    architectural_analysis: str,
+    style: str = "realistic",
+    perspective: str = "external", 
+    atmosphere: str = "packed",
+    time_of_day: str = "day",
+    weather: str = "clear",
+    custom_additions: str = ""
+) -> str:
+    """
+    Constrói prompt conciso para geração de estádio NFT
+    """
+    
+    prompt_key = f"{style}_{perspective}"
+    if prompt_key not in STADIUM_STYLE_PROMPTS:
+        prompt_key = style if style in STADIUM_STYLE_PROMPTS else "realistic"
+    
+    base_prompt = STADIUM_STYLE_PROMPTS[prompt_key]
+    enhanced_prompt = base_prompt.format(architectural_analysis=architectural_analysis)
+    
+    # Adicionar modificadores
+    modifiers = []
+    
+    if atmosphere in ATMOSPHERE_MODIFIERS:
+        modifiers.append(ATMOSPHERE_MODIFIERS[atmosphere])
+    
+    if time_of_day in TIME_MODIFIERS:
+        modifiers.append(TIME_MODIFIERS[time_of_day])
+    
+    if weather in WEATHER_MODIFIERS:
+        modifiers.append(WEATHER_MODIFIERS[weather])
+    
+    if modifiers:
+        enhanced_prompt += f"\n\nSPECIFIC: {', '.join(modifiers)}"
+    
+    if custom_additions:
+        custom_limited = custom_additions[:200] if len(custom_additions) > 200 else custom_additions
+        enhanced_prompt += f"\nCUSTOM: {custom_limited}"
+    
+    if len(enhanced_prompt) > 3800:
+        lines = enhanced_prompt.split('\n')
+        essential_lines = []
+        current_length = 0
+        
+        for line in lines:
+            if current_length + len(line) + 1 <= 3800:
+                essential_lines.append(line)
+                current_length += len(line) + 1
+            else:
+                break
+        
+        enhanced_prompt = '\n'.join(essential_lines)
+        enhanced_prompt += "\nPremium NFT quality, architectural excellence."
+    
+    return enhanced_prompt
+
+# --- MODELOS DE DADOS ---
 class ImageGenerationRequest(BaseModel):
     model_id: Optional[str] = None
     player_name: Optional[str] = None
@@ -34,7 +138,43 @@ class GenerationResponse(BaseModel):
     cost_usd: Optional[float] = None
     error: Optional[str] = None
 
-# --- Gerador Principal ---
+class StadiumReferenceRequest(BaseModel):
+    stadium_id: str
+    reference_type: str = "atmosphere"
+    generation_style: str = "realistic"
+    perspective: str = "external"
+    atmosphere: str = "packed"
+    time_of_day: str = "day"
+    weather: str = "clear"
+    quality: str = "standard"
+    custom_prompt: Optional[str] = None
+    custom_reference_base64: Optional[str] = None
+
+class CustomStadiumRequest(BaseModel):
+    prompt: str
+    reference_image_base64: Optional[str] = None
+    generation_style: str = "realistic"
+    perspective: str = "external"
+    atmosphere: str = "packed"
+    time_of_day: str = "day"
+    quality: str = "standard"
+
+class StadiumInfo(BaseModel):
+    id: str
+    name: str
+    available_references: List[str]
+
+class StadiumResponse(BaseModel):
+    success: bool
+    analysis: Optional[Dict[str, Any]] = None
+    generated_image_base64: Optional[str] = None
+    reference_used: Optional[str] = None
+    reference_source: Optional[str] = None
+    error: Optional[str] = None
+    cost_usd: Optional[float] = None
+    prompt_used: Optional[str] = None
+
+# --- GERADOR UNIFICADO ---
 class UnifiedGenerator:
     def __init__(self):
         self.api_key = os.getenv('OPENAI_API_KEY')
@@ -69,7 +209,6 @@ class UnifiedGenerator:
         if team_name not in self.team_prompts:
             raise ValueError(f"Time '{team_name}' não tem prompt configurado")
         
-        # Pega o template do prompt e substitui os placeholders
         prompt_template = self.team_prompts[team_name]
         final_prompt = prompt_template.format(
             PLAYER_NAME=request.player_name.upper(),
@@ -87,7 +226,6 @@ class UnifiedGenerator:
         if not request.prompt:
             raise ValueError("Prompt é obrigatório para geração de estádios")
         
-        # Usar o prompt do frontend diretamente
         final_prompt = request.prompt
         
         print(f"INFO: Gerando estádio com prompt customizado")
@@ -98,7 +236,6 @@ class UnifiedGenerator:
     def _generate_dalle3_image(self, prompt: str, quality: str = "standard") -> str:
         """Gera imagem usando DALL-E 3"""
         
-        # Geração da imagem
         generation_response = self.client.images.generate(
             model="dall-e-3",
             prompt=prompt,
@@ -118,15 +255,15 @@ class UnifiedGenerator:
         else:
             raise Exception(f"Erro ao baixar imagem do DALL-E 3: {img_response.status_code}")
 
-# --- Configuração da API FastAPI ---
-app = FastAPI(title="Unified Generator API - Jerseys + Stadiums", version="3.0.0")
+# --- CONFIGURAÇÃO DA API FASTAPI ---
+app = FastAPI(title="Unified Generator API - Jerseys + Stadiums", version="4.0.0")
 
 # Lista de domínios permitidos
 origins = [
     "http://localhost",
     "http://localhost:3000",
     "https://jersey-generator-ai2-git-master-jeffnight15s-projects.vercel.app",
-    "https://jersey-generator-ai2.vercel.app" # Adicionando o domínio principal também
+    "https://jersey-generator-ai2.vercel.app"
 ]
 
 app.add_middleware(
@@ -144,7 +281,7 @@ async def root():
     return {
         "status": "online", 
         "service": "Unified Generator API - Jerseys + Stadiums", 
-        "version": "3.0.0",
+        "version": "4.0.0",
         "endpoints": {
             "generate": "POST /generate - Gera jerseys ou estádios baseado no type",
             "teams": "GET /teams - Lista times disponíveis",
