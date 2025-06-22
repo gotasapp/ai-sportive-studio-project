@@ -215,8 +215,8 @@ export default function JerseyEditor() {
 
       console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
       setMintStatus('pending');
-      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId}`);
-      setMintedTokenId(result.queueId);
+      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId || 'N/A'}`);
+      setMintedTokenId(result.queueId || null);
       
     } catch (error: any) {
       console.error('❌ ENGINE MINT (GASLESS): Mint failed:', error)
@@ -356,6 +356,7 @@ export default function JerseyEditor() {
     try {
       const request: ImageGenerationRequest = {
         model_id: `${selectedTeam.toLowerCase()}_${selectedStyle}`,
+        team: selectedTeam,
         player_name: playerName,
         player_number: playerNumber,
         quality: quality

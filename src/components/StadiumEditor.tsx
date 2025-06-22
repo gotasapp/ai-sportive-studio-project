@@ -340,10 +340,10 @@ export default function StadiumEditor() {
         metadataUri: ipfsResult.metadataUrl,
       });
 
-      console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
-      setMintStatus('pending');
-      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId}`);
-      setMintedTokenId(result.queueId);
+              console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
+        setMintStatus('pending');
+        setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId || 'N/A'}`);
+        setMintedTokenId(result.queueId || null);
       
     } catch (error: any) {
       console.error('❌ ENGINE MINT (GASLESS): Mint failed:', error)
