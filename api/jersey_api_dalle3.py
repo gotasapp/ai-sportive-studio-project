@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-API FastAPI para Geração de Jerseys com DALL-E 3
-Sistema baseado em prompts otimizados específicos para cada time.
+API FastAPI para Geração de Jerseys e Estádios com DALL-E 3
+Sistema baseado em prompts otimizados específicos para cada time e estádio.
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -20,19 +20,22 @@ load_dotenv()
 
 # --- Modelos de Dados ---
 class ImageGenerationRequest(BaseModel):
-    model_id: str
-    player_name: str
-    player_number: str
+    model_id: str = None
+    player_name: str = None
+    player_number: str = None
     quality: str = "standard"
+    prompt: str = None  # Para estádios
+    type: str = "jersey"  # "jersey" ou "stadium"
 
 class GenerationResponse(BaseModel):
     success: bool
     image_base64: Optional[str] = None
+    image_url: Optional[str] = None
     cost_usd: Optional[float] = None
     error: Optional[str] = None
 
 # --- Gerador Principal ---
-class JerseyGenerator:
+class UnifiedGenerator:
     def __init__(self):
         self.api_key = os.getenv('OPENAI_API_KEY')
         if not self.api_key:
@@ -58,7 +61,7 @@ class JerseyGenerator:
         """Extrai o nome do time do model_id"""
         return model_id.split('_')[0].lower()
 
-    def generate_image(self, request: ImageGenerationRequest) -> str:
+    def generate_jersey(self, request: ImageGenerationRequest) -> str:
         """Gera uma camisa usando prompt otimizado específico do time."""
         
         team_name = self._get_team_name_from_model_id(request.model_id)
@@ -76,12 +79,31 @@ class JerseyGenerator:
         print(f"INFO: Gerando {team_name} com prompt otimizado")
         print(f"INFO: Prompt: {final_prompt[:100]}...")
         
+        return self._generate_dalle3_image(final_prompt, request.quality)
+
+    def generate_stadium(self, request: ImageGenerationRequest) -> str:
+        """Gera um estádio usando o prompt fornecido."""
+        
+        if not request.prompt:
+            raise ValueError("Prompt é obrigatório para geração de estádios")
+        
+        # Usar o prompt do frontend diretamente
+        final_prompt = request.prompt
+        
+        print(f"INFO: Gerando estádio com prompt customizado")
+        print(f"INFO: Prompt: {final_prompt[:100]}...")
+        
+        return self._generate_dalle3_image(final_prompt, request.quality)
+
+    def _generate_dalle3_image(self, prompt: str, quality: str = "standard") -> str:
+        """Gera imagem usando DALL-E 3"""
+        
         # Geração da imagem
         generation_response = self.client.images.generate(
             model="dall-e-3",
-            prompt=final_prompt,
+            prompt=prompt,
             size="1024x1024",
-            quality=request.quality,
+            quality=quality,
             n=1
         )
         
@@ -97,7 +119,7 @@ class JerseyGenerator:
             raise Exception(f"Erro ao baixar imagem do DALL-E 3: {img_response.status_code}")
 
 # --- Configuração da API FastAPI ---
-app = FastAPI(title="Jersey Generator API", version="2.0.0")
+app = FastAPI(title="Unified Generator API - Jerseys + Stadiums", version="3.0.0")
 
 # Lista de domínios permitidos
 origins = [
@@ -115,24 +137,48 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-generator = JerseyGenerator()
+generator = UnifiedGenerator()
 
 @app.get("/")
 async def root():
-    return {"status": "online", "service": "Jersey Generator API", "version": "2.0.0"}
+    return {
+        "status": "online", 
+        "service": "Unified Generator API - Jerseys + Stadiums", 
+        "version": "3.0.0",
+        "endpoints": {
+            "generate": "POST /generate - Gera jerseys ou estádios baseado no type",
+            "teams": "GET /teams - Lista times disponíveis",
+            "health": "GET /health - Health check"
+        }
+    }
 
 @app.post("/generate", response_model=GenerationResponse)
 async def generate_image_endpoint(request: ImageGenerationRequest):
     try:
-        image_base64 = generator.generate_image(request)
+        print(f"📦 Request: {request}")
+        
+        if request.type == "stadium":
+            # Geração de estádio
+            print("🏟️ Generating stadium...")
+            image_base64 = generator.generate_stadium(request)
+            cost = 0.04 if request.quality == "standard" else 0.08
+        else:
+            # Geração de jersey (padrão)
+            print("👕 Generating jersey...")
+            image_base64 = generator.generate_jersey(request)
+            cost = 0.045
+        
         return GenerationResponse(
             success=True,
             image_base64=image_base64,
-            cost_usd=0.045  # Custo estimado
+            cost_usd=cost
         )
     except Exception as e:
         print(f"ERROR: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return GenerationResponse(
+            success=False,
+            error=str(e)
+        )
 
 # --- Health Check Endpoint ---
 @app.get("/health")

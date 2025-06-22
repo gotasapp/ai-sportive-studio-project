@@ -313,8 +313,8 @@ Provide a detailed architectural description for NFT generation."""
                 
                 # Usar sistema de prompts premium
                 enhanced_prompt = build_enhanced_stadium_prompt(
-                    base_description=base_prompt,
-                    generation_style=request.generation_style,
+                    architectural_analysis=base_prompt,
+                    style=request.generation_style,
                     perspective=request.perspective,
                     atmosphere=request.atmosphere,
                     time_of_day=request.time_of_day,
@@ -352,8 +352,8 @@ Provide a detailed architectural description for NFT generation."""
                     base_prompt = request.custom_prompt or "Modern stadium"
                 
                 enhanced_prompt = build_enhanced_stadium_prompt(
-                    base_description=base_prompt,
-                    generation_style=request.generation_style,
+                    architectural_analysis=base_prompt,
+                    style=request.generation_style,
                     perspective=request.perspective,
                     atmosphere=request.atmosphere,
                     time_of_day=request.time_of_day,
@@ -408,8 +408,8 @@ Provide a detailed architectural description for NFT generation."""
             
             # Construir prompt aprimorado
             enhanced_prompt = build_enhanced_stadium_prompt(
-                base_description=base_prompt,
-                generation_style=request.generation_style,
+                architectural_analysis=base_prompt,
+                style=request.generation_style,
                 perspective=request.perspective,
                 atmosphere=request.atmosphere,
                 time_of_day=request.time_of_day
