@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Upload, Eye, Wand2, Download, DollarSign, Clock, Camera, Zap } from 'lucide-react'
 import { StadiumService, stadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
+import Image from 'next/image'
 
 export default function StadiumsPage() {
   // Estados principais
@@ -156,10 +157,12 @@ export default function StadiumsPage() {
             >
               {imagePreview ? (
                 <div className="space-y-4">
-                  <img 
+                  <Image 
                     src={imagePreview} 
                     alt="Preview" 
                     className="max-w-full max-h-64 mx-auto rounded-lg shadow-sm"
+                    width={256}
+                    height={256}
                   />
                   <p className="text-sm text-muted-foreground">
                     {selectedFile?.name} ({(selectedFile?.size || 0 / 1024 / 1024).toFixed(2)} MB)
@@ -409,10 +412,12 @@ export default function StadiumsPage() {
                     
                     {generationResult.generated_image_base64 && (
                       <div className="flex justify-center">
-                        <img 
+                        <Image 
                           src={StadiumService.base64ToImageUrl(generationResult.generated_image_base64)}
                           alt="Generated Stadium"
                           className="max-w-full max-h-96 rounded-lg shadow-lg"
+                          width={384}
+                          height={256}
                         />
                       </div>
                     )}

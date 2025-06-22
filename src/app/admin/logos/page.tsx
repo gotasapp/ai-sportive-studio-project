@@ -25,6 +25,7 @@ import {
   FileImage,
   Zap
 } from 'lucide-react'
+import Image from 'next/image'
 
 // Mock data - in production will come from APIs
 const logosData = {
@@ -425,7 +426,7 @@ export default function LogosPage() {
                   </div>
                   {/* Placeholder for logo image */}
                   <div className="w-full h-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center">
-                    <Image className="w-16 h-16 text-gray-600" />
+                    <Image src={logo.url} alt={`${logo.name} logo`} width={64} height={64} className="w-16 h-16 text-gray-600" />
                   </div>
                 </div>
                 

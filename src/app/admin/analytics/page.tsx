@@ -141,7 +141,7 @@ export default function AnalyticsPage() {
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Total NFTs</CardTitle>
-            <Image className="h-4 w-4 text-cyan-400" />
+            <img src="/path/to/image.png" alt="Total NFTs" className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-cyan-300">{analyticsData.overview.totalNFTs.toLocaleString()}</div>
@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-cyan-400" />
+            <img src="/path/to/image.png" alt="Active Users" className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-cyan-300">{analyticsData.overview.totalUsers.toLocaleString()}</div>
@@ -169,7 +169,7 @@ export default function AnalyticsPage() {
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-cyan-400" />
+            <img src="/path/to/image.png" alt="Revenue" className="h-4 w-4 text-cyan-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-cyan-300">${analyticsData.overview.totalRevenue.toLocaleString()}</div>
@@ -183,12 +183,12 @@ export default function AnalyticsPage() {
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Success Rate</CardTitle>
-            <BarChart3 className="h-4 w-4 text-green-400" />
+            <img src="/path/to/image.png" alt="Success Rate" className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-300">{analyticsData.overview.successRate}%</div>
             <div className="flex items-center space-x-1 mt-2">
-              <Clock className="h-3 w-3 text-blue-400" />
+              <img src="/path/to/image.png" alt="Clock" className="h-3 w-3 text-blue-400" />
               <span className="text-xs text-blue-400">Avg: {analyticsData.overview.avgGenerationTime}s</span>
             </div>
           </CardContent>
@@ -218,7 +218,7 @@ export default function AnalyticsPage() {
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Trophy className="h-5 w-5 text-cyan-400" />
+                  <img src="/path/to/image.png" alt="Trophy" className="h-5 w-5 text-cyan-400" />
                   <span>Team Popularity Ranking</span>
                 </CardTitle>
                 <CardDescription>Most generated teams in the last 30 days</CardDescription>
@@ -251,7 +251,7 @@ export default function AnalyticsPage() {
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Heart className="h-5 w-5 text-cyan-400" />
+                  <img src="/path/to/image.png" alt="Heart" className="h-5 w-5 text-cyan-400" />
                   <span>Top Generations</span>
                 </CardTitle>
                 <CardDescription>Most popular player/number combinations</CardDescription>
@@ -377,7 +377,7 @@ export default function AnalyticsPage() {
                   variant="outline" 
                   className="w-full border-cyan-500/30 hover:bg-cyan-500/10"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <img src="/path/to/image.png" alt="Download" className="w-4 h-4 mr-2" />
                   Export Team Analytics
                 </Button>
                 <Button 
@@ -385,7 +385,7 @@ export default function AnalyticsPage() {
                   variant="outline" 
                   className="w-full border-cyan-500/30 hover:bg-cyan-500/10"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <img src="/path/to/image.png" alt="Download" className="w-4 h-4 mr-2" />
                   Export User Report
                 </Button>
                 <Button 
@@ -393,7 +393,7 @@ export default function AnalyticsPage() {
                   variant="outline" 
                   className="w-full border-cyan-500/30 hover:bg-cyan-500/10"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <img src="/path/to/image.png" alt="Download" className="w-4 h-4 mr-2" />
                   Export Performance Report
                 </Button>
                 <Button 
@@ -401,7 +401,7 @@ export default function AnalyticsPage() {
                   variant="outline" 
                   className="w-full border-cyan-500/30 hover:bg-cyan-500/10"
                 >
-                  <Download className="w-4 h-4 mr-2" />
+                  <img src="/path/to/image.png" alt="Download" className="w-4 h-4 mr-2" />
                   Export Revenue Report
                 </Button>
               </CardContent>
@@ -420,21 +420,21 @@ export default function AnalyticsPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-6 bg-green-500/10 rounded-lg border border-green-500/20">
                   <div className="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Eye className="w-6 h-6 text-green-400" />
+                    <img src="/path/to/image.png" alt="Eye" className="w-6 h-6 text-green-400" />
                   </div>
                   <div className="text-xl font-bold text-green-300">Excellent</div>
                   <div className="text-sm text-gray-400">Overall Health</div>
                 </div>
                 <div className="text-center p-6 bg-blue-500/10 rounded-lg border border-blue-500/20">
                   <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <BarChart3 className="w-6 h-6 text-blue-400" />
+                    <img src="/path/to/image.png" alt="Bar Chart" className="w-6 h-6 text-blue-400" />
                   </div>
                   <div className="text-xl font-bold text-blue-300">Optimal</div>
                   <div className="text-sm text-gray-400">Performance</div>
                 </div>
                 <div className="text-center p-6 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
                   <div className="w-12 h-12 bg-cyan-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Share2 className="w-6 h-6 text-cyan-400" />
+                    <img src="/path/to/image.png" alt="Share" className="w-6 h-6 text-cyan-400" />
                   </div>
                   <div className="text-xl font-bold text-cyan-300">Stable</div>
                   <div className="text-sm text-gray-400">Connectivity</div>
