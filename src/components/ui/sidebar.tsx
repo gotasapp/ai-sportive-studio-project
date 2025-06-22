@@ -727,7 +727,7 @@ const SidebarMenuSubButton = React.forwardRef<
 
   return (
     <Comp
-      ref={ref}
+      ref={ref as any}
       data-sidebar="menu-sub-button"
       data-size={size}
       data-active={isActive}
