@@ -49,7 +49,7 @@ export interface StadiumResponse {
 }
 
 class StadiumService {
-  private baseUrl = 'http://localhost:8004'; // API de referências
+  private baseUrl = 'http://localhost:8000'; // API Unificada
   
   async getAvailableStadiums(): Promise<StadiumInfo[]> {
     try {
