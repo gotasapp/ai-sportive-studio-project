@@ -119,13 +119,13 @@ export class StadiumService {
     }
   }
   
-  async generateFromReference(request: StadiumGenerationRequest): Promise<StadiumResponse> {
+  static async generateFromReference(request: StadiumGenerationRequest): Promise<StadiumResponse> {
     try {
       // Usar prompt base do estádio se disponível
       const basePrompt = STADIUM_BASE_PROMPTS[request.stadium_id] || request.custom_prompt || 'Modern stadium';
       
       // Construir prompt melhorado
-      const enhancedPrompt = this.buildEnhancedPrompt({
+      const enhancedPrompt = StadiumService.buildEnhancedPrompt({
         architectural_analysis: basePrompt,
         style: request.generation_style,
         perspective: request.perspective,
@@ -150,7 +150,8 @@ export class StadiumService {
       console.log('📦 Stadium API Payload:', JSON.stringify(payload, null, 2));
 
       // Usar DALL-E 3 service diretamente por enquanto
-      const response = await fetch(`${this.baseUrl}/generate`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -188,10 +189,10 @@ export class StadiumService {
     }
   }
   
-  async generateCustom(request: CustomStadiumRequest): Promise<StadiumResponse> {
+  static async generateCustom(request: CustomStadiumRequest): Promise<StadiumResponse> {
     try {
       // Construir prompt melhorado
-      const enhancedPrompt = this.buildEnhancedPrompt({
+      const enhancedPrompt = StadiumService.buildEnhancedPrompt({
         architectural_analysis: request.prompt,
         style: request.generation_style,
         perspective: request.perspective,
@@ -214,7 +215,8 @@ export class StadiumService {
 
       console.log('📦 Custom Stadium API Payload:', JSON.stringify(payload, null, 2));
 
-      const response = await fetch(`${this.baseUrl}/generate`, {
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${baseUrl}/generate`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -247,7 +249,7 @@ export class StadiumService {
   }
 
   // Método para construir prompt melhorado
-  private buildEnhancedPrompt(params: {
+  private static buildEnhancedPrompt(params: {
     architectural_analysis: string;
     style?: string;
     perspective?: string;
@@ -331,11 +333,9 @@ export class StadiumService {
 
   // Método estático para compatibilidade com código existente
   static async generateStadium(request: any): Promise<StadiumResponse> {
-    const instance = new StadiumService();
-    
     // Se tem stadium_id, usar generateFromReference
     if (request.stadium_id && request.stadium_id !== 'custom_only') {
-      return instance.generateFromReference({
+      return StadiumService.generateFromReference({
         stadium_id: request.stadium_id,
         generation_style: request.generation_style,
         perspective: request.perspective,
@@ -348,7 +348,7 @@ export class StadiumService {
     }
     
     // Caso contrário, usar generateCustom
-    return instance.generateCustom({
+    return StadiumService.generateCustom({
       prompt: request.prompt || request.custom_prompt || 'Modern football stadium with contemporary architecture',
       reference_image_base64: request.reference_image_base64,
       generation_style: request.generation_style,
