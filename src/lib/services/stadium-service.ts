@@ -121,11 +121,12 @@ export class StadiumService {
     }
   }
 
-  // Método para compatibilidade com código existente
-  async generateStadium(request: any): Promise<StadiumResponse> {
+  // Método estático para compatibilidade com código existente
+  static async generateStadium(request: any): Promise<StadiumResponse> {
+    const instance = new StadiumService();
     // Redireciona para generateCustom para manter funcionalidade
     if (request.reference_image_base64) {
-      return this.generateCustom({
+      return instance.generateCustom({
         prompt: request.prompt || `Generate ${request.generation_style} stadium with ${request.atmosphere} atmosphere`,
         reference_image_base64: request.reference_image_base64,
         generation_style: request.generation_style,
@@ -134,7 +135,7 @@ export class StadiumService {
         quality: request.quality
       });
     } else {
-      return this.generateCustom({
+      return instance.generateCustom({
         prompt: request.prompt || `Generate ${request.generation_style} stadium with ${request.atmosphere} atmosphere`,
         generation_style: request.generation_style,
         atmosphere: request.atmosphere,
