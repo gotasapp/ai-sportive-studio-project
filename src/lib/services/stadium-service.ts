@@ -136,11 +136,15 @@ export class StadiumService {
 
       console.log('🏟️ Enhanced stadium prompt:', enhancedPrompt);
 
-      // Payload correto apenas para estádios
+      // Payload com campos dummy para compatibilidade com API antiga do Render
       const payload = {
         prompt: enhancedPrompt,
         quality: request.quality || 'standard',
-        type: 'stadium'
+        type: 'stadium',
+        // Campos dummy necessários até API ser atualizada
+        model_id: 'stadium_dummy',
+        player_name: 'STADIUM',
+        player_number: '00'
       };
 
       console.log('📦 Stadium API Payload:', JSON.stringify(payload, null, 2));
@@ -201,7 +205,11 @@ export class StadiumService {
       const payload = {
         prompt: enhancedPrompt,
         quality: request.quality || 'standard',
-        type: 'stadium'
+        type: 'stadium',
+        // Campos dummy necessários até API ser atualizada
+        model_id: 'stadium_dummy',
+        player_name: 'STADIUM',
+        player_number: '00'
       };
 
       console.log('📦 Custom Stadium API Payload:', JSON.stringify(payload, null, 2));
