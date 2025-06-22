@@ -50,9 +50,10 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
                       Wallet: {account.address}
                     </p>
                   )}
-                  {account?.email && (
+                  {/* Email info may be available in future Thirdweb versions */}
+                  {(account as any)?.email && (
                     <p className="text-sm text-gray-300">
-                      Email: {account.email}
+                      Email: {(account as any).email}
                     </p>
                   )}
                 </div>
