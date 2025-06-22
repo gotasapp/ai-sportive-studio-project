@@ -96,7 +96,7 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
           <div className="text-xs text-orange-300">
             {account?.address ? 
               `${account.address.slice(0, 6)}...${account.address.slice(-4)}` :
-              account?.email || 'Social Login'
+              (account as any)?.email || 'Social Login'
             }
           </div>
         </div>
