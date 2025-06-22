@@ -555,12 +555,12 @@ export default function StadiumEditor() {
         #000518
       `
     }}>
-      <div className="container mx-auto px-6 py-8" style={{ background: 'transparent' }}>
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="container mx-auto px-4 md:px-6 py-8" style={{ background: 'transparent' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Sidebar - Controls */}
           <div className="lg:col-span-1">
             <div className="gradient-border">
-              <div className="gradient-border-content p-6 space-y-6">
+              <div className="gradient-border-content p-4 md:p-6 space-y-4 md:space-y-6">
                 <h2 className="text-xl font-bold text-white">Stadium Generator</h2>
                 
                 {/* Stadium Selection */}
@@ -617,16 +617,16 @@ export default function StadiumEditor() {
                 {/* Style Filters */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">Style</h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2">
                     {STADIUM_STYLE_FILTERS.map((style) => (
                       <button
                         key={style.id}
                         onClick={() => setGenerationStyle(style.id)}
-                        className={`style-button p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
+                        className={`style-button p-1 md:p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
                           generationStyle === style.id ? 'active' : ''
                         }`}
                       >
-                        <style.icon className="w-4 h-4" />
+                        <style.icon className="w-3 md:w-4 h-3 md:h-4" />
                         <span>{style.label}</span>
                       </button>
                     ))}
@@ -636,16 +636,16 @@ export default function StadiumEditor() {
                 {/* Perspective Filters */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">Perspective</h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2">
                     {STADIUM_PERSPECTIVE_FILTERS.map((persp) => (
                       <button
                         key={persp.id}
                         onClick={() => setPerspective(persp.id)}
-                        className={`style-button p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
+                        className={`style-button p-1 md:p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
                           perspective === persp.id ? 'active' : ''
                         }`}
                       >
-                        <persp.icon className="w-4 h-4" />
+                        <persp.icon className="w-3 md:w-4 h-3 md:h-4" />
                         <span>{persp.label}</span>
                       </button>
                     ))}
@@ -655,16 +655,16 @@ export default function StadiumEditor() {
                 {/* Atmosphere */}
                 <div className="space-y-3">
                   <h3 className="text-sm font-semibold text-white">Atmosphere</h3>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1 md:gap-2">
                     {STADIUM_ATMOSPHERE_FILTERS.map((atm) => (
                       <button
                         key={atm.id}
                         onClick={() => setAtmosphere(atm.id)}
-                        className={`style-button p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
+                        className={`style-button p-1 md:p-2 rounded-lg text-xs flex flex-col items-center space-y-1 transition-all ${
                           atmosphere === atm.id ? 'active' : ''
                         }`}
                       >
-                        <atm.icon className="w-4 h-4" />
+                        <atm.icon className="w-3 md:w-4 h-3 md:h-4" />
                         <span>{atm.label}</span>
                       </button>
                     ))}
@@ -672,7 +672,7 @@ export default function StadiumEditor() {
                 </div>
 
                 {/* Time and Weather */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-3">
                     <h3 className="text-sm font-semibold text-white">Time</h3>
                     <div className="space-y-1">
@@ -765,29 +765,30 @@ export default function StadiumEditor() {
           </div>
 
           {/* Right Panel - Preview */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 md:space-y-6">
             <div className="gradient-border">
-              <div className="gradient-border-content p-8">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-white">Stadium Preview</h3>
-                  <div className="flex items-center space-x-4">
+              <div className="gradient-border-content p-4 md:p-8">
+                <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 gap-3">
+                  <h3 className="text-lg md:text-xl font-bold text-white">Stadium Preview</h3>
+                  <div className="flex items-center space-x-2 md:space-x-4">
                     <div className={`px-3 py-1 rounded-full text-xs ${apiStatus ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                       {apiStatus ? '🟢 Ready' : '🔴 Offline'}
                     </div>
                     {generatedImage && (
                       <button
                         onClick={resetForm}
-                        className="px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors text-sm flex items-center space-x-2"
+                        className="px-3 md:px-4 py-2 bg-cyan-600/20 text-cyan-400 rounded-lg border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors text-xs md:text-sm flex items-center space-x-2"
                       >
-                        <RefreshCw className="w-4 h-4" />
-                        <span>Reset & Generate New</span>
+                        <RefreshCw className="w-3 md:w-4 h-3 md:h-4" />
+                        <span className="hidden sm:inline">Reset & Generate New</span>
+                        <span className="sm:hidden">Reset</span>
                       </button>
                     )}
                   </div>
                 </div>
                 
                 <div className="flex justify-center">
-                  <div className="relative w-96 h-[28rem] rounded-2xl overflow-hidden" style={{
+                  <div className="relative w-full max-w-md md:max-w-lg h-[20rem] md:h-[28rem] rounded-2xl overflow-hidden" style={{
                     background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
                     border: '2px solid rgba(0, 212, 255, 0.3)'
                   }}>
@@ -795,7 +796,7 @@ export default function StadiumEditor() {
                     {isGenerating && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
                         <div className="w-20 h-20 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                        <p className="text-cyan-400 text-xl font-semibold">Generating stadium...</p>
+                        <p className="text-cyan-400 text-lg md:text-xl font-semibold">Generating stadium...</p>
                         <div className="mt-4 w-40 h-2 bg-gray-700 rounded-full overflow-hidden">
                           <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
                         </div>
@@ -808,7 +809,7 @@ export default function StadiumEditor() {
                           <div className="w-20 h-20 bg-red-500/20 rounded-full flex items-center justify-center mb-6">
                             <span className="text-red-400 text-3xl">⚠</span>
                           </div>
-                          <p className="text-red-400 mb-6 text-center text-lg">{error}</p>
+                          <p className="text-red-400 mb-6 text-center text-sm md:text-lg">{error}</p>
                           <button 
                             onClick={() => setError('')}
                             className="px-6 py-3 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors"
@@ -825,11 +826,11 @@ export default function StadiumEditor() {
                         <div className="absolute inset-0 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
                         <div className="absolute -top-3 -right-3 w-8 h-8 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
                         
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 rounded-b-lg">
+                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 md:p-6 rounded-b-lg">
                           <div className="text-white">
-                            <p className="font-bold text-xl">{selectedStadium !== 'custom_only' ? availableStadiums.find(s => s.id === selectedStadium)?.name : 'Custom Stadium'}</p>
-                            <p className="text-cyan-400 text-sm">{generationStyle} · {perspective} · {atmosphere}</p>
-                            <div className="flex items-center mt-2 space-x-4">
+                            <p className="font-bold text-lg md:text-xl">{selectedStadium !== 'custom_only' ? availableStadiums.find(s => s.id === selectedStadium)?.name : 'Custom Stadium'}</p>
+                            <p className="text-cyan-400 text-xs md:text-sm">{generationStyle} · {perspective} · {atmosphere}</p>
+                            <div className="flex items-center mt-2 space-x-2 md:space-x-4">
                               <span className="text-xs text-gray-300">{timeOfDay} · {weather}</span>
                               <span className="text-xs text-gray-300">Quality: {quality}</span>
                             </div>
@@ -937,8 +938,8 @@ export default function StadiumEditor() {
             </div>
 
             <div className="gradient-border">
-              <div className="gradient-border-content p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Mint NFT</h2>
+              <div className="gradient-border-content p-4 md:p-6">
+                <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Mint NFT</h2>
                 
                 <div className="space-y-6">
                   <div>

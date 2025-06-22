@@ -4,7 +4,7 @@ import AppProviders from "@/lib/AppProviders";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 export const metadata: Metadata = {
-  title: "Chliz Fan NFT",
+  title: "Chiliz Fan NFT",
   description: "Generate and mint sports NFTs with AI - Jerseys and Stadiums",
 };
 

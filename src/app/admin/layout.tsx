@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-200">Admin Panel</h1>
-                <p className="text-xs text-cyan-400/70">Chliz Fan NFT</p>
+                <p className="text-xs text-cyan-400/70">Chiliz Fan NFT</p>
               </div>
             </div>
             <Button

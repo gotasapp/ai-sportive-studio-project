@@ -67,7 +67,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-200">Dashboard</h1>
-          <p className="text-gray-400 mt-2">Chliz Fan NFT - Control Center</p>
+          <p className="text-gray-400 mt-2">Chiliz Fan NFT - Control Center</p>
         </div>
         <div className="flex items-center space-x-4">
           <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
