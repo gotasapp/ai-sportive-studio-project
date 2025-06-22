@@ -16,7 +16,7 @@ import {
   Clock,
   Search,
   Filter,
-  Image,
+  LucideImage as Image,
   User,
   MessageSquare,
   ThumbsUp,
@@ -26,7 +26,6 @@ import {
   XCircle,
   RefreshCw
 } from 'lucide-react'
-import Image from 'next/image'
 
 // Mock data - in production will come from APIs
 const moderationData = {

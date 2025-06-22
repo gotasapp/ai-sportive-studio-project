@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
-  Image,
+  LucideImage as Image,
   Upload,
   Download,
   Edit,
@@ -25,7 +25,6 @@ import {
   FileImage,
   Zap
 } from 'lucide-react'
-import Image from 'next/image'
 
 // Mock data - in production will come from APIs
 const logosData = {
