@@ -183,16 +183,16 @@ export default function ContentGenerator() {
 
       const result = await Dalle3Service.generateImage(request)
       
-      if (result.success && result.image_url) {
+      if (result.success && result.image_base64) {
         console.log('✅ Jersey generation successful!')
-        setGeneratedImage(result.image_url)
+        setGeneratedImage(result.image_base64)
         
         // Convert to blob for IPFS upload
-        const response = await fetch(`data:image/png;base64,${result.image_url}`)
+        const response = await fetch(`data:image/png;base64,${result.image_base64}`)
         const blob = await response.blob()
         setGeneratedImageBlob(blob)
         
-        setGenerationCost(result.cost || 0)
+        setGenerationCost(result.cost_usd || 0)
       } else {
         throw new Error(result.error || 'Generation failed')
       }
