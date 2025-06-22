@@ -2,7 +2,7 @@
 
 import { wagmiAdapter, projectId, networks, metadata } from './appkit-config'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { createAppKit, type AppKitNetwork } from '@reown/appkit/react'
+import { createAppKit } from '@reown/appkit/react'
 import React, { type ReactNode } from 'react'
 import { cookieToInitialState, WagmiProvider, type Config } from 'wagmi'
 
@@ -17,7 +17,7 @@ if (!projectId) {
 const modal = createAppKit({
   adapters: [wagmiAdapter],
   projectId,
-  networks: networks as [AppKitNetwork, ...AppKitNetwork[]],
+  networks: networks as any,
   defaultNetwork: networks[0], // CHZ Chain as default
   metadata: metadata,
   features: {
