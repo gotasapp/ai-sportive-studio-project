@@ -3,18 +3,21 @@ export interface ImageGenerationRequest {
   team: string;
   player_name: string;
   player_number: string;
+  style?: string; // Para manter compatibilidade
   quality?: "standard" | "hd";
 }
 
 export interface Dalle3Response {
   success: boolean;
   image_base64?: string;
+  image_url?: string; // Para compatibilidade
+  cost?: number; // Para compatibilidade
   cost_usd?: number;
   error?: string;
 }
 
 export interface StadiumGenerationRequest {
-  stadium_id: string;
+  stadium_id?: string;
   reference_type?: string;
   generation_style?: string;
   perspective?: string;
@@ -24,6 +27,9 @@ export interface StadiumGenerationRequest {
   quality?: string;
   custom_prompt?: string;
   custom_reference_base64?: string;
+  // Para compatibilidade com código existente
+  reference_image_base64?: string;
+  prompt?: string;
 }
 
 export interface StadiumResponse {

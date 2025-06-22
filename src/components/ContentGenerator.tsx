@@ -255,7 +255,7 @@ export default function ContentGenerator() {
         const blob = await response.blob()
         setGeneratedImageBlob(blob)
         
-        setGenerationCost(result.cost || 0)
+        setGenerationCost(result.cost_usd || 0)
       } else {
         throw new Error(result.error || 'Stadium generation failed')
       }

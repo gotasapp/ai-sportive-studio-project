@@ -121,6 +121,21 @@ export class StadiumService {
     }
   }
 
+  // Método para compatibilidade com código existente
+  async generateStadium(request: any): Promise<StadiumResponse> {
+    // Converte para o formato correto e chama generateCustom
+    const customRequest = {
+      prompt: request.prompt || request.custom_prompt || 'Generate stadium',
+      reference_image_base64: request.reference_image_base64 || request.custom_reference_base64,
+      generation_style: request.generation_style,
+      atmosphere: request.atmosphere,
+      time_of_day: request.time_of_day,
+      quality: request.quality
+    };
+    
+    return this.generateCustom(customRequest);
+  }
+
   /**
    * Converte File para base64
    */
