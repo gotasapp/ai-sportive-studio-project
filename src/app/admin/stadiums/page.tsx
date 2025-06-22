@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Upload, Eye, Wand2, Download, DollarSign, Clock, Camera, Zap } from 'lucide-react'
-import { StadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
+import { StadiumService, stadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
 
 export default function StadiumsPage() {
   // Estados principais
@@ -57,9 +57,11 @@ export default function StadiumsPage() {
 
     try {
       const processed = await StadiumService.processImageUpload(selectedFile)
-      const result = await StadiumService.analyzeStadium({
+      // Use generateCustom for analysis with custom reference
+      const result = await stadiumService.generateCustom({
+        prompt: 'Analyze this stadium image and describe its architecture, atmosphere, and characteristics',
         reference_image_base64: processed.base64,
-        analysis_type: 'comprehensive'
+        quality: 'standard'
       })
 
       setAnalysisResult(result)
@@ -82,16 +84,16 @@ export default function StadiumsPage() {
 
     try {
       const processed = await StadiumService.processImageUpload(selectedFile)
-      const request: StadiumGenerationRequest = {
+      // Use generateCustom for custom stadium generation
+      const result = await stadiumService.generateCustom({
+        prompt: `Generate a ${generationStyle} stadium with ${atmosphere} atmosphere during ${timeOfDay} with ${weather} weather conditions`,
         reference_image_base64: processed.base64,
         generation_style: generationStyle,
         atmosphere,
         time_of_day: timeOfDay,
-        weather,
         quality
-      }
+      })
 
-      const result = await StadiumService.generateStadium(request)
       setGenerationResult(result)
       
       if (!result.success) {
