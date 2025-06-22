@@ -204,6 +204,7 @@ export class EngineService {
     }
   }
 
+  /*
   // 🔄 Bulk gift minting (admin feature)
   static async bulkGiftMint(params: {
     contractAddress: string;
@@ -243,6 +244,7 @@ export class EngineService {
       throw error;
     }
   }
+  */
 
   // 🧪 Test Engine connection
   static async testConnection() {
