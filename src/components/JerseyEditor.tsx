@@ -10,6 +10,7 @@ import { IPFSService } from '../lib/services/ipfs-service'
 import { useWeb3 } from '../lib/useWeb3'
 import { useEngine } from '../lib/useEngine'
 import { ImageGenerationRequest } from '../types'
+import { getTransactionUrl } from '../lib/utils'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -730,7 +731,7 @@ export default function JerseyEditor() {
                               Copy
                             </button>
                             <button
-                                onClick={() => window.open(`https://amoy.polygonscan.com/tx/${transactionHash}`, '_blank')}
+                                onClick={() => window.open(getTransactionUrl(transactionHash), '_blank')}
                                 className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
                             >
                                 View
