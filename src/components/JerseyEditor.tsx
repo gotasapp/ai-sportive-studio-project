@@ -496,7 +496,7 @@ export default function JerseyEditor() {
           <div className="lg:col-span-1 space-y-6">
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
-                <h2 className="heading-style mb-6">NFT Generation</h2>
+                <h2 className="heading-style mb-6">Create Jersey NFT</h2>
                 
                 <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
                   <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
@@ -629,7 +629,7 @@ export default function JerseyEditor() {
                   </div>
 
                   <button 
-                    className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-200 border border-orange-400/30 mb-3"
+                    className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-200 border border-orange-400/30 mb-3 hidden"
                     disabled={!isConnected || isMinting}
                     onClick={handleSetClaimConditions}
                   >
@@ -741,7 +741,7 @@ export default function JerseyEditor() {
                     </div>
                   )}
 
-                  <div className="pt-6 border-t border-gray-700">
+                  <div className="pt-6 border-t border-gray-700 hidden">
                     <div className="space-y-3">
                       <div className="flex items-center space-x-2">
                         <div className={`w-2 h-2 rounded-full ${apiStatus ? 'bg-green-400' : 'bg-red-400'}`}></div>
@@ -758,7 +758,7 @@ export default function JerseyEditor() {
                       </div>
                       
                       <div className="text-xs text-gray-400">
-                        Status: NFT Generation Ready
+                        Status: Create Jersey NFT Ready
                       </div>
                       
                       {generationCost && (
@@ -776,10 +776,10 @@ export default function JerseyEditor() {
           <div className="lg:col-span-2 space-y-6 lg:space-y-4">
             <div>
               <div className="p-8 lg:p-4">
-                <h3 className="heading-style mb-6 lg:mb-3 text-center">PREVIEW</h3>
+                <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
                 
                 {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
-                <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30">
+                <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
                   {/* Mobile: Full Status Display */}
                   <div className="lg:hidden">
                     <div className="flex items-center justify-between mb-3">
