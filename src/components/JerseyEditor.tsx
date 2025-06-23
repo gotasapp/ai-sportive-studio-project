@@ -551,12 +551,9 @@ export default function JerseyEditor() {
             {/* Editor Panel */}
             <div className="bg-card rounded-lg p-6 border border-gray-800">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="heading-style">Jersey Editor</h2>
-                <span className={`text-xs px-2 py-1 rounded-full ${apiStatus ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-                  {apiStatus ? 'Online' : 'Offline'}
-                </span>
+                <h2 className="heading-style text-xl font-bold">Create Jersey NFT</h2>
               </div>
-              <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
+              <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card hidden">
                 <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
                 <p className="text-gray-300 mb-2">Upload image or enter text</p>
                 <input 
@@ -836,490 +833,232 @@ export default function JerseyEditor() {
               <div className="p-8 lg:p-4">
                 <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
                 
-                {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
-                <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
-                  {/* Mobile: Full Status Display */}
-                  <div className="lg:hidden">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-white flex items-center">
-                        <Wallet className="w-4 h-4 mr-2" />
-                        Web3 Status
-                      </h4>
-                      {!isConnected && (
-                        <button
-                          onClick={() => alert('Please connect your wallet using the button in the header')}
-                          className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
-                        >
-                          Connect
-                        </button>
-                      )}
-                    </div>
+                <div className="flex justify-center h-[80vh]">
+                  <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
+                    background: 'linear-gradient(135deg, #050505 0%, #0E0D0D 50%, #191919 100%)',
+                    border: '2px solid rgba(156, 163, 175, 0.3)'
+                  }}>
                     
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Wallet</span>
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                          <span className="text-xs text-gray-300">
-                            {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
-                          </span>
+                    {isLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
+                        <p className="text-cyan-400 text-2xl font-semibold">Generating your jersey...</p>
+                        <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Network</span>
-                        <div className="flex items-center space-x-2">
-                          {isConnected ? (
-                            <>
-                              <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                              <span className="text-xs text-gray-300">
-                                {chain?.name || 'Unknown'}
-                              </span>
-                              {!isOnSupportedChain && (
-                                <button
-                                  onClick={() => alert('Please switch network using your wallet')}
-                                  className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
-                                >
-                                  Switch Network
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                              <span className="text-xs text-gray-300">Connect wallet first</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      
-                      {/* Admin Only: Gasless Mint Status */}
-                      {isUserAdmin && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs text-gray-400">Admin Gasless Mint</span>
-                          <div className="flex items-center space-x-2">
-                            {canMintGasless ? (
-                              <>
-                                <Check className="w-3 h-3 text-green-400" />
-                                <span className="text-xs text-green-400">Ready</span>
-                              </>
-                            ) : (
-                              <>
-                                <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                                <span className="text-xs text-yellow-400">
-                                  {!generatedImage ? 'Generate jersey' : 
-                                   !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
-                                </span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Mint Status</span>
-                        <div className="flex items-center space-x-2">
-                          {canMintLegacy ? (
-                            <>
-                              <Check className="w-3 h-3 text-green-400" />
-                              <span className="text-xs text-green-400">Ready</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                              <span className="text-xs text-yellow-400">
-                                {!isConnected ? 'Connect wallet' : 
-                                 !isOnSupportedChain ? 'Switch network' : 
-                                 !generatedImage ? 'Generate jersey' : 'Not ready'}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop: Compact Status Display */}
-                  <div className="hidden lg:flex items-center justify-between text-xs">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                        <span className="text-gray-400">
-                          {isConnected ? address?.slice(0, 4) + '...' + address?.slice(-3) : 'Wallet'}
-                        </span>
-                      </div>
-                      
-                      {isConnected && (
-                        <div className="flex items-center space-x-1">
-                          <div className={`w-1.5 h-1.5 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                          <span className="text-gray-400">{chain?.name || 'Network'}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center space-x-1">
-                        {canMintLegacy ? (
-                          <Check className="w-3 h-3 text-green-400" />
-                        ) : (
-                          <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                        )}
-                        <span className="text-gray-400">Mint Ready</span>
-                      </div>
-                    </div>
-                    
-                    {!isConnected && (
-                      <button
-                        onClick={() => alert('Please connect your wallet using the button in the header')}
-                        className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
-                      >
-                        Connect
-                      </button>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Wallet</span>
-                      <div className="flex items-center space-x-2">
-                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                        <span className="text-xs text-gray-300">
-                          {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Network</span>
-                      <div className="flex items-center space-x-2">
-                        {isConnected ? (
-                          <>
-                            <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                            <span className="text-xs text-gray-300">
-                              {chain?.name || 'Unknown'}
-                            </span>
-                            {!isOnSupportedChain && (
-                              <button
-                                onClick={() => alert('Please switch network using your wallet')}
-                                className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
-                              >
-                                Switch Network
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <>
-                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                            <span className="text-xs text-gray-300">Connect wallet first</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Gasless Mint</span>
-                      <div className="flex items-center space-x-2">
-                        {canMintGasless ? (
-                          <>
-                            <Check className="w-3 h-3 text-green-400" />
-                            <span className="text-xs text-green-400">Ready</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                            <span className="text-xs text-yellow-400">
-                              {!generatedImage ? 'Generate jersey' : 
-                               !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-gray-400">Legacy Mint</span>
-                      <div className="flex items-center space-x-2">
-                        {canMintLegacy ? (
-                          <>
-                            <Check className="w-3 h-3 text-green-400" />
-                            <span className="text-xs text-green-400">Ready</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                            <span className="text-xs text-yellow-400">
-                              {!isConnected ? 'Connect wallet' : 
-                               !isOnSupportedChain ? 'Switch network' : 
-                               !generatedImage ? 'Generate jersey' : 'Not ready'}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Desktop: Compact Status Display */}
-                <div className="hidden lg:flex items-center justify-between text-xs">
-                  <div className="flex items-center space-x-4">
-                    <div className="flex items-center space-x-1">
-                      <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                      <span className="text-gray-400">
-                        {isConnected ? address?.slice(0, 4) + '...' + address?.slice(-3) : 'Wallet'}
-                      </span>
-                    </div>
-                    
-                    {isConnected && (
-                      <div className="flex items-center space-x-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                        <span className="text-gray-400">{chain?.name || 'Network'}</span>
                       </div>
                     )}
                     
-                    <div className="flex items-center space-x-1">
-                      {canMintGasless ? (
-                        <Check className="w-3 h-3 text-green-400" />
-                      ) : (
-                        <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                      )}
-                      <span className="text-gray-400">Mint Ready</span>
-                    </div>
-                  </div>
-                  
-                  {!isConnected && (
-                    <button
-                      onClick={() => alert('Please connect your wallet using the button in the header')}
-                      className="px-2 py-0.5 text-xs bg-cyan-600/20 text-cyan-400 rounded border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
-                    >
-                      Connect
-                    </button>
-                  )}
-                </div>
-              </div>
-                
-              <div className="flex justify-center h-[80vh]">
-                <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
-                  background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
-                                      border: '2px solid rgba(156, 163, 175, 0.3)'
-                }}>
-                  
-                  {isLoading && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
-                      <p className="text-cyan-400 text-2xl font-semibold">Generating your jersey...</p>
-                      <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
-                        <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {error && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                      <div className="text-center">
-                        <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
-                          <span className="text-red-400 text-4xl">⚠</span>
-                        </div>
-                        <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
-                        <button 
-                          onClick={() => setError(null)}
-                          className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
-                        >
-                          Try again
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {generatedImage && !isLoading && !error && (
-                    <div className="absolute inset-0 p-6 lg:p-3">
-                      <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
-                      <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
-                      <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-                      
-                      <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
-                        <div className="text-white">
-                          <p className="font-bold text-2xl lg:text-lg">{playerName} #{playerNumber}</p>
-                          <p className="text-cyan-400 text-lg lg:text-sm">{selectedTeam}</p>
-                          <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
-                            <span className="text-sm lg:text-xs text-gray-300">Style: {selectedStyle}</span>
-                            <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
+                    {error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                        <div className="text-center">
+                          <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
+                            <span className="text-red-400 text-4xl">⚠</span>
                           </div>
+                          <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
+                          <button 
+                            onClick={() => setError(null)}
+                            className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
+                          >
+                            Try again
+                          </button>
                         </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  {!generatedImage && !isLoading && !error && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
-                      <div className="text-center">
-                        <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
-                          <div className="text-center">
-                            <Upload className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
-                            <p className="text-sm lg:text-xs text-gray-400">Jersey</p>
-                          </div>
-                        </div>
-                        <p className="text-gray-400 text-lg lg:text-sm">Your generated jersey will appear here</p>
-                        <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (4:5 ratio)</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Marketplace - Drag & Scroll Carousel - Smaller version for jerseys */}
-              {(
-                <div className="border border-neutral-800 rounded-lg mt-4">
-                  <div className="bg-black p-3 md:p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <h2 className="heading-style text-sm">Marketplace</h2>
-                      <div className="text-xs text-gray-400">
-                        Drag to scroll • {currentSlide + 1}-{Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)} of {marketplaceNFTs.length}
-                      </div>
-                    </div>
+                    )}
                     
-                    {/* Draggable Sliding Container */}
-                    <div 
-                      className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
-                      onMouseDown={(e) => handleDragStart(e.clientX)}
-                      onMouseMove={(e) => handleDragMove(e.clientX)}
-                      onMouseUp={handleDragEnd}
-                      onMouseLeave={handleDragEnd}
-                      onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
-                      onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
-                      onTouchEnd={handleDragEnd}
-                    >
-                      <div 
-                        className={`flex ${isDragging ? 'transition-none' : 'transition-transform duration-700 ease-in-out'}`}
-                        style={{
-                          transform: `translateX(calc(-${Math.min(currentSlide, maxSlide) * (100 / slidesToShow)}% + ${dragOffset}px))`,
-                          width: `${(marketplaceNFTs.length / slidesToShow) * 100}%`
-                        }}
-                      >
-                        {marketplaceLoading ? (
-                          // Loading skeleton
-                          Array.from({ length: 6 }).map((_, index) => (
-                            <div 
-                              key={`loading-${index}`} 
-                              className="flex-shrink-0 px-1"
-                              style={{ width: `${100 / marketplaceNFTs.length}%` }}
-                            >
-                              <div className="bg-neutral-900 rounded p-2 transition-all duration-300">
-                                <div className="aspect-[4/5] bg-neutral-800 rounded mb-1.5 animate-pulse border border-neutral-700"></div>
-                                <div className="space-y-1">
-                                  <div className="h-2 bg-neutral-700 rounded animate-pulse"></div>
-                                  <div className="h-2 bg-neutral-700 rounded w-2/3 animate-pulse"></div>
-                                </div>
-                              </div>
+                    {generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 p-6 lg:p-3">
+                        <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
+                        <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
+                        <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                        
+                        <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
+                          <div className="text-white">
+                            <p className="font-bold text-2xl lg:text-lg">{playerName} #{playerNumber}</p>
+                            <p className="text-cyan-400 text-lg lg:text-sm">{selectedTeam}</p>
+                            <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
+                              <span className="text-sm lg:text-xs text-gray-300">Style: {selectedStyle}</span>
+                              <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
                             </div>
-                          ))
-                        ) : marketplaceNFTs.length > 0 ? (
-                          // Real NFT data with drag & scroll
-                          marketplaceNFTs.map((nft, index) => (
-                            <div 
-                              key={`${nft.name}-${index}`} 
-                              className="flex-shrink-0 px-1 group"
-                              style={{ width: `${100 / marketplaceNFTs.length}%` }}
-                            >
-                              <div className="bg-neutral-900 rounded p-2 transition-all duration-300 hover:scale-105 cursor-pointer">
-                                <div className="aspect-[4/5] rounded mb-1.5 relative overflow-hidden border border-neutral-700">
-                                  {/* Random trending indicator */}
-                                  {index % 3 === 0 && (
-                                    <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
-                                  )}
-                                  
-                                  <img 
-                                    src={nft.image_url} 
-                                    alt={nft.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 pointer-events-none"
-                                    onError={(e) => {
-                                      console.error('❌ Error loading jersey marketplace image:', nft.image_url);
-                                      // Fallback to gradient background
-                                      (e.target as HTMLImageElement).style.display = 'none';
-                                      const parent = (e.target as HTMLImageElement).parentElement;
-                                      if (parent) {
-                                        parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
-                                        parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-accent/60 font-bold text-xs">${nft.name.charAt(0)}</div>`;
-                                      }
-                                    }}
-                                  />
-                                  
-                                  {/* Overlay gradient */}
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                </div>
-                                
-                                <div className="space-y-1">
-                                  <p className="text-xs text-gray-400 group-hover:text-accent transition-colors font-medium truncate">
-                                    {nft.name}
-                                  </p>
-                                  <div className="flex items-center justify-between">
-                                    <span className="text-accent font-bold text-xs">{nft.price}</span>
-                                    {index % 3 === 0 && (
-                                      <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
-                                        🔥
-                                      </span>
-                                    )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
+                        <div className="text-center">
+                          <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
+                            <div className="text-center">
+                              <Upload className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
+                              <p className="text-sm lg:text-xs text-gray-400">Jersey</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-lg lg:text-sm">Your generated jersey will appear here</p>
+                          <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (4:5 ratio)</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Marketplace - Drag & Scroll Carousel - Smaller version for jerseys */}
+                {(
+                  <div className="border border-neutral-800 rounded-lg mt-4">
+                    <div className="bg-black p-3 md:p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="heading-style text-sm">Marketplace</h2>
+                        <div className="text-xs text-gray-400">
+                          Drag to scroll • {currentSlide + 1}-{Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)} of {marketplaceNFTs.length}
+                        </div>
+                      </div>
+                      
+                      {/* Draggable Sliding Container */}
+                      <div 
+                        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+                        onMouseDown={(e) => handleDragStart(e.clientX)}
+                        onMouseMove={(e) => handleDragMove(e.clientX)}
+                        onMouseUp={handleDragEnd}
+                        onMouseLeave={handleDragEnd}
+                        onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+                        onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
+                        onTouchEnd={handleDragEnd}
+                      >
+                        <div 
+                          className={`flex ${isDragging ? 'transition-none' : 'transition-transform duration-700 ease-in-out'}`}
+                          style={{
+                            transform: `translateX(calc(-${Math.min(currentSlide, maxSlide) * (100 / slidesToShow)}% + ${dragOffset}px))`,
+                            width: `${(marketplaceNFTs.length / slidesToShow) * 100}%`
+                          }}
+                        >
+                          {marketplaceLoading ? (
+                            // Loading skeleton
+                            Array.from({ length: 6 }).map((_, index) => (
+                              <div 
+                                key={`loading-${index}`} 
+                                className="flex-shrink-0 px-1"
+                                style={{ width: `${100 / marketplaceNFTs.length}%` }}
+                              >
+                                <div className="bg-neutral-900 rounded p-2 transition-all duration-300">
+                                  <div className="aspect-[4/5] bg-neutral-800 rounded mb-1.5 animate-pulse border border-neutral-700"></div>
+                                  <div className="space-y-1">
+                                    <div className="h-2 bg-neutral-700 rounded animate-pulse"></div>
+                                    <div className="h-2 bg-neutral-700 rounded w-2/3 animate-pulse"></div>
                                   </div>
                                 </div>
                               </div>
+                            ))
+                          ) : marketplaceNFTs.length > 0 ? (
+                            // Real NFT data with drag & scroll
+                            marketplaceNFTs.map((nft, index) => (
+                              <div 
+                                key={`${nft.name}-${index}`} 
+                                className="flex-shrink-0 px-1 group"
+                                style={{ width: `${100 / marketplaceNFTs.length}%` }}
+                              >
+                                <div className="bg-neutral-900 rounded p-2 transition-all duration-300 hover:scale-105 cursor-pointer">
+                                  <div className="aspect-[4/5] rounded mb-1.5 relative overflow-hidden border border-neutral-700">
+                                    {/* Random trending indicator */}
+                                    {index % 3 === 0 && (
+                                      <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
+                                    )}
+                                    
+                                    <img 
+                                      src={nft.image_url} 
+                                      alt={nft.name}
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 pointer-events-none"
+                                      onError={(e) => {
+                                        console.error('❌ Error loading jersey marketplace image:', nft.image_url);
+                                        // Fallback to gradient background
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        const parent = (e.target as HTMLImageElement).parentElement;
+                                        if (parent) {
+                                          parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
+                                          parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-accent/60 font-bold text-xs">${nft.name.charAt(0)}</div>`;
+                                        }
+                                      }}
+                                    />
+                                    
+                                    {/* Overlay gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                  </div>
+                                  
+                                  <div className="space-y-1">
+                                    <p className="text-xs text-gray-400 group-hover:text-accent transition-colors font-medium truncate">
+                                      {nft.name}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-accent font-bold text-xs">{nft.price}</span>
+                                      {index % 3 === 0 && (
+                                        <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
+                                          🔥
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            // No data fallback
+                            <div className="w-full text-center py-3">
+                              <p className="text-gray-400 text-sm">No marketplace items available</p>
                             </div>
-                          ))
-                        ) : (
-                          // No data fallback
-                          <div className="w-full text-center py-3">
-                            <p className="text-gray-400 text-sm">No marketplace items available</p>
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Custom Scroll Bar - ShadCN Style - Smaller for jerseys */}
-                    <div className="mt-3 px-2">
-                      <div className="relative">
-                        {/* Track */}
-                        <div className="w-full h-2 bg-neutral-800 rounded-full border border-neutral-700">
-                          {/* Progress */}
-                          <div 
-                            className="h-full bg-accent rounded-full transition-all duration-300 shadow-lg shadow-accent/20"
-                            style={{ width: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%` }}
+                      {/* Custom Scroll Bar - ShadCN Style - Smaller for jerseys */}
+                      <div className="mt-3 px-2">
+                        <div className="relative">
+                          {/* Track */}
+                          <div className="w-full h-2 bg-neutral-800 rounded-full border border-neutral-700">
+                            {/* Progress */}
+                            <div 
+                              className="h-full bg-accent rounded-full transition-all duration-300 shadow-lg shadow-accent/20"
+                              style={{ width: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%` }}
+                            />
+                            {/* Thumb */}
+                            <div 
+                              className="absolute top-0 w-4 h-2 bg-accent rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-y-0 transition-all duration-200 hover:scale-110 hover:shadow-accent/50"
+                              style={{ 
+                                left: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%`,
+                                transform: 'translateX(-50%)'
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Invisible input for interaction */}
+                          <input
+                            type="range"
+                            min="0"
+                            max={maxSlide}
+                            value={currentSlide}
+                            onChange={handleScrollChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                           />
-                          {/* Thumb */}
-                          <div 
-                            className="absolute top-0 w-4 h-2 bg-accent rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-y-0 transition-all duration-200 hover:scale-110 hover:shadow-accent/50"
-                            style={{ 
-                              left: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%`,
-                              transform: 'translateX(-50%)'
-                            }}
-                          />
-                        </div>
-                        
-                        {/* Invisible input for interaction */}
-                        <input
-                          type="range"
-                          min="0"
-                          max={maxSlide}
-                          value={currentSlide}
-                          onChange={handleScrollChange}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                        />
-                        
-                        {/* Labels */}
-                        <div className="flex justify-between items-center mt-1">
-                          <span className="text-xs text-gray-500">
-                            {currentSlide + 1} - {Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            of {marketplaceNFTs.length} items
-                          </span>
+                          
+                          {/* Labels */}
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              {currentSlide + 1} - {Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              of {marketplaceNFTs.length} items
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    
-                    <div className="mt-3 text-center">
-                      <button className="px-4 py-2 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-sm">
-                        View All Items
-                      </button>
+                      
+                      <div className="mt-3 text-center">
+                        <button className="px-4 py-2 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-sm">
+                          View All Items
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

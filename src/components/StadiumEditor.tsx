@@ -649,7 +649,7 @@ export default function StadiumEditor() {
             {/* Stadium Generator */}
             <div className="bg-card rounded-lg p-6 border border-gray-800 mb-6">
               <div className="space-y-3 md:space-y-4">
-                <h2 className="heading-style">Create Stadium NFT</h2>
+                <h2 className="heading-style text-xl font-bold">Create Stadium NFT</h2>
                 
                 {/* Stadium Selection */}
                 <div className="space-y-2">
@@ -670,7 +670,7 @@ export default function StadiumEditor() {
                 </div>
 
                 {/* Custom Prompt */}
-                <div className="space-y-2">
+                <div className="space-y-2 hidden">
                   <h3 className="heading-style text-sm">Custom Prompt</h3>
                   <Textarea
                     placeholder="Describe your stadium vision..."
@@ -681,7 +681,7 @@ export default function StadiumEditor() {
                 </div>
 
                 {/* Reference Upload */}
-                <div className="space-y-2">
+                <div className="space-y-2 hidden">
                   <h3 className="text-xs font-semibold text-white">Reference Image</h3>
                   <div className="relative">
                     <input
@@ -954,7 +954,7 @@ export default function StadiumEditor() {
               <div className="p-4 lg:p-2">
                 <div className="flex justify-center h-[90vh]">
                   <div className="relative w-[65vh] h-[85vh] rounded-2xl overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
+                    background: 'linear-gradient(135deg, #050505 0%, #0E0D0D 50%, #191919 100%)',
                     border: '2px solid rgba(156, 163, 175, 0.3)'
                   }}>
                     

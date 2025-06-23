@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 <Shield className="w-5 h-5 text-black" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-neutral-100">Admin Panel</h1>
+                <h1 className="text-lg font-bold text-accent">Admin Panel</h1>
                 <p className="text-xs text-accent/70">Chiliz Fan NFT</p>
               </div>
             </div>

@@ -102,16 +102,42 @@ export default function Header() {
     const checkAdminStatus = async () => {
       if (!account) {
         setUserIsAdmin(false);
+        setAdminCheckLoading(false);
+        // Limpar cache quando desconectar
+        localStorage.removeItem('admin_status_cache');
         return;
       }
 
-      setAdminCheckLoading(true);
+      const accountKey = account.address || 'unknown';
+      const cacheKey = `admin_status_${accountKey}`;
       
+      // Verificar cache primeiro (para evitar re-verificações desnecessárias)
+      const cachedStatus = localStorage.getItem(cacheKey);
+      if (cachedStatus !== null) {
+        const isAdminCached = cachedStatus === 'true';
+        setUserIsAdmin(isAdminCached);
+        setAdminCheckLoading(false);
+        
+        // Ainda faz verificação em background para atualizar cache se necessário
+        setTimeout(() => {
+          performAdminCheck(accountKey, cacheKey);
+        }, 100);
+        
+        return;
+      }
+
+      // Se não há cache, faz verificação completa
+      setAdminCheckLoading(true);
+      await performAdminCheck(accountKey, cacheKey);
+    };
+
+    const performAdminCheck = async (accountKey: string, cacheKey: string) => {
       try {
         // Primeiro, tenta verificação rápida (wallet address)
         const quickCheck = isAdmin(account);
         if (quickCheck) {
           setUserIsAdmin(true);
+          localStorage.setItem(cacheKey, 'true');
           setAdminCheckLoading(false);
           return;
         }
@@ -119,9 +145,11 @@ export default function Header() {
         // Para InApp wallets, faz verificação async do email
         const asyncCheck = await isAdminAsync(account, wallet);
         setUserIsAdmin(asyncCheck);
+        localStorage.setItem(cacheKey, asyncCheck ? 'true' : 'false');
       } catch (error) {
         console.error('Erro ao verificar status de admin no header:', error);
         setUserIsAdmin(false);
+        localStorage.setItem(cacheKey, 'false');
       } finally {
         setAdminCheckLoading(false);
       }
@@ -167,7 +195,7 @@ export default function Header() {
           {userIsAdmin && (
             <Link 
               href="/admin" 
-              className="flex items-center space-x-2 text-orange-400 hover:text-orange-300 transition-colors border border-orange-400/30 px-3 py-1 rounded-lg hover:border-orange-400/50 hover:bg-orange-400/10"
+              className="flex items-center space-x-2 text-accent hover:text-accent/80 transition-colors border border-accent/30 px-3 py-1 rounded-lg hover:border-accent/50 hover:bg-accent/10"
             >
               <Shield className="w-4 h-4" />
               <span>Admin Panel</span>
@@ -176,8 +204,8 @@ export default function Header() {
           
           {/* Loading indicator for admin check */}
           {adminCheckLoading && account && (
-            <div className="flex items-center space-x-2 text-orange-400/50">
-              <div className="w-3 h-3 border border-orange-400/50 border-t-transparent rounded-full animate-spin"></div>
+            <div className="flex items-center space-x-2 text-accent/50">
+              <div className="w-3 h-3 border border-accent/50 border-t-transparent rounded-full animate-spin"></div>
               <span className="text-xs">Checking admin...</span>
             </div>
           )}

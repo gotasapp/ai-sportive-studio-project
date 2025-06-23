@@ -13,7 +13,7 @@ interface AdminProtectionProps {
 export default function AdminProtection({ children, fallback }: AdminProtectionProps) {
   const account = useActiveAccount();
   const wallet = useActiveWallet();
-  const [isAdminUser, setIsAdminUser] = useState(false);
+  const [isAdminUser, setIsAdminUser] = useState<boolean | null>(null); // null = checking, true/false = result
   const [isLoading, setIsLoading] = useState(true);
   
   const isConnected = !!account;
@@ -26,14 +26,40 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
       if (!account) {
         setIsAdminUser(false);
         setIsLoading(false);
+        // Limpar cache quando desconectar
+        localStorage.removeItem('admin_status_cache');
         return;
       }
 
+      const accountKey = account.address || 'unknown';
+      const cacheKey = `admin_status_${accountKey}`;
+      
+      // Verificar cache primeiro (para evitar re-verificações desnecessárias)
+      const cachedStatus = localStorage.getItem(cacheKey);
+      if (cachedStatus !== null) {
+        const isAdminCached = cachedStatus === 'true';
+        setIsAdminUser(isAdminCached);
+        setIsLoading(false);
+        
+        // Ainda faz verificação em background para atualizar cache se necessário
+        setTimeout(() => {
+          performAdminCheck(accountKey, cacheKey);
+        }, 100);
+        
+        return;
+      }
+
+      // Se não há cache, faz verificação completa
+      await performAdminCheck(accountKey, cacheKey);
+    };
+
+    const performAdminCheck = async (accountKey: string, cacheKey: string) => {
       try {
         // Primeiro, tenta verificação rápida (wallet address)
         const quickCheck = isAdmin(account);
         if (quickCheck) {
           setIsAdminUser(true);
+          localStorage.setItem(cacheKey, 'true');
           setIsLoading(false);
           return;
         }
@@ -41,9 +67,11 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
         // Para InApp wallets, faz verificação async do email
         const asyncCheck = await isAdminAsync(account, wallet);
         setIsAdminUser(asyncCheck);
+        localStorage.setItem(cacheKey, asyncCheck ? 'true' : 'false');
       } catch (error) {
         console.error('Erro ao verificar status de admin:', error);
         setIsAdminUser(false);
+        localStorage.setItem(cacheKey, 'false');
       } finally {
         setIsLoading(false);
       }
@@ -51,6 +79,13 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
 
     checkAdminStatus();
   }, [account, wallet]);
+
+  // Limpar cache quando a conta mudar
+  useEffect(() => {
+    if (!account) {
+      localStorage.removeItem('admin_status_cache');
+    }
+  }, [account?.address]);
   
   // Custom fallback component
   const defaultFallback = (
@@ -73,7 +108,7 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
                 <span className="text-sm">Connect wallet in the header</span>
               </div>
             </div>
-          ) : isLoading ? (
+          ) : isLoading || isAdminUser === null ? (
             <div className="space-y-4">
               <p className="text-gray-400">
                 Checking admin permissions...
@@ -81,6 +116,9 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
               <div className="flex items-center justify-center">
                 <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
               </div>
+              <p className="text-xs text-gray-500">
+                This may take a few seconds for social logins
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -106,6 +144,19 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
                 <Shield className="w-4 h-4" />
                 <span className="text-sm">Admin access required</span>
               </div>
+              
+              {/* Botão para tentar novamente */}
+              <button
+                onClick={() => {
+                  // Limpar cache e tentar novamente
+                  const accountKey = account?.address || 'unknown';
+                  localStorage.removeItem(`admin_status_${accountKey}`);
+                  window.location.reload();
+                }}
+                className="mt-4 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white rounded-lg transition-colors text-sm"
+              >
+                Try Again
+              </button>
             </div>
           )}
           
@@ -122,34 +173,35 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
     </div>
   );
 
-  // Show loading state
-  if (isLoading) {
+  // Show loading state apenas se realmente estiver carregando
+  if (isLoading && isAdminUser === null) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-blue-900 to-gray-900">
-        <div className="flex items-center space-x-3 text-white">
-          <div className="w-6 h-6 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+        <div className="flex flex-col items-center space-y-4 text-white">
+          <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
           <span>Checking admin permissions...</span>
+          <p className="text-xs text-gray-400">Please wait while we verify your access</p>
         </div>
       </div>
     );
   }
 
   // Show fallback if not admin
-  if (!isAdminUser) {
+  if (isAdminUser === false) {
     return fallback || defaultFallback;
   }
   
-  // Show admin content
+  // Show admin content (isAdminUser === true)
   return (
     <div>
       {/* Admin indicator */}
-      <div className="bg-orange-500/10 border-b border-orange-400/20 px-4 py-2">
+      <div className="bg-accent/10 border-b border-accent/20 px-4 py-2">
         <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-2 text-orange-400">
+          <div className="flex items-center space-x-2 text-accent">
             <Shield className="w-4 h-4" />
             <span className="text-sm font-medium">Admin Mode Active</span>
           </div>
-          <div className="text-xs text-orange-300">
+          <div className="text-xs text-accent/70">
             {account?.address ? 
               `${account.address.slice(0, 6)}...${account.address.slice(-4)}` :
               wallet?.id === 'inApp' ? 'Social Login' : 'Unknown'
