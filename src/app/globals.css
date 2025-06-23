@@ -174,10 +174,10 @@ textarea.cyber-input {
   background: hsl(var(--card));
   position: relative;
   overflow: hidden;
-  border: 1px solid hsl(var(--border));
+  border: 1px solid rgba(156, 163, 175, 0.3);
   box-shadow: 
-    0 0 20px rgba(0, 255, 255, 0.1),
-    inset 0 0 30px rgba(0, 255, 255, 0.05);
+    0 0 20px rgba(0, 0, 0, 0.1),
+    inset 0 0 30px rgba(0, 0, 0, 0.05);
 }
 
 .jersey-preview::before {
@@ -187,9 +187,7 @@ textarea.cyber-input {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.15) 50%, transparent 100%);
-  animation: scanline 4s linear infinite;
+  background: transparent;
 }
 
 @keyframes scanline {

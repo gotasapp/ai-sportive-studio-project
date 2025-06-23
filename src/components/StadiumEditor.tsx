@@ -949,7 +949,7 @@ export default function StadiumEditor() {
                 <div className="flex justify-center h-[90vh]">
                   <div className="relative w-[65vh] h-[85vh] rounded-2xl overflow-hidden" style={{
                     background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
-                    border: '2px solid rgba(0, 212, 255, 0.3)'
+                    border: '2px solid rgba(156, 163, 175, 0.3)'
                   }}>
                     
                     {isGenerating && (
