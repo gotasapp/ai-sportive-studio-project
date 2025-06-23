@@ -12,6 +12,7 @@ import { useEngine } from '../lib/useEngine'
 import { ImageGenerationRequest } from '../types'
 import { getTransactionUrl } from '../lib/utils'
 import { Button } from '@/components/ui/button'
+import { isAdmin } from '../lib/admin-config'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -154,9 +155,12 @@ export default function JerseyEditor() {
   const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
   const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
   
+  // Admin check
+  const isUserAdmin = isAdmin(account)
+  
   // Mint conditions
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
-  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber // Gasless only needs data
+  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber && isUserAdmin // Gasless only for admins
 
   // Upload to IPFS
   const uploadToIPFS = async () => {
@@ -689,35 +693,37 @@ export default function JerseyEditor() {
                   </button>
 
                   <div className="space-y-3">
-                    {/* 🚀 ENGINE GASLESS MINT - Backend pays gas */}
+                    {/* 🚀 ENGINE GASLESS MINT - Admin Only */}
+                    {isUserAdmin && (
+                      <button 
+                        className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
+                          canMintGasless && !isMinting
+                            ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
+                            : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        disabled={!canMintGasless || isMinting}
+                        onClick={() => {
+                          if (canMintGasless) {
+                            handleEngineNormalMint()
+                          }
+                        }}
+                      >
+                        {isMinting && mintStatus === 'pending' ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Minting (Gasless)...
+                          </div>
+                        ) : !generatedImage ? 'Generate Jersey First' :
+                          !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
+                          '🚀 Mint via Engine (Gasless) - Admin'}
+                      </button>
+                    )}
+
+                    {/* 🎯 MINT BUTTON - For All Users */}
                     <button 
                       className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
-                        canMintGasless && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      disabled={!canMintGasless || isMinting}
-                      onClick={() => {
-                        if (canMintGasless) {
-                          handleEngineNormalMint()
-                        }
-                      }}
-                    >
-                      {isMinting && mintStatus === 'pending' ? (
-                        <div className="flex items-center justify-center">
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting (Gasless)...
-                        </div>
-                      ) : !generatedImage ? 'Generate Jersey First' :
-                        !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
-                        '🚀 Mint via Engine (Gasless)'}
-                    </button>
-
-                    {/* 🎯 LEGACY MINT - User pays gas (fallback) */}
-                    <button 
-                      className={`cyber-button w-full py-3 rounded-lg font-medium transition-all ${
                         canMintLegacy && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-gray-600/20 border-purple-400/30' 
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border-cyan-400/30' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                       disabled={!canMintLegacy || isMinting}
@@ -734,12 +740,12 @@ export default function JerseyEditor() {
                       {isMinting && mintStatus === 'pending' ? (
                         <div className="flex items-center justify-center">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting (Legacy)...
+                          Minting...
                         </div>
                       ) : !isConnected ? 'Connect Wallet to Mint' :
                         !isOnSupportedChain ? 'Switch to Supported Network' :
                         !generatedImage ? 'Generate Jersey First' :
-                        '🎯 Legacy Mint (User Pays Gas)'}
+                        'Mint'}
                     </button>
                   </div>
 
@@ -825,20 +831,141 @@ export default function JerseyEditor() {
 
           </div>
 
-          {/* Coluna de Preview (Painel Direito) */}
-          <div className="lg:col-span-2">
-            <div className="p-8 lg:p-4">
-              <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
-              
-              {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
-              <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
-                {/* Mobile: Full Status Display */}
-                <div className="lg:hidden">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-white flex items-center">
-                      <Wallet className="w-4 h-4 mr-2" />
-                      Web3 Status
-                    </h4>
+          <div className="lg:col-span-2 space-y-6 lg:space-y-4">
+            <div>
+              <div className="p-8 lg:p-4">
+                <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
+                
+                {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
+                <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
+                  {/* Mobile: Full Status Display */}
+                  <div className="lg:hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold text-white flex items-center">
+                        <Wallet className="w-4 h-4 mr-2" />
+                        Web3 Status
+                      </h4>
+                      {!isConnected && (
+                        <button
+                          onClick={() => alert('Please connect your wallet using the button in the header')}
+                          className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
+                        >
+                          Connect
+                        </button>
+                      )}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">Wallet</span>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                          <span className="text-xs text-gray-300">
+                            {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">Network</span>
+                        <div className="flex items-center space-x-2">
+                          {isConnected ? (
+                            <>
+                              <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                              <span className="text-xs text-gray-300">
+                                {chain?.name || 'Unknown'}
+                              </span>
+                              {!isOnSupportedChain && (
+                                <button
+                                  onClick={() => alert('Please switch network using your wallet')}
+                                  className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
+                                >
+                                  Switch Network
+                                </button>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                              <span className="text-xs text-gray-300">Connect wallet first</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Admin Only: Gasless Mint Status */}
+                      {isUserAdmin && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-400">Admin Gasless Mint</span>
+                          <div className="flex items-center space-x-2">
+                            {canMintGasless ? (
+                              <>
+                                <Check className="w-3 h-3 text-green-400" />
+                                <span className="text-xs text-green-400">Ready</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                                <span className="text-xs text-yellow-400">
+                                  {!generatedImage ? 'Generate jersey' : 
+                                   !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-gray-400">Mint Status</span>
+                        <div className="flex items-center space-x-2">
+                          {canMintLegacy ? (
+                            <>
+                              <Check className="w-3 h-3 text-green-400" />
+                              <span className="text-xs text-green-400">Ready</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                              <span className="text-xs text-yellow-400">
+                                {!isConnected ? 'Connect wallet' : 
+                                 !isOnSupportedChain ? 'Switch network' : 
+                                 !generatedImage ? 'Generate jersey' : 'Not ready'}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Desktop: Compact Status Display */}
+                  <div className="hidden lg:flex items-center justify-between text-xs">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                        <span className="text-gray-400">
+                          {isConnected ? address?.slice(0, 4) + '...' + address?.slice(-3) : 'Wallet'}
+                        </span>
+                      </div>
+                      
+                      {isConnected && (
+                        <div className="flex items-center space-x-1">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                          <span className="text-gray-400">{chain?.name || 'Network'}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center space-x-1">
+                        {canMintLegacy ? (
+                          <Check className="w-3 h-3 text-green-400" />
+                        ) : (
+                          <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                        )}
+                        <span className="text-gray-400">Mint Ready</span>
+                      </div>
+                    </div>
+                    
                     {!isConnected && (
                       <button
                         onClick={() => alert('Please connect your wallet using the button in the header')}
