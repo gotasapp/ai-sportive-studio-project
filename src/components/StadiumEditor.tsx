@@ -45,14 +45,13 @@ const STADIUM_WEATHER_FILTERS = [
   { id: 'cloudy', label: 'Cloudy', icon: Cloud }
 ];
 
-const MARKETPLACE_ITEMS = [
-  { id: 1, number: '01', price: '0.5 ETH', trending: true },
-  { id: 2, number: '02', price: '0.3 ETH', trending: false },
-  { id: 3, number: '03', price: '0.8 ETH', trending: true },
-  { id: 4, number: '04', price: '0.4 ETH', trending: false },
-  { id: 5, number: '05', price: '1.2 ETH', trending: true },
-  { id: 6, number: '06', price: '0.6 ETH', trending: false }
-];
+// Marketplace data will be loaded from JSON
+interface MarketplaceNFT {
+  name: string;
+  image_url: string;
+  description: string;
+  price: string;
+}
 
 export default function StadiumEditor() {
   // Thirdweb v5 hooks for wallet connection
@@ -121,6 +120,10 @@ export default function StadiumEditor() {
   const [mintedTokenId, setMintedTokenId] = useState<string | null>(null);
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  
+  // Marketplace state
+  const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
+  const [marketplaceLoading, setMarketplaceLoading] = useState(true)
 
   // Network validation (simplified for CHZ + Polygon)
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
@@ -135,6 +138,30 @@ export default function StadiumEditor() {
   useEffect(() => {
     loadAvailableStadiums();
     checkApiStatus();
+  }, []);
+
+  // Load marketplace data
+  useEffect(() => {
+    const loadMarketplaceData = async () => {
+      try {
+        console.log('🔄 Loading marketplace data for stadiums...')
+        const response = await fetch('/marketplace-images.json')
+        if (!response.ok) throw new Error('Failed to load marketplace data')
+        
+        const data = await response.json()
+        console.log('✅ Marketplace data loaded for stadiums:', data)
+        
+        // Combine jerseys and stadiums for the marketplace carousel
+        const allNFTs = [...data.marketplace_nfts.jerseys, ...data.marketplace_nfts.stadiums]
+        setMarketplaceNFTs(allNFTs)
+      } catch (error) {
+        console.error('❌ Error loading marketplace data for stadiums:', error)
+      } finally {
+        setMarketplaceLoading(false)
+      }
+    }
+
+    loadMarketplaceData()
   }, []);
 
   // Convert base64 to blob when image is generated
@@ -1137,39 +1164,72 @@ export default function StadiumEditor() {
                   className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
                   style={{ scrollBehavior: 'smooth' }}
                 >
-                  {MARKETPLACE_ITEMS.concat(MARKETPLACE_ITEMS).map((item, index) => (
-                    <div key={`${item.id}-${index}`} className="flex-shrink-0 group cursor-pointer">
-                      <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300 hover:scale-105">
-                        <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg mb-3 flex items-center justify-center relative overflow-hidden border border-cyan-400/20">
-                          {item.trending && (
-                            <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50"></div>
-                          )}
-                          
-                          <div className="relative w-full h-full flex items-center justify-center">
-                            <div className="text-2xl font-bold text-cyan-400/60">🏟️</div>
-                            
-                            <div className="absolute inset-3 border border-dashed border-cyan-400/20 rounded"></div>
-                            
-                            <div className="absolute inset-0 bg-gradient-to-t from-cyan-400/10 via-transparent to-purple-400/10 rounded-lg"></div>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-1">
-                          <p className="text-xs text-gray-400 group-hover:text-cyan-400 transition-colors font-medium">
-                            Stadium #{item.number}
-                          </p>
-                          <div className="flex items-center justify-between">
-                            <span className="text-cyan-400 font-bold text-sm">{item.price}</span>
-                            {item.trending && (
-                              <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded text-xs">
-                                🔥
-                              </span>
-                            )}
+                  {marketplaceLoading ? (
+                    // Loading skeleton
+                    Array.from({ length: 6 }).map((_, index) => (
+                      <div key={`loading-${index}`} className="flex-shrink-0">
+                        <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300">
+                          <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg mb-3 animate-pulse border border-cyan-400/20"></div>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-600/50 rounded animate-pulse"></div>
+                            <div className="h-3 bg-gray-600/50 rounded w-2/3 animate-pulse"></div>
                           </div>
                         </div>
                       </div>
+                    ))
+                  ) : marketplaceNFTs.length > 0 ? (
+                    // Real NFT data
+                    marketplaceNFTs.concat(marketplaceNFTs).map((nft, index) => (
+                      <div key={`${nft.name}-${index}`} className="flex-shrink-0 group cursor-pointer">
+                        <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300 hover:scale-105">
+                          <div className="aspect-[4/5] rounded-lg mb-3 relative overflow-hidden border border-cyan-400/20">
+                            {/* Random trending indicator */}
+                            {index % 3 === 0 && (
+                              <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
+                            )}
+                            
+                            <img 
+                              src={nft.image_url} 
+                              alt={nft.name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              onError={(e) => {
+                                console.error('❌ Error loading stadium marketplace image:', nft.image_url);
+                                // Fallback to gradient background
+                                (e.target as HTMLImageElement).style.display = 'none';
+                                const parent = (e.target as HTMLImageElement).parentElement;
+                                if (parent) {
+                                  parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
+                                  parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-cyan-400/60 font-bold text-lg">${nft.name.charAt(0)}</div>`;
+                                }
+                              }}
+                            />
+                            
+                            {/* Overlay gradient */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                          </div>
+                          
+                          <div className="space-y-1">
+                            <p className="text-xs text-gray-400 group-hover:text-cyan-400 transition-colors font-medium truncate">
+                              {nft.name}
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <span className="text-cyan-400 font-bold text-sm">{nft.price}</span>
+                              {index % 3 === 0 && (
+                                <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
+                                  🔥
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    // No data fallback
+                    <div className="flex-shrink-0 w-full text-center py-8">
+                      <p className="text-gray-400">No marketplace items available</p>
                     </div>
-                  ))}
+                  )}
                 </div>
                 
                 <div className="mt-4 text-center">
