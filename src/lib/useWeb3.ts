@@ -31,12 +31,12 @@ export function useWeb3() {
     ? amoy 
     : (usePolygon ? defineChain(137) : chzMainnet);
     
-  const contractAddress = isTestnet
+  const contractAddress = (isTestnet
     ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET
     : (usePolygon 
         ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON
         : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
-      ) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
+      )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
   const contract = getContract({
     client,
