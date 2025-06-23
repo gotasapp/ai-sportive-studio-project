@@ -141,25 +141,25 @@ export default function Header() {
             alt="Chiliz Fan NFT Logo" 
             className="w-8 h-8 rounded-lg object-cover"
           />
-          <h1 className="text-sm md:text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+          <h1 className="text-sm md:text-xl font-system font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent" style={{ fontWeight: 500 }}>
             Chiliz Fan NFT
           </h1>
         </div>
 
         <nav className="hidden lg:flex items-center space-x-8">
-          <Link href="/" className="text-gray-300 hover:text-cyan-400 transition-colors">
+          <Link href="/" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
             Jerseys
           </Link>
-          <Link href="/stadiums" className="text-gray-300 hover:text-cyan-400 transition-colors">
+          <Link href="/stadiums" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
             Stadiums
           </Link>
           
           {/* Marketplace - Apenas título sem funcionalidade por enquanto */}
-          <span className="text-gray-300">
+          <span className="font-display text-nav-purple" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
             Marketplace
           </span>
           
-          <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
+          <a href="#" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
             My NFTs
           </a>
           

@@ -588,11 +588,11 @@ export default function StadiumEditor() {
           <div className="lg:col-span-1">
             <div className="gradient-border">
               <div className="gradient-border-content p-4 md:p-6 space-y-4 md:space-y-6">
-                <h2 className="text-xl font-bold text-white">Stadium Generator</h2>
+                <h2 className="heading-style">Stadium Generator</h2>
                 
                 {/* Stadium Selection */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white">Stadium</h3>
+                  <h3 className="heading-style">Stadium</h3>
                   <Select value={selectedStadium} onValueChange={setSelectedStadium}>
                     <SelectTrigger className="cyber-input">
                       <SelectValue placeholder="Select stadium" />
@@ -610,7 +610,7 @@ export default function StadiumEditor() {
 
                 {/* Custom Prompt */}
                 <div className="space-y-3">
-                  <h3 className="text-sm font-semibold text-white">Custom Prompt</h3>
+                  <h3 className="heading-style">Custom Prompt</h3>
                   <Textarea
                     placeholder="Describe your stadium vision..."
                     value={customPrompt}
@@ -796,7 +796,7 @@ export default function StadiumEditor() {
             <div className="gradient-border">
               <div className="gradient-border-content p-4 md:p-8">
                 <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 gap-3">
-                  <h3 className="text-lg md:text-xl font-bold text-white">Stadium Preview</h3>
+                  <h3 className="heading-style">Stadium Preview</h3>
                   <div className="flex items-center space-x-2 md:space-x-4">
                     <div className={`px-3 py-1 rounded-full text-xs ${apiStatus ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
                       {apiStatus ? '🟢 Ready' : '🔴 Offline'}
@@ -966,7 +966,7 @@ export default function StadiumEditor() {
 
             <div className="gradient-border">
               <div className="gradient-border-content p-4 md:p-6">
-                <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">Mint NFT</h2>
+                <h2 className="heading-style mb-4 md:mb-6">Mint NFT</h2>
                 
                 <div className="space-y-6">
                   <div>
@@ -1136,7 +1136,7 @@ export default function StadiumEditor() {
             <div className="gradient-border">
               <div className="gradient-border-content p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold text-white">Marketplace</h2>
+                  <h2 className="heading-style">Marketplace</h2>
                   <div className="flex items-center space-x-2">
                     <button 
                       className="p-2 rounded-lg border border-cyan-400/30 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"

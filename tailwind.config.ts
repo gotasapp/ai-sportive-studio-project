@@ -9,6 +9,14 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'sans': ['-apple-system', '"Atyp Text"', 'sans-serif'],
+        'system': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
+        'display': ['"Atyp Display"', 'sans-serif'],
+      },
+      fontWeight: {
+        'normal': '500',
+      },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -16,6 +24,7 @@ const config: Config = {
         'electric-blue': 'hsl(var(--electric-blue))',
         'dark-purple': 'hsl(var(--dark-purple))',
         'neon-cyan': 'hsl(var(--neon-cyan))',
+        'nav-purple': '#E97BFF',
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
@@ -69,12 +78,26 @@ const config: Config = {
           '100%': { transform: 'translateX(100%)' },
         }
       },
-      backgroundImage: {
+            backgroundImage: {
         'cyber-gradient': 'var(--cyber-gradient)',
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [
+    require("tailwindcss-animate"),
+    function({ addUtilities }: any) {
+      addUtilities({
+        '.heading-style': {
+          fontFamily: '"Atyp Display", sans-serif',
+          fontWeight: '500',
+          fontSize: '14px',
+          lineHeight: '40px',
+          color: '#E97BFF',
+          fontStyle: 'normal',
+        },
+      });
+    }
+  ],
 };
 
 export default config; 

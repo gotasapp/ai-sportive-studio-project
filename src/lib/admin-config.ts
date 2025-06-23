@@ -21,19 +21,25 @@ export const ADMIN_ADDRESSES = [
   // Backend/Engine admin (existing - for compatibility)
   process.env.ADMIN_WALLET_ADDRESS?.toLowerCase(),
   
-  // Multiple admin support (add your admin wallets here)
-  // '0x1234567890abcdef1234567890abcdef12345678', // Example admin 2
-  // '0xabcdef1234567890abcdef1234567890abcdef12', // Example admin 3
-  // '0xYourOtherWalletHere',                       // Example admin 4
+  // ✅ ADICIONE O NOVO ADMIN WALLET AQUI:
+  // 'SEU_NOVO_WALLET_ADDRESS_AQUI'.toLowerCase(), // Novo admin - substitua por seu wallet
+  
+  // Multiple admin support (add more if needed)
+   '0xAc6d591F61E28F6E914583eaC316fDCd2E1Ce30e', // ariel
+  // '0xabcdef1234567890abcdef1234567890abcdef12', // Example admin 4
 ].filter(Boolean) as string[];
 
 // Admin emails - for social/email login admin access
 export const ADMIN_EMAILS = [
   process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase(),
-  // Add more admin emails here:
+  
+  // ✅ ADICIONE O NOVO ADMIN EMAIL AQUI:
+  // 'SEU_NOVO_EMAIL_ADMIN_AQUI@domain.com', // Novo admin - substitua por seu email
+  
+  // Add more admin emails here if needed:
   // 'admin@chzsports.com',      // Main admin
   // 'owner@chzsports.com',      // Owner
-  // 'moderator@chzsports.com',  // Moderator
+  'arieldj@gmail.com',   //moderator
 ].filter(Boolean) as string[];
 
 /**
