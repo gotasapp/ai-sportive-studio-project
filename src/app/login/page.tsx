@@ -129,6 +129,7 @@ export default function LoginPage() {
           client={client}
           wallets={wallets}
           chains={supportedChains}
+          chain={chzMainnet}
           auth={{
             // Funções de placeholder para ativar o fluxo SIWE
             // A lógica de backend pode ser implementada aqui no futuro

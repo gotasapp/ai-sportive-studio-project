@@ -187,6 +187,7 @@ export default function Header() {
           <ConnectButton
             client={client}
             chains={supportedChains}
+            chain={chzMainnet}
             theme="dark"
           />
         </div>
