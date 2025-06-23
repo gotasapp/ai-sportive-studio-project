@@ -5,7 +5,21 @@ import { useRouter } from 'next/navigation';
 import { useActiveAccount } from 'thirdweb/react';
 import Header from '@/components/Header';
 import { ShoppingBag, Filter, Grid3X3, List, Star } from 'lucide-react';
-import marketplaceData from '../../../marketplace-images.json';
+
+interface NFT {
+  name: string;
+  image_url: string;
+  description: string;
+  price: string;
+  category?: string;
+}
+
+interface MarketplaceData {
+  marketplace_nfts: {
+    jerseys: NFT[];
+    stadiums: NFT[];
+  };
+}
 
 export default function MarketplacePage() {
   const account = useActiveAccount();
@@ -13,6 +27,25 @@ export default function MarketplacePage() {
   const [isAuthCheckComplete, setIsAuthCheckComplete] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'jerseys' | 'stadiums'>('all');
+  const [marketplaceData, setMarketplaceData] = useState<MarketplaceData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Carregar dados do marketplace
+  useEffect(() => {
+    const loadMarketplaceData = async () => {
+      try {
+        const response = await fetch('/marketplace-images.json');
+        const data = await response.json();
+        setMarketplaceData(data);
+      } catch (error) {
+        console.error('Erro ao carregar dados do marketplace:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMarketplaceData();
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,6 +64,17 @@ export default function MarketplacePage() {
       <div className="flex items-center justify-center min-h-screen bg-gray-900">
         <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
+    );
+  }
+
+  if (loading || !marketplaceData) {
+    return (
+      <main className="flex min-h-screen flex-col bg-gray-900 pb-20 lg:pb-0">
+        <Header />
+        <div className="flex items-center justify-center flex-1">
+          <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </main>
     );
   }
 
@@ -153,6 +197,10 @@ export default function MarketplacePage() {
                   src={nft.image_url} 
                   alt={nft.name}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  onError={(e) => {
+                    console.error('Erro ao carregar imagem:', nft.image_url);
+                    (e.target as HTMLImageElement).src = '/placeholder-nft.png';
+                  }}
                 />
               </div>
               

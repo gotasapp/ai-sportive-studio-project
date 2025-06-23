@@ -8,7 +8,20 @@ import { polygon, mainnet } from "thirdweb/chains";
 import { Shield, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
-import marketplaceData from '../../marketplace-images.json';
+
+interface NFT {
+  name: string;
+  image_url: string;
+  description: string;
+  price: string;
+}
+
+interface MarketplaceData {
+  marketplace_nfts: {
+    jerseys: NFT[];
+    stadiums: NFT[];
+  };
+}
 
 // Cliente Thirdweb simples
 const client = createThirdwebClient({
@@ -94,6 +107,22 @@ export default function Header() {
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [adminCheckLoading, setAdminCheckLoading] = useState(false);
   const [showMarketplace, setShowMarketplace] = useState(false);
+  const [marketplaceData, setMarketplaceData] = useState<MarketplaceData | null>(null);
+
+  // Carregar dados do marketplace
+  useEffect(() => {
+    const loadMarketplaceData = async () => {
+      try {
+        const response = await fetch('/marketplace-images.json');
+        const data = await response.json();
+        setMarketplaceData(data);
+      } catch (error) {
+        console.error('Erro ao carregar dados do marketplace no header:', error);
+      }
+    };
+
+    loadMarketplaceData();
+  }, []);
 
   // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
   useEffect(() => {
@@ -129,10 +158,10 @@ export default function Header() {
   }, [account, wallet]);
 
   // Combinar todos os NFTs para o marketplace
-  const allNFTs = [
+  const allNFTs = marketplaceData ? [
     ...marketplaceData.marketplace_nfts.jerseys,
     ...marketplaceData.marketplace_nfts.stadiums
-  ];
+  ] : [];
   
   return (
     <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
@@ -168,7 +197,7 @@ export default function Header() {
             </button>
             
             {/* Marketplace Dropdown Content */}
-            {showMarketplace && (
+            {showMarketplace && marketplaceData && (
               <div 
                 className="absolute top-full left-0 mt-2 w-96 bg-gray-900/95 backdrop-blur-lg border border-cyan-800/30 rounded-xl shadow-2xl z-50"
                 onMouseEnter={() => setShowMarketplace(true)}
@@ -177,7 +206,7 @@ export default function Header() {
                 <div className="p-4">
                   <h3 className="text-lg font-bold text-cyan-400 mb-4">Featured NFTs</h3>
                   <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto">
-                    {allNFTs.map((nft, index) => (
+                    {allNFTs.slice(0, 6).map((nft, index) => (
                       <div 
                         key={index}
                         className="bg-gray-800/50 rounded-lg p-3 hover:bg-gray-700/50 transition-all duration-300 cursor-pointer group"
@@ -187,6 +216,10 @@ export default function Header() {
                             src={nft.image_url} 
                             alt={nft.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            onError={(e) => {
+                              console.error('Erro ao carregar imagem no header:', nft.image_url);
+                              (e.target as HTMLImageElement).src = '/placeholder-nft.png';
+                            }}
                           />
                         </div>
                         <h4 className="text-white font-semibold text-sm truncate">{nft.name}</h4>
