@@ -183,13 +183,7 @@ export default function StadiumEditor() {
     setCurrentSlide(value)
   }
 
-  // Auto-play carousel (paused during interaction and at the end)
-  useEffect(() => {
-    if (marketplaceNFTs.length > slidesToShow && !isDragging && currentSlide < maxSlide) {
-      const interval = setInterval(nextSlide, 5500) // Change slide every 5.5 seconds (slower)
-      return () => clearInterval(interval)
-    }
-  }, [marketplaceNFTs.length, maxSlide, isDragging, currentSlide])
+  // Auto-play carousel removed - manual control only
 
   // Network validation (simplified for CHZ + Polygon)
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
@@ -657,13 +651,13 @@ export default function StadiumEditor() {
                 <div className="space-y-2">
                   <h3 className="heading-style text-sm">Stadium</h3>
                   <Select value={selectedStadium} onValueChange={setSelectedStadium}>
-                    <SelectTrigger className="cyber-input">
+                    <SelectTrigger className="cyber-input bg-black text-white">
                       <SelectValue placeholder="Select stadium" />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="custom_only">Custom Only</SelectItem>
+                    <SelectContent className="bg-black">
+                      <SelectItem value="custom_only" className="bg-black text-white">Custom Only</SelectItem>
                       {availableStadiums.map((stadium) => (
-                        <SelectItem key={stadium.id} value={stadium.id}>
+                        <SelectItem key={stadium.id} value={stadium.id} className="bg-black text-white">
                           {stadium.name}
                         </SelectItem>
                       ))}
@@ -678,7 +672,7 @@ export default function StadiumEditor() {
                     placeholder="Describe your stadium vision..."
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
-                    className="cyber-input h-16 resize-none text-sm"
+                    className="cyber-input h-16 resize-none text-sm bg-black text-white"
                   />
                 </div>
 
@@ -692,14 +686,14 @@ export default function StadiumEditor() {
                       onChange={handleCustomFileChange}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                     />
-                    <div className="cyber-input flex items-center justify-center h-10 text-gray-400 hover:text-cyan-400 transition-colors">
+                    <div className="cyber-input flex items-center justify-center h-10 text-gray-400 hover:text-white transition-colors bg-black">
                       <Upload className="w-3 h-3 mr-1.5" />
                       <span className="text-xs">Upload Reference</span>
                     </div>
                   </div>
                   {customReferencePreview && (
                     <div className="mt-1">
-                      <Image src={customReferencePreview} alt="Reference preview" width={100} height={50} className="w-full h-16 object-cover rounded border border-cyan-400/30" />
+                      <Image src={customReferencePreview} alt="Reference preview" width={100} height={50} className="w-full h-16 object-cover rounded border border-white/30" />
                     </div>
                   )}
                 </div>
@@ -804,12 +798,12 @@ export default function StadiumEditor() {
                 <div className="space-y-2">
                   <h3 className="text-xs font-semibold text-white">Quality</h3>
                   <Select value={quality} onValueChange={setQuality}>
-                    <SelectTrigger className="cyber-input">
+                    <SelectTrigger className="cyber-input bg-black text-white">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="standard">Standard (1024x1024)</SelectItem>
-                      <SelectItem value="hd">HD (1024x1792)</SelectItem>
+                    <SelectContent className="bg-black">
+                      <SelectItem value="standard" className="bg-black text-white">Standard (1024x1024)</SelectItem>
+                      <SelectItem value="hd" className="bg-black text-white">HD (1024x1792)</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -862,7 +856,7 @@ export default function StadiumEditor() {
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <span className="text-xs text-gray-300">Edition Size</span>
-                      <span className="text-cyan-400 font-semibold text-xs">{editionSize}</span>
+                      <span className="text-white font-semibold text-xs">{editionSize}</span>
                     </div>
                     <input
                       type="range"
@@ -960,11 +954,11 @@ export default function StadiumEditor() {
                     
                     {isGenerating && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
-                        <p className="text-cyan-400 text-2xl font-semibold">Generating stadium...</p>
-                        <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
-                        </div>
+                        <div className="w-24 h-24 border-4 border-white border-t-transparent rounded-full animate-spin mb-8"></div>
+                        <p className="text-white text-2xl font-semibold">Generating stadium...</p>
+                                                  <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+                            <div className="h-full bg-white rounded-full animate-pulse"></div>
+                          </div>
                       </div>
                     )}
                     
@@ -988,13 +982,13 @@ export default function StadiumEditor() {
                     {generatedImage && !isGenerating && !error && (
                       <div className="absolute inset-0 p-6 lg:p-3">
                         <Image src={generatedImage} alt="Generated Stadium" width={1024} height={1024} className="w-full h-full object-contain rounded-lg" />
-                        <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
-                        <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                        <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-white/50 pointer-events-none"></div>
+                        <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-white rounded-full animate-pulse shadow-lg shadow-white/50"></div>
                         
                         <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
                           <div className="text-white">
                             <p className="font-bold text-2xl lg:text-lg">{selectedStadium !== 'custom_only' ? availableStadiums.find(s => s.id === selectedStadium)?.name : 'Custom Stadium'}</p>
-                            <p className="text-cyan-400 text-lg lg:text-sm">{generationStyle} · {perspective} · {atmosphere}</p>
+                            <p className="text-white text-lg lg:text-sm">{generationStyle} · {perspective} · {atmosphere}</p>
                             <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
                               <span className="text-sm lg:text-xs text-gray-300">{timeOfDay} · {weather}</span>
                               <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
@@ -1007,14 +1001,14 @@ export default function StadiumEditor() {
                     {!generatedImage && !isGenerating && !error && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
                         <div className="text-center">
-                          <div className="w-48 h-64 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-8 mx-auto">
+                          <div className="w-48 h-64 border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center mb-8 mx-auto">
                             <div className="text-center">
-                              <Building className="w-16 h-16 text-cyan-400/50 mx-auto mb-4" />
+                              <Building className="w-16 h-16 text-white/50 mx-auto mb-4" />
                               <p className="text-lg text-gray-400">Stadium</p>
                             </div>
                           </div>
                           <p className="text-gray-400 text-xl">Your generated stadium will appear here</p>
-                          <p className="text-cyan-400/70 text-lg mt-4">Premium NFT quality rendering</p>
+                          <p className="text-white/70 text-lg mt-4">Premium NFT quality rendering</p>
                         </div>
                       </div>
                     )}
@@ -1024,8 +1018,8 @@ export default function StadiumEditor() {
             </div>
 
             {generatedImage && (
-              <div className="gradient-border">
-                <div className="gradient-border-content p-4 md:p-6">
+              <div className="bg-black border border-white/20 rounded-lg">
+                <div className="bg-black p-4 md:p-6">
                   <div className="p-4 rounded-lg border border-green-400/20 bg-green-500/5">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold text-white flex items-center">
