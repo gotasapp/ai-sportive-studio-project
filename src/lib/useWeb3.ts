@@ -19,13 +19,29 @@ export function useWeb3() {
     clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
   });
 
-  // Define Amoy testnet
+  // Define chains
   const amoy = defineChain(80002);
+  const chzMainnet = defineChain(88888);
+  
+  // Determine active chain and contract based on environment
+  const isTestnet = process.env.NEXT_PUBLIC_USE_TESTNET === 'true';
+  const usePolygon = process.env.NEXT_PUBLIC_USE_POLYGON === 'true';
+  
+  const activeChain = isTestnet 
+    ? amoy 
+    : (usePolygon ? defineChain(137) : chzMainnet);
+    
+  const contractAddress = isTestnet
+    ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET
+    : (usePolygon 
+        ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON
+        : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
+      ) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
   const contract = getContract({
     client,
-    chain: amoy,
-    address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || "0xfF973a4aFc5A96DEc81366461A461824c4f80254",
+    chain: activeChain,
+    address: contractAddress,
   });
 
   // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation)
