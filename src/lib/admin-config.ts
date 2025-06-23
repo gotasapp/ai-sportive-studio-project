@@ -25,7 +25,7 @@ export const ADMIN_ADDRESSES = [
   // 'SEU_NOVO_WALLET_ADDRESS_AQUI'.toLowerCase(), // Novo admin - substitua por seu wallet
   
   // Multiple admin support (add more if needed)
-   '0xAc6d591F61E28F6E914583eaC316fDCd2E1Ce30e', // ariel
+   '0xAc6d591F61E28F6E914583eaC316fDCd2E1Ce30e'.toLowerCase(), // ariel
   // '0xabcdef1234567890abcdef1234567890abcdef12', // Example admin 4
 ].filter(Boolean) as string[];
 

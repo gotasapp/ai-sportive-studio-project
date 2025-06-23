@@ -6,6 +6,7 @@ import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 import { IPFSService } from './services/ipfs-service';
 
+
 export function useWeb3() {
   const account = useActiveAccount();
   const connectionStatus = useActiveWalletConnectionStatus();
@@ -24,7 +25,7 @@ export function useWeb3() {
   const contract = getContract({
     client,
     chain: amoy,
-    address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || "",
+    address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || "0xfF973a4aFc5A96DEc81366461A461824c4f80254",
   });
 
   // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation)
@@ -73,6 +74,7 @@ export function useWeb3() {
       console.log('✅ Transaction prepared with metadata URL:', ipfsResult.metadataUrl);
 
       // 3. Send transaction (user pays gas)
+      console.log('📤 Sending transaction...');
       const result = await sendTransaction({
         transaction,
         account,
@@ -135,6 +137,8 @@ export function useWeb3() {
     console.log('🔄 Switch to CHZ Chain requested (not implemented yet)');
     return Promise.resolve();
   };
+
+
 
   return {
     // Connection state
