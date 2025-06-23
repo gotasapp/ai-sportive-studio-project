@@ -11,6 +11,7 @@ import { useWeb3 } from '../lib/useWeb3'
 import { useEngine } from '../lib/useEngine'
 import { ImageGenerationRequest } from '../types'
 import { getTransactionUrl } from '../lib/utils'
+import { isAdmin } from '../lib/admin-config'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -93,9 +94,12 @@ export default function JerseyEditor() {
   const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
   const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
   
+  // Admin check
+  const isUserAdmin = isAdmin(account)
+  
   // Mint conditions
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
-  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber // Gasless only needs data
+  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber && isUserAdmin // Gasless only for admins
 
   // Upload to IPFS
   const uploadToIPFS = async () => {
@@ -638,35 +642,37 @@ export default function JerseyEditor() {
                   </button>
 
                   <div className="space-y-3">
-                    {/* 🚀 ENGINE GASLESS MINT - Backend pays gas */}
+                    {/* 🚀 ENGINE GASLESS MINT - Admin Only */}
+                    {isUserAdmin && (
+                      <button 
+                        className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
+                          canMintGasless && !isMinting
+                            ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
+                            : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        disabled={!canMintGasless || isMinting}
+                        onClick={() => {
+                          if (canMintGasless) {
+                            handleEngineNormalMint()
+                          }
+                        }}
+                      >
+                        {isMinting && mintStatus === 'pending' ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Minting (Gasless)...
+                          </div>
+                        ) : !generatedImage ? 'Generate Jersey First' :
+                          !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
+                          '🚀 Mint via Engine (Gasless) - Admin'}
+                      </button>
+                    )}
+
+                    {/* 🎯 MINT BUTTON - For All Users */}
                     <button 
                       className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
-                        canMintGasless && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      disabled={!canMintGasless || isMinting}
-                      onClick={() => {
-                        if (canMintGasless) {
-                          handleEngineNormalMint()
-                        }
-                      }}
-                    >
-                      {isMinting && mintStatus === 'pending' ? (
-                        <div className="flex items-center justify-center">
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting (Gasless)...
-                        </div>
-                      ) : !generatedImage ? 'Generate Jersey First' :
-                        !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
-                        '🚀 Mint via Engine (Gasless)'}
-                    </button>
-
-                    {/* 🎯 LEGACY MINT - User pays gas (fallback) */}
-                    <button 
-                      className={`cyber-button w-full py-3 rounded-lg font-medium transition-all ${
                         canMintLegacy && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-gray-600/20 border-purple-400/30' 
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border-cyan-400/30' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                       disabled={!canMintLegacy || isMinting}
@@ -683,12 +689,12 @@ export default function JerseyEditor() {
                       {isMinting && mintStatus === 'pending' ? (
                         <div className="flex items-center justify-center">
                           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                          Minting (Legacy)...
+                          Minting...
                         </div>
                       ) : !isConnected ? 'Connect Wallet to Mint' :
                         !isOnSupportedChain ? 'Switch to Supported Network' :
                         !generatedImage ? 'Generate Jersey First' :
-                        '🎯 Legacy Mint (User Pays Gas)'}
+                        'Mint'}
                     </button>
                   </div>
 
@@ -836,28 +842,31 @@ export default function JerseyEditor() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Gasless Mint</span>
-                        <div className="flex items-center space-x-2">
-                          {canMintGasless ? (
-                            <>
-                              <Check className="w-3 h-3 text-green-400" />
-                              <span className="text-xs text-green-400">Ready</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                              <span className="text-xs text-yellow-400">
-                                {!generatedImage ? 'Generate jersey' : 
-                                 !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
-                              </span>
-                            </>
-                          )}
+                      {/* Admin Only: Gasless Mint Status */}
+                      {isUserAdmin && (
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-gray-400">Admin Gasless Mint</span>
+                          <div className="flex items-center space-x-2">
+                            {canMintGasless ? (
+                              <>
+                                <Check className="w-3 h-3 text-green-400" />
+                                <span className="text-xs text-green-400">Ready</span>
+                              </>
+                            ) : (
+                              <>
+                                <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                                <span className="text-xs text-yellow-400">
+                                  {!generatedImage ? 'Generate jersey' : 
+                                   !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
+                                </span>
+                              </>
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
                       
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Legacy Mint</span>
+                        <span className="text-xs text-gray-400">Mint Status</span>
                         <div className="flex items-center space-x-2">
                           {canMintLegacy ? (
                             <>
@@ -897,7 +906,7 @@ export default function JerseyEditor() {
                       )}
                       
                       <div className="flex items-center space-x-1">
-                        {canMintGasless ? (
+                        {canMintLegacy ? (
                           <Check className="w-3 h-3 text-green-400" />
                         ) : (
                           <AlertTriangle className="w-3 h-3 text-yellow-400" />

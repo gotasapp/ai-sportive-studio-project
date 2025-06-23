@@ -13,6 +13,7 @@ import { StadiumService, StadiumInfo, StadiumResponse } from '@/lib/services/sta
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
+import { isAdmin } from '@/lib/admin-config';
 import Image from 'next/image';
 
 const STADIUM_STYLE_FILTERS = [
@@ -197,9 +198,12 @@ export default function StadiumEditor() {
   const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
   const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
   
+  // Admin check
+  const isUserAdmin = isAdmin(account)
+  
   // Mint conditions
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy precisa wallet
-  const canMintGasless = generatedImage && selectedStadium // Gasless só precisa dados
+  const canMintGasless = generatedImage && selectedStadium && isUserAdmin // Gasless só para admins
 
   useEffect(() => {
     loadAvailableStadiums();
@@ -879,35 +883,37 @@ export default function StadiumEditor() {
                   </div>
 
                   <div className="space-y-2">
-                    {/* 🚀 ENGINE GASLESS MINT */}
-                    <button 
-                      className={`cyber-button w-full py-2 rounded font-medium transition-all text-xs ${
-                        canMintGasless && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
-                          : 'opacity-50 cursor-not-allowed'
-                      }`}
-                      disabled={!canMintGasless || isMinting}
-                      onClick={() => {
-                        if (canMintGasless) {
-                          handleEngineNormalMint()
-                        }
-                      }}
-                    >
-                      {isMinting && mintStatus === 'pending' ? (
-                        <div className="flex items-center justify-center">
-                          <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
-                          <span className="text-xs">Minting...</span>
-                        </div>
-                      ) : !generatedImage ? 'Generate Stadium First' :
-                        !selectedStadium ? 'Select Stadium' :
-                        '🚀 Mint (Gasless)'}
-                    </button>
+                    {/* 🚀 ENGINE GASLESS MINT - Admin Only */}
+                    {isUserAdmin && (
+                      <button 
+                        className={`cyber-button w-full py-2 rounded font-medium transition-all text-xs ${
+                          canMintGasless && !isMinting
+                            ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
+                            : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        disabled={!canMintGasless || isMinting}
+                        onClick={() => {
+                          if (canMintGasless) {
+                            handleEngineNormalMint()
+                          }
+                        }}
+                      >
+                        {isMinting && mintStatus === 'pending' ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-1.5"></div>
+                            <span className="text-xs">Minting...</span>
+                          </div>
+                        ) : !generatedImage ? 'Generate Stadium First' :
+                          !selectedStadium ? 'Select Stadium' :
+                          '🚀 Mint (Gasless) - Admin'}
+                      </button>
+                    )}
 
-                    {/* 🎯 LEGACY MINT */}
+                    {/* 🎯 MINT BUTTON - For All Users */}
                     <button 
                       className={`cyber-button w-full py-2 rounded font-medium transition-all text-xs ${
                         canMintLegacy && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-gray-600/20 border-purple-400/30' 
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border-cyan-400/30' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                       disabled={!canMintLegacy || isMinting}
@@ -929,7 +935,7 @@ export default function StadiumEditor() {
                       ) : !isConnected ? 'Connect Wallet' :
                         !isOnSupportedChain ? 'Switch Network' :
                         !generatedImage ? 'Generate Stadium First' :
-                        '🎯 Legacy Mint'}
+                        'Mint'}
                     </button>
                   </div>
 
