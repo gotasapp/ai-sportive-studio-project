@@ -2,16 +2,46 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useActiveAccount } from "thirdweb/react";
-import { Home, Building2, Trophy, Shield } from 'lucide-react';
-import { isAdmin } from '@/lib/admin-config';
+import { useActiveAccount, useActiveWallet } from "thirdweb/react";
+import { Home, Building2, Trophy, Shield, ShoppingBag } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
   const account = useActiveAccount();
-  const userIsAdmin = isAdmin(account);
+  const wallet = useActiveWallet();
+  const [userIsAdmin, setUserIsAdmin] = useState(false);
   const { scrollDirection, isAtTop } = useScrollDirection();
+  
+  // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      if (!account) {
+        setUserIsAdmin(false);
+        return;
+      }
+
+      try {
+        // Primeiro, tenta verificação rápida (wallet address)
+        const quickCheck = isAdmin(account);
+        if (quickCheck) {
+          setUserIsAdmin(true);
+          return;
+        }
+
+        // Para InApp wallets, faz verificação async do email
+        const asyncCheck = await isAdminAsync(account, wallet);
+        setUserIsAdmin(asyncCheck);
+      } catch (error) {
+        console.error('Erro ao verificar status de admin na nav móvel:', error);
+        setUserIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, [account, wallet]);
   
   // Don't show on admin pages
   if (pathname.startsWith('/admin')) {
@@ -33,6 +63,12 @@ export default function MobileBottomNav() {
       icon: Building2,
       label: 'Stadium',
       isActive: pathname === '/stadiums'
+    },
+    {
+      href: '/marketplace',
+      icon: ShoppingBag,
+      label: 'Market',
+      isActive: pathname === '/marketplace'
     },
     {
       href: '#',

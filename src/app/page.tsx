@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useActiveAccount } from 'thirdweb/react';
 import JerseyEditor from '@/components/JerseyEditor';
 import Header from '@/components/Header';
-import AdminDebug from '@/components/AdminDebug';
 
 export default function Home() {
   const account = useActiveAccount();
@@ -40,7 +39,6 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center pb-20 lg:pb-0">
       <Header />
       <JerseyEditor />
-      {account && <AdminDebug />}
     </main>
   );
 }

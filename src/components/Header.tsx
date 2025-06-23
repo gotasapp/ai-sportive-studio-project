@@ -5,9 +5,10 @@ import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react
 import { createThirdwebClient } from "thirdweb";
 import { defineChain } from "thirdweb/chains";
 import { polygon, mainnet } from "thirdweb/chains";
-import { Shield } from 'lucide-react';
+import { Shield, ChevronDown } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
+import marketplaceData from '../../marketplace-images.json';
 
 // Cliente Thirdweb simples
 const client = createThirdwebClient({
@@ -92,6 +93,7 @@ export default function Header() {
   const wallet = useActiveWallet();
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [adminCheckLoading, setAdminCheckLoading] = useState(false);
+  const [showMarketplace, setShowMarketplace] = useState(false);
 
   // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
   useEffect(() => {
@@ -125,6 +127,12 @@ export default function Header() {
 
     checkAdminStatus();
   }, [account, wallet]);
+
+  // Combinar todos os NFTs para o marketplace
+  const allNFTs = [
+    ...marketplaceData.marketplace_nfts.jerseys,
+    ...marketplaceData.marketplace_nfts.stadiums
+  ];
   
   return (
     <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
@@ -147,9 +155,64 @@ export default function Header() {
           <Link href="/stadiums" className="text-gray-300 hover:text-cyan-400 transition-colors">
             Stadiums
           </Link>
-          <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
-            Marketplace
-          </a>
+          
+          {/* Marketplace Dropdown */}
+          <div className="relative">
+            <button
+              onMouseEnter={() => setShowMarketplace(true)}
+              onMouseLeave={() => setShowMarketplace(false)}
+              className="flex items-center space-x-1 text-gray-300 hover:text-cyan-400 transition-colors"
+            >
+              <span>Marketplace</span>
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            
+            {/* Marketplace Dropdown Content */}
+            {showMarketplace && (
+              <div 
+                className="absolute top-full left-0 mt-2 w-96 bg-gray-900/95 backdrop-blur-lg border border-cyan-800/30 rounded-xl shadow-2xl z-50"
+                onMouseEnter={() => setShowMarketplace(true)}
+                onMouseLeave={() => setShowMarketplace(false)}
+              >
+                <div className="p-4">
+                  <h3 className="text-lg font-bold text-cyan-400 mb-4">Featured NFTs</h3>
+                  <div className="grid grid-cols-2 gap-3 max-h-80 overflow-y-auto">
+                    {allNFTs.map((nft, index) => (
+                      <div 
+                        key={index}
+                        className="bg-gray-800/50 rounded-lg p-3 hover:bg-gray-700/50 transition-all duration-300 cursor-pointer group"
+                      >
+                        <div className="aspect-square rounded-lg overflow-hidden mb-2">
+                          <img 
+                            src={nft.image_url} 
+                            alt={nft.name}
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                          />
+                        </div>
+                        <h4 className="text-white font-semibold text-sm truncate">{nft.name}</h4>
+                        <p className="text-gray-400 text-xs truncate">{nft.description}</p>
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-cyan-400 font-bold text-sm">{nft.price}</span>
+                          <button className="text-xs bg-cyan-600 hover:bg-cyan-500 text-white px-2 py-1 rounded transition-colors">
+                            Buy
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-gray-700">
+                    <Link 
+                      href="/marketplace"
+                      className="block w-full text-center text-cyan-400 hover:text-cyan-300 text-sm font-medium transition-colors"
+                    >
+                      View All NFTs →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
           <a href="#" className="text-gray-300 hover:text-cyan-400 transition-colors">
             My NFTs
           </a>

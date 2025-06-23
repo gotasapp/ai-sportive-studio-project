@@ -1,0 +1,67 @@
+{
+  "marketplace_nfts": {
+    "jerseys": [
+      {
+        "name": "Allianz Arena",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636633/bafybeigiluwv7wjg3rmwwnjfjndvbiy7vkusihwyvjd3iz3yzudl4kfhia_dmsrtn.png",
+        "description": "Bayern Stadium",
+        "price": "0.1 ETH"
+      },
+      {
+        "name": "Lebron James", 
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png",
+        "description": "Lebron in Rio",
+        "price": "0.15 ETH"
+      },
+      {
+        "name": "Jeff 10",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png", 
+        "description": "Jeff Corinthians",
+        "price": "0.2 ETH"
+      }
+    ],
+    "stadiums": [
+      {
+        "name": "Maracana",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636630/bafybeicw37rbxeqti3ty5i6gc4gbciro27gacizwywirur5lag6obxcfh4_x0ijvi.png",
+        "description": "Maracana Stadium", 
+        "price": "0.25 ETH"
+      },
+      {
+        "name": "Jeff 10",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636631/bafybeiesm3ufeepsaog2alh6jqch3t3il47tkpx3662v4fmjkxosthinqy_e2qdxh.png",
+        "description": "Jeff Juventude",
+        "price": "0.3 ETH"
+      },
+      {
+        "name": "Jeff 10",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636625/bafybeicdyfymqscddk6tc4sr4hdiomqsk45kipi6xli2oyfcn76zphk52y_kgl5lk.png",
+        "description": "Jeff Atlhetico",
+        "price": "0.3 ETH"
+      },
+      {
+        "name": "Caldeirao",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636625/bafybeicym7nasx4edzswnmwbw4lrgcskimskpzhvzy572gyxihotqpoynq_nurs7v.png",
+        "description": "Sao Januário Stadium",
+        "price": "0.3 ETH"
+      },
+      {
+        "name": "Jeff 10",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636629/bafybeie3yd2h7gw5yypyvk4vomlxigebscfc2b4a3yoxkggjhya6tj5l24_hlhcku.png",
+        "description": "Jeff Flamengo",
+        "price": "0.3 ETH"
+      },
+      {
+        "name": "Jeff 10",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636627/Corinthians_JEFF_10_t7lveq.png",
+        "description": "Jeff Santos",
+        "price": "0.3 ETH"
+      }
+    ]
+  },
+  "instructions": {
+    "como_usar": "Substitua 'COLE_AQUI_A_URL_DA_IMAGEM_X' pelas URLs reais do Cloudinary",
+    "exemplo_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750634725/exemplo.jpg",
+    "nota": "Você pode adicionar mais objetos nos arrays 'jerseys' e 'stadiums' se tiver mais imagens"
+  }
+} 
