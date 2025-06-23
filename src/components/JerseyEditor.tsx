@@ -11,6 +11,7 @@ import { useWeb3 } from '../lib/useWeb3'
 import { useEngine } from '../lib/useEngine'
 import { ImageGenerationRequest } from '../types'
 import { getTransactionUrl } from '../lib/utils'
+import { Button } from '@/components/ui/button'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -477,137 +478,127 @@ export default function JerseyEditor() {
   }, []);
 
   return (
-    <div className="min-h-screen" style={{
-      background: '#000518',
-      backgroundImage: `
-        radial-gradient(ellipse at top left, #000720 0%, transparent 40%),
-        radial-gradient(ellipse at top right, #000924 0%, transparent 40%),
-        radial-gradient(ellipse at bottom left, #000720 0%, transparent 40%),
-        radial-gradient(ellipse at bottom right, #000A29 0%, transparent 40%),
-        radial-gradient(ellipse at center, #00081D 0%, transparent 60%),
-        radial-gradient(circle at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
-        radial-gradient(circle at 80% 20%, rgba(138, 43, 226, 0.03) 0%, transparent 50%)
-      `
-    }}>
-      
-      
-      <div className="container mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
-          
+    <>
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Coluna de Controles (Painel Esquerdo) */}
           <div className="lg:col-span-1 space-y-6">
-            <div className="gradient-border">
-              <div className="gradient-border-content p-6">
-                <h2 className="heading-style mb-6">Create Jersey NFT</h2>
-                
-                <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
-                  <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
-                  <p className="text-gray-300 mb-2">Upload image or enter text</p>
-                  <input 
-                    type="file" 
-                    className="hidden" 
-                    id="file-upload"
-                    accept="image/*"
-                  />
-                  <label 
-                    htmlFor="file-upload" 
-                    className="text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors"
-                  >
-                    Choose file
-                  </label>
-                </div>
 
-                <div className="space-y-4 mb-6">
-                  <h3 className="heading-style">Style</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    {STYLE_FILTERS.map((style) => {
-                      const IconComponent = style.icon;
-                      return (
-                        <button
-                          key={style.id}
-                          onClick={() => setSelectedStyle(style.id)}
-                          className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex items-center space-x-2 transition-all`}
-                        >
-                          <IconComponent className="w-4 h-4" />
-                          <span className="text-sm font-medium">{style.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <label className="text-sm font-medium text-gray-300">Team</label>
-                  <select 
-                    value={selectedTeam}
-                    onChange={(e) => setSelectedTeam(e.target.value)}
-                    className="cyber-input w-full px-4 py-3 rounded-lg"
-                  >
-                    <option value="">Select Team</option>
-                    {availableTeams.map((team) => (
-                      <option key={team} value={team} className="bg-gray-800">
-                        {team}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
-                    <input
-                      type="text"
-                      value={playerName}
-                      onChange={(e) => setPlayerName(e.target.value)}
-                      className="cyber-input w-full px-4 py-3 rounded-lg"
-                      placeholder="JEFF"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
-                    <input
-                      type="text"
-                      value={playerNumber}
-                      onChange={(e) => setPlayerNumber(e.target.value)}
-                      className="cyber-input w-full px-4 py-3 rounded-lg"
-                      placeholder="10"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-300">Royalties</span>
-                    <span className="text-cyan-400 font-semibold">{royalties}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={royalties}
-                    onChange={(e) => setRoyalties(Number(e.target.value))}
-                    className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
-                  />
-                  
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-300">Gas fee</span>
-                    <span className="text-white">0.22</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={generateContent}
-                  disabled={isLoading || !selectedTeam}
-                  className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isLoading ? 'Generating...' : 'Generate Jersey'}
-                </button>
+            {/* Editor Panel */}
+            <div className="bg-card rounded-lg p-6 border border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="heading-style">Jersey Editor</h2>
+                <span className={`text-xs px-2 py-1 rounded-full ${apiStatus ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                  {apiStatus ? 'Online' : 'Offline'}
+                </span>
               </div>
+              <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
+                <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <p className="text-gray-300 mb-2">Upload image or enter text</p>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  id="file-upload"
+                  accept="image/*"
+                />
+                <label 
+                  htmlFor="file-upload" 
+                  className="text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors"
+                >
+                  Choose file
+                </label>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <h3 className="heading-style">Style</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {STYLE_FILTERS.map((style) => {
+                    const IconComponent = style.icon;
+                    return (
+                      <button
+                        key={style.id}
+                        onClick={() => setSelectedStyle(style.id)}
+                        className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex items-center space-x-2 transition-all`}
+                      >
+                        <IconComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">{style.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <label className="text-sm font-medium text-gray-300">Team</label>
+                <select 
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  className="cyber-input w-full px-4 py-3 rounded-lg"
+                >
+                  <option value="">Select Team</option>
+                  {availableTeams.map((team) => (
+                    <option key={team} value={team} className="bg-gray-800">
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    className="cyber-input w-full px-4 py-3 rounded-lg"
+                    placeholder="JEFF"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
+                  <input
+                    type="text"
+                    value={playerNumber}
+                    onChange={(e) => setPlayerNumber(e.target.value)}
+                    className="cyber-input w-full px-4 py-3 rounded-lg"
+                    placeholder="10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Royalties</span>
+                  <span className="text-cyan-400 font-semibold">{royalties}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={royalties}
+                  onChange={(e) => setRoyalties(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
+                />
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Gas fee</span>
+                  <span className="text-white">0.22</span>
+                </div>
+              </div>
+
+              <button
+                onClick={generateContent}
+                disabled={isLoading || !selectedTeam}
+                className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Generating...' : 'Generate Jersey'}
+              </button>
             </div>
 
-            <div className="gradient-border">
-              <div className="gradient-border-content p-6">
-                <h2 className="heading-style mb-6">Mint NFT</h2>
-                
+            {/* Mint Panel */}
+            <div className="bg-card rounded-lg p-6 border border-gray-800">
+                <h2 className="heading-style mb-4">Mint NFT</h2>
                 <div className="space-y-6">
                   <div>
                     <div className="flex justify-between items-center mb-2">
@@ -770,416 +761,247 @@ export default function JerseyEditor() {
                     </div>
                   </div>
                 </div>
-              </div>
             </div>
+
           </div>
 
-          <div className="lg:col-span-2 space-y-6 lg:space-y-4">
-            <div>
-              <div className="p-8 lg:p-4">
-                <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
-                
-                {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
-                <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
-                  {/* Mobile: Full Status Display */}
-                  <div className="lg:hidden">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="text-sm font-semibold text-white flex items-center">
-                        <Wallet className="w-4 h-4 mr-2" />
-                        Web3 Status
-                      </h4>
-                      {!isConnected && (
-                        <button
-                          onClick={() => alert('Please connect your wallet using the button in the header')}
-                          className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
-                        >
-                          Connect
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Wallet</span>
-                        <div className="flex items-center space-x-2">
-                          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                          <span className="text-xs text-gray-300">
-                            {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
-                          </span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Network</span>
-                        <div className="flex items-center space-x-2">
-                          {isConnected ? (
-                            <>
-                              <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                              <span className="text-xs text-gray-300">
-                                {chain?.name || 'Unknown'}
-                              </span>
-                              {!isOnSupportedChain && (
-                                <button
-                                  onClick={() => alert('Please switch network using your wallet')}
-                                  className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
-                                >
-                                  Switch Network
-                                </button>
-                              )}
-                            </>
-                          ) : (
-                            <>
-                              <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                              <span className="text-xs text-gray-300">Connect wallet first</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Gasless Mint</span>
-                        <div className="flex items-center space-x-2">
-                          {canMintGasless ? (
-                            <>
-                              <Check className="w-3 h-3 text-green-400" />
-                              <span className="text-xs text-green-400">Ready</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                              <span className="text-xs text-yellow-400">
-                                {!generatedImage ? 'Generate jersey' : 
-                                 !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs text-gray-400">Legacy Mint</span>
-                        <div className="flex items-center space-x-2">
-                          {canMintLegacy ? (
-                            <>
-                              <Check className="w-3 h-3 text-green-400" />
-                              <span className="text-xs text-green-400">Ready</span>
-                            </>
-                          ) : (
-                            <>
-                              <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                              <span className="text-xs text-yellow-400">
-                                {!isConnected ? 'Connect wallet' : 
-                                 !isOnSupportedChain ? 'Switch network' : 
-                                 !generatedImage ? 'Generate jersey' : 'Not ready'}
-                              </span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Desktop: Compact Status Display */}
-                  <div className="hidden lg:flex items-center justify-between text-xs">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex items-center space-x-1">
-                        <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-                        <span className="text-gray-400">
-                          {isConnected ? address?.slice(0, 4) + '...' + address?.slice(-3) : 'Wallet'}
-                        </span>
-                      </div>
-                      
-                      {isConnected && (
-                        <div className="flex items-center space-x-1">
-                          <div className={`w-1.5 h-1.5 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                          <span className="text-gray-400">{chain?.name || 'Network'}</span>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center space-x-1">
-                        {canMintGasless ? (
-                          <Check className="w-3 h-3 text-green-400" />
-                        ) : (
-                          <AlertTriangle className="w-3 h-3 text-yellow-400" />
-                        )}
-                        <span className="text-gray-400">Mint Ready</span>
-                      </div>
-                    </div>
-                    
+          {/* Coluna de Preview (Painel Direito) */}
+          <div className="lg:col-span-2">
+            <div className="p-8 lg:p-4">
+              <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
+              
+              {/* Web3 Status - Responsive: Full on mobile, compact on desktop */}
+              <div className="mb-6 lg:mb-3 p-4 lg:px-3 lg:py-1 rounded-lg lg:rounded-md border border-cyan-400/20 bg-slate-800/30 hidden">
+                {/* Mobile: Full Status Display */}
+                <div className="lg:hidden">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-sm font-semibold text-white flex items-center">
+                      <Wallet className="w-4 h-4 mr-2" />
+                      Web3 Status
+                    </h4>
                     {!isConnected && (
                       <button
                         onClick={() => alert('Please connect your wallet using the button in the header')}
-                        className="px-2 py-0.5 text-xs bg-cyan-600/20 text-cyan-400 rounded border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
+                        className="px-3 py-1 text-xs bg-cyan-600/20 text-cyan-400 rounded-md border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
                       >
                         Connect
                       </button>
                     )}
                   </div>
-                </div>
-                
-                <div className="flex justify-center h-[80vh]">
-                  <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
-                    background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
-                    border: '2px solid rgba(0, 212, 255, 0.3)'
-                  }}>
-                    
-                    {isLoading && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
-                        <p className="text-cyan-400 text-2xl font-semibold">Generating your jersey...</p>
-                        <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
-                          <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
-                        </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Wallet</span>
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                        <span className="text-xs text-gray-300">
+                          {isConnected ? address?.slice(0, 6) + '...' + address?.slice(-4) : 'Not connected'}
+                        </span>
                       </div>
-                    )}
-                    
-                    {error && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-                        <div className="text-center">
-                          <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
-                            <span className="text-red-400 text-4xl">⚠</span>
-                          </div>
-                          <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
-                          <button 
-                            onClick={() => setError(null)}
-                            className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
-                          >
-                            Try again
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {generatedImage && !isLoading && !error && (
-                      <div className="absolute inset-0 p-6 lg:p-3">
-                        <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
-                        <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
-                        <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
-                        
-                        <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
-                          <div className="text-white">
-                            <p className="font-bold text-2xl lg:text-lg">{playerName} #{playerNumber}</p>
-                            <p className="text-cyan-400 text-lg lg:text-sm">{selectedTeam}</p>
-                            <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
-                              <span className="text-sm lg:text-xs text-gray-300">Style: {selectedStyle}</span>
-                              <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {!generatedImage && !isLoading && !error && (
-                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
-                        <div className="text-center">
-                          <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
-                            <div className="text-center">
-                              <Upload className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
-                              <p className="text-sm lg:text-xs text-gray-400">Jersey</p>
-                            </div>
-                          </div>
-                          <p className="text-gray-400 text-lg lg:text-sm">Your generated jersey will appear here</p>
-                          <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (4:5 ratio)</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {generatedImage && (
-                  <div className="mt-6 lg:mt-3 p-4 lg:p-3 rounded-lg border border-green-400/20 bg-green-500/5">
-                    <div className="flex items-center justify-between mb-3 lg:mb-2">
-                      <h4 className="text-sm lg:text-xs font-semibold text-white flex items-center">
-                        🌐 IPFS Upload
-                      </h4>
-                      {IPFSService.isConfigured() ? (
-                        <span className="text-xs text-green-400">Ready</span>
-                      ) : (
-                        <span className="text-xs text-yellow-400">Not configured</span>
-                      )}
                     </div>
                     
-                    <div className="space-y-3 lg:space-y-2">
-                      <button
-                        onClick={uploadToIPFS}
-                        disabled={!generatedImageBlob || isUploadingToIPFS || !IPFSService.isConfigured()}
-                        className={`w-full py-3 lg:py-2 px-4 lg:px-3 rounded-lg font-medium transition-all lg:text-sm ${
-                          isUploadingToIPFS 
-                            ? 'bg-blue-600/20 text-blue-400 cursor-not-allowed' 
-                            : ipfsUrl 
-                              ? 'bg-green-600/20 text-green-400 border border-green-400/30'
-                              : 'bg-green-600/20 text-green-400 border border-green-400/30 hover:bg-green-600/30'
-                        }`}
-                      >
-                        {isUploadingToIPFS ? (
-                          <div className="flex items-center justify-center">
-                            <div className="w-4 lg:w-3 h-4 lg:h-3 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mr-2"></div>
-                            <span className="lg:hidden">Uploading to IPFS...</span>
-                            <span className="hidden lg:inline">Uploading...</span>
-                          </div>
-                        ) : ipfsUrl ? (
-                          '✅ Uploaded to IPFS'
-                        ) : (
-                          <span>
-                            <span className="lg:hidden">📤 Upload to IPFS</span>
-                            <span className="hidden lg:inline">📤 Upload to IPFS</span>
-                          </span>
-                        )}
-                      </button>
-                      
-                      {ipfsUrl && (
-                        <div className="p-3 lg:p-2 bg-gray-800/50 rounded-lg">
-                          <p className="text-xs text-gray-400 mb-2 lg:mb-1">IPFS URL:</p>
-                          <div className="flex items-center space-x-2 lg:space-x-1">
-                            <input
-                              type="text"
-                              value={ipfsUrl}
-                              readOnly
-                              className="flex-1 bg-gray-700/50 text-gray-300 text-xs p-2 lg:p-1.5 rounded border border-gray-600"
-                            />
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(ipfsUrl)
-                              }}
-                              className="px-3 lg:px-2 py-2 lg:py-1.5 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
-                            >
-                              Copy
-                            </button>
-                            <button
-                              onClick={() => window.open(ipfsUrl, '_blank')}
-                              className="px-3 lg:px-2 py-2 lg:py-1.5 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
-                            >
-                              View
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                      
-                      {ipfsError && (
-                        <div className="p-3 bg-red-500/10 border border-red-400/20 rounded-lg">
-                          <p className="text-red-400 text-sm">❌ {ipfsError}</p>
-                          {!IPFSService.isConfigured() && (
-                            <p className="text-yellow-400 text-xs mt-2">
-                              💡 Add PINATA_JWT to .env.local to enable IPFS upload
-                            </p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="gradient-border">
-              <div className="gradient-border-content p-6 lg:p-4">
-                <div className="flex items-center justify-between mb-4 lg:mb-3">
-                  <h2 className="heading-style">Marketplace</h2>
-                  <div className="flex items-center space-x-2">
-                    <button 
-                      className="p-2 rounded-lg border border-cyan-400/30 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
-                      onClick={() => {
-                        const container = document.getElementById('marketplace-scroll');
-                        if (container) container.scrollLeft -= 200;
-                      }}
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                    </button>
-                    <button 
-                      className="p-2 rounded-lg border border-cyan-400/30 text-cyan-400 hover:border-cyan-400 hover:bg-cyan-400/10 transition-all"
-                      onClick={() => {
-                        const container = document.getElementById('marketplace-scroll');
-                        if (container) container.scrollLeft += 200;
-                      }}
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-                
-                <div 
-                  id="marketplace-scroll"
-                  className="flex space-x-4 overflow-x-auto scrollbar-hide pb-2"
-                  style={{ scrollBehavior: 'smooth' }}
-                >
-                  {marketplaceLoading ? (
-                    // Loading skeleton
-                    Array.from({ length: 6 }).map((_, index) => (
-                      <div key={`loading-${index}`} className="flex-shrink-0">
-                        <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300">
-                          <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded-lg mb-3 animate-pulse border border-cyan-400/20"></div>
-                          <div className="space-y-2">
-                            <div className="h-3 bg-gray-600/50 rounded animate-pulse"></div>
-                            <div className="h-3 bg-gray-600/50 rounded w-2/3 animate-pulse"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : marketplaceNFTs.length > 0 ? (
-                    // Real NFT data
-                    marketplaceNFTs.concat(marketplaceNFTs).map((nft, index) => (
-                      <div key={`${nft.name}-${index}`} className="flex-shrink-0 group cursor-pointer">
-                        <div className="marketplace-card rounded-lg p-3 w-36 transition-all duration-300 hover:scale-105">
-                          <div className="aspect-[4/5] rounded-lg mb-3 relative overflow-hidden border border-cyan-400/20">
-                            {/* Random trending indicator */}
-                            {index % 3 === 0 && (
-                              <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Network</span>
+                      <div className="flex items-center space-x-2">
+                        {isConnected ? (
+                          <>
+                            <div className={`w-2 h-2 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                            <span className="text-xs text-gray-300">
+                              {chain?.name || 'Unknown'}
+                            </span>
+                            {!isOnSupportedChain && (
+                              <button
+                                onClick={() => alert('Please switch network using your wallet')}
+                                className="px-2 py-0.5 text-xs bg-yellow-600/20 text-yellow-400 rounded border border-yellow-400/30 hover:bg-yellow-600/30 transition-colors"
+                              >
+                                Switch Network
+                              </button>
                             )}
-                            
-                            <img 
-                              src={nft.image_url} 
-                              alt={nft.name}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                              onError={(e) => {
-                                console.error('❌ Error loading marketplace image:', nft.image_url);
-                                // Fallback to gradient background
-                                (e.target as HTMLImageElement).style.display = 'none';
-                                const parent = (e.target as HTMLImageElement).parentElement;
-                                if (parent) {
-                                  parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
-                                  parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-cyan-400/60 font-bold text-lg">${nft.name.charAt(0)}</div>`;
-                                }
-                              }}
-                            />
-                            
-                            {/* Overlay gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                          </div>
-                          
-                          <div className="space-y-1">
-                            <p className="text-xs text-gray-400 group-hover:text-cyan-400 transition-colors font-medium truncate">
-                              {nft.name}
-                            </p>
-                            <div className="flex items-center justify-between">
-                              <span className="text-cyan-400 font-bold text-sm">{nft.price}</span>
-                              {index % 3 === 0 && (
-                                <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
-                                  🔥
-                                </span>
-                              )}
-                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <span className="text-xs text-gray-300">Connect wallet first</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Gasless Mint</span>
+                      <div className="flex items-center space-x-2">
+                        {canMintGasless ? (
+                          <>
+                            <Check className="w-3 h-3 text-green-400" />
+                            <span className="text-xs text-green-400">Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-yellow-400">
+                              {!generatedImage ? 'Generate jersey' : 
+                               !selectedTeam || !playerName || !playerNumber ? 'Complete details' : 'Not ready'}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-400">Legacy Mint</span>
+                      <div className="flex items-center space-x-2">
+                        {canMintLegacy ? (
+                          <>
+                            <Check className="w-3 h-3 text-green-400" />
+                            <span className="text-xs text-green-400">Ready</span>
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                            <span className="text-xs text-yellow-400">
+                              {!isConnected ? 'Connect wallet' : 
+                               !isOnSupportedChain ? 'Switch network' : 
+                               !generatedImage ? 'Generate jersey' : 'Not ready'}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Compact Status Display */}
+                <div className="hidden lg:flex items-center justify-between text-xs">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-1">
+                      <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-gray-400'}`}></div>
+                      <span className="text-gray-400">
+                        {isConnected ? address?.slice(0, 4) + '...' + address?.slice(-3) : 'Wallet'}
+                      </span>
+                    </div>
+                    
+                    {isConnected && (
+                      <div className="flex items-center space-x-1">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isOnSupportedChain ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                        <span className="text-gray-400">{chain?.name || 'Network'}</span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-1">
+                      {canMintGasless ? (
+                        <Check className="w-3 h-3 text-green-400" />
+                      ) : (
+                        <AlertTriangle className="w-3 h-3 text-yellow-400" />
+                      )}
+                      <span className="text-gray-400">Mint Ready</span>
+                    </div>
+                  </div>
+                  
+                  {!isConnected && (
+                    <button
+                      onClick={() => alert('Please connect your wallet using the button in the header')}
+                      className="px-2 py-0.5 text-xs bg-cyan-600/20 text-cyan-400 rounded border border-cyan-400/30 hover:bg-cyan-600/30 transition-colors"
+                    >
+                      Connect
+                    </button>
+                  )}
+                </div>
+              </div>
+                
+              <div className="flex justify-center h-[80vh]">
+                <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
+                  background: 'linear-gradient(135deg, rgba(0, 212, 255, 0.1) 0%, rgba(138, 43, 226, 0.1) 100%)',
+                  border: '2px solid rgba(0, 212, 255, 0.3)'
+                }}>
+                  
+                  {isLoading && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
+                      <p className="text-cyan-400 text-2xl font-semibold">Generating your jersey...</p>
+                      <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {error && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
+                          <span className="text-red-400 text-4xl">⚠</span>
+                        </div>
+                        <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
+                        <button 
+                          onClick={() => setError(null)}
+                          className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {generatedImage && !isLoading && !error && (
+                    <div className="absolute inset-0 p-6 lg:p-3">
+                      <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
+                      <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
+                      <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                      
+                      <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
+                        <div className="text-white">
+                          <p className="font-bold text-2xl lg:text-lg">{playerName} #{playerNumber}</p>
+                          <p className="text-cyan-400 text-lg lg:text-sm">{selectedTeam}</p>
+                          <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
+                            <span className="text-sm lg:text-xs text-gray-300">Style: {selectedStyle}</span>
+                            <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
                           </div>
                         </div>
                       </div>
-                    ))
-                  ) : (
-                    // No data fallback
-                    <div className="flex-shrink-0 w-full text-center py-8">
-                      <p className="text-gray-400">No marketplace items available</p>
+                    </div>
+                  )}
+                  
+                  {!generatedImage && !isLoading && !error && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
+                      <div className="text-center">
+                        <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
+                          <div className="text-center">
+                            <Upload className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
+                            <p className="text-sm lg:text-xs text-gray-400">Jersey</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-400 text-lg lg:text-sm">Your generated jersey will appear here</p>
+                        <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (4:5 ratio)</p>
+                      </div>
                     </div>
                   )}
                 </div>
-                
-                <div className="mt-4 lg:mt-3 text-center">
-                  <button className="px-4 lg:px-3 py-2 lg:py-1.5 border border-cyan-400/30 text-cyan-400 rounded-lg hover:border-cyan-400 hover:bg-cyan-400/10 transition-all text-sm lg:text-xs">
-                    View All NFTs
-                  </button>
-                </div>
               </div>
+
+              {/* Marketplace Section, visible only after image generation */}
+              {generatedImage && (
+                <div className="bg-black border border-neutral-800 rounded-lg p-6 mt-8">
+                  <h3 className="text-xl font-bold text-white mb-4">Marketplace</h3>
+                  {marketplaceLoading ? (
+                    <p>Loading marketplace...</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {marketplaceNFTs.slice(0, 6).map((nft, index) => (
+                        <div key={index} className="bg-[#050505] border border-neutral-800 rounded-lg overflow-hidden group transition-all hover:scale-105 hover:shadow-lg hover:shadow-accent/10">
+                          <Image src={nft.image_url} alt={nft.name} width={200} height={200} className="w-full object-cover aspect-square" />
+                          <div className="p-3">
+                            <h4 className="font-semibold text-sm truncate">{nft.name}</h4>
+                            <p className="text-xs text-neutral-400">{nft.price}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   )
 } 

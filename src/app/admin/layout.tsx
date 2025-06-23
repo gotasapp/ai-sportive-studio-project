@@ -86,15 +86,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname()
 
   return (
-    <div className="min-h-screen bg-[#000518] text-white">
-      {/* Background Effects */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#000720] via-[#000518] to-[#000A29] pointer-events-none" />
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top_left,#000720_0%,transparent_40%),radial-gradient(ellipse_at_top_right,#000924_0%,transparent_40%),radial-gradient(ellipse_at_bottom_left,#000720_0%,transparent_40%),radial-gradient(ellipse_at_bottom_right,#000A29_0%,transparent_40%)] pointer-events-none" />
-      
+    <div className="min-h-screen bg-black text-white">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -105,22 +101,22 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0
       `}>
-        <div className="flex h-full flex-col cyber-card border-r border-cyan-500/30">
+        <div className="flex h-full flex-col bg-[#050505] border-r border-neutral-800">
           {/* Header */}
-          <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-cyan-500/30">
+          <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-neutral-800">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
                 <Shield className="w-5 h-5 text-black" />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-200">Admin Panel</h1>
-                <p className="text-xs text-cyan-400/70">Chiliz Fan NFT</p>
+                <h1 className="text-lg font-bold text-neutral-100">Admin Panel</h1>
+                <p className="text-xs text-accent/70">Chiliz Fan NFT</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-cyan-400 hover:text-cyan-300"
+              className="lg:hidden text-neutral-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="w-5 h-5" />
@@ -129,7 +125,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
           {/* Status Badge */}
           <div className="px-6 py-4">
-            <Badge className="w-full justify-center bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30">
+            <Badge className="w-full justify-center bg-green-500/10 text-green-400 border-green-500/30 hover:bg-green-500/20">
               <div className="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse" />
               System Online
             </Badge>
@@ -148,40 +144,40 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                   className={`
                     group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200
                     ${isActive 
-                      ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 cyber-glow' 
-                      : 'text-gray-300 hover:text-cyan-300 hover:bg-cyan-500/10 hover:border hover:border-cyan-500/20'
+                      ? 'bg-accent/10 text-accent border border-accent/20' 
+                      : 'text-neutral-300 hover:text-white hover:bg-neutral-800/60'
                     }
                   `}
                 >
                   <Icon className={`
                     mr-3 h-5 w-5 flex-shrink-0 transition-colors
-                    ${isActive ? 'text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'}
+                    ${isActive ? 'text-accent' : 'text-neutral-400 group-hover:text-white'}
                   `} />
                   <div className="flex-1 min-w-0">
                     <div className="font-medium">{item.name}</div>
-                    <div className="text-xs text-gray-500 group-hover:text-cyan-500/70">
+                    <div className="text-xs text-neutral-500 group-hover:text-neutral-400">
                       {item.description}
                     </div>
                   </div>
                   {isActive && (
-                    <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse" />
+                    <div className="w-2 h-2 bg-accent rounded-full animate-pulse" />
                   )}
                 </Link>
               )
             })}
           </nav>
 
-          <div className="h-px bg-cyan-500/30 mx-4" />
+          <div className="h-px bg-neutral-800 mx-4" />
 
           {/* Footer */}
           <div className="p-4">
-            <div className="flex items-center justify-between text-sm text-gray-400">
+            <div className="flex items-center justify-between text-sm text-neutral-400">
               <span>Admin User</span>
               <Link href="/">
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-gray-400 hover:text-red-400 p-2"
+                  className="text-neutral-400 hover:text-red-500 p-2"
                   title="Voltar à página inicial"
                 >
                   <LogOut className="w-4 h-4" />
@@ -195,17 +191,17 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       {/* Main content */}
       <div className="lg:pl-72">
         {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-cyan-500/30 cyber-card px-4 shadow-lg sm:gap-x-6 sm:px-6 lg:px-8">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-neutral-800 bg-[#050505]/80 backdrop-blur-lg px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden text-cyan-400 hover:text-cyan-300"
+            className="lg:hidden text-neutral-400 hover:text-white"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />
           </Button>
 
-          <div className="h-6 w-px bg-cyan-500/30 lg:hidden" />
+          <div className="h-6 w-px bg-neutral-700 lg:hidden" />
 
           <div className="flex flex-1 items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -215,10 +211,10 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
             
             <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="border-cyan-500/30 text-cyan-400">
+              <Badge variant="outline" className="border-neutral-700 text-neutral-400">
                 v1.0.0
               </Badge>
-              <div className="text-sm text-gray-400">
+              <div className="text-sm text-neutral-400">
                 {new Date().toLocaleDateString()}
               </div>
             </div>
@@ -226,7 +222,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="py-8 px-4 sm:px-6 lg:px-8 relative z-10">
+        <main className="py-8 px-4 sm:px-6 lg:px-8">
           {children}
         </main>
       </div>

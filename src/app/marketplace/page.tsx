@@ -61,7 +61,7 @@ export default function MarketplacePage() {
 
   if (!isAuthCheckComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-900">
+      <div className="flex items-center justify-center min-h-screen bg-black">
         <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -69,7 +69,7 @@ export default function MarketplacePage() {
 
   if (loading || !marketplaceData) {
     return (
-      <main className="flex min-h-screen flex-col bg-gray-900 pb-20 lg:pb-0">
+      <main className="flex min-h-screen flex-col bg-black pb-20 lg:pb-0">
         <Header />
         <div className="flex items-center justify-center flex-1">
           <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
@@ -95,14 +95,14 @@ export default function MarketplacePage() {
   const filteredNFTs = getFilteredNFTs();
 
   return (
-    <main className="flex min-h-screen flex-col bg-gray-900 pb-20 lg:pb-0">
+    <main className="flex min-h-screen flex-col bg-black pb-20 lg:pb-0">
       <Header />
       
       <div className="container mx-auto px-4 md:px-6 py-8">
         {/* Header da página */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div className="flex items-center space-x-3 mb-4 md:mb-0">
-            <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -119,7 +119,7 @@ export default function MarketplacePage() {
               <select 
                 value={filter}
                 onChange={(e) => setFilter(e.target.value as 'all' | 'jerseys' | 'stadiums')}
-                className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                className="bg-card border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               >
                 <option value="all">All NFTs</option>
                 <option value="jerseys">Jerseys</option>
@@ -128,7 +128,7 @@ export default function MarketplacePage() {
             </div>
             
             {/* View Mode */}
-            <div className="flex items-center bg-gray-800 rounded-lg p-1">
+            <div className="flex items-center bg-card rounded-lg p-1">
               <button
                 onClick={() => setViewMode('grid')}
                 className={`p-2 rounded-lg transition-colors ${
@@ -155,19 +155,19 @@ export default function MarketplacePage() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="bg-card rounded-xl p-4 border border-gray-700">
             <div className="text-2xl font-bold text-cyan-400">{filteredNFTs.length}</div>
             <div className="text-gray-400 text-sm">Total NFTs</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="bg-card rounded-xl p-4 border border-gray-700">
             <div className="text-2xl font-bold text-green-400">{marketplaceData.marketplace_nfts.jerseys.length}</div>
             <div className="text-gray-400 text-sm">Jerseys</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="bg-card rounded-xl p-4 border border-gray-700">
             <div className="text-2xl font-bold text-blue-400">{marketplaceData.marketplace_nfts.stadiums.length}</div>
             <div className="text-gray-400 text-sm">Stadiums</div>
           </div>
-          <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+          <div className="bg-card rounded-xl p-4 border border-gray-700">
             <div className="text-2xl font-bold text-purple-400">0.1-0.3</div>
             <div className="text-gray-400 text-sm">ETH Range</div>
           </div>
@@ -184,14 +184,14 @@ export default function MarketplacePage() {
             <div 
               key={index}
               className={`
-                bg-gray-800/50 backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300 group cursor-pointer
+                bg-card backdrop-blur-lg border border-gray-700 rounded-xl overflow-hidden hover:border-cyan-500/50 transition-all duration-300 group cursor-pointer
                 ${viewMode === 'list' ? 'flex items-center p-4' : 'p-4'}
               `}
             >
               {/* Imagem */}
               <div className={`
                 ${viewMode === 'list' ? 'w-24 h-24 flex-shrink-0 mr-4' : 'aspect-square mb-4'}
-                rounded-lg overflow-hidden bg-gray-700
+                rounded-lg overflow-hidden bg-black
               `}>
                 <img 
                   src={nft.image_url} 

@@ -66,15 +66,15 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Dashboard</h1>
-          <p className="text-gray-400 mt-2">Chiliz Fan NFT - Control Center</p>
+          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-neutral-400 mt-2">Chiliz Fan NFT - Control Center</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+          <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
             <Activity className="w-3 h-3 mr-1" />
             All Systems Operational
           </Badge>
-          <Button className="cyber-button">
+          <Button className="bg-accent hover:bg-accent/90 text-white">
             <Zap className="w-4 h-4 mr-2" />
             Quick Actions
           </Button>
@@ -85,16 +85,20 @@ export default function AdminDashboard() {
       <div className="space-y-4">
         {systemAlerts.map((alert, index) => (
           <div key={index} className={`
-            border-l-4 cyber-card p-4 rounded-lg
-            ${alert.type === 'success' ? 'border-l-green-500 bg-green-500/10' :
-              alert.type === 'warning' ? 'border-l-yellow-500 bg-yellow-500/10' :
-              'border-l-blue-500 bg-blue-500/10'}
+            border-l-4 bg-[#050505] p-4 rounded-r-lg
+            ${alert.type === 'success' ? 'border-green-500' :
+              alert.type === 'warning' ? 'border-yellow-500' :
+              'border-blue-500'}
           `}>
             <div className="flex items-center space-x-3">
-              <AlertTriangle className="h-4 w-4" />
+              <AlertTriangle className={`h-4 w-4 ${
+                alert.type === 'success' ? 'text-green-500' :
+                alert.type === 'warning' ? 'text-yellow-500' :
+                'text-blue-500'
+              }`} />
               <div className="flex items-center justify-between w-full">
-                <span>{alert.message}</span>
-                <span className="text-xs text-gray-500">{alert.time}</span>
+                <span className="text-neutral-200">{alert.message}</span>
+                <span className="text-xs text-neutral-500">{alert.time}</span>
               </div>
             </div>
           </div>
@@ -104,14 +108,14 @@ export default function AdminDashboard() {
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* NFTs Generated */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-200">NFTs Generated</CardTitle>
-            <Image className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-sm font-medium text-neutral-300">NFTs Generated</CardTitle>
+            <Image className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-200">{metrics.nftsGenerated.today}</div>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-2xl font-bold text-white">{metrics.nftsGenerated.today}</div>
+            <div className="text-xs text-neutral-400 space-y-1">
               <div>Today: {metrics.nftsGenerated.today}</div>
               <div>This Week: {metrics.nftsGenerated.week}</div>
               <div>This Month: {metrics.nftsGenerated.month}</div>
@@ -124,14 +128,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Active Users */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-200">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-sm font-medium text-neutral-300">Active Users</CardTitle>
+            <Users className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-200">{metrics.users.active}</div>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-2xl font-bold text-white">{metrics.users.active}</div>
+            <div className="text-xs text-neutral-400 space-y-1">
               <div>Online Now: {metrics.users.active}</div>
               <div>New Today: {metrics.users.new}</div>
               <div>Total Users: {metrics.users.total}</div>
@@ -144,14 +148,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Success Rate */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-200">Success Rate</CardTitle>
+            <CardTitle className="text-sm font-medium text-neutral-300">Success Rate</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-200">{metrics.system.successRate}%</div>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-2xl font-bold text-white">{metrics.system.successRate}%</div>
+            <div className="text-xs text-neutral-400 space-y-1">
               <div>Avg Generation: {metrics.system.avgGenerationTime}s</div>
               <div>System Uptime: {metrics.system.uptime}%</div>
               <div>API Calls: {metrics.system.apiCalls.toLocaleString()}</div>
@@ -164,14 +168,14 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Revenue */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-200">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-cyan-400" />
+            <CardTitle className="text-sm font-medium text-neutral-300">Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-accent" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-200">${metrics.revenue.today}</div>
-            <div className="text-xs text-gray-400 space-y-1">
+            <div className="text-2xl font-bold text-white">${metrics.revenue.today}</div>
+            <div className="text-xs text-neutral-400 space-y-1">
               <div>Today: ${metrics.revenue.today}</div>
               <div>This Month: ${metrics.revenue.month}</div>
               <div>Gas Fees Saved: $2,847</div>
@@ -187,10 +191,10 @@ export default function AdminDashboard() {
       {/* System Status & Recent Activity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* System Status */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Cpu className="h-5 w-5 text-cyan-400" />
+              <Cpu className="h-5 w-5 text-accent" />
               <span>System Status</span>
             </CardTitle>
             <CardDescription>Real-time system monitoring</CardDescription>
@@ -199,39 +203,39 @@ export default function AdminDashboard() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm">DALL-E API</span>
+                <span className="text-sm text-neutral-300">DALL-E API</span>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Online</Badge>
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm">IPFS Storage</span>
+                <span className="text-sm text-neutral-300">IPFS Storage</span>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Online</Badge>
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm">Thirdweb Engine</span>
+                <span className="text-sm text-neutral-300">Thirdweb Engine</span>
               </div>
-              <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Online</Badge>
+              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                <span className="text-sm">Generation Queue</span>
+                <span className="text-sm text-neutral-300">Generation Queue</span>
               </div>
-              <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">23 Pending</Badge>
+              <Badge variant="outline" className="border-yellow-500/30 bg-yellow-500/10 text-yellow-400">23 Pending</Badge>
             </div>
           </CardContent>
         </Card>
 
         {/* Recent Activity */}
-        <Card className="cyber-card border-cyan-500/30">
+        <Card className="bg-[#050505] border-neutral-800">
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-cyan-400" />
+              <Activity className="h-5 w-5 text-accent" />
               <span>Recent Activity</span>
             </CardTitle>
             <CardDescription>Latest system events and user actions</CardDescription>
@@ -239,7 +243,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="space-y-3">
               {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
+                <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
                   <div className="flex items-center space-x-3">
                     <div className={`w-2 h-2 rounded-full ${
                       activity.status === 'success' ? 'bg-green-400' :
@@ -247,11 +251,13 @@ export default function AdminDashboard() {
                       activity.status === 'pending' ? 'bg-blue-400' : 'bg-red-400'
                     }`} />
                     <div>
-                      <div className="text-sm font-medium">{activity.item}</div>
-                      <div className="text-xs text-gray-500">{activity.user}</div>
+                      <div className="text-sm font-medium text-neutral-200">{activity.item}</div>
+                      <div className="text-xs text-neutral-500">
+                        {activity.type} by <span className="font-semibold text-neutral-400">{activity.user}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="text-xs text-gray-400">{activity.time}</div>
+                  <div className="text-xs text-neutral-500">{activity.time}</div>
                 </div>
               ))}
             </div>
@@ -260,26 +266,26 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <Card className="cyber-card border-cyan-500/30">
+      <Card className="bg-[#050505] border-neutral-800">
         <CardHeader>
           <CardTitle>Quick Actions</CardTitle>
           <CardDescription>Common administrative tasks</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-cyan-500/30 hover:bg-cyan-500/10">
-              <Database className="h-6 w-6 text-cyan-400" />
+            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
+              <Database className="h-6 w-6 text-accent" />
               <span className="text-xs">Backup System</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-cyan-500/30 hover:bg-cyan-500/10">
+            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
               <Zap className="h-6 w-6 text-yellow-400" />
               <span className="text-xs">Clear Cache</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-cyan-500/30 hover:bg-cyan-500/10">
+            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
               <Wifi className="h-6 w-6 text-green-400" />
               <span className="text-xs">Test APIs</span>
             </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-cyan-500/30 hover:bg-cyan-500/10">
+            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
               <Clock className="h-6 w-6 text-blue-400" />
               <span className="text-xs">Schedule Maintenance</span>
             </Button>

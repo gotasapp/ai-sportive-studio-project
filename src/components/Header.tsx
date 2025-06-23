@@ -133,7 +133,7 @@ export default function Header() {
 
 
   return (
-    <header className="w-full border-b border-cyan-800/30 bg-gradient-to-r from-slate-950 via-blue-950 to-slate-950">
+    <header className="w-full border-b border-cyan-800/30 bg-black">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <img 

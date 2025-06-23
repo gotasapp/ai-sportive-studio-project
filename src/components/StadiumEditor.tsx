@@ -249,9 +249,11 @@ export default function StadiumEditor() {
         console.log('✅ Blob created successfully, size:', blob.size);
       } catch (error) {
         console.error('❌ Error converting base64 to blob:', error);
+        setGeneratedImageBlob(null);
       }
     } else {
       console.log('⚠️ No image data to convert to blob');
+      setGeneratedImageBlob(null);
     }
   }, [result?.generated_image_base64]);
 
@@ -641,20 +643,14 @@ export default function StadiumEditor() {
   };
 
   return (
-    <div className="min-h-screen" style={{
-      background: `
-        radial-gradient(ellipse at top, rgba(0, 255, 255, 0.15) 0%, transparent 50%),
-        radial-gradient(ellipse at bottom, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
-        #000518
-      `
-    }}>
-      <div className="container mx-auto px-4 md:px-6 py-8" style={{ background: 'transparent' }}>
+    <div className="min-h-screen bg-black">
+      <div className="container mx-auto px-4 md:px-6 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Left Sidebar - Controls */}
           <div className="lg:col-span-1">
             {/* Stadium Generator */}
-            <div className="gradient-border mb-6">
-              <div className="gradient-border-content p-3 md:p-4 space-y-3 md:space-y-4">
+            <div className="bg-card rounded-lg p-6 border border-gray-800 mb-6">
+              <div className="space-y-3 md:space-y-4">
                 <h2 className="heading-style">Create Stadium NFT</h2>
                 
                 {/* Stadium Selection */}
@@ -859,7 +855,7 @@ export default function StadiumEditor() {
 
             {/* Mint Container - Below Stadium Generator (30% smaller height) */}
             <div className="gradient-border mb-4">
-              <div className="gradient-border-content p-2 md:p-3">
+              <div className="bg-black p-2 md:p-3">
                 <h2 className="heading-style mb-2 text-sm">Mint NFT</h2>
                 
                 <div className="space-y-2">
@@ -883,7 +879,7 @@ export default function StadiumEditor() {
                     <button 
                       className={`cyber-button w-full py-2 rounded font-medium transition-all text-xs ${
                         canMintGasless && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
+                          ? 'opacity-100 cursor-pointer' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                       disabled={!canMintGasless || isMinting}
@@ -907,7 +903,7 @@ export default function StadiumEditor() {
                     <button 
                       className={`cyber-button w-full py-2 rounded font-medium transition-all text-xs ${
                         canMintLegacy && !isMinting
-                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-purple-600/20 to-gray-600/20 border-purple-400/30' 
+                          ? 'opacity-100 cursor-pointer' 
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                       disabled={!canMintLegacy || isMinting}
@@ -1067,26 +1063,26 @@ export default function StadiumEditor() {
                       </button>
                       
                       {ipfsUrl && (
-                        <div className="p-3 bg-gray-800/50 rounded-lg">
+                        <div className="p-3 bg-neutral-900 rounded-lg">
                           <p className="text-xs text-gray-400 mb-2">IPFS URL:</p>
                           <div className="flex items-center space-x-2">
                             <input
                               type="text"
                               value={ipfsUrl}
                               readOnly
-                              className="flex-1 bg-gray-700/50 text-gray-300 text-xs p-2 rounded border border-gray-600"
+                              className="flex-1 bg-neutral-800 text-gray-300 text-xs p-2 rounded border border-neutral-700"
                             />
                             <button
                               onClick={() => {
                                 navigator.clipboard.writeText(ipfsUrl)
                               }}
-                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                              className="px-3 py-2 bg-accent/20 text-accent rounded text-xs hover:bg-accent/30 transition-colors"
                             >
                               Copy
                             </button>
                             <button
                               onClick={() => window.open(ipfsUrl, '_blank')}
-                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                              className="px-3 py-2 bg-accent/20 text-accent rounded text-xs hover:bg-accent/30 transition-colors"
                             >
                               View
                             </button>
@@ -1111,8 +1107,8 @@ export default function StadiumEditor() {
             )}
 
                         {/* Marketplace - Drag & Scroll Carousel */}
-            <div className="gradient-border mt-2">
-              <div className="gradient-border-content p-2 md:p-3">
+            <div className="border border-neutral-800 rounded-lg mt-2">
+              <div className="bg-black p-2 md:p-3">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="heading-style text-xs">Marketplace</h2>
                   <div className="text-xs text-gray-400">
@@ -1146,11 +1142,11 @@ export default function StadiumEditor() {
                           className="flex-shrink-0 px-1"
                           style={{ width: `${100 / marketplaceNFTs.length}%` }}
                         >
-                          <div className="marketplace-card rounded p-1.5 transition-all duration-300">
-                            <div className="aspect-[4/5] bg-gradient-to-br from-cyan-500/20 to-purple-500/20 rounded mb-1 animate-pulse border border-cyan-400/20"></div>
+                          <div className="bg-neutral-900 rounded p-1.5 transition-all duration-300">
+                            <div className="aspect-[4/5] bg-neutral-800 rounded mb-1 animate-pulse border border-neutral-700"></div>
                             <div className="space-y-0.5">
-                              <div className="h-1.5 bg-gray-600/50 rounded animate-pulse"></div>
-                              <div className="h-1.5 bg-gray-600/50 rounded w-2/3 animate-pulse"></div>
+                              <div className="h-1.5 bg-neutral-700 rounded animate-pulse"></div>
+                              <div className="h-1.5 bg-neutral-700 rounded w-2/3 animate-pulse"></div>
                             </div>
                           </div>
                         </div>
@@ -1163,8 +1159,8 @@ export default function StadiumEditor() {
                           className="flex-shrink-0 px-1 group"
                           style={{ width: `${100 / marketplaceNFTs.length}%` }}
                         >
-                          <div className="marketplace-card rounded p-1.5 transition-all duration-300 hover:scale-105 cursor-pointer">
-                            <div className="aspect-[4/5] rounded mb-1 relative overflow-hidden border border-cyan-400/20">
+                          <div className="bg-neutral-900 rounded p-1.5 transition-all duration-300 hover:scale-105 cursor-pointer">
+                            <div className="aspect-[4/5] rounded mb-1 relative overflow-hidden border border-neutral-700">
                               {/* Random trending indicator */}
                               {index % 3 === 0 && (
                                 <div className="absolute top-0.5 right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
@@ -1181,7 +1177,7 @@ export default function StadiumEditor() {
                                   const parent = (e.target as HTMLImageElement).parentElement;
                                   if (parent) {
                                     parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
-                                    parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-cyan-400/60 font-bold text-xs">${nft.name.charAt(0)}</div>`;
+                                    parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-accent/60 font-bold text-xs">${nft.name.charAt(0)}</div>`;
                                   }
                                 }}
                               />
@@ -1191,11 +1187,11 @@ export default function StadiumEditor() {
                             </div>
                             
                             <div className="space-y-0.5">
-                              <p className="text-xs text-gray-400 group-hover:text-cyan-400 transition-colors font-medium truncate">
+                              <p className="text-xs text-gray-400 group-hover:text-accent transition-colors font-medium truncate">
                                 {nft.name}
                               </p>
                               <div className="flex items-center justify-between">
-                                <span className="text-cyan-400 font-bold text-xs">{nft.price}</span>
+                                <span className="text-accent font-bold text-xs">{nft.price}</span>
                                 {index % 3 === 0 && (
                                   <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
                                     🔥
@@ -1219,15 +1215,15 @@ export default function StadiumEditor() {
                 <div className="mt-3 px-2">
                   <div className="relative">
                     {/* Track */}
-                    <div className="w-full h-2 bg-gray-800 rounded-full border border-gray-700">
+                    <div className="w-full h-2 bg-neutral-800 rounded-full border border-neutral-700">
                       {/* Progress */}
                       <div 
-                        className="h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full transition-all duration-300 shadow-lg shadow-cyan-400/20"
+                        className="h-full bg-accent rounded-full transition-all duration-300 shadow-lg shadow-accent/20"
                         style={{ width: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%` }}
                       />
                       {/* Thumb */}
                       <div 
-                        className="absolute top-0 w-4 h-2 bg-cyan-400 rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-y-0 transition-all duration-200 hover:scale-110 hover:shadow-cyan-400/50"
+                        className="absolute top-0 w-4 h-2 bg-accent rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-y-0 transition-all duration-200 hover:scale-110 hover:shadow-accent/50"
                         style={{ 
                           left: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%`,
                           transform: 'translateX(-50%)'
@@ -1258,7 +1254,7 @@ export default function StadiumEditor() {
                 </div>
                 
                 <div className="mt-2 text-center">
-                  <button className="px-3 py-1 border border-cyan-400/30 text-cyan-400 rounded hover:border-cyan-400 hover:bg-cyan-400/10 transition-all text-xs">
+                  <button className="px-3 py-1 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-xs">
                     View All Items
                   </button>
                 </div>
