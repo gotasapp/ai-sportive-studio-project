@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Upload, ChevronLeft, ChevronRight, Eye, Brain, Zap, Camera, Globe, Crown, Palette, Wallet, AlertTriangle, Check, FileImage } from 'lucide-react'
 import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
 import Image from 'next/image'
@@ -21,6 +21,35 @@ interface MarketplaceNFT {
   description: string;
   price: string;
 }
+
+// Vision Test options
+const sportsOptions = [
+  { id: 'soccer', name: 'Soccer/Football', description: 'Professional soccer jersey' },
+  { id: 'basketball', name: 'Basketball', description: 'NBA/Basketball jersey' },
+  { id: 'nfl', name: 'American Football', description: 'NFL jersey' }
+]
+
+const viewOptions = [
+  { id: 'back', name: 'Back View', description: 'Jersey back with player name/number' },
+  { id: 'front', name: 'Front View', description: 'Jersey front with logo/badge' }
+]
+
+const styleOptions = [
+  { id: 'classic', name: 'Classic', description: 'Traditional professional sports design' },
+  { id: 'modern', name: 'Modern', description: 'Contemporary athletic design with clean lines' },
+  { id: 'retro', name: 'Retro', description: 'Vintage retro sports aesthetic' },
+  { id: 'urban', name: 'Urban', description: 'Urban street sports style' },
+  { id: 'premium', name: 'Premium', description: 'Luxury premium sports merchandise' },
+  { id: 'vintage', name: 'Vintage', description: 'Classic vintage sports uniform style' }
+]
+
+const visionModels = [
+  { id: 'openrouter/gpt-4o-mini', name: 'GPT-4O Mini', cost: '~$0.01' },
+  { id: 'openrouter/gpt-4o', name: 'GPT-4O', cost: '~$0.03' },
+  { id: 'meta-llama/llama-3.2-11b-vision-instruct', name: 'Llama 3.2 Vision', cost: '~$0.02' },
+  { id: 'qwen/qwen-2-vl-72b-instruct', name: 'Qwen 2 VL', cost: '~$0.025' },
+  { id: 'google/gemini-pro-vision', name: 'Gemini Pro Vision', cost: '~$0.02' }
+]
 
 export default function VisionTestEditor() {
   // Thirdweb v5 hooks for wallet connection
@@ -50,10 +79,15 @@ export default function VisionTestEditor() {
 
   // Vision Test specific state
   const [analysisPrompt, setAnalysisPrompt] = useState<string>('')
-  const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-4o-mini')
+  const [selectedModel, setSelectedModel] = useState<string>('openrouter/gpt-4o-mini')
+  const [selectedSport, setSelectedSport] = useState('soccer')
+  const [selectedView, setSelectedView] = useState('back')
+  const [selectedStyle, setSelectedStyle] = useState('classic')
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>('')
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageBase64, setImageBase64] = useState<string>('')
+  const [playerName, setPlayerName] = useState('')
+  const [playerNumber, setPlayerNumber] = useState('')
   
   // Analysis state
   const [analysisResult, setAnalysisResult] = useState<VisionResponse | null>(null)
@@ -62,7 +96,7 @@ export default function VisionTestEditor() {
   const [apiStatus, setApiStatus] = useState<boolean>(false)
   const [analysisCost, setAnalysisCost] = useState<number | null>(null)
 
-  // Generation state (igual Jersey)
+  // Generation state
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
   const [generationPrompt, setGenerationPrompt] = useState<string>('')
@@ -87,31 +121,47 @@ export default function VisionTestEditor() {
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
   
-  // Smooth Carousel state with drag & scroll
+  // Carousel state
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState(0)
   const [dragOffset, setDragOffset] = useState(0)
-  const slidesToShow = 3 // Smaller for vision test
+  const slidesToShow = 3
   const maxSlide = Math.max(0, marketplaceNFTs.length - slidesToShow)
+
+  // Refs
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Network validation
+  const supportedChainIds = [88888, 88882, 137, 80002]
+  const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
   
+  // Admin check
+  const isUserAdmin = isAdmin(account)
+  
+  // Reset player data when switching away from back view
+  useEffect(() => {
+    if (selectedView !== 'back') {
+      setPlayerName('')
+      setPlayerNumber('')
+    }
+  }, [selectedView])
+  
+  // Conditions for vision test
+  const canAnalyze = uploadedFile && imageBase64 && analysisPrompt.trim()
+  const canGenerate = analysisResult?.success && generationPrompt.trim()
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
+  const canMintGasless = generatedImage && analysisResult && isUserAdmin
+
+  // Carousel functions
   const nextSlide = () => {
-    setCurrentSlide(prev => {
-      const next = Math.min(prev + 1, maxSlide)
-      console.log(`NextSlide: ${prev} → ${next} (maxSlide: ${maxSlide}, items: ${marketplaceNFTs.length})`)
-      return next
-    })
+    setCurrentSlide(prev => Math.min(prev + 1, maxSlide))
   }
   
   const prevSlide = () => {
-    setCurrentSlide(prev => {
-      const next = Math.max(prev - 1, 0)
-      console.log(`PrevSlide: ${prev} → ${next}`)
-      return next
-    })
+    setCurrentSlide(prev => Math.max(prev - 1, 0))
   }
 
-  // Drag handlers
   const handleDragStart = (clientX: number) => {
     setIsDragging(true)
     setDragStart(clientX)
@@ -138,26 +188,10 @@ export default function VisionTestEditor() {
     setDragOffset(0)
   }
 
-  // Scroll bar handler
   const handleScrollChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value)
     setCurrentSlide(value)
   }
-
-  // Network validation (simplified for CHZ + Polygon)
-  const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
-  const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
-  const isOnChzChain = chainId === 88888 || chainId === 88882
-  const isOnPolygonChain = chainId === 137 || chainId === 80002
-  
-  // Admin check
-  const isUserAdmin = isAdmin(account)
-  
-  // Conditions for vision test
-  const canAnalyze = uploadedFile && imageBase64 && analysisPrompt.trim()
-  const canGenerate = analysisResult?.success && generationPrompt.trim()
-  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
-  const canMintGasless = generatedImage && analysisResult && isUserAdmin
 
   // Handle file upload
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,50 +213,16 @@ export default function VisionTestEditor() {
     }
   }
 
-  // Analyze image with Vision API
-  const analyzeImage = async () => {
-    if (!canAnalyze) {
-      setError('Please upload an image and add analysis prompt')
+  // Generate image with automatic analysis
+  const generateImageWithAnalysis = async () => {
+    if (!uploadedFile) {
+      setError('Upload an image first')
       return
     }
 
-    setIsAnalyzing(true)
-    setError(null)
-    setAnalysisResult(null)
-
-    try {
-      const request: VisionAnalysisRequest = {
-        image_base64: imageBase64,
-        analysis_prompt: analysisPrompt,
-        model: selectedModel
-      }
-
-      const result = await VisionTestService.analyzeImage(request)
-      setAnalysisResult(result)
-      
-      if (result.success && result.cost_estimate) {
-        setAnalysisCost(result.cost_estimate)
-      }
-
-      if (!result.success) {
-        setError(result.error || 'Analysis failed')
-      } else {
-        // Auto-generate prompt for DALL-E based on analysis
-        const autoPrompt = `Create an improved version based on this analysis: ${result.analysis?.substring(0, 300)}...`
-        setGenerationPrompt(autoPrompt)
-      }
-    } catch (error) {
-      console.error('❌ Analysis error:', error)
-      setError(error instanceof Error ? error.message : 'Analysis failed')
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }
-
-  // Generate improved image with DALL-E 3
-  const generateImprovedImage = async () => {
-    if (!canGenerate) {
-      setError('Please complete analysis first')
+    // Validate player details for back view
+    if (selectedView === 'back' && (!playerName.trim() || !playerNumber.trim())) {
+      setError('Player name and number are required for back view jerseys')
       return
     }
 
@@ -230,34 +230,105 @@ export default function VisionTestEditor() {
     setError(null)
 
     try {
-      console.log('🎨 Generating improved image with DALL-E 3...')
+      // Step 1: Auto-analyze the uploaded image
+      console.log('🔍 Auto-analyzing image with Vision AI...')
+      setAnalysisResult({ success: false, analysis: 'Analyzing...', cost_estimate: 0, model_used: selectedModel })
       
-      // Use DALL-E 3 directly via OpenAI
-      const response = await fetch('/api/generate', {
+      const analysisResponse = await fetch('/api/vision-test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          prompt: generationPrompt,
-          quality: quality,
-          type: 'vision-improvement'
+          image_base64: imageBase64,
+          prompt: `Analyze this ${selectedSport} jersey image. Describe the colors, design patterns, textures, style elements, and overall visual characteristics. Focus on details that would help recreate a similar jersey design.`,
+          model: selectedModel
         }),
       })
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+      if (!analysisResponse.ok) {
+        throw new Error(`Analysis failed! Status: ${analysisResponse.status}`)
       }
 
-      const result = await response.json()
+      const analysisResult = await analysisResponse.json()
+      if (!analysisResult.success) {
+        throw new Error(`Analysis error: ${analysisResult.error}`)
+      }
+
+      console.log('✅ Vision analysis completed!')
+      setAnalysisResult(analysisResult)
+
+      // Step 2: Get structured prompt based on selects
+      console.log('🎨 Getting structured prompt for', selectedSport, selectedView, selectedStyle)
+      const promptResponse = await fetch('/api/vision-prompts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sport: selectedSport,
+          view: selectedView,
+          playerName: playerName || '',
+          playerNumber: playerNumber || '',
+          style: selectedStyle
+        }),
+      })
+
+      if (!promptResponse.ok) {
+        throw new Error('Failed to get structured prompt')
+      }
+
+      const promptData = await promptResponse.json()
+      if (!promptData.success) {
+        throw new Error(promptData.error || 'Prompt generation failed')
+      }
+
+      // Step 3: Combine analysis + structured prompt + quality settings
+      const finalPrompt = `
+        ${promptData.prompt}
+        
+        ORIGINAL DESIGN ANALYSIS: ${analysisResult.analysis}
+        
+        QUALITY REQUIREMENTS: Premium sports jersey, professional athletic design, studio lighting, 4K quality, no mannequin or human model, clean background, hyper-realistic fabric texture.
+      `.trim()
+
+      console.log('📋 Player details:', playerName ? `${playerName} #${playerNumber}` : 'No player data')
+      console.log('🎯 Final combined prompt ready')
+
+      // Step 4: Generate new image with DALL-E
+      const generateResponse = await fetch('/api/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: finalPrompt,
+          quality: quality,
+          type: 'vision-test',
+          metadata: {
+            sport: selectedSport,
+            view: selectedView,
+            style: selectedStyle,
+            playerName: playerName || null,
+            playerNumber: playerNumber || null,
+            promptMetadata: promptData.metadata
+          }
+        }),
+      })
+
+      if (!generateResponse.ok) {
+        throw new Error(`Generation failed! Status: ${generateResponse.status}`)
+      }
+
+      const result = await generateResponse.json()
 
       if (result.success && result.image_base64) {
-        const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64)
-        setGeneratedImage(imageUrl)
-        setGenerationCost(result.cost_usd || null)
+        setGeneratedImage(`data:image/png;base64,${result.image_base64}`)
+        setGenerationCost((analysisResult.cost_estimate || 0) + (result.cost_usd || 0))
+        console.log('✅ Complete Vision Test flow completed successfully!')
         
-        // Convert to blob for IPFS
-        const base64Data = result.image_base64.replace(/^data:image\/[a-z]+;base64,/, '')
+        // Convert to blob for minting
+        const base64Data = result.image_base64
         const byteCharacters = atob(base64Data)
         const byteNumbers = new Array(byteCharacters.length)
         for (let i = 0; i < byteCharacters.length; i++) {
@@ -267,11 +338,11 @@ export default function VisionTestEditor() {
         const blob = new Blob([byteArray], { type: 'image/png' })
         setGeneratedImageBlob(blob)
       } else {
-        setError(result.error || 'Generation failed')
+        throw new Error(result.error || 'Image generation failed')
       }
-    } catch (error) {
-      console.error('❌ Generation error:', error)
-      setError(error instanceof Error ? error.message : 'Generation failed')
+    } catch (error: any) {
+      console.error('❌ Vision Test flow error:', error)
+      setError(error instanceof Error ? error.message : 'Process failed')
     } finally {
       setIsGenerating(false)
     }
@@ -365,19 +436,16 @@ export default function VisionTestEditor() {
     }
   }
 
-  // Reset form
   const resetForm = () => {
     setUploadedFile(null)
-    setImagePreview('')
+    setImagePreview(null)
     setImageBase64('')
     setAnalysisResult(null)
     setGeneratedImage(null)
     setGeneratedImageBlob(null)
-    setError(null)
     setAnalysisPrompt('')
     setGenerationPrompt('')
-    setAnalysisCost(null)
-    setGenerationCost(null)
+    setError(null)
     setIpfsUrl(null)
     setIpfsError(null)
     setMintError(null)
@@ -385,23 +453,22 @@ export default function VisionTestEditor() {
     setMintedTokenId(null)
     setTransactionHash(null)
     setMintStatus('idle')
+    setPlayerName('')
+    setPlayerNumber('')
   }
 
-  // Load marketplace data and check API status
   useEffect(() => {
     const checkApiStatus = async () => {
       try {
-        const status = await VisionTestService.checkHealth()
-        setApiStatus(status)
-      } catch (error) {
-        console.error('API status check failed:', error)
+        const response = await fetch('/api/vision-test')
+        setApiStatus(response.ok)
+      } catch {
         setApiStatus(false)
       }
     }
 
     const loadMarketplaceData = async () => {
       try {
-        setMarketplaceLoading(true)
         const response = await fetch('/marketplace-images.json')
         if (response.ok) {
           const data = await response.json()
@@ -418,6 +485,27 @@ export default function VisionTestEditor() {
     loadMarketplaceData()
   }, [])
 
+  // Drag and drop handlers
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length > 0) {
+      handleFileUpload({ target: { files } } as any)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
   return (
     <div className="w-full max-w-7xl mx-auto p-4 space-y-6">
       
@@ -426,12 +514,12 @@ export default function VisionTestEditor() {
         <h1 className="text-4xl font-bold text-white mb-2">
           🔍 Vision Test Lab
         </h1>
-        <p className="text-gray-400">
+        <p className="text-white">
           Analise qualquer imagem com GPT-4 Vision e recrie versões personalizadas com DALL-E 3
         </p>
         <div className="flex items-center justify-center gap-4 mt-4">
           <div className={`w-3 h-3 rounded-full ${apiStatus ? 'bg-green-500' : 'bg-red-500'}`}></div>
-          <span className="text-sm text-gray-400">
+          <span className="text-sm text-white">
             Vision API: {apiStatus ? 'Online' : 'Offline'}
           </span>
         </div>
@@ -443,108 +531,192 @@ export default function VisionTestEditor() {
         {/* Left Panel - Controls */}
         <div className="lg:col-span-1 space-y-6">
           
-          {/* Image Upload */}
+          {/* Upload Section */}
           <div className="cyber-card border-secondary/30 p-6">
             <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
               <Upload className="w-5 h-5" />
-              Upload de Imagem
+              Upload Image
             </h3>
             
-            {/* Upload Area - Visível para Vision Test */}
-            <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card">
-              <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
-              <p className="text-gray-300 mb-2">Upload image for Vision analysis</p>
-              <input 
-                type="file" 
-                className="hidden" 
-                id="file-upload"
+            <div 
+              className="border-2 border-dashed border-secondary/30 rounded-lg p-8 text-center cursor-pointer hover:border-accent/50 transition-colors"
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="w-12 h-12 text-secondary/50 mx-auto mb-4" />
+              <p className="text-white mb-2">
+                {uploadedFile ? uploadedFile.name : "Drop your image here or click to browse"}
+              </p>
+              <p className="text-white text-sm">
+                Supports JPG, PNG, WebP (max 10MB)
+              </p>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
                 accept="image/*"
                 onChange={handleFileUpload}
+                className="hidden"
               />
-              <label 
-                htmlFor="file-upload" 
-                className="text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors"
-              >
-                Choose file
-              </label>
             </div>
-            
-            {imagePreview && (
-              <div className="relative w-full h-48 rounded-lg overflow-hidden border border-secondary/30 mb-4">
-                <Image
-                  src={imagePreview}
-                  alt="Preview"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            )}
           </div>
 
-          {/* Prompt Input */}
+          {/* Sport Selection */}
           <div className="cyber-card border-secondary/30 p-6">
             <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-              <Brain className="w-5 h-5" />
-              Prompt para Análise
+              <Zap className="w-5 h-5" />
+              Jersey Configuration
             </h3>
             
             <div className="space-y-4">
-              <textarea
-                value={analysisPrompt}
-                onChange={(e) => setAnalysisPrompt(e.target.value)}
-                placeholder="Descreva como você quer que a IA analise sua imagem... (Ex: 'Descreva esta imagem em detalhes' ou 'Analise as cores e formas desta maçã')"
-                className="w-full p-4 rounded-lg bg-primary/20 border border-secondary/30 text-secondary resize-none h-32 text-sm"
-              />
-              <p className="text-xs text-gray-400">
-                💡 Dica: Seja específico sobre o que você quer analisar na imagem
-              </p>
+              {/* Sport Type */}
+              <div>
+                <label className="text-sm text-white mb-2 block">
+                  Sport Type:
+                </label>
+                <select
+                  value={selectedSport}
+                  onChange={(e) => setSelectedSport(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-white"
+                >
+                  {sportsOptions.map((sport) => (
+                    <option key={sport.id} value={sport.id}>
+                      {sport.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* View Type */}
+              <div>
+                <label className="text-sm text-white mb-2 block">
+                  Jersey View:
+                </label>
+                <select
+                  value={selectedView}
+                  onChange={(e) => setSelectedView(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-white"
+                >
+                  {viewOptions.map((view) => (
+                    <option key={view.id} value={view.id}>
+                      {view.name} - {view.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Style Theme */}
+              <div>
+                <label className="text-sm text-white mb-2 block">
+                  Style Theme:
+                </label>
+                <select
+                  value={selectedStyle}
+                  onChange={(e) => setSelectedStyle(e.target.value)}
+                  className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-white"
+                >
+                  {styleOptions.map((style) => (
+                    <option key={style.id} value={style.id}>
+                      {style.name} - {style.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Player Details - Only show for back view */}
+              {selectedView === 'back' && (
+                <>
+                  <div className="border-t border-secondary/20 pt-4">
+                    <h4 className="text-sm font-semibold text-white mb-3">Player Details (Back View)</h4>
+                    
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm text-white mb-2 block">
+                          Player Name: {selectedView === 'back' && <span className="text-accent">*</span>}
+                        </label>
+                        <input
+                          type="text"
+                          value={playerName}
+                          onChange={(e) => setPlayerName(e.target.value)}
+                          placeholder={
+                            selectedSport === 'soccer' ? 'MESSI' :
+                            selectedSport === 'basketball' ? 'JORDAN' :
+                            selectedSport === 'nfl' ? 'BRADY' : 'PLAYER'
+                          }
+                          className={`w-full p-3 rounded-lg bg-primary/20 border text-white placeholder:text-gray-500 ${
+                            selectedView === 'back' && !playerName.trim() 
+                              ? 'border-accent/50' 
+                              : 'border-secondary/30'
+                          }`}
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="text-sm text-white mb-2 block">
+                          Number: {selectedView === 'back' && <span className="text-accent">*</span>}
+                        </label>
+                        <input
+                          type="text"
+                          value={playerNumber}
+                          onChange={(e) => setPlayerNumber(e.target.value)}
+                          placeholder={
+                            selectedSport === 'soccer' ? '10' :
+                            selectedSport === 'basketball' ? '23' :
+                            selectedSport === 'nfl' ? '12' : '00'
+                          }
+                          className={`w-full p-3 rounded-lg bg-primary/20 border text-white placeholder:text-gray-500 ${
+                            selectedView === 'back' && !playerNumber.trim() 
+                              ? 'border-accent/50' 
+                              : 'border-secondary/30'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                    
+                    <p className="text-xs text-white mt-2">
+                      {selectedView === 'back' 
+                        ? '⚡ Required fields for back view jersey generation'
+                        : '💡 These will be added to the generated jersey back'
+                      }
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Model Selection */}
-          <div className="cyber-card border-secondary/30 p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Modelo Vision</h3>
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value)}
-              className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-secondary"
-            >
-              <option value="openai/gpt-4o-mini">GPT-4o Mini (Recomendado)</option>
-              <option value="openai/gpt-4o">GPT-4o (Premium)</option>
-              <option value="meta-llama/llama-3.2-11b-vision-instruct">Llama 3.2 Vision</option>
-              <option value="qwen/qwen-2-vl-72b-instruct">Qwen 2 VL</option>
-            </select>
-          </div>
-
-          {/* Analyze Button */}
+          {/* Generate Button */}
           <button
-            onClick={analyzeImage}
-            disabled={!canAnalyze || isAnalyzing}
+            onClick={generateImageWithAnalysis}
+            disabled={!canAnalyze || isGenerating || (selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()))}
             className={`w-full cyber-button p-4 flex items-center justify-center gap-3 text-lg font-semibold transition-all ${
-              canAnalyze && !isAnalyzing
+              canAnalyze && !isGenerating && (selectedView !== 'back' || (playerName.trim() && playerNumber.trim()))
                 ? 'bg-accent text-white border-accent hover:bg-accent/80'
                 : 'bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed'
             }`}
           >
-            {isAnalyzing ? (
+            {isGenerating ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Analisando com {selectedModel.split('/')[1]}...
+                Processing Vision Test...
               </>
             ) : !uploadedFile ? (
               <>
                 <Upload className="w-5 h-5" />
-                Faça upload de uma imagem primeiro
+                Upload an image first
               </>
-            ) : !analysisPrompt.trim() ? (
+            ) : selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()) ? (
               <>
-                <Brain className="w-5 h-5" />
-                Adicione um prompt de análise
+                <Zap className="w-5 h-5" />
+                Add Player Details First
               </>
             ) : (
               <>
-                <Eye className="w-5 h-5" />
-                Analisar Imagem com IA
+                <Zap className="w-5 h-5" />
+                Generate Custom Jersey
               </>
             )}
           </button>
@@ -553,7 +725,7 @@ export default function VisionTestEditor() {
             <div className="bg-green-500/10 border border-green-500/30 p-3 rounded-lg">
               <p className="text-green-400 text-sm flex items-center gap-2">
                 <Check className="w-4 h-4" />
-                Imagem carregada: {uploadedFile.name}
+                Image loaded: {uploadedFile.name}
               </p>
             </div>
           )}
@@ -567,28 +739,28 @@ export default function VisionTestEditor() {
             <div className="cyber-card border-secondary/30 p-6">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Brain className="w-5 h-5" />
-                Resultado da Análise
+                Analysis Results
               </h3>
               
               {analysisResult.success ? (
                 <div className="space-y-4">
                   <div className="bg-primary/10 p-4 rounded-lg border border-secondary/20 max-h-64 overflow-y-auto">
-                    <p className="text-secondary whitespace-pre-wrap text-sm leading-relaxed">
+                    <p className="text-white whitespace-pre-wrap text-sm leading-relaxed">
                       {analysisResult.analysis}
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-between text-sm text-gray-400">
-                    <span>Modelo: {analysisResult.model_used}</span>
+                  <div className="flex items-center justify-between text-sm text-white">
+                    <span>Model: {analysisResult.model_used}</span>
                     {analysisResult.cost_estimate && (
-                      <span>Custo: ${analysisResult.cost_estimate.toFixed(3)}</span>
+                      <span>Cost: ${analysisResult.cost_estimate.toFixed(3)}</span>
                     )}
                   </div>
                 </div>
               ) : (
                 <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
                   <p className="text-red-400">
-                    Erro: {analysisResult.error}
+                    Error: {analysisResult.error}
                   </p>
                 </div>
               )}
@@ -600,59 +772,64 @@ export default function VisionTestEditor() {
             <div className="cyber-card border-secondary/30 p-6">
               <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                Prompt para Geração
+                Generation Prompt
               </h3>
               
               <div className="space-y-4">
                 <div className="bg-primary/10 p-3 rounded-lg border border-secondary/20">
-                  <p className="text-xs text-gray-400 mb-2">📝 Análise completa:</p>
-                  <p className="text-secondary text-xs leading-relaxed max-h-20 overflow-y-auto">
+                  <p className="text-xs text-white mb-2">📝 Complete analysis:</p>
+                  <p className="text-white text-xs leading-relaxed max-h-20 overflow-y-auto">
                     {analysisResult.analysis?.substring(0, 200)}...
                   </p>
                 </div>
                 
                 <div>
-                  <label className="text-sm text-secondary mb-2 block">
-                    Prompt para DALL-E 3 (edite conforme necessário):
+                  <label className="text-sm text-white mb-2 block">
+                    DALL-E 3 prompt (edit as needed):
                   </label>
                   <textarea
                     value={generationPrompt}
                     onChange={(e) => setGenerationPrompt(e.target.value)}
-                    placeholder="Descreva como você quer que a DALL-E 3 recrie/modifique sua imagem... (Ex: 'Uma maçã azul com as mesmas características')"
-                    className="w-full p-4 rounded-lg bg-primary/20 border border-secondary/30 text-secondary resize-none h-32 text-sm"
+                    placeholder="Describe how you want DALL-E 3 to recreate/modify your image... (e.g., 'A blue apple with the same characteristics')"
+                    className="w-full p-4 rounded-lg bg-primary/20 border border-secondary/30 text-white resize-none h-32 text-sm"
                   />
-                  <p className="text-xs text-gray-400 mt-2">
-                    💡 Dica: Use palavras como "alta qualidade", "detalhado", "profissional", "4K"
+                  <p className="text-xs text-white mt-2">
+                    💡 Tip: Use words like "high quality", "detailed", "professional", "4K"
                   </p>
                 </div>
                 
                 <select
                   value={quality}
                   onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
-                  className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-secondary"
+                  className="w-full p-3 rounded-lg bg-primary/20 border border-secondary/30 text-white"
                 >
                   <option value="standard">Standard Quality ($0.04)</option>
                   <option value="hd">HD Quality ($0.08)</option>
                 </select>
 
                 <button
-                  onClick={generateImprovedImage}
-                  disabled={!canGenerate || isGenerating}
+                  onClick={generateImageWithAnalysis}
+                  disabled={!canGenerate || isGenerating || (selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()))}
                   className={`w-full cyber-button p-4 flex items-center justify-center gap-3 text-lg font-semibold transition-all ${
-                    canGenerate && !isGenerating
-                      ? 'bg-blue-600 text-white border-blue-600 hover:bg-blue-700'
+                    canGenerate && !isGenerating && (selectedView !== 'back' || (playerName.trim() && playerNumber.trim()))
+                      ? 'bg-accent text-white border-accent hover:bg-accent/80'
                       : 'bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed'
                   }`}
                 >
                   {isGenerating ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Gerando com DALL-E 3...
+                      Generating with DALL-E 3...
+                    </>
+                  ) : selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()) ? (
+                    <>
+                      <Zap className="w-5 h-5" />
+                      Add Player Details First
                     </>
                   ) : (
                     <>
                       <Zap className="w-5 h-5" />
-                      Gerar Imagem Personalizada
+                      Generate Custom Jersey
                     </>
                   )}
                 </button>
@@ -664,59 +841,103 @@ export default function VisionTestEditor() {
         {/* Right Panel - Preview & Mint */}
         <div className="lg:col-span-1 space-y-6">
           
-          {/* Original Image Preview */}
-          {imagePreview && (
-            <div className="cyber-card border-secondary/30 p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Upload className="w-5 h-5" />
-                Imagem Original
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-secondary/30">
-                  <Image
-                    src={imagePreview}
-                    alt="Original"
-                    fill
-                    className="object-cover"
-                  />
+          {/* Vision Test Preview Card */}
+          <div>
+            <div className="p-8 lg:p-4">
+              <div className="flex justify-center h-[80vh]">
+                <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
+                  background: 'linear-gradient(135deg, #050505 0%, #0E0D0D 50%, #191919 100%)',
+                  border: '2px solid rgba(156, 163, 175, 0.3)'
+                }}>
+                  
+                  {/* Loading state for analysis */}
+                  {isGenerating && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                      <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
+                      <p className="text-cyan-400 text-2xl font-semibold">Generating with DALL-E 3...</p>
+                      <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+                        <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Error state */}
+                  {error && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                      <div className="text-center">
+                        <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
+                          <span className="text-red-400 text-4xl">⚠</span>
+                        </div>
+                        <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
+                        <button 
+                          onClick={() => setError(null)}
+                          className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
+                        >
+                          Try again
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Generated image display */}
+                  {generatedImage && !isGenerating && !error && (
+                    <div className="absolute inset-0 p-6 lg:p-3">
+                      <Image src={generatedImage} alt="Generated Vision Test" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
+                      <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
+                      <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                      
+                      <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
+                        <div className="text-white">
+                          <p className="font-bold text-2xl lg:text-lg">Vision AI Generated</p>
+                          <p className="text-cyan-400 text-lg lg:text-sm">DALL-E 3 + GPT-4 Vision</p>
+                          <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
+                            <span className="text-sm lg:text-xs text-white">Model: {selectedModel.split('/')[1]}</span>
+                            {generationCost && (
+                              <span className="text-sm lg:text-xs text-white">Cost: ${generationCost.toFixed(3)}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Original image preview */}
+                  {imagePreview && !generatedImage && !isGenerating && !error && (
+                    <div className="absolute inset-0 p-6 lg:p-3">
+                      <Image src={imagePreview} alt="Original Uploaded" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
+                      <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-gray-400/30 pointer-events-none"></div>
+                      
+                      <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
+                        <div className="text-white">
+                          <p className="font-bold text-2xl lg:text-lg">Original Image</p>
+                          <p className="text-white text-lg lg:text-sm">{uploadedFile?.name}</p>
+                          <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
+                            <span className="text-sm lg:text-xs text-white">Ready for analysis</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Empty state */}
+                  {!imagePreview && !generatedImage && !isGenerating && !error && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
+                      <div className="text-center">
+                        <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
+                          <div className="text-center">
+                            <Eye className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
+                            <p className="text-sm lg:text-xs text-white">Vision Test</p>
+                          </div>
+                        </div>
+                        <p className="text-white text-lg lg:text-sm">Your vision test results will appear here</p>
+                        <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Upload → Analyze → Generate</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                
-                {uploadedFile && (
-                  <p className="text-sm text-gray-400 text-center">
-                    {uploadedFile.name}
-                  </p>
-                )}
               </div>
             </div>
-          )}
-          
-          {/* Generated Image Preview */}
-          {generatedImage && (
-            <div className="cyber-card border-secondary/30 p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <FileImage className="w-5 h-5" />
-                Imagem Gerada
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="relative w-full aspect-square rounded-lg overflow-hidden border border-secondary/30">
-                  <Image
-                    src={generatedImage}
-                    alt="Generated"
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                
-                {generationCost && (
-                  <p className="text-sm text-gray-400 text-center">
-                    Custo: ${generationCost.toFixed(3)}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
+          </div>
 
           {/* Mint Actions */}
           {generatedImage && (
@@ -778,7 +999,7 @@ export default function VisionTestEditor() {
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 text-sm underline"
                       >
-                        Ver Transação
+                        View Transaction
                       </a>
                     )}
                   </div>
@@ -788,11 +1009,11 @@ export default function VisionTestEditor() {
           )}
 
           {/* Error Display */}
-          {(error || mintError || ipfsError) && (
+          {(mintError || ipfsError) && (
             <div className="bg-red-500/10 border border-red-500/30 p-4 rounded-lg">
               <p className="text-red-400 flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4" />
-                {error || mintError || ipfsError}
+                {mintError || ipfsError}
               </p>
             </div>
           )}
@@ -852,7 +1073,7 @@ export default function VisionTestEditor() {
                   </div>
                   
                   <h4 className="text-white font-semibold mb-1">{nft.name}</h4>
-                  <p className="text-gray-400 text-sm mb-2 line-clamp-2">{nft.description}</p>
+                  <p className="text-white text-sm mb-2 line-clamp-2">{nft.description}</p>
                   <p className="text-accent font-bold">{nft.price}</p>
                 </div>
               ))}
