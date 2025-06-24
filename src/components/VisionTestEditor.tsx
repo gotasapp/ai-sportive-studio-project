@@ -392,7 +392,7 @@ export default function VisionTestEditor() {
     setIpfsError(null)
 
     try {
-      const name = `Vision Test - ${analysisPrompt}`
+      const name = `Vision Test - ${selectedSport} ${selectedView}`
       const description = `AI Vision Analysis + Generated Improvement: ${analysisResult?.analysis?.substring(0, 200)}...`
 
       const result = await IPFSService.uploadComplete(
@@ -400,7 +400,7 @@ export default function VisionTestEditor() {
         name,
         description,
         'vision-test',
-        analysisPrompt,
+        `${selectedSport}_${selectedView}_analysis`,
         'analysis',
         selectedModel
       )
@@ -435,7 +435,7 @@ export default function VisionTestEditor() {
         }
       }
 
-      const name = `Vision Test - ${analysisPrompt}`
+      const name = `Vision Test - ${selectedSport} ${selectedView}`
       const description = `AI Vision Analysis + Generated Improvement`
 
       const result = await mintGasless(
