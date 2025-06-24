@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { Home, Building2, Trophy, Shield } from 'lucide-react';
+import { Home, Building2, Trophy, Shield, Eye } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -64,7 +64,12 @@ export default function MobileBottomNav() {
       label: 'Stadium',
       isActive: pathname === '/stadiums'
     },
-
+    {
+      href: '/vision-test',
+      icon: Eye,
+      label: 'Vision',
+      isActive: pathname === '/vision-test'
+    },
     {
       href: '#',
       icon: Trophy,

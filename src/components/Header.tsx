@@ -181,6 +181,9 @@ export default function Header() {
           <Link href="/stadiums" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
             Stadiums
           </Link>
+          <Link href="/vision-test" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
+            Vision Test
+          </Link>
           
           {/* Marketplace - Apenas título sem funcionalidade por enquanto */}
           <span className="font-display text-nav-purple" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>

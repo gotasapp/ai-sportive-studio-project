@@ -1024,7 +1024,7 @@ export default function StadiumEditor() {
             </div>
 
             {generatedImage && (
-              <div className="bg-black border border-white/20 rounded-lg">
+              <div className="bg-black border border-white/20 rounded-lg hidden">
                 <div className="bg-black p-4 md:p-6">
                   <div className="p-4 rounded-lg border border-green-400/20 bg-green-500/5">
                     <div className="flex items-center justify-between mb-3">
