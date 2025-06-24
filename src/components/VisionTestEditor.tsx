@@ -44,8 +44,8 @@ const styleOptions = [
 ]
 
 const visionModels = [
-  { id: 'openrouter/gpt-4o-mini', name: 'GPT-4O Mini', cost: '~$0.01' },
-  { id: 'openrouter/gpt-4o', name: 'GPT-4O', cost: '~$0.03' },
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4O Mini', cost: '~$0.01' },
+  { id: 'openai/gpt-4o', name: 'GPT-4O', cost: '~$0.03' },
   { id: 'meta-llama/llama-3.2-11b-vision-instruct', name: 'Llama 3.2 Vision', cost: '~$0.02' },
   { id: 'qwen/qwen-2-vl-72b-instruct', name: 'Qwen 2 VL', cost: '~$0.025' },
   { id: 'google/gemini-pro-vision', name: 'Gemini Pro Vision', cost: '~$0.02' }
@@ -78,8 +78,7 @@ export default function VisionTestEditor() {
   } = useEngine()
 
   // Vision Test specific state
-  const [analysisPrompt, setAnalysisPrompt] = useState<string>('')
-  const [selectedModel, setSelectedModel] = useState<string>('openrouter/gpt-4o-mini')
+  const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-4o-mini')
   const [selectedSport, setSelectedSport] = useState('soccer')
   const [selectedView, setSelectedView] = useState('back')
   const [selectedStyle, setSelectedStyle] = useState('classic')
@@ -99,7 +98,6 @@ export default function VisionTestEditor() {
   // Generation state
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [generationPrompt, setGenerationPrompt] = useState<string>('')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
   const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
   const [generationCost, setGenerationCost] = useState<number | null>(null)
@@ -148,8 +146,7 @@ export default function VisionTestEditor() {
   }, [selectedView])
   
   // Conditions for vision test
-  const canAnalyze = uploadedFile && imageBase64 && analysisPrompt.trim()
-  const canGenerate = analysisResult?.success && generationPrompt.trim()
+  const canAnalyze = uploadedFile && imageBase64
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
   const canMintGasless = generatedImage && analysisResult && isUserAdmin
 
@@ -230,10 +227,65 @@ export default function VisionTestEditor() {
     setError(null)
 
     try {
-      // Step 1: Auto-analyze the uploaded image
-      console.log('🔍 Auto-analyzing image with Vision AI...')
+      // Step 1: Auto-analyze the uploaded image with sport-specific prompt
+      console.log(`🔍 Auto-analyzing ${selectedSport} jersey (${selectedView} view) with Vision AI...`)
       setAnalysisResult({ success: false, analysis: 'Analyzing...', cost_estimate: 0, model_used: selectedModel })
       
+      // Get the specific structured analysis prompt for this sport and view
+      console.log('📋 [VISION TEST] Requesting structured analysis prompt:', {
+        sport: selectedSport,
+        view: selectedView,
+        timestamp: new Date().toISOString()
+      })
+      
+      const analysisPromptResponse = await fetch('/api/vision-prompts/analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sport: selectedSport,
+          view: selectedView
+        }),
+      })
+
+      let specificAnalysisPrompt = `Analyze this ${selectedSport} jersey image and return a JSON object with colors, pattern, fabric, style, and design details.`
+      
+      if (analysisPromptResponse.ok) {
+        const promptData = await analysisPromptResponse.json()
+        console.log('📊 [VISION TEST] Analysis prompt response:', {
+          success: promptData.success,
+          type: promptData.metadata?.type,
+          promptLength: promptData.metadata?.prompt_length,
+          sport: promptData.metadata?.sport,
+          view: promptData.metadata?.view
+        })
+        
+        if (promptData.success && promptData.analysis_prompt) {
+          specificAnalysisPrompt = promptData.analysis_prompt
+          console.log('✅ [VISION TEST] Using structured JSON analysis prompt')
+          console.log('📝 [VISION TEST] Prompt preview:', specificAnalysisPrompt.substring(0, 200) + '...')
+        }
+      } else {
+        console.log('⚠️ [VISION TEST] Failed to get structured prompt, using fallback')
+        console.log('❌ [VISION TEST] Prompt response error:', analysisPromptResponse.status)
+      }
+      
+      // Validate base64 before sending
+      if (!imageBase64 || !imageBase64.startsWith('data:image/')) {
+        throw new Error('Invalid image data. Please upload a valid image file.')
+      }
+      
+      console.log('📤 [VISION TEST] Sending to Vision API:', {
+        model: selectedModel,
+        promptLength: specificAnalysisPrompt.length,
+        imageFormat: imageBase64.substring(0, 30) + '...',
+        imageSize: imageBase64.length,
+        isStructuredPrompt: specificAnalysisPrompt.includes('return ONLY a valid JSON object'),
+        sport: selectedSport,
+        view: selectedView
+      })
+
       const analysisResponse = await fetch('/api/vision-test', {
         method: 'POST',
         headers: {
@@ -241,7 +293,7 @@ export default function VisionTestEditor() {
         },
         body: JSON.stringify({
           image_base64: imageBase64,
-          prompt: `Analyze this ${selectedSport} jersey image. Describe the colors, design patterns, textures, style elements, and overall visual characteristics. Focus on details that would help recreate a similar jersey design.`,
+          prompt: specificAnalysisPrompt,
           model: selectedModel
         }),
       })
@@ -295,51 +347,27 @@ export default function VisionTestEditor() {
       console.log('📋 Player details:', playerName ? `${playerName} #${playerNumber}` : 'No player data')
       console.log('🎯 Final combined prompt ready')
 
-      // Step 4: Generate new image with DALL-E
-      const generateResponse = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: finalPrompt,
-          quality: quality,
-          type: 'vision-test',
-          metadata: {
-            sport: selectedSport,
-            view: selectedView,
-            style: selectedStyle,
-            playerName: playerName || null,
-            playerNumber: playerNumber || null,
-            promptMetadata: promptData.metadata
-          }
-        }),
-      })
+      // Step 4: Generate new image using backend API with OPENAI_API_KEY
+      console.log('🎨 [VISION TEST] Generating via backend API...')
+      
+      const result = await VisionTestService.generateImage(finalPrompt)
 
-      if (!generateResponse.ok) {
-        throw new Error(`Generation failed! Status: ${generateResponse.status}`)
+      console.log('✅ [VISION TEST] Backend API generation completed!')
+
+      setGeneratedImage(`data:image/png;base64,${result.image_base64}`)
+      setGenerationCost((analysisResult.cost_estimate || 0) + (result.cost_usd || 0))
+      console.log('✅ Complete Vision Test flow completed successfully!')
+      
+      // Convert to blob for minting
+      const base64Data = result.image_base64
+      const byteCharacters = atob(base64Data)
+      const byteNumbers = new Array(byteCharacters.length)
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i)
       }
-
-      const result = await generateResponse.json()
-
-      if (result.success && result.image_base64) {
-        setGeneratedImage(`data:image/png;base64,${result.image_base64}`)
-        setGenerationCost((analysisResult.cost_estimate || 0) + (result.cost_usd || 0))
-        console.log('✅ Complete Vision Test flow completed successfully!')
-        
-        // Convert to blob for minting
-        const base64Data = result.image_base64
-        const byteCharacters = atob(base64Data)
-        const byteNumbers = new Array(byteCharacters.length)
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i)
-        }
-        const byteArray = new Uint8Array(byteNumbers)
-        const blob = new Blob([byteArray], { type: 'image/png' })
-        setGeneratedImageBlob(blob)
-      } else {
-        throw new Error(result.error || 'Image generation failed')
-      }
+      const byteArray = new Uint8Array(byteNumbers)
+      const blob = new Blob([byteArray], { type: 'image/png' })
+      setGeneratedImageBlob(blob)
     } catch (error: any) {
       console.error('❌ Vision Test flow error:', error)
       setError(error instanceof Error ? error.message : 'Process failed')
@@ -443,8 +471,6 @@ export default function VisionTestEditor() {
     setAnalysisResult(null)
     setGeneratedImage(null)
     setGeneratedImageBlob(null)
-    setAnalysisPrompt('')
-    setGenerationPrompt('')
     setError(null)
     setIpfsUrl(null)
     setIpfsError(null)
@@ -767,37 +793,18 @@ export default function VisionTestEditor() {
             </div>
           )}
 
-          {/* Generation Prompt */}
-          {analysisResult?.success && (
-            <div className="cyber-card border-secondary/30 p-6">
-              <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-                <Zap className="w-5 h-5" />
-                Generation Prompt
-              </h3>
-              
-              <div className="space-y-4">
-                <div className="bg-primary/10 p-3 rounded-lg border border-secondary/20">
-                  <p className="text-xs text-white mb-2">📝 Complete analysis:</p>
-                  <p className="text-white text-xs leading-relaxed max-h-20 overflow-y-auto">
-                    {analysisResult.analysis?.substring(0, 200)}...
-                  </p>
-                </div>
-                
-                <div>
-                  <label className="text-sm text-white mb-2 block">
-                    DALL-E 3 prompt (edit as needed):
-                  </label>
-                  <textarea
-                    value={generationPrompt}
-                    onChange={(e) => setGenerationPrompt(e.target.value)}
-                    placeholder="Describe how you want DALL-E 3 to recreate/modify your image... (e.g., 'A blue apple with the same characteristics')"
-                    className="w-full p-4 rounded-lg bg-primary/20 border border-secondary/30 text-white resize-none h-32 text-sm"
-                  />
-                  <p className="text-xs text-white mt-2">
-                    💡 Tip: Use words like "high quality", "detailed", "professional", "4K"
-                  </p>
-                </div>
-                
+          {/* Quality Settings */}
+          <div className="cyber-card border-secondary/30 p-6">
+            <h3 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <Zap className="w-5 h-5" />
+              Generation Settings
+            </h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-white mb-2 block">
+                  Image Quality:
+                </label>
                 <select
                   value={quality}
                   onChange={(e) => setQuality(e.target.value as 'standard' | 'hd')}
@@ -806,36 +813,12 @@ export default function VisionTestEditor() {
                   <option value="standard">Standard Quality ($0.04)</option>
                   <option value="hd">HD Quality ($0.08)</option>
                 </select>
-
-                <button
-                  onClick={generateImageWithAnalysis}
-                  disabled={!canGenerate || isGenerating || (selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()))}
-                  className={`w-full cyber-button p-4 flex items-center justify-center gap-3 text-lg font-semibold transition-all ${
-                    canGenerate && !isGenerating && (selectedView !== 'back' || (playerName.trim() && playerNumber.trim()))
-                      ? 'bg-accent text-white border-accent hover:bg-accent/80'
-                      : 'bg-gray-600 text-gray-400 border-gray-600 cursor-not-allowed'
-                  }`}
-                >
-                  {isGenerating ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Generating with DALL-E 3...
-                    </>
-                  ) : selectedView === 'back' && (!playerName.trim() || !playerNumber.trim()) ? (
-                    <>
-                      <Zap className="w-5 h-5" />
-                      Add Player Details First
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-5 h-5" />
-                      Generate Custom Jersey
-                    </>
-                  )}
-                </button>
+                <p className="text-xs text-white mt-2">
+                  💡 HD quality provides better detail and resolution
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Right Panel - Preview & Mint */}

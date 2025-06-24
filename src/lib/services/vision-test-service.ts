@@ -64,11 +64,25 @@ export const VisionTestService = {
       
       reader.onload = () => {
         const result = reader.result as string;
-        // Remove o prefixo data:image/...;base64, para obter apenas o base64
-        const base64 = result.split(',')[1];
+        
+        // Valida se o resultado é válido
+        if (!result || !result.includes(',')) {
+          reject(new Error('Invalid file format'));
+          return;
+        }
+        
+        // Envia o base64 completo com prefixo (data:image/...;base64,...)
+        // O backend Python já trata isso corretamente
+        const base64Complete = result;
+        
+        console.log('✅ File processed:', {
+          size: file.size,
+          type: file.type,
+          base64Length: base64Complete.length
+        });
         
         resolve({
-          base64: base64,
+          base64: base64Complete,
           preview: result // Para preview mantém o formato completo
         });
       };
@@ -91,6 +105,47 @@ export const VisionTestService = {
     } catch (error) {
       console.error("Vision API health check failed:", error);
       return false;
+    }
+  },
+
+  generateImage: async (prompt: string): Promise<{ image_base64: string; cost_usd: number }> => {
+    try {
+      console.log('🎨 [VISION TEST SERVICE] Starting image generation...');
+      console.log('📝 [VISION TEST SERVICE] Prompt length:', prompt.length);
+
+      const response = await fetch('/api/vision-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt,
+          quality: 'standard'
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Generation failed');
+      }
+
+      console.log('✅ [VISION TEST SERVICE] Generation successful');
+      console.log('💰 [VISION TEST SERVICE] Cost:', result.cost_usd);
+
+      return {
+        image_base64: result.image_base64,
+        cost_usd: result.cost_usd
+      };
+
+    } catch (error) {
+      console.error('❌ [VISION TEST SERVICE] Generation error:', error);
+      throw error;
     }
   }
 }; 
