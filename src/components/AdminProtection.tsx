@@ -65,12 +65,10 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
 
     return () => clearTimeout(timer);
 
-  }, [account?.address]);
+  }, [account]);
 
   if (status === 'loading') {
-    // Se não há conta, o Header mostra o botão de conectar. Não mostramos nada aqui para evitar layout shift.
-    // Apenas mostramos o loading se uma conta estiver presente e estivermos verificando.
-    return account?.address ? <LoadingComponent /> : null;
+    return <LoadingComponent />;
   }
 
   if (status === 'denied') {

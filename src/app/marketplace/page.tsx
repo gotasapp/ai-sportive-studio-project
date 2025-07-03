@@ -5,24 +5,18 @@ import Header from '@/components/Header';
 import FeaturedCarousel from '@/components/marketplace/FeaturedCarousel';
 import RankingsTable from '@/components/marketplace/RankingsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
-import { Filter, Search, LayoutGrid, List } from 'lucide-react';
+import { Filter, Search } from 'lucide-react';
 
-// Tipos de dados
+// Tipos de dados, o do DB é um pouco diferente
 interface NFT {
+  _id?: string; // ID do MongoDB é opcional
   name: string;
-  image_url: string;
-  description: string;
-  price: string;
-  category?: 'jersey' | 'stadium' | 'badge';
-  collection: string; 
-}
-
-interface MarketplaceData {
-  marketplace_nfts: {
-    jerseys: NFT[];
-    stadiums: NFT[];
-    badges: NFT[];
-  };
+  imageUrl: string; // no DB é imageUrl
+  description?: string; // Opcional no DB
+  price?: string; // Virá do contrato/engine no futuro
+  category: 'jersey' | 'stadium' | 'badge';
+  collection?: string;
+  creator?: { wallet: string; name: string };
 }
 
 export default function MarketplacePage() {
@@ -30,24 +24,48 @@ export default function MarketplacePage() {
   const [filteredNfts, setFilteredNfts] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'jerseys' | 'stadiums' | 'badges'>('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // 'grid' is default now
   
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        const response = await fetch('/marketplace-images.json');
-        const data: MarketplaceData = await response.json();
-        
-        const jerseys = data.marketplace_nfts.jerseys.map(n => ({ ...n, category: 'jersey' as const, collection: n.collection || 'Official Jerseys' }));
-        const stadiums = data.marketplace_nfts.stadiums.map(n => ({ ...n, category: 'stadium' as const, collection: n.collection || 'World Stadiums' }));
-        const badges = data.marketplace_nfts.badges.map(n => ({ ...n, category: 'badge' as const, collection: n.collection || 'Champion Badges'}));
+        // 1. Buscar Jerseys dinâmicas da nossa API
+        const jerseysResponse = await fetch('/api/jerseys');
+        if (!jerseysResponse.ok) {
+            console.error('Failed to fetch dynamic jerseys');
+            throw new Error('API Error for Jerseys');
+        }
+        const dynamicJerseys: NFT[] = await jerseysResponse.json();
 
-        const combined = [...jerseys, ...stadiums, ...badges];
+        // 2. Buscar dados estáticos para estádios e emblemas
+        const staticResponse = await fetch('/marketplace-images.json');
+        const staticData = await staticResponse.json();
+        
+        const stadiums: NFT[] = staticData.marketplace_nfts.stadiums.map((n: any) => ({ ...n, category: 'stadium' as const, collection: n.collection || 'World Stadiums' }));
+        const badges: NFT[] = staticData.marketplace_nfts.badges.map((n: any) => ({ ...n, category: 'badge' as const, collection: n.collection || 'Champion Badges'}));
+        
+        // Adiciona a categoria 'jersey' aos itens vindo do DB
+        const categorizedJerseys = dynamicJerseys.map(j => ({ ...j, category: 'jersey' as const, price: '0.05 CHZ' }));
+
+        // 3. Combinar tudo
+        const combined = [...categorizedJerseys, ...stadiums, ...badges];
         setAllNfts(combined);
         setFilteredNfts(combined);
+
       } catch (error) {
         console.error('Erro ao carregar dados do marketplace:', error);
+        // Fallback para dados estáticos em caso de erro na API
+        const staticResponse = await fetch('/marketplace-images.json').catch(() => null);
+        if (staticResponse) {
+          const staticData = await staticResponse.json();
+          const jerseys = staticData.marketplace_nfts.jerseys.map((n: any) => ({ ...n, category: 'jersey' as const, collection: n.collection || 'Official Jerseys' }));
+          const stadiums = staticData.marketplace_nfts.stadiums.map((n: any) => ({ ...n, category: 'stadium' as const, collection: n.collection || 'World Stadiums' }));
+          const badges = staticData.marketplace_nfts.badges.map((n: any) => ({ ...n, category: 'badge' as const, collection: n.collection || 'Champion Badges'}));
+          const combined = [...jerseys, ...stadiums, ...badges];
+          setAllNfts(combined);
+          setFilteredNfts(combined);
+        }
+
       } finally {
         setLoading(false);
       }
@@ -70,13 +88,10 @@ export default function MarketplacePage() {
       
       <div className="container mx-auto px-4 md:px-6 py-8 space-y-12">
         
-        {/* Carrossel de Destaque */}
         <FeaturedCarousel />
         
-        {/* Tabela de Rankings */}
         <RankingsTable />
 
-        {/* Header da Galeria e Filtros */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <h2 className="text-3xl font-bold text-white">Explore NFTs</h2>
             <div className="flex items-center gap-2">
@@ -102,7 +117,6 @@ export default function MarketplacePage() {
             </div>
         </div>
 
-        {/* Grid de NFTs */}
         {loading ? (
              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {Array.from({ length: 8 }).map((_, i) => (
@@ -111,13 +125,13 @@ export default function MarketplacePage() {
              </div>
         ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredNfts.map((nft, index) => (
+                {filteredNfts.map((nft) => (
                     <MarketplaceCard 
-                        key={`${nft.name}-${index}`}
+                        key={nft._id || nft.name} // Usa o _id do DB se existir
                         name={nft.name}
-                        imageUrl={nft.image_url}
-                        price={nft.price}
-                        collection={nft.collection}
+                        imageUrl={nft.imageUrl} // Campo correto do DB
+                        price={nft.price || 'Not for sale'}
+                        collection={nft.collection || (nft.creator ? `Created by ${nft.creator.name}` : 'User Creations')}
                         category={nft.category}
                     />
                 ))}
@@ -126,4 +140,4 @@ export default function MarketplacePage() {
       </div>
     </main>
   );
-} 
+}

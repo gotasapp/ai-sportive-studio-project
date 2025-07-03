@@ -61,4 +61,22 @@ export async function POST(request: Request) {
     console.error('Error creating jersey:', error);
     return NextResponse.json({ error: 'Failed to create jersey' }, { status: 500 });
   }
+}
+
+// GET handler para buscar todas as Jerseys aprovadas
+export async function GET() {
+  try {
+    if (!jerseys) await init();
+
+    const approvedJerseys = await jerseys
+      .find({ status: 'Approved' })
+      .sort({ createdAt: -1 }) // Ordenar pelas mais recentes primeiro
+      .toArray();
+
+    return NextResponse.json(approvedJerseys);
+
+  } catch (error) {
+    console.error('Error fetching jerseys:', error);
+    return NextResponse.json({ error: 'Failed to fetch jerseys' }, { status: 500 });
+  }
 } 
