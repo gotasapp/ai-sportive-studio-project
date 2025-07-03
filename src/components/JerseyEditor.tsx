@@ -91,6 +91,11 @@ export default function JerseyEditor() {
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
+  // Save to DB state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
   // Marketplace state
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
@@ -284,50 +289,95 @@ export default function JerseyEditor() {
   }
 
   const generateContent = async () => {
-    if (!selectedTeam) {
-      setError('Please select a team')
-      return
-    }
-    if (!playerName || !playerNumber) {
-      setError('Please fill in the player name and number')
-      return
-    }
-    if (isConnected && !isOnSupportedChain) {
-      setError('Please switch to a supported network (CHZ or Polygon)')
-      return
-    }
-
+    resetError()
     setIsLoading(true)
-    setError(null)
-    setGenerationCost(null)
+    setGeneratedImage(null)
+    setGeneratedImageBlob(null)
+    setIpfsUrl(null)
+    setMintSuccess(null)
+    setMintError(null)
+    setSaveSuccess(null)
+    setSaveError(null)
+
+    if (!selectedTeam) {
+      setError('Please select a team.')
+      setIsLoading(false)
+      return
+    }
 
     try {
-      const request: ImageGenerationRequest = {
-        model_id: `${selectedTeam.toLowerCase()}_${selectedStyle}`,
-        team: selectedTeam,
+      const request = {
+        model_id: selectedTeam,
         player_name: playerName,
         player_number: playerNumber,
-        quality: quality
+        quality: quality,
       };
-
-      const result = await Dalle3Service.generateImageFromApi(request);
       
-      if (result.success && result.imageUrl && result.imageBlob) {
-        setGeneratedImage(result.imageUrl);
-        setGeneratedImageBlob(result.imageBlob);
-        setGenerationCost(result.cost || null);
+      console.log('Generating image with request data:', request)
+      const result = await Dalle3Service.generateImage(request)
+      console.log('DALL-E 3 Result:', result)
+      
+      if (result.error) {
+        throw new Error(result.error)
+      }
+      
+      if (result.image_base64) {
+        const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
+        setGeneratedImage(imageUrl);
+
+        const blob = await (await fetch(imageUrl)).blob();
+        setGeneratedImageBlob(blob);
+
+        setIsSaving(true);
+        try {
+          const jerseyName = `${selectedTeam} ${playerName} #${playerNumber}`
+          const dbPrompt = `AI-generated jersey for ${selectedTeam}, player ${playerName} #${playerNumber}, style: ${selectedStyle}.`
+
+          const creationData = {
+            name: jerseyName,
+            prompt: dbPrompt,
+            imageUrl: imageUrl,
+            creatorWallet: address,
+            tags: [selectedTeam, selectedStyle],
+          };
+
+          const response = await fetch('/api/jerseys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(creationData),
+          });
+
+          const responseData = await response.json();
+
+          if (!response.ok) {
+            throw new Error(responseData.error || 'Failed to save jersey.');
+          }
+          
+          setSaveSuccess('Jersey created! It is now available in the marketplace.');
+          console.log('Jersey saved to DB:', responseData);
+
+        } catch (dbError: any) {
+          console.error('Database save error:', dbError);
+          setSaveError(dbError.message || 'An error occurred while saving.');
+        } finally {
+          setIsSaving(false);
+        }
+
       } else {
-        setError(result.error || 'Unknown error during generation');
+        throw new Error('Image generation failed, no image data returned from API.')
       }
     } catch (err: any) {
-      console.error('Error generating content:', err);
-      setError('Error connecting to the API. Please check if the server is running.');
+      console.error('Generation failed:', err)
+      setError(err.message || 'An unexpected error occurred.')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
   }
 
-  const resetError = () => setError(null);
+  const resetError = () => {
+    setError(null);
+    setSaveError(null);
+  }
 
   useEffect(() => {
     const loadTeams = async () => {

@@ -1,299 +1,116 @@
-# 🏆⚽ AI Sports NFT Generator - CHZ Platform
+# 🏆 CHZ Fan Token Studio
 
-Uma plataforma completa de geração de NFTs esportivos alimentada por IA, construída com Next.js, Python FastAPI e integração blockchain. Especializada em criar camisas de futebol, estádios e logos personalizados para times de futebol.
-
----
-
-## 🎉 **MILESTONE 2 COMPLETADO COM SUCESSO!**
-
-✅ **Sistema Completo Operacional** - Geração de IA + Mint NFT funcionando perfeitamente  
-✅ **Engine Mint (Gasless)** - Sistema gasless via Thirdweb Engine  
-✅ **Legacy Mint** - Sistema tradicional (usuário paga gás)  
-✅ **Stadium Generator** - Geração completa de estádios com DALL-E 3  
-✅ **Web3 Integration** - Thirdweb v5 + Engine API + Reown AppKit  
-✅ **IPFS System** - Upload automático funcional  
-✅ **Admin Panel** - Interface completa implementada  
-✅ **Marketplace Visual** - Galeria de NFTs funcionando  
+**CHZ Fan Token Studio** é uma plataforma de ponta para a criação de colecionáveis digitais (NFTs) esportivos, utilizando inteligência artificial para gerar camisas de futebol, estádios e logos únicos e de alta qualidade. Construído sobre a robusta infraestrutura da Chiliz Chain, o projeto visa engajar fãs de esportes e criadores de conteúdo no ecossistema Web3.
 
 ---
 
-## 📊 **Status Atual - Janeiro 2025**
+## 📊 Status do Projeto (Julho 2024)
 
-### 🟢 **Funcionalidades Operacionais:**
-- **🎨 Jersey Generator** - DALL-E 3 + customização completa
-- **🏟️ Stadium Generator** - GPT-4 Vision + DALL-E 3 
-- **⛽ Gasless Minting** - Engine gasless transactions
-- **🔗 Web3 Integration** - Reown AppKit + multi-chain
-- **📱 Mobile Experience** - Navigation otimizada com auto-hide
-- **🛡️ Admin System** - Login por wallet + email/social
-- **🛒 Marketplace** - Visualização de NFTs com filtros
-- **☁️ IPFS Storage** - Upload automático via Pinata
+O projeto atingiu um marco significativo de maturidade, com as principais funcionalidades de geração de NFTs e o painel de administração totalmente operacionais e migrados para uma infraestrutura de banco de dados escalável.
 
-### ⚙️ **Infraestrutura:**
-- **Frontend**: Vercel (Next.js 14 + TypeScript)
-- **Backend APIs**: Render (Python FastAPI)
-- **Blockchain**: Polygon Amoy (testnet) + CHZ Chain ready
-- **AI Services**: OpenAI DALL-E 3 + GPT-4 Vision
-- **Storage**: IPFS via Pinata + Thirdweb Storage
-- **Contracts**: Thirdweb ERC-721 deployed
+-   ✅ **Geração de NFTs:** Módulos de criação de Camisas, Estádios e Badges implementados e funcionais.
+-   ✅ **Minting na Blockchain:** Integração com Thirdweb v5 e Engine para transações *gasless* na Polygon Amoy.
+-   ✅ **Painel de Admin Completo:** Todas as seções do painel de administração estão funcionais, com APIs conectadas a um banco de dados **MongoDB Atlas**.
+-   ✅ **Base de Dados Real:** O sistema abandonou os dados mock e agora utiliza MongoDB Atlas para persistir todos os dados da aplicação (usuários, NFTs, configurações, etc.).
 
 ---
 
-## 🗺️ **Roadmap de Desenvolvimento**
+## ✨ Funcionalidades Implementadas
 
-### 🔹 **Milestone 3 - Admin Integration** (EM PROGRESSO)
-**📅 Duração: 2 Semanas** | **Status: 60% Completo**
+### Para Usuários e Criadores
+-   **🎨 Gerador de Camisas:** Criação de camisas de futebol personalizadas via prompts de texto com DALL-E 3.
+-   **🏟️ Gerador de Estádios:** Geração de estádios únicos com base em imagens e estilos predefinidos.
+-   **🛡️ Gerador de Badges:** Ferramenta para criar emblemas e conquistas.
+-   **⛽ Minting Gasless:** Experiência de minting sem custos de transação para o usuário final.
+-   **🔗 Conexão Web3 Simplificada:** Conecte-se com qualquer carteira (incluindo E-mail e Social Login) via Reown AppKit.
+-   **🛒 Marketplace (Vitrine):** Uma galeria profissional para exibir os NFTs em destaque e os mais recentes, com rankings e layout inspirado nos maiores marketplaces.
 
-#### ✅ **Concluído:**
-- Interface completa do Admin Panel
-- Sistema de autenticação (wallet + email/social)
-- Dashboard com mock de analytics
-- Navegação e proteção de rotas
-- Marketplace visual funcionando
-
-#### 🔄 **Em Progresso:**
-- Conexão de APIs reais com dados do backend
-- Sistema de logs centralizados
-- Analytics em tempo real
-- Controles de qualidade de IA
-
-#### 📋 **Próximos Passos:**
-```
-1. Backend Admin APIs
-   - Endpoints de analytics (/api/admin/analytics)
-   - Sistema de logs (/api/admin/logs)
-   - Gestão de usuários (/api/admin/users)
-   - Métricas de geração (/api/admin/metrics)
-
-2. Integração Frontend-Backend
-   - Substituir mock data por APIs reais
-   - WebSocket para updates em tempo real
-   - Filtros e busca avançada
-   - Exportação de relatórios
-
-3. Controles de IA Avançados
-   - Editor de prompts visual
-   - Sistema de negative prompts
-   - Templates por time
-   - Validação de qualidade
-```
+### Para Administradores (Painel de Admin)
+-   **🔐 Acesso Seguro:** Autenticação de administradores baseada em endereço de carteira.
+-   **📈 Dashboard de Analytics:** Visão geral das principais métricas da plataforma, como total de usuários e NFTs, com dados lidos em tempo real do banco de dados.
+-   **👥 Gestão de Usuários:** Listagem e visualização de todos os usuários da plataforma.
+-   **🛍️ Gestão de Conteúdo:** Listagem e gerenciamento de todas as Camisas, Badges, Estádios e Logos criados.
+-   **🚦 Fila de Moderação:** Interface unificada para aprovar ou rejeitar conteúdo pendente gerado por usuários.
+-   **⚙️ Configurações Globais:** Interface para gerenciar configurações da aplicação, como chaves de API e feature flags, com dados persistidos no banco.
+-   **📜 Visualizador de Logs:** Acesso a logs de eventos importantes do sistema.
 
 ---
 
-### 🔹 **Milestone 4 - Logo Generator System** (PLANEJADO)
-**📅 Duração: 3 Semanas** | **Status: Planejado**
+## 🛠️ Tech Stack
 
-#### 🎯 **Objetivos:**
-- Sistema completo de geração de logos/badges
-- Biblioteca de elementos visuais oficiais
-- Integração com times licenciados
-- Compatibilidade com jerseys e stadiums
-
-#### 📋 **Entregas Planejadas:**
-```
-1. Logo Generator Core
-   - API DALL-E 3 especializada em logos
-   - Sistema de prompts otimizado
-   - Validação de qualidade automática
-   - Templates por categoria (football, generic)
-
-2. Brand Asset Library
-   - Elementos visuais oficiais dos times
-   - Sistema de combinações permitidas
-   - Proteção de marca integrada
-   - Biblioteca de referências
-
-3. Integration Layer
-   - Compatibility com Jersey Generator
-   - Stadium logo placement
-   - Unified design system
-   - Cross-generator consistency
-```
+-   **Frontend:** Next.js 14 (App Router), React, TypeScript, Tailwind CSS, Shadcn/UI, Framer Motion.
+-   **Web3:** Thirdweb v5, Reown AppKit, Ethers.js, wagmi.
+-   **Banco de Dados:** MongoDB Atlas.
+-   **IA:** DALL-E 3, GPT-4 Vision (via APIs Python/FastAPI).
+-   **Infraestrutura & Deploy:** Vercel (Frontend), Render (Backend Python), IPFS (Thirdweb Storage/Pinata).
+-   **Blockchain:** Polygon Amoy (Testnet), Chiliz Chain (Produção).
 
 ---
 
-### 🔹 **Milestone 5 - Marketplace + Drop Mechanics** (FUTURO)
-**📅 Duração: 4 Semanas** | **Status: Conceitual**
+## 🚀 Como Executar Localmente
 
-#### 🎯 **Objetivos:**
-- Marketplace funcional completo
-- Sistema de compra/venda
-- Drop mechanics avançados
-- Integração com Fan Tokens
+### 1. Pré-requisitos
+-   Node.js v18+
+-   Git
 
-#### 📋 **Funcionalidades:**
-```
-1. Marketplace Engine
-   - Thirdweb Marketplace contracts
-   - Buy/sell functionality
-   - Auction system (English & Dutch)
-   - Royalties automatizados
-
-2. Drop System
-   - Scheduled drops
-   - Claim conditions
-   - Token-gated access
-   - Fan token integration
-
-3. Creator Tools
-   - Creator dashboard
-   - Earnings tracking
-   - Drop management
-   - Analytics suite
-```
-
----
-
-## 🚀 **Como Executar Localmente**
-
-### **Pré-requisitos:**
+### 2. Setup do Projeto
 ```bash
-Node.js 18+
-Python 3.8+
-Git
-```
+# 1. Clone o repositório
+git clone <URL_DO_SEU_REPOSITORIO>
+cd CHZ-Fan-Token-Studio # ou o nome da pasta
 
-### **1. Setup Frontend:**
-```bash
-# Clone e instale dependências
-git clone <repo-url>
-cd CHZ
+# 2. Instale as dependências
 npm install
+```
 
-# Configure variáveis (.env.local)
+### 3. Variáveis de Ambiente
+```bash
+# 1. Crie uma cópia do arquivo de exemplo
 cp env.example .env.local
-# Edite .env.local com suas chaves
+
+# 2. Configure a MONGODB_URI
+#    - Crie um cluster gratuito no MongoDB Atlas.
+#    - Obtenha sua Connection String.
+#    - Adicione a variável ao .env.local:
+MONGODB_URI="sua-connection-string-do-atlas"
+
+# 3. Configure as outras chaves (Thirdweb, etc.) no .env.local
+#    - Siga as chaves presentes no env.example para um funcionamento completo.
 ```
 
-### **2. Variáveis de Ambiente Essenciais:**
-```env
-# Web3 & Blockchain
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-reown-project-id
-NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your-thirdweb-client-id
-NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET=0x7822698cE3728Ccd54e36E60c413a70b665A1407
-
-# APIs Backend
-NEXT_PUBLIC_API_URL=https://jersey-api-dalle3.onrender.com
-NEXT_PUBLIC_STADIUM_API_URL=https://jersey-api-dalle3.onrender.com
-
-# IPFS Storage
-NEXT_PUBLIC_PINATA_JWT=your-pinata-jwt
-
-# Admin Access
-NEXT_PUBLIC_ADMIN_WALLET_ADDRESS=your-admin-wallet
-NEXT_PUBLIC_ADMIN_EMAIL=your-admin-email
+### 4. Popular o Banco de Dados
+```bash
+# Execute o script de seeding para popular o MongoDB com dados de teste.
+# Este passo é essencial para que o Painel de Admin funcione corretamente.
+npm run db:seed
 ```
 
-### **3. Executar:**
+### 5. Rodar a Aplicação
 ```bash
 npm run dev
-# Acesse: http://localhost:3000
+
+# Abra http://localhost:3000 no seu navegador.
 ```
 
 ---
 
-## 🔧 **Tecnologias e Arquitetura**
+## 🗺️ Próximos Passos (Roadmap)
 
-### **Frontend Stack:**
-- **Next.js 14** - React framework com App Router
-- **TypeScript** - Tipagem estática
-- **Tailwind CSS** - Styling utility-first
-- **Shadcn/ui** - Componentes UI modernos
-- **Framer Motion** - Animações e transições
-- **Reown AppKit** - Web3 wallet connection
+Com a base da aplicação e o painel de admin solidificados, o foco agora se volta para a interação do usuário e a economia do marketplace.
 
-### **Backend Stack:**
-- **Python FastAPI** - APIs REST high-performance
-- **OpenAI DALL-E 3** - Geração de imagens IA
-- **GPT-4 Vision** - Análise de imagens (stadiums)
-- **Render** - Deploy e hosting backend
+1.  **Refatorar Fluxo de Criação (Salvar no DB):**
+    -   Modificar as páginas de criação (`/`, `/stadiums`, `/badges`) para que, ao gerar um novo NFT, ele seja salvo no banco de dados com o status `"Pending"`.
+    -   Isso alimentará a fila de moderação do admin automaticamente.
 
-### **Blockchain & Web3:**
-- **Thirdweb v5 SDK** - Infraestrutura Web3 completa
-- **Thirdweb Engine** - Gasless transactions
-- **ERC-721 Contracts** - NFT standard implementation
-- **Polygon Amoy** - Testnet atual
-- **CHZ Chain** - Blockchain target para produção
-- **IPFS/Pinata** - Storage descentralizado
+2.  **Implementar Ações de Moderação:**
+    -   Adicionar a lógica de `Aprovar`/`Rejeitar` na API de moderação.
+    -   Aprovar um item mudaria seu status de `"Pending"` para `"Approved"`.
+    -   Rejeitar um item poderia mudar seu status para `"Rejected"` ou removê-lo.
 
-### **Infraestrutura:**
-- **Vercel** - Frontend hosting e deploy
-- **Render** - Backend API hosting
-- **Cloudinary** - CDN para assets
-- **GitHub** - Controle de versão
-
----
-
-## 📈 **Analytics e Métricas**
-
-### **Sistema Atual (Mock):**
-- Total de NFTs gerados: 342
-- Jerseys: 198 | Stadiums: 144
-- Usuários ativos: 89
-- Taxa de sucesso: 94.2%
-
-### **Próximas Implementações:**
-- Analytics em tempo real
-- Tracking de conversão
-- Métricas de engagement
-- ROI por categoria
-
----
-
-## 🎯 **Próximos Passos Imediatos**
-
-### **Esta Semana:**
-1. **🔧 Finalizar Milestone 3**
-   - Implementar backend admin APIs
-   - Conectar analytics reais
-   - Sistema de logs funcionando
-   - Testes completos
-
-2. **📱 Melhorias UX**
-   - Otimizar navegação mobile
-   - Melhorar feedback de loading
-   - Polish geral da interface
-
-### **Próximas 2 Semanas:**
-1. **🎨 Iniciar Logo Generator**
-   - Research e planning detalhado
-   - Prototipagem do sistema
-   - API de geração de logos
-   - Interface de edição
-
-2. **🚀 Prepare for Production**
-   - Deploy para CHZ Chain mainnet
-   - Testes de stress
-   - Documentação completa
-   - Launch preparation
-
----
-
-## 📚 **Documentação**
-
-Documentação completa disponível em `/docs/`:
-- **[Admin System Guide](docs/ADMIN_SYSTEM_GUIDE.md)** - Como usar o sistema admin
-- **[Deployment Guide](docs/DEPLOYMENT_GUIDE.md)** - Como fazer deploy
-- **[Reown AppKit Guide](docs/REOWN_APPKIT_GUIDE.md)** - Configuração Web3
-- **[Engine Setup Guide](docs/ENGINE_SETUP_GUIDE.md)** - Thirdweb Engine
-- **[Stadium Implementation](docs/STADIUM_IMPLEMENTATION_DETAILED.md)** - Sistema de estádios
-- **[Logo Implementation](docs/LOGO_IMPLEMENTATION_DETAILED.md)** - Sistema de logos
-
----
-
-## 🤝 **Contribuição**
-
-Este é um projeto privado desenvolvido para a plataforma Chiliz. Para contribuições ou dúvidas, entre em contato com a equipe de desenvolvimento.
-
----
-
-## 📄 **Licença**
-
-Propriedade privada. Todos os direitos reservados.
-
----
-
-**🚀 Status:** Milestone 2 Completo | Milestone 3 em Progresso  
-**📅 Última Atualização:** Janeiro 2025  
-**🔗 Deploy:** [Vercel Production](https://your-app.vercel.app)  
-**🛠️ Ambiente:** Testnet Polygon Amoy
+3.  **Marketplace Funcional (Fase 2):**
+    -   Integrar contratos de marketplace da Thirdweb.
+    -   Implementar funcionalidades de Compra, Venda e Ofertas.
+    -   Criar um sistema de royalties para os criadores.
+- **Desenvolver novas funcionalidades**
+- **Melhorar a performance**
+- **Corrigir bugs**
