@@ -1,0 +1,1068 @@
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
+import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
+import Image from 'next/image'
+
+import { Dalle3Service } from '../lib/services/dalle3-service'
+import { IPFSService } from '../lib/services/ipfs-service'
+import { useWeb3 } from '../lib/useWeb3'
+import { useEngine } from '../lib/useEngine'
+import { ImageGenerationRequest } from '../types'
+import { getTransactionUrl } from '../lib/utils'
+import { Button } from '@/components/ui/button'
+import { isAdmin } from '../lib/admin-config'
+
+const STYLE_FILTERS = [
+  { id: 'modern', label: 'Modern', icon: Zap },
+  { id: 'retro', label: 'Retro', icon: Gamepad2 },
+  { id: 'national', label: 'National', icon: Globe },
+  { id: 'urban', label: 'Urban', icon: Palette },
+  { id: 'classic', label: 'Classic', icon: Crown }
+]
+
+// Marketplace data will be loaded from JSON
+interface MarketplaceNFT {
+  name: string;
+  image_url: string;
+  description: string;
+  price: string;
+}
+
+export default function JerseyEditor() {
+  // Thirdweb v5 hooks for wallet connection
+  const account = useActiveAccount()
+  const chain = useActiveWalletChain()
+  
+  // Use account data directly
+  const address = account?.address
+  const isConnected = !!account
+  const chainId = chain?.id
+  
+  // Thirdweb hooks for minting  
+  const { 
+    mintNFTWithMetadata, 
+    setClaimConditions, 
+    isConnected: isThirdwebConnected 
+  } = useWeb3()
+
+  // Engine hooks for new minting system
+  const { 
+    mintGasless,
+    createNFTMetadata,
+    isLoading: isEngineLoading,
+    error: engineError,
+    getTransactionStatus,
+  } = useEngine()
+
+  // Component state
+  const [availableTeams, setAvailableTeams] = useState<string[]>([])
+  const [selectedTeam, setSelectedTeam] = useState<string>('')
+  const [playerName, setPlayerName] = useState<string>('JEFF')
+  const [playerNumber, setPlayerNumber] = useState<string>('10')
+  const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
+  const [selectedStyle, setSelectedStyle] = useState<string>('modern')
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [apiStatus, setApiStatus] = useState<boolean>(false)
+  const [generationCost, setGenerationCost] = useState<number | null>(null)
+  const [royalties, setRoyalties] = useState<number>(10)
+  const [editionSize, setEditionSize] = useState<number>(100)
+  const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
+  
+  // IPFS state
+  const [ipfsUrl, setIpfsUrl] = useState<string | null>(null)
+  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false)
+  const [ipfsError, setIpfsError] = useState<string | null>(null)
+
+  // Minting state
+  const [isMinting, setIsMinting] = useState(false)
+  const [mintError, setMintError] = useState<string | null>(null)
+  const [mintSuccess, setMintSuccess] = useState<string | null>(null)
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null)
+  const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  
+  // Marketplace state
+  const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
+  const [marketplaceLoading, setMarketplaceLoading] = useState(true)
+  
+  // Smooth Carousel state with drag & scroll (smaller dimensions for jerseys)
+  const [currentSlide, setCurrentSlide] = useState(0)
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState(0)
+  const [dragOffset, setDragOffset] = useState(0)
+  const slidesToShow = 3 // Smaller for jersey marketplace
+  const maxSlide = Math.max(0, marketplaceNFTs.length - slidesToShow)
+  
+  const nextSlide = () => {
+    setCurrentSlide(prev => {
+      const next = Math.min(prev + 1, maxSlide)
+      console.log(`NextSlide: ${prev} → ${next} (maxSlide: ${maxSlide}, items: ${marketplaceNFTs.length})`)
+      return next
+    })
+  }
+  
+  const prevSlide = () => {
+    setCurrentSlide(prev => {
+      const next = Math.max(prev - 1, 0)
+      console.log(`PrevSlide: ${prev} → ${next}`)
+      return next
+    })
+  }
+
+  // Drag handlers
+  const handleDragStart = (clientX: number) => {
+    setIsDragging(true)
+    setDragStart(clientX)
+    setDragOffset(0)
+  }
+
+  const handleDragMove = (clientX: number) => {
+    if (!isDragging) return
+    const offset = (clientX - dragStart) * 0.6 // Reduzir velocidade do drag em 40%
+    setDragOffset(offset)
+  }
+
+  const handleDragEnd = () => {
+    if (!isDragging) return
+    setIsDragging(false)
+    
+    // Determine if drag was significant enough to change slide (threshold maior)
+    if (Math.abs(dragOffset) > 80) { // Aumentado de 50 para 80
+      if (dragOffset > 0) {
+        prevSlide()
+      } else {
+        nextSlide()
+      }
+    }
+    setDragOffset(0)
+  }
+
+  // Scroll bar handler
+  const handleScrollChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value)
+    setCurrentSlide(value)
+  }
+    
+  // Auto-play carousel removed - manual control only
+
+  // Network validation (simplified for CHZ + Polygon)
+  const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
+  const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
+  const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
+  const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
+  
+  // Admin check
+  const isUserAdmin = isAdmin(account)
+  
+  // Mint conditions
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
+  const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber && isUserAdmin // Gasless only for admins
+
+  // Upload to IPFS
+  const uploadToIPFS = async () => {
+    if (!generatedImageBlob) {
+      setIpfsError('No image to upload')
+      return
+    }
+
+    if (!IPFSService.isConfigured()) {
+      setIpfsError('IPFS not configured. Please add Pinata credentials.')
+      return
+    }
+
+    setIsUploadingToIPFS(true)
+    setIpfsError(null)
+
+    try {
+      const name = `${selectedTeam} ${playerName} #${playerNumber}`
+      const description = `AI-generated ${selectedTeam} jersey for ${playerName} #${playerNumber}. Style: ${selectedStyle}.`
+
+      const result = await IPFSService.uploadComplete(
+        generatedImageBlob,
+        name,
+        description,
+        selectedTeam,
+        selectedStyle,
+        playerName,
+        playerNumber
+      )
+
+      setIpfsUrl(result.imageUrl)
+      console.log('🎉 Upload completo:', result)
+      
+    } catch (error: any) {
+      console.error('❌ IPFS upload failed:', error)
+      setIpfsError(error instanceof Error ? error.message : 'Upload failed')
+    } finally {
+      setIsUploadingToIPFS(false)
+    }
+  }
+
+  // Function to configure Claim Conditions (Admin)
+  const handleSetClaimConditions = async () => {
+    if (!isConnected) {
+      setMintError('Connect wallet first')
+      return
+    }
+
+    setIsMinting(true)
+    setMintError(null)
+    setMintSuccess(null)
+
+    try {
+      console.log('🔧 Admin setting claim conditions...')
+      const result = await setClaimConditions()
+      console.log('✅ Claim conditions set:', result)
+      setMintSuccess('Claim conditions set! Now users can mint NFTs.')
+      
+      setTimeout(() => setMintSuccess(null), 8000)
+    } catch (error: any) {
+      console.error('❌ Set claim conditions failed:', error)
+      setMintError(error instanceof Error ? error.message : 'Set claim conditions failed')
+      setTimeout(() => setMintError(null), 8000)
+    } finally {
+      setIsMinting(false)
+    }
+  }
+
+  // ⚡ ENGINE NORMAL MINT - Backend pays gas, user receives NFT
+  const handleEngineNormalMint = async () => {
+    if (!generatedImageBlob || !selectedTeam || !playerName || !playerNumber) {
+      setMintError('Missing required data for minting')
+      return
+    }
+
+    if (!address) {
+      setMintError('Connect wallet first to receive NFT')
+      return
+    }
+
+    setIsMinting(true)
+    setMintError(null)
+    setMintSuccess(null)
+
+    try {
+      const nftName = `${selectedTeam} ${playerName} #${playerNumber}`
+      const nftDescription = `AI-generated ${selectedTeam} jersey for ${playerName} #${playerNumber}. Style: ${selectedStyle}. Generated by AI Sports NFT Generator.`
+      
+      const attributes = [
+        { trait_type: 'Team', value: selectedTeam },
+        { trait_type: 'Player Name', value: playerName },
+        { trait_type: 'Player Number', value: playerNumber },
+        { trait_type: 'Style', value: selectedStyle },
+        { trait_type: 'Quality', value: quality },
+        { trait_type: 'Generator', value: 'AI Sports NFT' }
+      ]
+
+      console.log('⚡ ENGINE NORMAL: Starting normal mint process...')
+      console.log('📦 Name:', nftName)
+      console.log('📝 Description:', nftDescription)
+      console.log('🎯 Recipient:', address)
+      console.log('💳 Backend pays gas')
+
+      // 1. Upload image and metadata to IPFS first
+      const ipfsResult = await IPFSService.uploadComplete(
+        generatedImageBlob,
+        nftName,
+        nftDescription,
+        selectedTeam,
+        selectedStyle,
+        playerName,
+        playerNumber
+      );
+
+      console.log('✅ IPFS upload completed:', ipfsResult.metadataUrl);
+
+      // 2. Call the Engine API with the metadata URI
+      const result = await mintGasless({
+        to: address,
+        metadataUri: ipfsResult.metadataUrl,
+      });
+
+      console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
+      setMintStatus('pending');
+      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId || 'N/A'}`);
+      setMintedTokenId(result.queueId || null);
+      
+    } catch (error: any) {
+      console.error('❌ ENGINE MINT (GASLESS): Mint failed:', error)
+      setMintError(error instanceof Error ? error.message : 'Engine Mint (Gasless) failed')
+      setMintStatus('error');
+      
+      setTimeout(() => {
+        setMintError(null);
+        setMintStatus('idle');
+      }, 10000)
+    } finally {
+      setIsMinting(false)
+    }
+  }
+
+  // Effect to poll transaction status
+  useEffect(() => {
+    if (mintStatus === 'pending' && mintedTokenId) {
+      const interval = setInterval(async () => {
+        console.log(`🔎 Checking status for queueId: ${mintedTokenId}`);
+        const statusResult = await getTransactionStatus(mintedTokenId);
+        
+        if (statusResult.result) {
+            const { status, transactionHash: finalTxHash, errorMessage } = statusResult.result;
+            console.log('Status da Engine:', status);
+
+            if (status === 'mined') {
+                setMintStatus('success');
+                setMintSuccess('NFT successfully created on blockchain!');
+                setTransactionHash(finalTxHash);
+                clearInterval(interval);
+            } else if (status === 'errored' || status === 'cancelled') {
+                setMintStatus('error');
+                setMintError(`Transaction failed: ${errorMessage || 'Unknown error'}`);
+                clearInterval(interval);
+            }
+        } else if (statusResult.error) {
+            setMintStatus('error');
+            setMintError(`Error checking status: ${statusResult.error}`);
+            clearInterval(interval);
+        }
+
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [mintStatus, mintedTokenId, getTransactionStatus]);
+
+  // 🎯 LEGACY MINT - Direct SDK (fallback) - THE MAIN USER FLOW
+  const handleMintNFT = async () => {
+    if (!generatedImageBlob || !selectedTeam || !playerName || !playerNumber) {
+      setMintError('Missing required data for minting')
+      return
+    }
+
+    setIsMinting(true)
+    setMintError(null)
+    setMintSuccess(null)
+    setMintStatus('pending');
+
+    try {
+      const nftName = `${selectedTeam} ${playerName} #${playerNumber}`
+      const nftDescription = `AI-generated ${selectedTeam} jersey for ${playerName} #${playerNumber}. Style: ${selectedStyle}. Generated by AI Sports NFT Generator.`
+      
+      const attributes = [
+        { trait_type: 'Team', value: selectedTeam },
+        { trait_type: 'Player Name', value: playerName },
+        { trait_type: 'Player Number', value: playerNumber },
+        { trait_type: 'Style', value: selectedStyle },
+        { trait_type: 'Quality', value: quality },
+        { trait_type: 'Generator', value: 'AI Sports NFT' }
+      ]
+
+      console.log('🎯 LEGACY: Starting NFT mint process...')
+      console.log('📦 Name:', nftName)
+      console.log('📝 Description:', nftDescription)
+      console.log('🎨 Attributes:', attributes)
+
+      // Convert blob to File for the mint function
+      const imageFile = new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' });
+      
+      const result = await mintNFTWithMetadata(
+        nftName,
+        nftDescription,
+        imageFile,
+        attributes,
+        editionSize
+      )
+
+      console.log('✅ Legacy mint successful:', result)
+      setMintStatus('success');
+      setMintSuccess(`🎉 Legacy mint successful! Transaction: ${result.transactionHash}`)
+      setTransactionHash(result.transactionHash || 'N/A')
+      
+    } catch (error: any) {
+      console.error('❌ Legacy mint failed:', error)
+      setMintStatus('error');
+      
+      if (error?.message?.includes('Please deploy a new NFT Collection contract')) {
+        setMintError('❌ Current contract only supports batch URI. Please deploy a new NFT Collection contract with individual tokenURI support.')
+      } else {
+        setMintError(error instanceof Error ? error.message : 'Minting failed')
+      }
+      
+    } finally {
+      setIsMinting(false)
+    }
+  }
+
+  const generateContent = async () => {
+    if (!selectedTeam) {
+      setError('Please select a team')
+      return
+    }
+
+    if (!playerName || !playerNumber) {
+      setError('Please fill in the player name and number')
+      return
+    }
+
+    if (isConnected && !isOnSupportedChain) {
+      setError('Please switch to a supported network (CHZ or Polygon)')
+      return
+    }
+
+    setIsLoading(true)
+    setError(null)
+    setGenerationCost(null)
+
+    let model_id = `${selectedTeam.toLowerCase()}_${selectedStyle}`;
+    if (selectedTeam === 'Flamengo' && selectedStyle === 'retro') {
+      model_id = 'flamengo_1981';
+    } else if (selectedTeam === 'Corinthians' && selectedStyle === 'retro') {
+      model_id = 'corinthians_2022';
+    }
+
+    try {
+      const request: ImageGenerationRequest = {
+        model_id: `${selectedTeam.toLowerCase()}_${selectedStyle}`,
+        team: selectedTeam,
+        player_name: playerName,
+        player_number: playerNumber,
+        quality: quality
+      };
+
+      // Usar API Render diretamente (mesmo que StadiumService)
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
+      const response = await fetch(`${baseUrl}/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+
+      if (result.success && result.image_base64) {
+        const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
+        setGeneratedImage(imageUrl);
+        setGenerationCost(result.cost_usd || null);
+        
+        const base64Data = result.image_base64.replace(/^data:image\/[a-z]+;base64,/, '');
+        const byteCharacters = atob(base64Data);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: 'image/png' });
+        setGeneratedImageBlob(blob);
+      } else {
+        setError(result.error || 'Unknown error during generation');
+      }
+    } catch (err: any) {
+      console.error('Error generating content:', err);
+      setError('Error connecting to the API. Please check if the server is running.');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const resetForm = () => {
+    setSelectedTeam('');
+    setPlayerName('');
+    setPlayerNumber('');
+    setGeneratedImage(null);
+    setGeneratedImageBlob(null);
+    setError(null);
+    setGenerationCost(null);
+  };
+
+  useEffect(() => {
+    const loadTeams = async () => {
+      try {
+        const teams = await Dalle3Service.getAvailableTeams();
+        if (teams.length > 0) {
+          setAvailableTeams(teams);
+          setSelectedTeam(teams[0]);
+        } else {
+          const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
+          setAvailableTeams(defaultTeams);
+          setSelectedTeam(defaultTeams[0]);
+        }
+      } catch (err: any) {
+        console.error('Error loading teams:', err);
+        const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
+        setAvailableTeams(defaultTeams);
+        setSelectedTeam(defaultTeams[0]);
+      }
+    };
+
+    const checkApiStatus = async () => {
+      try {
+        const status = await Dalle3Service.checkHealth();
+        setApiStatus(status);
+      } catch (err: any) {
+        console.error('Error checking API status:', err);
+        setApiStatus(false);
+      }
+    };
+
+    loadTeams();
+    checkApiStatus();
+  }, []);
+
+  // Load marketplace data
+  useEffect(() => {
+    const loadMarketplaceData = async () => {
+      try {
+        console.log('🔄 Loading marketplace data for jerseys...')
+        const response = await fetch('/marketplace-images.json')
+        if (!response.ok) throw new Error('Failed to load marketplace data')
+        
+        const data = await response.json()
+        console.log('✅ Marketplace data loaded for jerseys:', data)
+        
+        // Combine jerseys and stadiums for the marketplace carousel
+        const allNFTs = [...data.marketplace_nfts.jerseys, ...data.marketplace_nfts.stadiums]
+        setMarketplaceNFTs(allNFTs)
+      } catch (error) {
+        console.error('❌ Error loading marketplace data for jerseys:', error)
+      } finally {
+        setMarketplaceLoading(false)
+      }
+    }
+
+    loadMarketplaceData()
+  }, []);
+
+  return (
+    <>
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Coluna de Controles (Painel Esquerdo) */}
+          <div className="lg:col-span-1 space-y-6">
+
+            {/* Editor Panel */}
+            <div className="bg-card rounded-lg p-6 border border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="heading-style text-xl font-bold">Create Jersey NFT</h2>
+              </div>
+              <div className="border-2 border-dashed border-cyan-400/30 rounded-lg p-8 mb-6 text-center cyber-card hidden">
+                <Upload className="w-12 h-12 text-cyan-400 mx-auto mb-4" />
+                <p className="text-gray-300 mb-2">Upload image or enter text</p>
+                <input 
+                  type="file" 
+                  className="hidden" 
+                  id="file-upload"
+                  accept="image/*"
+                />
+                <label 
+                  htmlFor="file-upload" 
+                  className="text-cyan-400 cursor-pointer hover:text-cyan-300 transition-colors"
+                >
+                  Choose file
+                </label>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <h3 className="heading-style">Style</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {STYLE_FILTERS.map((style) => {
+                    const IconComponent = style.icon;
+                    return (
+                      <button
+                        key={style.id}
+                        onClick={() => setSelectedStyle(style.id)}
+                        className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex items-center space-x-2 transition-all`}
+                      >
+                        <IconComponent className="w-4 h-4" />
+                        <span className="text-sm font-medium">{style.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <label className="text-sm font-medium text-gray-300">Team</label>
+                <select 
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                  className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white"
+                >
+                  <option value="" className="bg-black text-white">Select Team</option>
+                  {availableTeams.map((team) => (
+                    <option key={team} value={team} className="bg-black text-white">
+                      {team}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
+                  <input
+                    type="text"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white"
+                    placeholder="JEFF"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
+                  <input
+                    type="text"
+                    value={playerNumber}
+                    onChange={(e) => setPlayerNumber(e.target.value)}
+                    className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white"
+                    placeholder="10"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4 mb-6">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Royalties</span>
+                  <span className="text-cyan-400 font-semibold">{royalties}%</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={royalties}
+                  onChange={(e) => setRoyalties(Number(e.target.value))}
+                  className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
+                />
+                
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-300">Gas fee</span>
+                  <span className="text-white">0.22</span>
+                </div>
+              </div>
+
+              <button
+                onClick={generateContent}
+                disabled={isLoading || !selectedTeam}
+                className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? 'Generating...' : 'Generate Jersey'}
+              </button>
+            </div>
+
+            {/* Mint Panel */}
+            <div className="bg-card rounded-lg p-6 border border-gray-800">
+                <h2 className="heading-style mb-4">Mint NFT</h2>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-sm text-gray-300">Edition Size</span>
+                      <span className="text-cyan-400 font-semibold">{editionSize}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="1"
+                      max="1000"
+                      value={editionSize}
+                      onChange={(e) => setEditionSize(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider"
+                    />
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-gray-300">Gas Fee</span>
+                    <span className="text-white">0.02 CHZ</span>
+                  </div>
+
+                  <button 
+                    className="w-full py-3 px-4 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all duration-200 border border-orange-400/30 mb-3 hidden"
+                    disabled={!isConnected || isMinting}
+                    onClick={handleSetClaimConditions}
+                  >
+                    {isMinting ? 'Processing...' : '⚙️ Admin: Set Claim Conditions'}
+                  </button>
+
+                  <div className="space-y-3">
+                    {/* 🚀 ENGINE GASLESS MINT - Admin Only */}
+                    {isUserAdmin && (
+                      <button 
+                        className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
+                          canMintGasless && !isMinting
+                            ? 'opacity-100 cursor-pointer bg-gradient-to-r from-green-600/20 to-cyan-600/20 border-green-400/30' 
+                            : 'opacity-50 cursor-not-allowed'
+                        }`}
+                        disabled={!canMintGasless || isMinting}
+                        onClick={() => {
+                          if (canMintGasless) {
+                            handleEngineNormalMint()
+                          }
+                        }}
+                      >
+                        {isMinting && mintStatus === 'pending' ? (
+                          <div className="flex items-center justify-center">
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Minting (Gasless)...
+                          </div>
+                        ) : !generatedImage ? 'Generate Jersey First' :
+                          !selectedTeam || !playerName || !playerNumber ? 'Complete Jersey Details' :
+                          '🚀 Mint via Engine (Gasless) - Admin'}
+                      </button>
+                    )}
+
+                    {/* 🎯 MINT BUTTON - For All Users */}
+                    <button 
+                      className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${
+                        canMintLegacy && !isMinting
+                          ? 'opacity-100 cursor-pointer bg-gradient-to-r from-cyan-600/20 to-purple-600/20 border-cyan-400/30' 
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                      disabled={!canMintLegacy || isMinting}
+                      onClick={() => {
+                        if (!isConnected) {
+                          alert('Please connect your wallet first')
+                        } else if (!isOnSupportedChain) {
+                          alert('Please switch to a supported network')
+                        } else if (canMintLegacy) {
+                          handleMintNFT()
+                        }
+                      }}
+                    >
+                      {isMinting && mintStatus === 'pending' ? (
+                        <div className="flex items-center justify-center">
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                          Minting...
+                        </div>
+                      ) : !isConnected ? 'Connect Wallet to Mint' :
+                        !isOnSupportedChain ? 'Switch to Supported Network' :
+                        !generatedImage ? 'Generate Jersey First' :
+                        'Mint'}
+                    </button>
+                  </div>
+
+                  {(mintStatus !== 'idle') && (
+                    <div className={`p-3 rounded-lg border ${
+                      mintStatus === 'success'
+                        ? 'bg-green-500/10 border-green-400/20'
+                        : mintStatus === 'error'
+                        ? 'bg-red-500/10 border-red-400/20'
+                        : 'bg-yellow-500/10 border-yellow-400/20'
+                    }`}>
+                      <p className={`text-sm ${
+                        mintStatus === 'success' ? 'text-green-400' : 
+                        mintStatus === 'error' ? 'text-red-400' : 
+                        'text-yellow-400'
+                      }`}>
+                        {mintStatus === 'pending' && (
+                          <div className="flex items-center">
+                            <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin mr-2"></div>
+                            Waiting for confirmation in your wallet...
+                          </div>
+                        )}
+                        {mintStatus === 'success' && `✅ ${mintSuccess}`}
+                        {mintStatus === 'error' && `❌ ${mintError}`}
+                      </p>
+                      {transactionHash && (
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-400 mb-1">Transaction Hash:</p>
+                          <div className="flex items-center space-x-2">
+                            <input
+                              type="text"
+                              value={transactionHash}
+                              readOnly
+                              className="flex-1 bg-gray-700/50 text-gray-300 text-xs p-2 rounded border border-gray-600"
+                            />
+                            <button
+                              onClick={() => navigator.clipboard.writeText(transactionHash)}
+                              className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                            >
+                              Copy
+                            </button>
+                            <button
+                                onClick={() => window.open(getTransactionUrl(transactionHash), '_blank')}
+                                className="px-3 py-2 bg-cyan-600/20 text-cyan-400 rounded text-xs hover:bg-cyan-600/30 transition-colors"
+                            >
+                                View
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="pt-6 border-t border-gray-700 hidden">
+                    <div className="space-y-3">
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${apiStatus ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                        <span className="text-sm text-gray-300">
+                          API Status: {apiStatus ? 'Online' : 'Offline'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${apiStatus ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+                        <span className="text-sm text-gray-300">
+                          DALL-E 3: {apiStatus ? 'Ready' : 'Offline'}
+                        </span>
+                      </div>
+                      
+                      <div className="text-xs text-gray-400">
+                        Status: Create Jersey NFT Ready
+                      </div>
+                      
+                      {generationCost && (
+                        <div className="text-xs text-gray-400">
+                          Last generation: ${generationCost.toFixed(4)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+          </div>
+
+          <div className="lg:col-span-2 space-y-6 lg:space-y-4">
+            <div>
+              <div className="p-8 lg:p-4">
+                <h3 className="heading-style mb-6 lg:mb-3 text-center hidden">PREVIEW</h3>
+                
+                <div className="flex justify-center h-[80vh]">
+                  <div className="relative w-[60vh] h-[75vh] rounded-2xl overflow-hidden" style={{
+                    background: 'linear-gradient(135deg, #050505 0%, #0E0D0D 50%, #191919 100%)',
+                    border: '2px solid rgba(156, 163, 175, 0.3)'
+                  }}>
+                    
+                    {isLoading && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="w-24 h-24 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin mb-8"></div>
+                        <p className="text-cyan-400 text-2xl font-semibold">Generating your jersey...</p>
+                        <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
+                          <div className="h-full bg-cyan-400 rounded-full animate-pulse"></div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
+                        <div className="text-center">
+                          <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
+                            <span className="text-red-400 text-4xl">⚠</span>
+                          </div>
+                          <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
+                          <button 
+                            onClick={() => setError(null)}
+                            className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
+                          >
+                            Try again
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 p-6 lg:p-3">
+                        <Image src={generatedImage} alt="Generated Jersey" width={384} height={576} className="w-full h-full object-contain rounded-lg" />
+                        <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-cyan-400/50 pointer-events-none"></div>
+                        <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-cyan-400 rounded-full animate-pulse shadow-lg shadow-cyan-400/50"></div>
+                        
+                        <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
+                          <div className="text-white">
+                            <p className="font-bold text-2xl lg:text-lg">{playerName} #{playerNumber}</p>
+                            <p className="text-cyan-400 text-lg lg:text-sm">{selectedTeam}</p>
+                            <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
+                              <span className="text-sm lg:text-xs text-gray-300">Style: {selectedStyle}</span>
+                              <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {!generatedImage && !isLoading && !error && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
+                        <div className="text-center">
+                          <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-cyan-400/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
+                            <div className="text-center">
+                              <Upload className="w-12 lg:w-8 h-12 lg:h-8 text-cyan-400/50 mx-auto mb-3 lg:mb-2" />
+                              <p className="text-sm lg:text-xs text-gray-400">Jersey</p>
+                            </div>
+                          </div>
+                          <p className="text-gray-400 text-lg lg:text-sm">Your generated jersey will appear here</p>
+                          <p className="text-cyan-400/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (4:5 ratio)</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Marketplace - Drag & Scroll Carousel - Smaller version for jerseys */}
+                {(
+                  <div className="border border-neutral-800 rounded-lg mt-4">
+                    <div className="bg-black p-3 md:p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="heading-style text-sm">Marketplace</h2>
+                        <div className="text-xs text-gray-400">
+                          Drag to scroll • {currentSlide + 1}-{Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)} of {marketplaceNFTs.length}
+                        </div>
+                      </div>
+                      
+                      {/* Draggable Sliding Container */}
+                      <div 
+                        className="relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+                        onMouseDown={(e) => handleDragStart(e.clientX)}
+                        onMouseMove={(e) => handleDragMove(e.clientX)}
+                        onMouseUp={handleDragEnd}
+                        onMouseLeave={handleDragEnd}
+                        onTouchStart={(e) => handleDragStart(e.touches[0].clientX)}
+                        onTouchMove={(e) => handleDragMove(e.touches[0].clientX)}
+                        onTouchEnd={handleDragEnd}
+                      >
+                        <div 
+                          className={`flex ${isDragging ? 'transition-none' : 'transition-transform duration-700 ease-in-out'}`}
+                          style={{
+                            transform: `translateX(calc(-${Math.min(currentSlide, maxSlide) * (100 / slidesToShow)}% + ${dragOffset}px))`,
+                            width: `${(marketplaceNFTs.length / slidesToShow) * 100}%`
+                          }}
+                        >
+                          {marketplaceLoading ? (
+                            // Loading skeleton
+                            Array.from({ length: 6 }).map((_, index) => (
+                              <div 
+                                key={`loading-${index}`} 
+                                className="flex-shrink-0 px-1"
+                                style={{ width: `${100 / marketplaceNFTs.length}%` }}
+                              >
+                                <div className="bg-neutral-900 rounded p-2 transition-all duration-300">
+                                  <div className="aspect-[4/5] bg-neutral-800 rounded mb-1.5 animate-pulse border border-neutral-700"></div>
+                                  <div className="space-y-1">
+                                    <div className="h-2 bg-neutral-700 rounded animate-pulse"></div>
+                                    <div className="h-2 bg-neutral-700 rounded w-2/3 animate-pulse"></div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : marketplaceNFTs.length > 0 ? (
+                            // Real NFT data with drag & scroll
+                            marketplaceNFTs.map((nft, index) => (
+                              <div 
+                                key={`${nft.name}-${index}`} 
+                                className="flex-shrink-0 px-1 group"
+                                style={{ width: `${100 / marketplaceNFTs.length}%` }}
+                              >
+                                <div className="bg-neutral-900 rounded p-2 transition-all duration-300 hover:scale-105 cursor-pointer">
+                                  <div className="aspect-[4/5] rounded mb-1.5 relative overflow-hidden border border-neutral-700">
+                                    {/* Random trending indicator */}
+                                    {index % 3 === 0 && (
+                                      <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>
+                                    )}
+                                    
+                                    <img 
+                                      src={nft.image_url} 
+                                      alt={nft.name}
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 pointer-events-none"
+                                      onError={(e) => {
+                                        console.error('❌ Error loading jersey marketplace image:', nft.image_url);
+                                        // Fallback to gradient background
+                                        (e.target as HTMLImageElement).style.display = 'none';
+                                        const parent = (e.target as HTMLImageElement).parentElement;
+                                        if (parent) {
+                                          parent.style.background = 'linear-gradient(135deg, rgba(0, 255, 255, 0.2), rgba(138, 43, 226, 0.2))';
+                                          parent.innerHTML += `<div class="absolute inset-0 flex items-center justify-center text-accent/60 font-bold text-xs">${nft.name.charAt(0)}</div>`;
+                                        }
+                                      }}
+                                    />
+                                    
+                                    {/* Overlay gradient */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                  </div>
+                                  
+                                  <div className="space-y-1">
+                                    <p className="text-xs text-gray-400 group-hover:text-accent transition-colors font-medium truncate">
+                                      {nft.name}
+                                    </p>
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-accent font-bold text-xs">{nft.price}</span>
+                                      {index % 3 === 0 && (
+                                        <span className="text-xs text-green-400 bg-green-400/10 px-1 py-0.5 rounded">
+                                          🔥
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            // No data fallback
+                            <div className="w-full text-center py-3">
+                              <p className="text-gray-400 text-sm">No marketplace items available</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Custom Scroll Bar - ShadCN Style - Smaller for jerseys */}
+                      <div className="mt-3 px-2">
+                        <div className="relative">
+                          {/* Track */}
+                          <div className="w-full h-2 bg-neutral-800 rounded-full border border-neutral-700">
+                            {/* Progress */}
+                            <div 
+                              className="h-full bg-accent rounded-full transition-all duration-300 shadow-lg shadow-accent/20"
+                              style={{ width: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%` }}
+                            />
+                            {/* Thumb */}
+                            <div 
+                              className="absolute top-0 w-4 h-2 bg-accent rounded-full border-2 border-white shadow-lg cursor-pointer transform -translate-y-0 transition-all duration-200 hover:scale-110 hover:shadow-accent/50"
+                              style={{ 
+                                left: `${maxSlide > 0 ? (Math.min(currentSlide, maxSlide) / maxSlide) * 100 : 0}%`,
+                                transform: 'translateX(-50%)'
+                              }}
+                            />
+                          </div>
+                          
+                          {/* Invisible input for interaction */}
+                          <input
+                            type="range"
+                            min="0"
+                            max={maxSlide}
+                            value={currentSlide}
+                            onChange={handleScrollChange}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          />
+                          
+                          {/* Labels */}
+                          <div className="flex justify-between items-center mt-1">
+                            <span className="text-xs text-gray-500">
+                              {currentSlide + 1} - {Math.min(currentSlide + slidesToShow, marketplaceNFTs.length)}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              of {marketplaceNFTs.length} items
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-3 text-center">
+                        <button className="px-4 py-2 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-sm">
+                          View All Items
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+} 
