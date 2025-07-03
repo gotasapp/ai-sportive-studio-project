@@ -1,9 +1,13 @@
+'use client';
+
 import BadgeEditor from '@/components/BadgeEditor';
+import Header from '@/components/Header';
 
 export default function BadgesPage() {
   return (
-    <div className="min-h-screen bg-black text-white">
+    <main className="flex flex-col items-center">
+      <Header />
       <BadgeEditor />
-    </div>
+    </main>
   );
 } 

@@ -57,6 +57,26 @@
         "description": "Jeff Santos",
         "price": "0.3 ETH"
       }
+    ],
+    "badges": [
+      {
+        "name": "Eagle Badge",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636633/bafybeigiluwv7wjg3rmwwnjfjndvbiy7vkusihwyvjd3iz3yzudl4kfhia_dmsrtn.png",
+        "description": "Golden Eagle Badge",
+        "price": "0.05 ETH"
+      },
+      {
+        "name": "Lionheart Badge", 
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png",
+        "description": "Courage of a Lion",
+        "price": "0.08 ETH"
+      },
+      {
+        "name": "Champion Badge",
+        "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png", 
+        "description": "Victory Badge",
+        "price": "0.1 ETH"
+      }
     ]
   },
   "instructions": {

@@ -1,9 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
-import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react'
-import Image from 'next/image'
+import { Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -16,9 +15,8 @@ import { isAdmin } from '../lib/admin-config'
 
 // Importando os novos componentes reutilizáveis
 import EditorLayout from '@/components/layouts/EditorLayout'
-import ControlPanel from '@/components/editor/ControlPanel'
+import EditorPanel from '@/components/editor/EditorPanel'
 import PreviewPanel from '@/components/editor/PreviewPanel'
-import ActionPanel from '@/components/editor/ActionPanel'
 import MarketplaceCarousel from '@/components/editor/MarketplaceCarousel'
 
 const STYLE_FILTERS = [
@@ -29,7 +27,6 @@ const STYLE_FILTERS = [
   { id: 'classic', label: 'Classic', icon: Crown }
 ]
 
-// Marketplace data will be loaded from JSON
 interface MarketplaceNFT {
   name: string;
   image_url: string;
@@ -38,32 +35,16 @@ interface MarketplaceNFT {
 }
 
 export default function BadgeEditor() {
-  // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
   
-  // Use account data directly
   const address = account?.address
   const isConnected = !!account
   const chainId = chain?.id
   
-  // Thirdweb hooks for minting  
-  const { 
-    mintNFTWithMetadata, 
-    setClaimConditions, 
-    isConnected: isThirdwebConnected 
-  } = useWeb3()
+  const { mintNFTWithMetadata, setClaimConditions } = useWeb3()
+  const { mintGasless, createNFTMetadata, getTransactionStatus } = useEngine()
 
-  // Engine hooks for new minting system
-  const { 
-    mintGasless,
-    createNFTMetadata,
-    isLoading: isEngineLoading,
-    error: engineError,
-    getTransactionStatus,
-  } = useEngine()
-
-  // Component state
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<string>('')
   const [badgeName, setBadgeName] = useState<string>('CHAMPION')
@@ -73,18 +54,9 @@ export default function BadgeEditor() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [apiStatus, setApiStatus] = useState<boolean>(false)
-  const [generationCost, setGenerationCost] = useState<number | null>(null)
-  const [royalties, setRoyalties] = useState<number>(10)
   const [editionSize, setEditionSize] = useState<number>(100)
   const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
   
-  // IPFS state
-  const [ipfsUrl, setIpfsUrl] = useState<string | null>(null)
-  const [isUploadingToIPFS, setIsUploadingToIPFS] = useState(false)
-  const [ipfsError, setIpfsError] = useState<string | null>(null)
-
-  // Minting state
   const [isMinting, setIsMinting] = useState(false)
   const [mintError, setMintError] = useState<string | null>(null)
   const [mintSuccess, setMintSuccess] = useState<string | null>(null)
@@ -92,394 +64,234 @@ export default function BadgeEditor() {
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
-  // Marketplace state
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
   
-  // Smooth Carousel state with drag & scroll (smaller dimensions for badges)
-  const [currentSlide, setCurrentSlide] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState(0)
-  const [dragOffset, setDragOffset] = useState(0)
-  const slidesToShow = 3 // Smaller for badge marketplace
-  const maxSlide = Math.max(0, marketplaceNFTs.length - slidesToShow)
-  
-  const nextSlide = () => {
-    setCurrentSlide(prev => {
-      const next = Math.min(prev + 1, maxSlide)
-      console.log(`NextSlide: ${prev} → ${next} (maxSlide: ${maxSlide}, items: ${marketplaceNFTs.length})`)
-      return next
-    })
-  }
-  
-  const prevSlide = () => {
-    setCurrentSlide(prev => {
-      const next = Math.max(prev - 1, 0)
-      console.log(`PrevSlide: ${prev} → ${next}`)
-      return next
-    })
-  }
-
-  // Drag handlers
-  const handleDragStart = (clientX: number) => {
-    setIsDragging(true)
-    setDragStart(clientX)
-    setDragOffset(0)
-  }
-
-  const handleDragMove = (clientX: number) => {
-    if (!isDragging) return
-    const offset = (clientX - dragStart) * 0.6 // Reduzir velocidade do drag em 40%
-    setDragOffset(offset)
-  }
-
-  const handleDragEnd = () => {
-    if (!isDragging) return
-    setIsDragging(false)
-    
-    // Determine if drag was significant enough to change slide (threshold maior)
-    if (Math.abs(dragOffset) > 80) { // Aumentado de 50 para 80
-      if (dragOffset > 0) {
-        prevSlide()
-      } else {
-        nextSlide()
-      }
-    }
-    setDragOffset(0)
-  }
-
-  // Scroll bar handler
-  const handleScrollChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value)
-    setCurrentSlide(value)
-  }
-    
-  // Auto-play carousel removed - manual control only
-
-  // Network validation (simplified for CHZ + Polygon)
-  const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
+  const supportedChainIds = [88888, 88882, 137, 80002]
   const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
-  const isOnChzChain = chainId === 88888 || chainId === 88882 // CHZ mainnet or testnet
-  const isOnPolygonChain = chainId === 137 || chainId === 80002 // Polygon mainnet or Amoy testnet
   
-  // Admin check
   const isUserAdmin = isAdmin(account)
   
-  // Mint conditions
-  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
-  const canMintGasless = generatedImage && selectedTeam && badgeName && badgeNumber && isUserAdmin // Gasless only for admins
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
+  const canMintGasless = generatedImage && selectedTeam && badgeName && badgeNumber && isUserAdmin
 
-  // Upload to IPFS
-  const uploadToIPFS = async () => {
-    if (!generatedImageBlob) {
-      setIpfsError('No image to upload')
-      return
-    }
-
-    if (!IPFSService.isConfigured()) {
-      setIpfsError('IPFS not configured. Please add Pinata credentials.')
-      return
-    }
-
-    setIsUploadingToIPFS(true)
-    setIpfsError(null)
-
-    try {
-      const name = `${selectedTeam} ${badgeName} #${badgeNumber}`
-      const description = `AI-generated ${selectedTeam} badge for ${badgeName} #${badgeNumber}. Style: ${selectedStyle}.`
-
-      const result = await IPFSService.uploadComplete(
-        generatedImageBlob,
-        name,
-        description,
-        selectedTeam,
-        selectedStyle,
-        badgeName,
-        badgeNumber
-      )
-
-      setIpfsUrl(result.imageUrl)
-      console.log('🎉 Upload completo:', result)
-      
-    } catch (error: any) {
-      console.error('❌ IPFS upload failed:', error)
-      setIpfsError(error instanceof Error ? error.message : 'Upload failed')
-    } finally {
-      setIsUploadingToIPFS(false)
-    }
-  }
-
-  // Set claim conditions for minting
-  const handleSetClaimConditions = async () => {
-    if (!isConnected || !isOnSupportedChain) {
-      setError('Please connect to a supported network')
-      return
-    }
-
-    try {
-      await setClaimConditions({
-        price: generationCost || 0,
-        maxMintSupply: editionSize,
-        startTime: new Date(),
-        endTime: new Date(Date.now() + 1000 * 60 * 60 * 24 * 7), // 1 week
-      })
-      console.log('✅ Claim conditions set')
-    } catch (error: any) {
-      console.error('❌ Failed to set claim conditions:', error)
-      setError(error instanceof Error ? error.message : 'Failed to set claim conditions')
-    }
-  }
-
-  // Mint badge using Engine
   const handleEngineNormalMint = async () => {
-    if (!canMintGasless) {
-      setError('Cannot mint. Please check all conditions.')
-      return
+    if (!canMintGasless || !generatedImageBlob || !address) {
+        setMintError('Missing required data for minting');
+        return;
     }
 
-    setIsMinting(true)
-    setMintError(null)
+    setIsMinting(true);
+    setMintError(null);
+    setMintStatus('pending');
 
     try {
-      const metadata = createNFTMetadata({
-        name: `${selectedTeam} ${badgeName} #${badgeNumber}`,
-        description: `AI-generated ${selectedTeam} badge for ${badgeName} #${badgeNumber}. Style: ${selectedStyle}.`,
-        image: generatedImage,
-        attributes: [
-          { trait_type: 'Team', value: selectedTeam },
-          { trait_type: 'Style', value: selectedStyle },
-          { trait_type: 'Name', value: badgeName },
-          { trait_type: 'Number', value: badgeNumber },
-        ],
-      })
+        const nftName = `${selectedTeam} Badge ${badgeName} #${badgeNumber}`;
+        const nftDescription = `AI-generated ${selectedTeam} badge. Style: ${selectedStyle}.`;
 
-      const result = await mintGasless(metadata)
-      setMintSuccess('Mint successful!')
-      setMintedTokenId(result.tokenId)
-      setTransactionHash(result.transactionHash)
-      console.log('🎉 Mint successful:', result)
+        const ipfsResult = await IPFSService.uploadComplete(
+            generatedImageBlob,
+            nftName,
+            nftDescription,
+            selectedTeam,
+            selectedStyle,
+            badgeName,
+            badgeNumber
+        );
+
+        const result = await mintGasless({
+            to: address,
+            metadataUri: ipfsResult.metadataUrl,
+        });
+
+        setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
+        setMintedTokenId(result.queueId || null);
     } catch (error: any) {
-      console.error('❌ Mint failed:', error)
-      setMintError(error instanceof Error ? error.message : 'Mint failed')
+        setMintError(error.message || 'Engine mint failed');
+        setMintStatus('error');
     } finally {
-      setIsMinting(false)
+        setIsMinting(false);
     }
-  }
+  };
+  
+  useEffect(() => {
+    if (mintStatus === 'pending' && mintedTokenId) {
+      const interval = setInterval(async () => {
+        const statusResult = await getTransactionStatus(mintedTokenId);
+        if (statusResult.result?.status === 'mined') {
+            setMintStatus('success');
+            setMintSuccess('NFT successfully created!');
+            setTransactionHash(statusResult.result.transactionHash);
+            clearInterval(interval);
+        } else if (statusResult.result?.status === 'errored') {
+            setMintStatus('error');
+            setMintError(`Transaction failed: ${statusResult.result.errorMessage}`);
+            clearInterval(interval);
+        }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [mintStatus, mintedTokenId, getTransactionStatus]);
 
-  // Mint badge using legacy method
   const handleMintNFT = async () => {
-    if (!canMintLegacy) {
-      setError('Cannot mint. Please check all conditions.')
+    if (!canMintLegacy || !generatedImageBlob) {
+      setMintError('Missing required data for minting');
       return
     }
 
     setIsMinting(true)
     setMintError(null)
+    setMintStatus('pending');
 
     try {
-      const metadata = createNFTMetadata({
-        name: `${selectedTeam} ${badgeName} #${badgeNumber}`,
-        description: `AI-generated ${selectedTeam} badge for ${badgeName} #${badgeNumber}. Style: ${selectedStyle}.`,
-        image: generatedImage,
-        attributes: [
+        const nftName = `${selectedTeam} Badge ${badgeName} #${badgeNumber}`;
+        const nftDescription = `AI-generated ${selectedTeam} badge. Style: ${selectedStyle}.`;
+        const imageFile = new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' });
+        const attributes = [
           { trait_type: 'Team', value: selectedTeam },
-          { trait_type: 'Style', value: selectedStyle },
           { trait_type: 'Name', value: badgeName },
           { trait_type: 'Number', value: badgeNumber },
-        ],
-      })
-
-      const result = await mintNFTWithMetadata(metadata)
-      setMintSuccess('Mint successful!')
-      setMintedTokenId(result.tokenId)
-      setTransactionHash(result.transactionHash)
-      console.log('🎉 Mint successful:', result)
+          { trait_type: 'Style', value: selectedStyle },
+        ];
+        
+        const result = await mintNFTWithMetadata(nftName, nftDescription, imageFile, attributes, editionSize);
+        setMintStatus('success');
+        setMintSuccess(`Legacy mint successful!`);
+        setTransactionHash(result.transactionHash || 'N/A');
     } catch (error: any) {
-      console.error('❌ Mint failed:', error)
-      setMintError(error instanceof Error ? error.message : 'Mint failed')
+        setMintStatus('error');
+        setMintError(error.message || 'Minting failed');
     } finally {
-      setIsMinting(false)
+        setIsMinting(false)
     }
   }
 
-  // Generate badge content
   const generateContent = async () => {
-    if (!selectedTeam || !badgeName || !badgeNumber) {
-      setError('Please fill in all fields')
+    if (!selectedTeam) {
+      setError('Please select a team')
       return
     }
-
     setIsLoading(true)
     setError(null)
 
     try {
-      const request: ImageGenerationRequest = {
-        prompt: `${selectedTeam} badge for ${badgeName} #${badgeNumber} in ${selectedStyle} style`,
-        quality,
-      }
+      const prompt = `official e-sports team badge, team name ${selectedTeam}, ${selectedStyle} style, champion badge, name ${badgeName}, number ${badgeNumber}`;
+      const request: ImageGenerationRequest = { prompt, quality };
+      const result = await Dalle3Service.generateImage(request);
 
-      const result = await Dalle3Service.generateImage(request)
-      setGeneratedImage(result.imageUrl)
-      setGeneratedImageBlob(result.imageBlob)
-      setGenerationCost(result.cost)
-      console.log('🎉 Image generated:', result)
-    } catch (error: any) {
-      console.error('❌ Image generation failed:', error)
-      setError(error instanceof Error ? error.message : 'Image generation failed')
+      if (result.imageUrl && result.imageBlob) {
+        setGeneratedImage(result.imageUrl);
+        setGeneratedImageBlob(result.imageBlob);
+      } else {
+        setError('Failed to generate image.');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Image generation failed');
     } finally {
       setIsLoading(false)
     }
   }
 
-  // Reset form
-  const resetForm = () => {
-    setSelectedTeam('')
-    setBadgeName('CHAMPION')
-    setBadgeNumber('1')
-    setQuality('standard')
-    setSelectedStyle('modern')
-    setGeneratedImage(null)
-    setGeneratedImageBlob(null)
-    setIsLoading(false)
-    setError(null)
-    setApiStatus(false)
-    setGenerationCost(null)
-    setRoyalties(10)
-    setEditionSize(100)
-    setIpfsUrl(null)
-    setIsUploadingToIPFS(false)
-    setIpfsError(null)
-    setIsMinting(false)
-    setMintError(null)
-    setMintSuccess(null)
-    setMintedTokenId(null)
-    setMintStatus('idle')
-    setTransactionHash(null)
-    setMarketplaceNFTs([])
-    setMarketplaceLoading(true)
-    setCurrentSlide(0)
-    setIsDragging(false)
-    setDragStart(0)
-    setDragOffset(0)
-  }
+  const resetError = () => setError(null);
 
-  // Load available teams
   useEffect(() => {
-    const loadTeams = async () => {
+    const loadData = async () => {
       try {
-        const response = await fetch('/api/teams')
-        const data = await response.json()
-        setAvailableTeams(data.teams)
+        const response = await fetch('/api/teams');
+        const data = await response.json();
+        setAvailableTeams(data.teams || []);
+        if (data.teams.length > 0) {
+            setSelectedTeam(data.teams[0]);
+        }
       } catch (error) {
-        console.error('❌ Failed to load teams:', error)
+        console.error('Failed to load teams:', error);
       }
-    }
+    };
+    loadData();
+  }, []);
 
-    loadTeams()
-  }, [])
-
-  // Check API status
-  useEffect(() => {
-    const checkApiStatus = async () => {
-      try {
-        const response = await fetch('/api/status')
-        const data = await response.json()
-        setApiStatus(data.status === 'ok')
-      } catch (error) {
-        console.error('❌ Failed to check API status:', error)
-      }
-    }
-
-    checkApiStatus()
-  }, [])
-
-  // Load marketplace data
   useEffect(() => {
     const loadMarketplaceData = async () => {
+      setMarketplaceLoading(true);
       try {
-        const response = await fetch('/public/marketplace-images.json')
-        const data = await response.json()
-        setMarketplaceNFTs(data.badges || [])
-        setMarketplaceLoading(false)
+        const response = await fetch('/marketplace-images.json');
+        const data = await response.json();
+        setMarketplaceNFTs(data.marketplace_nfts.badges || []);
       } catch (error) {
-        console.error('❌ Failed to load marketplace data:', error)
-        setMarketplaceLoading(false)
+        console.error('Failed to load marketplace data:', error);
+      } finally {
+        setMarketplaceLoading(false);
       }
-    }
+    };
+    loadMarketplaceData();
+  }, []);
 
-    loadMarketplaceData()
-  }, [])
+  const renderControls = () => (
+    <>
+      <EditorPanel title="Create Badge NFT">
+        <div className="space-y-4 mb-6">
+          <label className="text-sm font-medium text-gray-300">Team</label>
+          <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white">
+            <option value="" disabled>Select Team</option>
+            {availableTeams.map((team) => <option key={team} value={team}>{team}</option>)}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
+            <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="CHAMPION" />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
+            <input type="text" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="1" />
+          </div>
+        </div>
+        <div className="space-y-4 mb-6">
+          <h3 className="heading-style">Style</h3>
+          <div className="grid grid-cols-3 gap-3">
+            {STYLE_FILTERS.map((style) => (
+              <button key={style.id} onClick={() => setSelectedStyle(style.id)} className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex flex-col items-center justify-center space-y-1 transition-all`}>
+                <style.icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{style.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <button onClick={generateContent} disabled={isLoading || !selectedTeam} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+          {isLoading ? 'Generating...' : 'Generate Badge'}
+        </button>
+      </EditorPanel>
 
-  // Verificar se availableTeams é um array antes de usar map
-  const teams = Array.isArray(availableTeams) ? availableTeams : [];
+      <EditorPanel title="Mint NFT">
+        <div>
+          <label className="text-sm font-medium text-gray-300">Edition Size: <span className="text-cyan-400 font-semibold">{editionSize}</span></label>
+          <input type="range" min="1" max="1000" value={editionSize} onChange={(e) => setEditionSize(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider mt-2" />
+        </div>
+        <div className="space-y-3 mt-4">
+          {isUserAdmin && (
+            <button className={`cyber-button w-full py-4 rounded-lg font-semibold ${!canMintGasless || isMinting ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!canMintGasless || isMinting} onClick={handleEngineNormalMint}>
+              {isMinting ? 'Minting...' : '🚀 Mint via Engine (Gasless)'}
+            </button>
+          )}
+          <button className={`cyber-button w-full py-4 rounded-lg font-semibold ${!canMintLegacy || isMinting ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!canMintLegacy || isMinting} onClick={handleMintNFT}>
+            {isMinting ? 'Minting...' : 'Mint (Legacy)'}
+          </button>
+        </div>
+        {mintStatus !== 'idle' && (
+          <div className={`mt-4 p-3 rounded-lg text-sm ${mintStatus === 'success' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+            <p>{mintStatus === 'success' ? `✅ ${mintSuccess}` : `❌ ${mintError}`}</p>
+            {transactionHash && <a href={getTransactionUrl(transactionHash)} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline mt-1 block truncate">View on Explorer</a>}
+          </div>
+        )}
+      </EditorPanel>
+    </>
+  );
 
-  // --- RENDERIZAÇÃO COM COMPONENTES REUTILIZÁVEIS ---
   return (
     <EditorLayout
-      controls={
-        <ControlPanel title="Create Your Badge">
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-400">Team</label>
-            <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className="w-full bg-gray-800/60 border-secondary/20 rounded-lg p-3 text-secondary focus:ring-accent focus:border-accent">
-              <option value="">Select Team</option>
-              {teams.map((team) => (<option key={team} value={team}>{team}</option>))}
-            </select>
-          </div>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-2 text-gray-400">Badge Name</label>
-              <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} className="w-full bg-gray-800/60 border-secondary/20 rounded-lg p-3 text-secondary focus:ring-accent focus:border-accent" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-2 text-gray-400">Number</label>
-              <input type="text" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} className="w-full bg-gray-800/60 border-secondary/20 rounded-lg p-3 text-secondary focus:ring-accent focus:border-accent" />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-2 text-gray-400">Style</label>
-            <div className="grid grid-cols-3 gap-2">
-              {STYLE_FILTERS.map((filter) => (
-                <button key={filter.id} onClick={() => setSelectedStyle(filter.id)} className={`flex flex-col items-center justify-center p-3 rounded-lg border-2 transition-all ${selectedStyle === filter.id ? 'border-accent bg-accent/20' : 'border-transparent bg-gray-800/60 hover:bg-gray-700/80'}`}>
-                  <filter.icon className="w-6 h-6 mb-1 text-secondary" />
-                  <span className="text-xs text-secondary">{filter.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-          <Button onClick={generateContent} disabled={isLoading || !selectedTeam} className="w-full bg-accent hover:bg-accent/90 text-primary font-bold py-4 rounded-lg text-lg transition-all duration-300 disabled:bg-gray-700 disabled:cursor-not-allowed">
-            {isLoading ? 'Generating...' : 'Generate Badge'}
-          </Button>
-        </ControlPanel>
-      }
-      preview={
-        <PreviewPanel
-          generatedImage={generatedImage}
-          isLoading={isLoading}
-          error={error}
-        />
-      }
-      actions={
-        <ActionPanel
-          title="Mint Your NFT"
-          isMinting={isMinting}
-          isUploading={isUploadingToIPFS}
-          canMint={!!canMintGasless}
-          canUpload={!!generatedImageBlob}
-          isUserAdmin={isUserAdmin}
-          mintSuccess={mintSuccess}
-          mintError={mintError}
-          uploadSuccess={ipfsUrl}
-          uploadError={ipfsError}
-          onMint={handleEngineNormalMint}
-          onUpload={uploadToIPFS}
-        />
-      }
-      marketplace={
-        <MarketplaceCarousel
-          title="Marketplace Inspiration"
-          items={marketplaceNFTs}
-        />
-      }
+      controls={renderControls()}
+      preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs} isLoading={marketplaceLoading} />}
     />
   )
 } 
