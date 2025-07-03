@@ -743,7 +743,7 @@ export default function StadiumEditor() {
     <EditorLayout
       controls={renderControls()}
       preview={<PreviewPanel generatedImage={generatedImage} isLoading={isGenerating} error={error} onResetError={resetForm} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs} isLoading={marketplaceLoading} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.image_url, price: nft.price }))} isLoading={marketplaceLoading} />}
     />
   )
 } 

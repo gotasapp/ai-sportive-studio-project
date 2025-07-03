@@ -449,7 +449,7 @@ export default function JerseyEditor() {
     <EditorLayout
       controls={renderControls()}
       preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs} isLoading={marketplaceLoading} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.image_url, price: nft.price }))} isLoading={marketplaceLoading} />}
     />
   )
 } 

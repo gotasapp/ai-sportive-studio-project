@@ -101,11 +101,17 @@ export default function Header() {
   // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
   useEffect(() => {
     const checkAdminStatus = async () => {
+      console.log('---');
+      console.time('Admin Check'); // Inicia o cronômetro
+      console.log('🔍 Iniciando verificação de status de admin...');
+
       if (!account) {
         setUserIsAdmin(false);
         setAdminCheckLoading(false);
-        // Limpar cache quando desconectar
         localStorage.removeItem('admin_status_cache');
+        console.log('✅ Verificação concluída: Usuário não conectado.');
+        console.timeEnd('Admin Check'); // Para o cronômetro
+        console.log('---');
         return;
       }
 
@@ -124,12 +130,18 @@ export default function Header() {
           performAdminCheck(accountKey, cacheKey);
         }, 100);
         
+        console.log('✅ Verificação concluída: Cache encontrado.');
+        console.timeEnd('Admin Check'); // Para o cronômetro
+        console.log('---');
         return;
       }
 
       // Se não há cache, faz verificação completa
       setAdminCheckLoading(true);
       await performAdminCheck(accountKey, cacheKey);
+      console.log('✅ Verificação completa via performAdminCheck concluída.');
+      console.timeEnd('Admin Check'); // Para o cronômetro
+      console.log('---');
     };
 
     const performAdminCheck = async (accountKey: string, cacheKey: string) => {
@@ -140,17 +152,21 @@ export default function Header() {
           setUserIsAdmin(true);
           localStorage.setItem(cacheKey, 'true');
           setAdminCheckLoading(false);
+          console.log('✅ Verificação rápida concluída: Usuário é admin.');
           return;
         }
 
         // Para InApp wallets, faz verificação async do email
+        console.log('⏳ Tentando verificação assíncrona (pode ser lento)...');
         const asyncCheck = await isAdminAsync(account, wallet);
         setUserIsAdmin(asyncCheck);
         localStorage.setItem(cacheKey, asyncCheck ? 'true' : 'false');
+        console.log(`👍 Verificação assíncrona retornou: ${asyncCheck}`);
       } catch (error) {
-        console.error('Erro ao verificar status de admin no header:', error);
+        console.error('❌ Erro ao verificar status de admin no header:', error);
         setUserIsAdmin(false);
         localStorage.setItem(cacheKey, 'false');
+        console.log('❌ Verificação assíncrona falhou.');
       } finally {
         setAdminCheckLoading(false);
       }

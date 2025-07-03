@@ -200,12 +200,22 @@ export default function BadgeEditor() {
       try {
         const response = await fetch('/api/teams');
         const data = await response.json();
-        setAvailableTeams(data.teams || []);
-        if (data.teams.length > 0) {
-            setSelectedTeam(data.teams[0]);
+        
+        // CORREÇÃO: Verifica se 'data' é um array antes de usá-lo.
+        if (Array.isArray(data)) {
+          setAvailableTeams(data);
+          if (data.length > 0) {
+            setSelectedTeam(data[0]);
+          }
+        } else {
+            // Se não for um array, registra um erro e usa um array vazio.
+            console.error('Failed to load teams: API did not return an array.', data);
+            setAvailableTeams([]);
         }
+
       } catch (error) {
         console.error('Failed to load teams:', error);
+        setAvailableTeams([]); // Garante que o estado não fique indefinido
       }
     };
     loadData();
@@ -296,7 +306,7 @@ export default function BadgeEditor() {
     <EditorLayout
       controls={renderControls()}
       preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs} isLoading={marketplaceLoading} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.image_url, price: nft.price }))} isLoading={marketplaceLoading} />}
     />
   )
 } 

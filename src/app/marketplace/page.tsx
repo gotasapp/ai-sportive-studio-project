@@ -114,7 +114,11 @@ export default function MarketplacePage() {
                 {filteredNfts.map((nft, index) => (
                     <MarketplaceCard 
                         key={`${nft.name}-${index}`}
-                        {...nft}
+                        name={nft.name}
+                        imageUrl={nft.image_url}
+                        price={nft.price}
+                        collection={nft.collection}
+                        category={nft.category}
                     />
                 ))}
             </div>

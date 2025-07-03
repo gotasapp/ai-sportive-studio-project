@@ -26,7 +26,7 @@ export const ADMIN_ADDRESSES = [
   
   // Multiple admin support (add more if needed)
    '0xAc6d591F61E28F6E914583eaC316fDCd2E1Ce30e'.toLowerCase(), // ariel
-  // '0xabcdef1234567890abcdef1234567890abcdef12', // Example admin 4
+  '0xEf381c5fB1697b0f21F99c7A7b546821cF481B56'.toLowerCase(), // jeff
 ].filter(Boolean) as string[];
 
 // Admin emails - for social/email login admin access
