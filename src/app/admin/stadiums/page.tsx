@@ -1,453 +1,176 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Separator } from '@/components/ui/separator'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Upload, Eye, Wand2, Download, DollarSign, Clock, Camera, Zap } from 'lucide-react'
-import { StadiumService, StadiumGenerationRequest, StadiumResponse } from '@/lib/services/stadium-service'
-import Image from 'next/image'
+import { Input } from '@/components/ui/input'
+import { 
+  Building, Search, Filter, MoreHorizontal, Download, RefreshCw 
+} from 'lucide-react'
+
+// Definindo o tipo de Stadium com base na API
+interface Stadium {
+  id: string;
+  name: string;
+  creator: {
+    name: string;
+    wallet: string;
+  };
+  createdAt: string;
+  status: 'Minted' | 'Pending' | 'Error';
+  imageUrl: string;
+  mintCount: number;
+  editionSize: number;
+}
+
+const statusColors: { [key in Stadium['status']]: string } = {
+  Minted: 'bg-green-500/20 text-green-400 border-green-500/30',
+  Pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  Error: 'bg-red-500/20 text-red-400 border-red-500/30'
+}
 
 export default function StadiumsPage() {
-  // Estados principais
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string>('')
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [analysisResult, setAnalysisResult] = useState<StadiumResponse | null>(null)
-  const [generationResult, setGenerationResult] = useState<StadiumResponse | null>(null)
-  const [error, setError] = useState<string>('')
-  
-  // Parâmetros de geração
-  const [generationStyle, setGenerationStyle] = useState<'realistic' | 'cinematic' | 'dramatic'>('realistic')
-  const [atmosphere, setAtmosphere] = useState<'packed' | 'half_full' | 'empty'>('packed')
-  const [timeOfDay, setTimeOfDay] = useState<'day' | 'night' | 'sunset'>('day')
-  const [weather, setWeather] = useState<'clear' | 'dramatic' | 'cloudy'>('clear')
-  const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
-  
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [stadiums, setStadiums] = useState<Stadium[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
 
-  // Handlers
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
-
-    try {
-      const processed = await StadiumService.processImageUpload(file)
-      setSelectedFile(file)
-      setImagePreview(processed.preview)
-      setError('')
-      
-      // Reset resultados anteriores
-      setAnalysisResult(null)
-      setGenerationResult(null)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to process image')
-    }
-  }
-
-  const handleAnalyze = async () => {
-    if (!selectedFile) return
-
-    setIsAnalyzing(true)
-    setError('')
-
-    try {
-      const processed = await StadiumService.processImageUpload(selectedFile)
-      // Use generateCustom for analysis with custom reference
-      const result = await StadiumService.generateCustom({
-        prompt: 'Analyze this stadium image and describe its architecture, atmosphere, and characteristics',
-        reference_image_base64: processed.base64,
-        quality: 'standard'
-      })
-
-      setAnalysisResult(result)
-      
-      if (!result.success) {
-        setError(result.error || 'Analysis failed')
+  useEffect(() => {
+    const fetchStadiums = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/admin/stadiums');
+        if (!response.ok) {
+          throw new Error('Failed to fetch stadiums');
+        }
+        const data: Stadium[] = await response.json();
+        setStadiums(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Analysis failed')
-    } finally {
-      setIsAnalyzing(false)
-    }
-  }
+    };
 
-  const handleGenerate = async () => {
-    if (!selectedFile) return
+    fetchStadiums();
+  }, []);
 
-    setIsGenerating(true)
-    setError('')
+  const filteredStadiums = stadiums.filter(stadium => {
+    const matchesSearch = stadium.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         stadium.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         stadium.creator.wallet.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || stadium.status === filterStatus
+    
+    return matchesSearch && matchesStatus;
+  })
 
-    try {
-      const processed = await StadiumService.processImageUpload(selectedFile)
-      // Use generateCustom for custom stadium generation
-      const result = await StadiumService.generateCustom({
-        prompt: `Generate a ${generationStyle} stadium with ${atmosphere} atmosphere during ${timeOfDay} with ${weather} weather conditions`,
-        reference_image_base64: processed.base64,
-        generation_style: generationStyle,
-        atmosphere,
-        time_of_day: timeOfDay,
-        quality
-      })
-
-      setGenerationResult(result)
-      
-      if (!result.success) {
-        setError(result.error || 'Generation failed')
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Generation failed')
-    } finally {
-      setIsGenerating(false)
-    }
-  }
-
-  const downloadImage = (base64: string, filename: string) => {
-    const link = document.createElement('a')
-    link.href = `data:image/png;base64,${base64}`
-    link.download = `${filename}.png`
-    link.click()
-  }
-
-  const estimatedCost = StadiumService.estimateCost('generation', quality)
+  const renderSkeleton = () => (
+    Array.from({ length: 4 }).map((_, i) => (
+       <tr key={`skel-${i}`} className="border-b border-gray-800">
+         <td className="p-4"><div className="h-10 w-10 bg-gray-700 rounded-md animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-32 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-24 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-16 bg-gray-700 rounded animate-pulse"></div></td>
+       </tr>
+    ))
+  );
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Stadium Generator</h1>
-          <p className="text-muted-foreground">
-            GPT-4 Vision + DALL-E 3 Pipeline Test
-          </p>
+          <h1 className="text-3xl font-bold text-gray-200">Stadium Management</h1>
+          <p className="text-gray-400 mt-2">Browse, review, and manage all generated stadiums.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Eye className="w-3 h-3" />
-            GPT-4 Vision
-          </Badge>
-          <Badge variant="outline" className="flex items-center gap-1">
-            <Wand2 className="w-3 h-3" />
-            DALL-E 3
-          </Badge>
+        <div className="flex items-center space-x-4">
+          <Button variant="outline" className="border-cyan-500/30">
+            <Download className="w-4 h-4 mr-2" />
+            Export Data
+          </Button>
+          <Button className="cyber-button" onClick={() => window.location.reload()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
         </div>
       </div>
-
-      {/* Upload Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Upload className="w-5 h-5" />
-            Upload Reference Image
-          </CardTitle>
-          <CardDescription>
-            Upload a stadium image for analysis and generation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div 
-              className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-gray-400 transition-colors"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {imagePreview ? (
-                <div className="space-y-4">
-                  <Image 
-                    src={imagePreview} 
-                    alt="Preview" 
-                    className="max-w-full max-h-64 mx-auto rounded-lg shadow-sm"
-                    width={256}
-                    height={256}
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    {selectedFile?.name} ({(selectedFile?.size || 0 / 1024 / 1024).toFixed(2)} MB)
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <Upload className="w-12 h-12 mx-auto text-gray-400" />
-                  <p className="text-lg font-medium">Click to upload stadium image</p>
-                  <p className="text-sm text-muted-foreground">
-                    Supports PNG, JPG, WEBP (max 10MB)
-                  </p>
-                </div>
-              )}
+      
+      {/* Filters */}
+      <Card className="cyber-card border-cyan-500/30">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input placeholder="Search by name, creator, or wallet..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
+              </div>
             </div>
-            
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleFileSelect}
-              className="hidden"
-            />
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input">
+                <option value="all">All Statuses</option>
+                <option value="Minted">Minted</option>
+                <option value="Pending">Pending</option>
+                <option value="Error">Error</option>
+              </select>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Error Display */}
-      {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-
-      {/* Action Tabs */}
-      {selectedFile && (
-        <Tabs defaultValue="analyze" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="analyze" className="flex items-center gap-2">
-              <Eye className="w-4 h-4" />
-              Analyze Only
-            </TabsTrigger>
-            <TabsTrigger value="generate" className="flex items-center gap-2">
-              <Wand2 className="w-4 h-4" />
-              Generate Stadium
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Analyze Tab */}
-          <TabsContent value="analyze">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stadium Analysis</CardTitle>
-                <CardDescription>
-                  Analyze the stadium image using GPT-4 Vision
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-sm">Estimated cost: $0.01</span>
-                  </div>
-                  <Button 
-                    onClick={handleAnalyze}
-                    disabled={isAnalyzing}
-                    className="flex items-center gap-2"
-                  >
-                    {isAnalyzing ? (
-                      <>
-                        <Clock className="w-4 h-4 animate-spin" />
-                        Analyzing...
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-4 h-4" />
-                        Analyze Stadium
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Analysis Results */}
-                {analysisResult?.success && analysisResult.analysis && (
-                  <div className="space-y-4 mt-6">
-                    <Separator />
-                    <h3 className="font-semibold">Analysis Results</h3>
-                    
-                    {StadiumService.formatAnalysisForDisplay(analysisResult.analysis).map((section, idx) => (
-                      <Card key={idx} className="p-4">
-                        <h4 className="font-medium mb-2">{section.title}</h4>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          {section.items.map((item, itemIdx) => (
-                            <div key={itemIdx} className="flex justify-between">
-                              <span className="text-muted-foreground">{item.label}:</span>
-                              <span className="font-medium">{item.value}</span>
-                            </div>
-                          ))}
+      {/* Stadiums Table */}
+      <Card className="cyber-card border-cyan-500/30">
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-800 text-gray-400">
+                  <th className="p-4 font-medium">Preview</th>
+                  <th className="p-4 font-medium">NFT Name</th>
+                  <th className="p-4 font-medium">Creator</th>
+                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 font-medium">Mint Progress</th>
+                  <th className="p-4 font-medium">Created At</th>
+                  <th className="p-4 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? renderSkeleton() : filteredStadiums.map(stadium => (
+                   <tr key={stadium.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                     <td className="p-4">
+                       <Image src={stadium.imageUrl} alt={stadium.name} width={40} height={40} className="rounded-md" />
+                     </td>
+                     <td className="p-4 font-medium text-white">{stadium.name}</td>
+                     <td className="p-4">
+                       <div className="text-white">{stadium.creator.name}</div>
+                       <div className="text-gray-400 text-xs">{stadium.creator.wallet}</div>
+                     </td>
+                     <td className="p-4">
+                       <Badge className={statusColors[stadium.status]}>{stadium.status}</Badge>
+                     </td>
+                     <td className="p-4">
+                        <div className="text-white">{stadium.mintCount} / {stadium.editionSize}</div>
+                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                            <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(stadium.mintCount / stadium.editionSize) * 100}%`}}></div>
                         </div>
-                      </Card>
-                    ))}
-
-                    {analysisResult.analysis.dalle3_prompt && (
-                      <Card className="p-4">
-                        <h4 className="font-medium mb-2">Generated DALL-E 3 Prompt</h4>
-                        <p className="text-sm text-muted-foreground bg-gray-50 p-3 rounded">
-                          {analysisResult.analysis.dalle3_prompt}
-                        </p>
-                      </Card>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Generate Tab */}
-          <TabsContent value="generate">
-            <Card>
-              <CardHeader>
-                <CardTitle>Stadium Generation</CardTitle>
-                <CardDescription>
-                  Generate a new stadium image based on the reference
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Generation Parameters */}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Style</label>
-                    <Select value={generationStyle} onValueChange={(v: any) => setGenerationStyle(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="realistic">Realistic</SelectItem>
-                        <SelectItem value="cinematic">Cinematic</SelectItem>
-                        <SelectItem value="dramatic">Dramatic</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Atmosphere</label>
-                    <Select value={atmosphere} onValueChange={(v: any) => setAtmosphere(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="packed">Packed</SelectItem>
-                        <SelectItem value="half_full">Half Full</SelectItem>
-                        <SelectItem value="empty">Empty</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Time</label>
-                    <Select value={timeOfDay} onValueChange={(v: any) => setTimeOfDay(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="day">Day</SelectItem>
-                        <SelectItem value="night">Night</SelectItem>
-                        <SelectItem value="sunset">Sunset</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Weather</label>
-                    <Select value={weather} onValueChange={(v: any) => setWeather(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="clear">Clear</SelectItem>
-                        <SelectItem value="dramatic">Dramatic</SelectItem>
-                        <SelectItem value="cloudy">Cloudy</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Quality</label>
-                    <Select value={quality} onValueChange={(v: any) => setQuality(v)}>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="standard">Standard</SelectItem>
-                        <SelectItem value="hd">HD (+$0.04)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {/* Generate Button */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="w-4 h-4" />
-                    <span className="text-sm">Estimated cost: ${estimatedCost.toFixed(3)}</span>
-                  </div>
-                  <Button 
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    className="flex items-center gap-2"
-                  >
-                    {isGenerating ? (
-                      <>
-                        <Clock className="w-4 h-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Zap className="w-4 h-4" />
-                        Generate Stadium
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Generation Results */}
-                {generationResult?.success && (
-                  <div className="space-y-4 mt-6">
-                    <Separator />
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold">Generated Stadium</h3>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline">
-                          Cost: ${generationResult.cost_usd?.toFixed(3)}
-                        </Badge>
-                        {generationResult.generated_image_base64 && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => downloadImage(generationResult.generated_image_base64!, 'generated-stadium')}
-                            className="flex items-center gap-1"
-                          >
-                            <Download className="w-3 h-3" />
-                            Download
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {generationResult.generated_image_base64 && (
-                      <div className="flex justify-center">
-                        <Image 
-                          src={StadiumService.base64ToImageUrl(generationResult.generated_image_base64)}
-                          alt="Generated Stadium"
-                          className="max-w-full max-h-96 rounded-lg shadow-lg"
-                          width={384}
-                          height={256}
-                        />
-                      </div>
-                    )}
-
-                    {/* Analysis from Generation */}
-                    {generationResult.analysis && (
-                      <div className="space-y-2">
-                        <h4 className="font-medium">Analysis Used for Generation</h4>
-                        {StadiumService.formatAnalysisForDisplay(generationResult.analysis).map((section, idx) => (
-                          <Card key={idx} className="p-3">
-                            <h5 className="font-medium text-sm mb-1">{section.title}</h5>
-                            <div className="grid grid-cols-2 gap-1 text-xs">
-                              {section.items.slice(0, 4).map((item, itemIdx) => (
-                                <div key={itemIdx} className="flex justify-between">
-                                  <span className="text-muted-foreground">{item.label}:</span>
-                                  <span className="font-medium">{item.value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </Card>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      )}
+                     </td>
+                     <td className="p-4 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
+                     <td className="p-4">
+                       <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
+                     </td>
+                   </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
-} 
+}

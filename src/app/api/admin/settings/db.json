@@ -1,0 +1,19 @@
+{
+  "siteName": "CHZ Fantoken Studio",
+  "maintenanceMode": false,
+  "apiKeys": {
+    "openai": "sk-...",
+    "thirdweb": "pk-...",
+    "cloudinary": "cloudinary://..."
+  },
+  "featureFlags": {
+    "enableStadiums": true,
+    "enableBadges": true,
+    "enableLogoUpload": false,
+    "enableGasless": true
+  },
+  "defaults": {
+    "mintPrice": "10",
+    "editionSize": 100
+  }
+}

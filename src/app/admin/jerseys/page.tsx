@@ -1,467 +1,176 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { 
-  Save,
-  RotateCcw,
-  Eye,
-  Plus,
-  X,
-  Shirt,
-  Palette,
-  Settings,
-  Zap,
-  AlertTriangle,
-  CheckCircle
+  Shirt, Search, Filter, Eye, Trash2, Copy, MoreHorizontal, Download, RefreshCw, Loader2 
 } from 'lucide-react'
 
-// Mock data - in production will come from APIs/database
-const initialConfig = {
-  basePrompt: "professional football jersey, high quality fabric, realistic sports uniform, official team design",
-  suffixPrompt: "studio lighting, clean background, HD, professional photography, vibrant colors",
-  negativePrompts: {
-    global: ["cartoon", "anime", "blurry", "text", "watermark", "low quality"],
-    style: ["amateur", "fake", "cheap"],
-    quality: ["pixelated", "distorted", "unclear"]
-  },
-  parameters: {
-    creativity: 0.7,
-    quality: 0.9,
-    styleStrength: 0.8,
-    guidanceScale: 7.5
-  },
-  teamTemplates: {
-    flamengo: {
-      colors: ["#ff0000", "#000000"],
-      elements: ["red and black stripes", "club crest"],
-      context: "Traditional Brazilian football club with red and black colors"
-    },
-    palmeiras: {
-      colors: ["#00aa00", "#ffffff"],
-      elements: ["green and white", "palm tree symbol"],
-      context: "Historic Brazilian club with green and white tradition"
-    }
-  }
+// Definindo o tipo de Jersey com base na API
+interface Jersey {
+  id: string;
+  name: string;
+  creator: {
+    name: string;
+    wallet: string;
+  };
+  createdAt: string;
+  status: 'Minted' | 'Pending' | 'Error';
+  imageUrl: string;
+  mintCount: number;
+  editionSize: number;
 }
 
-export default function JerseysConfig() {
-  const [config, setConfig] = useState(initialConfig)
-  const [newNegativePrompt, setNewNegativePrompt] = useState("")
-  const [activeTeam, setActiveTeam] = useState("flamengo")
-  const [previewPrompt, setPreviewPrompt] = useState("")
+const statusColors: { [key in Jersey['status']]: string } = {
+  Minted: 'bg-green-500/20 text-green-400 border-green-500/30',
+  Pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+  Error: 'bg-red-500/20 text-red-400 border-red-500/30'
+}
 
-  // Generate preview prompt
-  const generatePreviewPrompt = () => {
-    const team = config.teamTemplates[activeTeam as keyof typeof config.teamTemplates]
-    const fullPrompt = `${config.basePrompt}, ${team.context}, ${team.elements.join(', ')}, ${config.suffixPrompt}`
-    const negatives = Object.values(config.negativePrompts).flat().join(', ')
-    setPreviewPrompt(`PROMPT: ${fullPrompt}\n\nNEGATIVE: ${negatives}`)
-  }
+export default function JerseysPage() {
+  const [jerseys, setJerseys] = useState<Jersey[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterStatus, setFilterStatus] = useState('all')
 
-  // Add negative prompt
-  const addNegativePrompt = (category: keyof typeof config.negativePrompts) => {
-    if (newNegativePrompt.trim()) {
-      setConfig(prev => ({
-        ...prev,
-        negativePrompts: {
-          ...prev.negativePrompts,
-          [category]: [...prev.negativePrompts[category], newNegativePrompt.trim()]
+  useEffect(() => {
+    const fetchJerseys = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/admin/jerseys');
+        if (!response.ok) {
+          throw new Error('Failed to fetch jerseys');
         }
-      }))
-      setNewNegativePrompt("")
-    }
-  }
-
-  // Remove negative prompt
-  const removeNegativePrompt = (category: keyof typeof config.negativePrompts, index: number) => {
-    setConfig(prev => ({
-      ...prev,
-      negativePrompts: {
-        ...prev.negativePrompts,
-        [category]: prev.negativePrompts[category].filter((_, i) => i !== index)
+        const data: Jersey[] = await response.json();
+        setJerseys(data);
+      } catch (err: any) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    }))
-  }
+    };
+
+    fetchJerseys();
+  }, []);
+
+  const filteredJerseys = jerseys.filter(jersey => {
+    const matchesSearch = jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         jersey.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         jersey.creator.wallet.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus
+    
+    return matchesSearch && matchesStatus;
+  })
+
+  const renderSkeleton = () => (
+    Array.from({ length: 4 }).map((_, i) => (
+       <tr key={`skel-${i}`} className="border-b border-gray-800">
+         <td className="p-4"><div className="h-10 w-10 bg-gray-700 rounded-md animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-32 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-24 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div></td>
+         <td className="p-4"><div className="h-5 w-16 bg-gray-700 rounded animate-pulse"></div></td>
+       </tr>
+    ))
+  );
 
   return (
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Jersey Configuration</h1>
-          <p className="text-gray-400 mt-2">AI prompt engineering and generation settings</p>
+          <h1 className="text-3xl font-bold text-gray-200">Jersey Management</h1>
+          <p className="text-gray-400 mt-2">Browse, review, and manage all generated jerseys.</p>
         </div>
         <div className="flex items-center space-x-4">
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-            <Shirt className="w-3 h-3 mr-1" />
-            Jersey Engine
-          </Badge>
           <Button variant="outline" className="border-cyan-500/30">
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Reset to Defaults
+            <Download className="w-4 h-4 mr-2" />
+            Export Data
           </Button>
-          <Button className="cyber-button">
-            <Save className="w-4 h-4 mr-2" />
-            Save Configuration
+          <Button className="cyber-button" onClick={() => window.location.reload()}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
           </Button>
         </div>
       </div>
-
-      <Tabs defaultValue="prompts" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
-          <TabsTrigger value="prompts" className="data-[state=active]:bg-cyan-500/20">
-            Prompt Engineering
-          </TabsTrigger>
-          <TabsTrigger value="negatives" className="data-[state=active]:bg-cyan-500/20">
-            Negative Prompts
-          </TabsTrigger>
-          <TabsTrigger value="teams" className="data-[state=active]:bg-cyan-500/20">
-            Team Templates
-          </TabsTrigger>
-          <TabsTrigger value="parameters" className="data-[state=active]:bg-cyan-500/20">
-            Parameters
-          </TabsTrigger>
-        </TabsList>
-
-        {/* Prompt Engineering Tab */}
-        <TabsContent value="prompts" className="space-y-6">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Base Prompt */}
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Zap className="h-5 w-5 text-cyan-400" />
-                  <span>Base Prompt</span>
-                </CardTitle>
-                <CardDescription>
-                  Core prompt that applies to all jersey generations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  value={config.basePrompt}
-                  onChange={(e) => setConfig(prev => ({ ...prev, basePrompt: e.target.value }))}
-                  className="cyber-input min-h-24 resize-none"
-                  placeholder="Enter base prompt for jersey generation..."
-                />
-                <div className="flex items-center space-x-2 text-sm text-gray-400">
-                  <CheckCircle className="h-4 w-4 text-green-400" />
-                  <span>Length: {config.basePrompt.length} characters</span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Suffix Prompt */}
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="h-5 w-5 text-cyan-400" />
-                  <span>Suffix Prompt</span>
-                </CardTitle>
-                <CardDescription>
-                  Quality and style modifiers added to the end
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Textarea
-                  value={config.suffixPrompt}
-                  onChange={(e) => setConfig(prev => ({ ...prev, suffixPrompt: e.target.value }))}
-                  className="cyber-input min-h-24 resize-none"
-                  placeholder="Enter suffix prompt for quality and style..."
-                />
-                <div className="flex items-center space-x-2 text-sm text-gray-400">
-                  <CheckCircle className="h-4 w-4 text-green-400" />
-                  <span>Length: {config.suffixPrompt.length} characters</span>
-                </div>
-              </CardContent>
-            </Card>
+      
+      {/* Filters */}
+      <Card className="cyber-card border-cyan-500/30">
+        <CardContent className="pt-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input placeholder="Search by name, creator, or wallet..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Filter className="h-4 w-4 text-gray-400" />
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input">
+                <option value="all">All Statuses</option>
+                <option value="Minted">Minted</option>
+                <option value="Pending">Pending</option>
+                <option value="Error">Error</option>
+              </select>
+            </div>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Preview */}
-          <Card className="cyber-card border-cyan-500/30">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Eye className="h-5 w-5 text-cyan-400" />
-                  <span>Prompt Preview</span>
-                </div>
-                <Button onClick={generatePreviewPrompt} size="sm" className="cyber-button">
-                  Generate Preview
-                </Button>
-              </CardTitle>
-              <CardDescription>
-                See how the final prompt will look for team: {activeTeam}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Textarea
-                value={previewPrompt}
-                readOnly
-                className="cyber-input min-h-32 resize-none font-mono text-sm"
-                placeholder="Click 'Generate Preview' to see the final prompt..."
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Negative Prompts Tab */}
-        <TabsContent value="negatives" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Global Negatives */}
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="text-sm">Global Negatives</CardTitle>
-                <CardDescription className="text-xs">
-                  Applied to all generations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex space-x-2">
-                  <Input
-                    value={newNegativePrompt}
-                    onChange={(e) => setNewNegativePrompt(e.target.value)}
-                    placeholder="Add negative prompt..."
-                    className="cyber-input flex-1"
-                    onKeyPress={(e) => e.key === 'Enter' && addNegativePrompt('global')}
-                  />
-                  <Button
-                    onClick={() => addNegativePrompt('global')}
-                    size="sm"
-                    className="cyber-button"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {config.negativePrompts.global.map((prompt, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="flex items-center justify-between w-full border-red-500/30 text-red-400"
-                    >
-                      <span className="text-xs">{prompt}</span>
-                      <Button
-                        onClick={() => removeNegativePrompt('global', index)}
-                        size="sm"
-                        variant="ghost"
-                        className="h-4 w-4 p-0 ml-2 hover:text-red-300"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Style Negatives */}
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="text-sm">Style Negatives</CardTitle>
-                <CardDescription className="text-xs">
-                  Style-specific exclusions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex space-x-2">
-                  <Input
-                    value={newNegativePrompt}
-                    onChange={(e) => setNewNegativePrompt(e.target.value)}
-                    placeholder="Add style negative..."
-                    className="cyber-input flex-1"
-                    onKeyPress={(e) => e.key === 'Enter' && addNegativePrompt('style')}
-                  />
-                  <Button
-                    onClick={() => addNegativePrompt('style')}
-                    size="sm"
-                    className="cyber-button"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {config.negativePrompts.style.map((prompt, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="flex items-center justify-between w-full border-yellow-500/30 text-yellow-400"
-                    >
-                      <span className="text-xs">{prompt}</span>
-                      <Button
-                        onClick={() => removeNegativePrompt('style', index)}
-                        size="sm"
-                        variant="ghost"
-                        className="h-4 w-4 p-0 ml-2 hover:text-yellow-300"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quality Negatives */}
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="text-sm">Quality Negatives</CardTitle>
-                <CardDescription className="text-xs">
-                  Quality control exclusions
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex space-x-2">
-                  <Input
-                    value={newNegativePrompt}
-                    onChange={(e) => setNewNegativePrompt(e.target.value)}
-                    placeholder="Add quality negative..."
-                    className="cyber-input flex-1"
-                    onKeyPress={(e) => e.key === 'Enter' && addNegativePrompt('quality')}
-                  />
-                  <Button
-                    onClick={() => addNegativePrompt('quality')}
-                    size="sm"
-                    className="cyber-button"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </div>
-                <div className="space-y-2 max-h-40 overflow-y-auto">
-                  {config.negativePrompts.quality.map((prompt, index) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="flex items-center justify-between w-full border-orange-500/30 text-orange-400"
-                    >
-                      <span className="text-xs">{prompt}</span>
-                      <Button
-                        onClick={() => removeNegativePrompt('quality', index)}
-                        size="sm"
-                        variant="ghost"
-                        className="h-4 w-4 p-0 ml-2 hover:text-orange-300"
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+      {/* Jerseys Table */}
+      <Card className="cyber-card border-cyan-500/30">
+        <CardContent>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-800 text-gray-400">
+                  <th className="p-4 font-medium">Preview</th>
+                  <th className="p-4 font-medium">NFT Name</th>
+                  <th className="p-4 font-medium">Creator</th>
+                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 font-medium">Mint Progress</th>
+                  <th className="p-4 font-medium">Created At</th>
+                  <th className="p-4 font-medium">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? renderSkeleton() : filteredJerseys.map(jersey => (
+                   <tr key={jersey.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                     <td className="p-4">
+                       <Image src={jersey.imageUrl} alt={jersey.name} width={40} height={40} className="rounded-md" />
+                     </td>
+                     <td className="p-4 font-medium text-white">{jersey.name}</td>
+                     <td className="p-4">
+                       <div className="text-white">{jersey.creator.name}</div>
+                       <div className="text-gray-400 text-xs">{jersey.creator.wallet}</div>
+                     </td>
+                     <td className="p-4">
+                       <Badge className={statusColors[jersey.status]}>{jersey.status}</Badge>
+                     </td>
+                     <td className="p-4">
+                        <div className="text-white">{jersey.mintCount} / {jersey.editionSize}</div>
+                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
+                            <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(jersey.mintCount / jersey.editionSize) * 100}%`}}></div>
+                        </div>
+                     </td>
+                     <td className="p-4 text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
+                     <td className="p-4">
+                       <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
+                     </td>
+                   </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-        </TabsContent>
-
-        {/* Team Templates Tab */}
-        <TabsContent value="teams" className="space-y-6">
-          <div className="flex space-x-4 mb-6">
-            {Object.keys(config.teamTemplates).map((team) => (
-              <Button
-                key={team}
-                onClick={() => setActiveTeam(team)}
-                variant={activeTeam === team ? "default" : "outline"}
-                className={activeTeam === team ? "cyber-button" : "border-cyan-500/30"}
-              >
-                {team.charAt(0).toUpperCase() + team.slice(1)}
-              </Button>
-            ))}
-          </div>
-
-          {activeTeam && (
-            <Card className="cyber-card border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Palette className="h-5 w-5 text-cyan-400" />
-                  <span>{activeTeam.charAt(0).toUpperCase() + activeTeam.slice(1)} Template</span>
-                </CardTitle>
-                <CardDescription>
-                  Team-specific configuration and context
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium text-gray-200">Team Colors</Label>
-                      <div className="flex space-x-2 mt-2">
-                        {config.teamTemplates[activeTeam as keyof typeof config.teamTemplates].colors.map((color, index) => (
-                          <div
-                            key={index}
-                            className="w-8 h-8 rounded border border-gray-600"
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium text-gray-200">Required Elements</Label>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {config.teamTemplates[activeTeam as keyof typeof config.teamTemplates].elements.map((element, index) => (
-                          <Badge key={index} className="bg-cyan-500/20 text-cyan-400 border-cyan-500/30">
-                            {element}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-gray-200">Historical Context</Label>
-                    <Textarea
-                      value={config.teamTemplates[activeTeam as keyof typeof config.teamTemplates].context}
-                      className="cyber-input mt-2 min-h-24"
-                      readOnly
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        {/* Parameters Tab */}
-        <TabsContent value="parameters" className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Object.entries(config.parameters).map(([key, value]) => (
-              <Card key={key} className="cyber-card border-cyan-500/30">
-                <CardHeader>
-                  <CardTitle className="text-sm capitalize">{key.replace(/([A-Z])/g, ' $1')}</CardTitle>
-                  <CardDescription className="text-xs">
-                    Current value: {value}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={value}
-                      onChange={(e) => setConfig(prev => ({
-                        ...prev,
-                        parameters: {
-                          ...prev.parameters,
-                          [key]: parseFloat(e.target.value)
-                        }
-                      }))}
-                      className="slider w-full"
-                    />
-                    <div className="flex justify-between text-xs text-gray-500">
-                      <span>0.0</span>
-                      <span>1.0</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   )
 } 
