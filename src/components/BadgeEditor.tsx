@@ -18,6 +18,7 @@ import EditorLayout from '@/components/layouts/EditorLayout'
 import EditorPanel from '@/components/editor/EditorPanel'
 import PreviewPanel from '@/components/editor/PreviewPanel'
 import MarketplaceCarousel from '@/components/editor/MarketplaceCarousel'
+import StyleButton from './ui/StyleButton'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -228,41 +229,45 @@ export default function BadgeEditor() {
 
   const renderControls = () => (
     <>
-      <EditorPanel title="Create Badge NFT">
-        <div className="space-y-4 mb-6">
-          <label className="text-sm font-medium text-gray-300">Team</label>
-          <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white">
-            <option value="" disabled>Select Team</option>
-            {availableTeams.map((team) => <option key={team} value={team}>{team}</option>)}
-          </select>
+      <EditorPanel title="1. Select Style">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          {STYLE_FILTERS.map((filter) => (
+            <StyleButton
+              key={filter.id}
+              onClick={() => setSelectedStyle(filter.id)}
+              isActive={selectedStyle === filter.id}
+            >
+              <filter.icon className="w-4 h-4 mr-2" />
+              {filter.label}
+            </StyleButton>
+          ))}
         </div>
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
-            <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="CHAMPION" />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
-            <input type="text" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="1" />
-          </div>
-        </div>
-        <div className="space-y-4 mb-6">
-          <h3 className="heading-style">Style</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {STYLE_FILTERS.map((style) => (
-              <button key={style.id} onClick={() => setSelectedStyle(style.id)} className={`style-button ${selectedStyle === style.id ? 'active' : ''} px-4 py-3 rounded-lg flex flex-col items-center justify-center space-y-1 transition-all`}>
-                <style.icon className="w-5 h-5" />
-                <span className="text-xs font-medium">{style.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-        <button onClick={generateContent} disabled={isLoading || !selectedTeam} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-          {isLoading ? 'Generating...' : 'Generate Badge'}
-        </button>
       </EditorPanel>
-
-      <EditorPanel title="Mint NFT">
+      <EditorPanel title="2. Custom Badge">
+        <div className="space-y-4">
+            <div className="space-y-4 mb-6">
+              <label className="text-sm font-medium text-gray-300">Team</label>
+              <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white">
+                <option value="" disabled>Select Team</option>
+                {availableTeams.map((team) => <option key={team} value={team}>{team}</option>)}
+              </select>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
+                <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="CHAMPION" />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
+                <input type="text" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="1" />
+              </div>
+            </div>
+            <Button onClick={generateContent} disabled={isLoading} className="w-full">
+                {isLoading ? 'Generating...' : 'Generate Badge'}
+            </Button>
+        </div>
+      </EditorPanel>
+      <EditorPanel title="3. Mint NFT">
         <div>
           <label className="text-sm font-medium text-gray-300">Edition Size: <span className="text-cyan-400 font-semibold">{editionSize}</span></label>
           <input type="range" min="1" max="1000" value={editionSize} onChange={(e) => setEditionSize(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider mt-2" />
