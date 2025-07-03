@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
+import clientPromise from '@/lib/mongodb';
+import { Collection, Db } from 'mongodb';
 
-// O caminho para nosso "banco de dados" JSON
-const dbPath = path.join(process.cwd(), 'src', 'app', 'api', 'admin', 'jerseys', 'config', 'db.json');
+// Configurações do banco de dados
+const DB_NAME = 'chz-app-db';
+const COLLECTION_NAME = 'jersey_configs';
 
-// Dados iniciais caso o db.json não exista
+// Dados iniciais caso a coleção esteja vazia
 const initialConfig = {
   basePrompt: "professional football jersey, high quality fabric, realistic sports uniform, official team design",
   suffixPrompt: "studio lighting, clean background, HD, professional photography, vibrant colors",
@@ -34,27 +35,39 @@ const initialConfig = {
   }
 };
 
-// Função para ler os dados do DB
-async function readDb() {
+let db: Db;
+let configs: Collection;
+
+// Função de inicialização para conectar ao DB e à coleção
+async function init() {
+  if (db && configs) return;
   try {
-    const data = await fs.readFile(dbPath, 'utf-8');
-    return JSON.parse(data);
+    const client = await clientPromise;
+    db = client.db(DB_NAME);
+    configs = db.collection(COLLECTION_NAME);
   } catch (error) {
-    // Se o arquivo não existe, cria com os dados iniciais
-    await fs.writeFile(dbPath, JSON.stringify(initialConfig, null, 2));
-    return initialConfig;
+    throw new Error('Failed to connect to the database.');
   }
 }
 
-// Função para escrever os dados no DB
-async function writeDb(data: any) {
-  await fs.writeFile(dbPath, JSON.stringify(data, null, 2));
-}
+// Inicializa a conexão
+(async () => { await init() })();
+
 
 // Handler GET para buscar a configuração
 export async function GET() {
   try {
-    const config = await readDb();
+    if (!configs) await init();
+    
+    // Como só temos um documento de config, usamos findOne
+    let config = await configs.findOne({});
+
+    // Se não houver configuração, criamos uma com os dados iniciais
+    if (!config) {
+      await configs.insertOne(initialConfig);
+      config = initialConfig;
+    }
+
     return NextResponse.json(config);
   } catch (error) {
     console.error('Error fetching jersey config:', error);
@@ -65,8 +78,19 @@ export async function GET() {
 // Handler POST para salvar a configuração
 export async function POST(request: Request) {
   try {
+    if (!configs) await init();
+
     const newConfig = await request.json();
-    await writeDb(newConfig);
+    // Remove o _id do objeto para não tentar sobrescrevê-lo
+    const { _id, ...configData } = newConfig;
+
+    // `updateOne` com `upsert: true` irá atualizar o documento existente ou criar um novo se não existir.
+    await configs.updateOne(
+      {}, // Filtro vazio para pegar o único documento de config
+      { $set: configData },
+      { upsert: true }
+    );
+
     return NextResponse.json({ message: 'Configuration saved successfully', config: newConfig });
   } catch (error) {
     console.error('Error saving jersey config:', error);

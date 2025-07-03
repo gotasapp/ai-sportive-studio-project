@@ -1,69 +1,53 @@
 import { NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+import { Collection, Db } from 'mongodb';
 
-// Mock data para badges - virá do DB no futuro
-const mockBadges = [
-  {
-    id: 'badge_1',
-    name: 'CHZ Founder',
-    creator: {
-      name: 'Admin',
-      wallet: '0xAbc...dEfg'
-    },
-    createdAt: '2024-07-01T10:00:00Z',
-    status: 'Claimable',
-    imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750638510/badge_CHZ_Founder_wkvhcy.png',
-    mintCount: 500,
-    editionSize: 1000,
-  },
-  {
-    id: 'badge_2',
-    name: 'Top Collector',
-    creator: {
-      name: 'Admin',
-      wallet: '0xDef...Abc1'
-    },
-    createdAt: '2024-06-15T12:00:00Z',
-    status: 'Claimable',
-    imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750638512/badge_Top_Collector_lq9vbj.png',
-    mintCount: 88,
-    editionSize: 100,
-  },
-  {
-    id: 'badge_3',
-    name: 'Early Adopter',
-    creator: {
-      name: 'Admin',
-      wallet: '0xGhi...jKlM'
-    },
-    createdAt: '2024-05-20T09:30:00Z',
-    status: 'Claimable',
-    imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750638515/badge_Early_Adopter_gy8kdh.png',
-    mintCount: 1234,
-    editionSize: 2000,
-  },
-  {
-    id: 'badge_4',
-    name: 'Genesis Jersey',
-    creator: {
-      name: 'Admin',
-      wallet: '0x123...4567'
-    },
-    createdAt: '2024-07-05T14:00:00Z',
-    status: 'Expired',
-    imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750638517/badge_Genesis_Jersey_bdfmld.png',
-    mintCount: 100,
-    editionSize: 100,
-  },
-];
+// Definindo o nome do banco de dados e da coleção
+const DB_NAME = 'chz-app-db';
+const COLLECTION_NAME = 'badges';
+
+let db: Db;
+let badges: Collection;
+
+// Função de inicialização para conectar ao DB e à coleção
+async function init() {
+  if (db && badges) {
+    return;
+  }
+  try {
+    const client = await clientPromise;
+    db = client.db(DB_NAME);
+    badges = db.collection(COLLECTION_NAME);
+  } catch (error) {
+    throw new Error('Failed to connect to the database.');
+  }
+}
+
+// Inicializa a conexão
+(async () => {
+  await init();
+})();
+
 
 export async function GET() {
   try {
-    // Simular delay de rede
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return NextResponse.json(mockBadges);
+    // Garante que a conexão está ativa
+    if (!badges) await init();
+
+    const allBadges = await badges.find({}).sort({ createdAt: -1 }).toArray();
+
+    // O MongoDB retorna _id como um objeto. Para o frontend, é melhor convertê-lo para string.
+    const sanitizedBadges = allBadges.map(badge => ({
+        ...badge,
+        _id: badge._id.toString(),
+    }));
+
+    return NextResponse.json(sanitizedBadges);
   } catch (error) {
     console.error('Error fetching badges:', error);
+    if (error instanceof Error && error.message.includes('database')) {
+        return NextResponse.json({ error: error.message }, { status: 503 });
+    }
     return NextResponse.json({ error: 'Failed to fetch badges' }, { status: 500 });
   }
 } 

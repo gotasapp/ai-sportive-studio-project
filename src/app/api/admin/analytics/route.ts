@@ -1,20 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
+import clientPromise from '@/lib/mongodb';
+import { Db } from 'mongodb';
 
 // No futuro, estes dados virão de um banco de dados, cache ou outra fonte de dados real.
-// Por agora, estamos simulando uma resposta de API real.
 const getAnalyticsOverview = async () => {
-  return {
-    totalNFTs: 16253, // Dado "atualizado"
-    totalUsers: 3512, // Dado "atualizado"
-    totalRevenue: 51048.75, // Dado "atualizado"
-    avgGenerationTime: 8.2,
-    successRate: 95.1,
-    growth: {
-      nfts: 14.2,
-      users: 9.1,
-      revenue: 27.3
-    }
-  };
+  try {
+    const client = await clientPromise;
+    const db = client.db('chz-app-db');
+
+    const usersCount = await db.collection('users').countDocuments();
+    const jerseysCount = await db.collection('jerseys').countDocuments();
+    const badgesCount = await db.collection('badges').countDocuments();
+    const stadiumsCount = await db.collection('stadiums').countDocuments();
+
+    return {
+      totalNFTs: jerseysCount + badgesCount + stadiumsCount,
+      totalUsers: usersCount,
+      totalRevenue: 51048.75, // Mocked for now
+      avgGenerationTime: 8.2, // Mocked for now
+      successRate: 95.1, // Mocked for now
+      growth: { // Mocked for now
+        nfts: 14.2,
+        users: 9.1,
+        revenue: 27.3
+      }
+    };
+  } catch (error) {
+    console.error("Error fetching overview from DB:", error);
+    // Retornar um objeto de erro para ser tratado no handler principal
+    throw new Error("Database query for overview failed");
+  }
 };
 
 const getPopularTeamsData = async () => {
