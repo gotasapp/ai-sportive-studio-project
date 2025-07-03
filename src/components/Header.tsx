@@ -8,6 +8,7 @@ import { polygon, mainnet } from "thirdweb/chains";
 import { Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
+import NavLink from './ui/NavLink';
 
 
 
@@ -174,26 +175,16 @@ export default function Header() {
           </h1>
         </div>
 
-        <nav className="hidden lg:flex items-center space-x-8">
-          <Link href="/" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
-            Jerseys
-          </Link>
-          <Link href="/stadiums" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
-            Stadiums
-          </Link>
-          <Link href="/badges" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
-            Badges
-          </Link>
+        <nav className="hidden lg:flex items-center space-x-6">
+          <NavLink href="/">Jerseys</NavLink>
+          <NavLink href="/stadiums">Stadiums</NavLink>
+          <NavLink href="/badges">Badges</NavLink>
           {userIsAdmin && (
-            <Link href="/vision-test" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
-              Vision Test
-            </Link>
+            <NavLink href="/vision-test">Vision Test</NavLink>
           )}
-          <Link href="/marketplace" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
-            Marketplace
-          </Link>
+          <NavLink href="/marketplace">Marketplace</NavLink>
           
-          <a href="#" className="font-display text-nav-purple hover:opacity-80 transition-opacity" style={{ fontSize: '14px', fontWeight: 500, lineHeight: '40px' }}>
+          <a href="#" className="text-secondary hover:text-white transition-colors duration-200 text-sm font-medium">
             My NFTs
           </a>
           

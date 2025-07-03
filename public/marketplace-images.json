@@ -79,6 +79,32 @@
       }
     ]
   },
+  "featured_nfts": [
+    {
+      "name": "Lebron James",
+      "collection": "NBA Legends",
+      "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png",
+      "creator_image_url": "https://randomuser.me/api/portraits/men/32.jpg"
+    },
+    {
+      "name": "Maracana",
+      "collection": "World Stadiums",
+      "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636630/bafybeicw37rbxeqti3ty5i6gc4gbciro27gacizwywirur5lag6obxcfh4_x0ijvi.png",
+      "creator_image_url": "https://randomuser.me/api/portraits/women/44.jpg"
+    },
+    {
+      "name": "Jeff Corinthians",
+      "collection": "Brasileirão Series",
+      "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png",
+      "creator_image_url": "https://randomuser.me/api/portraits/men/35.jpg"
+    },
+     {
+      "name": "Eagle Badge",
+      "collection": "Mythical Badges",
+      "image_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636633/bafybeigiluwv7wjg3rmwwnjfjndvbiy7vkusihwyvjd3iz3yzudl4kfhia_dmsrtn.png",
+      "creator_image_url": "https://randomuser.me/api/portraits/women/50.jpg"
+    }
+  ],
   "instructions": {
     "como_usar": "Substitua 'COLE_AQUI_A_URL_DA_IMAGEM_X' pelas URLs reais do Cloudinary",
     "exemplo_url": "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750634725/exemplo.jpg",
