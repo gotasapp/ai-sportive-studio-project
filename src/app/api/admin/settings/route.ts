@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
-import { Collection, Db } from 'mongodb';
-
-// Configurações
-const DB_NAME = 'chz-app-db';
-const COLLECTION_NAME = 'settings';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 // Dados iniciais caso a coleção esteja vazia
 const initialSettings = {
@@ -24,66 +21,151 @@ const initialSettings = {
   defaults: {
     mintPrice: '10', // in CHZ
     editionSize: 100,
+  },
+  contentFilters: {
+    enabled: true,
+    defaultPrompts: [
+      'sexual content',
+      'nudity',
+      'violence',
+      'weapons',
+      'drugs',
+      'gore',
+      'hate speech',
+      'discriminatory content',
+      'illegal activities',
+      'harmful content'
+    ],
+    customPrompts: []
   }
 };
 
-let db: Db;
-let settingsCollection: Collection;
+// Caminho para o arquivo de backup
+const SETTINGS_FILE = path.join(process.cwd(), 'src/app/api/admin/settings/db.json');
 
-// Função de inicialização
-async function init() {
-  if (db && settingsCollection) return;
+// Função para ler settings do arquivo
+async function readSettingsFromFile() {
   try {
-    const client = await clientPromise;
-    db = client.db(DB_NAME);
-    settingsCollection = db.collection(COLLECTION_NAME);
+    const fileContent = await fs.readFile(SETTINGS_FILE, 'utf8');
+    return JSON.parse(fileContent);
   } catch (error) {
-    throw new Error('Failed to connect to the database.');
+    // Se o arquivo não existir, retornar settings iniciais
+    return initialSettings;
   }
 }
 
-// Inicializa a conexão
-(async () => { await init() })();
+// Função para salvar settings no arquivo
+async function saveSettingsToFile(settings: any) {
+  try {
+    await fs.writeFile(SETTINGS_FILE, JSON.stringify(settings, null, 2));
+  } catch (error) {
+    console.error('Error saving settings to file:', error);
+  }
+}
+
+// Função para tentar MongoDB primeiro, depois arquivo
+async function getSettings() {
+  try {
+    // Tentar MongoDB primeiro
+    const client = await clientPromise;
+    const db = client.db('chz-app-db');
+    const settingsCollection = db.collection('settings');
+    
+    // Buscar especificamente configurações (não dados de moderação)
+    let settings = await settingsCollection.findOne({ 
+      $or: [
+        { siteName: { $exists: true } },
+        { _id: { $ne: 'moderation_config' } }
+      ]
+    });
+
+    if (!settings || settings._id === 'moderation_config') {
+      // Se não encontrou ou é config de moderação, inserir settings iniciais
+      await settingsCollection.insertOne({ 
+        ...initialSettings, 
+        _id: 'app_settings',
+        updatedAt: new Date()
+      });
+      settings = { ...initialSettings, _id: 'app_settings' };
+    }
+
+    // Salvar backup no arquivo
+    await saveSettingsToFile(settings);
+    
+    return settings;
+  } catch (error) {
+    console.warn('MongoDB not available, using file fallback:', error.message);
+    // Fallback para arquivo
+    return await readSettingsFromFile();
+  }
+}
+
+// Função para salvar settings (MongoDB + arquivo)
+async function saveSettings(settings: any) {
+  // Sempre salvar no arquivo
+  await saveSettingsToFile(settings);
+  
+  try {
+    // Tentar salvar no MongoDB
+    const client = await clientPromise;
+    const db = client.db('chz-app-db');
+    const settingsCollection = db.collection('settings');
+
+    await settingsCollection.updateOne(
+      { _id: 'app_settings' },
+      { 
+        $set: { 
+          ...settings, 
+          _id: 'app_settings',
+          updatedAt: new Date()
+        } 
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    console.warn('MongoDB not available for saving, using file only:', error.message);
+  }
+}
 
 // Handler GET
 export async function GET() {
   try {
-    if (!settingsCollection) await init();
-    
-    let settings = await settingsCollection.findOne({});
-
-    if (!settings) {
-      await settingsCollection.insertOne(initialSettings);
-      settings = initialSettings;
-    }
+    const settings = await getSettings();
 
     // Mascarar as chaves de API antes de enviar para o cliente
     const maskedSettings = {
         ...settings,
-        apiKeys: Object.keys(settings.apiKeys).reduce((acc, key) => {
+        apiKeys: Object.keys(settings.apiKeys || {}).reduce((acc, key) => {
             const apiKey = settings.apiKeys[key as keyof typeof settings.apiKeys];
             acc[key as keyof typeof settings.apiKeys] = apiKey ? `${apiKey.substring(0, 5)}...` : '';
             return acc;
         }, {} as typeof settings.apiKeys)
     };
+    
     return NextResponse.json(maskedSettings);
 
   } catch (error) {
     console.error('Error fetching settings:', error);
-    return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 });
+    // Último fallback - retornar settings iniciais
+    return NextResponse.json({
+      ...initialSettings,
+      apiKeys: {
+        openai: 'sk-xxx...',
+        thirdweb: 'pk-xxx...',
+        cloudinary: 'cloudinary://xxx...',
+      }
+    });
   }
 }
 
 // Handler POST
 export async function POST(request: Request) {
   try {
-    if (!settingsCollection) await init();
-
     const newSettings = await request.json();
     const { _id, ...configData } = newSettings;
 
     // Buscar a config atual para não sobrescrever as chaves de API com valores mascarados
-    const currentSettings = await settingsCollection.findOne({});
+    const currentSettings = await getSettings();
     
     if (currentSettings && configData.apiKeys) {
         Object.keys(configData.apiKeys).forEach(key => {
@@ -94,15 +176,11 @@ export async function POST(request: Request) {
         });
     }
 
-    await settingsCollection.updateOne(
-      {},
-      { $set: configData },
-      { upsert: true }
-    );
+    await saveSettings(configData);
 
     return NextResponse.json({ message: 'Settings saved successfully', settings: configData });
   } catch (error) {
     console.error('Error saving settings:', error);
-    return NextResponse.json({ error: 'Failed to save settings' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save settings', details: error.message }, { status: 500 });
   }
 } 

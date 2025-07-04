@@ -15,7 +15,8 @@ import {
   FileText,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Award
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -35,19 +36,31 @@ const navigation = [
     name: 'Jerseys',
     href: '/admin/jerseys',
     icon: Shirt,
-    description: 'Jersey Generation Config'
-  },
-  {
-    name: 'Logos & Badges',
-    href: '/admin/logos',
-    icon: Trophy,
-    description: 'Logo Generation Config'
+    description: 'Jersey Management'
   },
   {
     name: 'Stadiums',
     href: '/admin/stadiums',
     icon: Building2,
-    description: 'Stadium Generation Config'
+    description: 'Stadium Management'
+  },
+  {
+    name: 'Badges',
+    href: '/admin/badges',
+    icon: Award,
+    description: 'Badge Management'
+  },
+  {
+    name: 'Logos',
+    href: '/admin/logos',
+    icon: Trophy,
+    description: 'Logo Management'
+  },
+  {
+    name: 'Moderation',
+    href: '/admin/moderation',
+    icon: Shield,
+    description: 'Content Moderation'
   },
   {
     name: 'Analytics',
@@ -62,22 +75,16 @@ const navigation = [
     description: 'User Management'
   },
   {
-    name: 'Moderation',
-    href: '/admin/moderation',
-    icon: Shield,
-    description: 'Content Moderation'
-  },
-  {
     name: 'Logs',
     href: '/admin/logs',
     icon: FileText,
-    description: 'System Logs & Audit'
+    description: 'System Logs'
   },
   {
     name: 'Settings',
     href: '/admin/settings',
     icon: Settings,
-    description: 'System Configuration'
+    description: 'Configuration'
   }
 ]
 
@@ -110,7 +117,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <div>
                 <h1 className="text-lg font-bold text-accent">Admin Panel</h1>
-                <p className="text-xs text-accent/70">Chiliz Fan NFT</p>
+                <p className="text-xs text-accent/70">CHZ Fan Studio</p>
               </div>
             </div>
             <Button
@@ -148,6 +155,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                       : 'text-neutral-300 hover:text-white hover:bg-neutral-800/60'
                     }
                   `}
+                  onClick={() => setSidebarOpen(false)} // Fecha sidebar no mobile
                 >
                   <Icon className={`
                     mr-3 h-5 w-5 flex-shrink-0 transition-colors
@@ -190,8 +198,8 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <div className="lg:pl-72">
-        {/* Top bar */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-neutral-800 bg-[#050505]/80 backdrop-blur-lg px-4 sm:gap-x-6 sm:px-6 lg:px-8">
+        {/* Top bar - Mais simples e rápido */}
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-neutral-800 bg-[#050505]/90 backdrop-blur-sm px-4 sm:gap-x-6 sm:px-6 lg:px-8">
           <Button
             variant="ghost"
             size="icon"
@@ -200,28 +208,36 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           >
             <Menu className="w-5 h-5" />
           </Button>
-
-          <div className="h-6 w-px bg-neutral-700 lg:hidden" />
-
-          <div className="flex flex-1 items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h2 className="text-xl font-semibold text-white">
+          
+          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+            <div className="flex flex-1 items-center">
+              <h2 className="text-lg font-semibold text-white">
                 {navigation.find(item => item.href === pathname)?.name || 'Admin Panel'}
               </h2>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="border-neutral-700 text-neutral-400">
-                v1.0.0
-              </Badge>
-              <div className="text-sm text-neutral-400">
-                {new Date().toLocaleDateString()}
+            {/* Quick actions */}
+            <div className="flex items-center gap-x-4 lg:gap-x-6">
+              <div className="hidden md:flex items-center gap-2">
+                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                <span className="text-sm text-green-400">Online</span>
               </div>
+              
+              <Link href="/">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-neutral-800 text-neutral-400 hover:text-white hover:border-accent"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Exit Admin
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Page content */}
+        {/* Page content - Sem wrapper de autenticação pesado */}
         <main className="py-8 px-4 sm:px-6 lg:px-8">
           {children}
         </main>

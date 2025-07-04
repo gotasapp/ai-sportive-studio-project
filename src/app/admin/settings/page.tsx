@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
 import { 
-  Settings, Key, Server, ToggleLeft, Coins, Save, RefreshCw, Loader2 
+  Settings, Key, Server, ToggleLeft, Coins, Save, RefreshCw, Loader2
 } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -59,12 +59,39 @@ export default function SettingsPage() {
       setError(null);
       try {
         const response = await fetch('/api/admin/settings');
-        if (!response.ok) throw new Error('Failed to fetch settings.');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.details || errorData.error || 'Failed to fetch settings');
+        }
         const data = await response.json();
         setSettings(data);
       } catch (err: any) {
+        console.error('Settings fetch error:', err);
         setError(err.message);
-        toast.error(err.message);
+        
+        // Fallback para dados iniciais em caso de erro
+        const fallbackSettings: Settings = {
+          siteName: 'CHZ Fantoken Studio',
+          maintenanceMode: false,
+          apiKeys: {
+            openai: 'sk-xxx...',
+            thirdweb: 'pk-xxx...',
+            cloudinary: 'cloudinary://xxx...',
+          },
+          featureFlags: {
+            enableStadiums: true,
+            enableBadges: true,
+            enableLogoUpload: false,
+            enableGasless: true,
+          },
+          defaults: {
+            mintPrice: '10',
+            editionSize: 100,
+          },
+        };
+        
+        setSettings(fallbackSettings);
+        toast.error(`Error loading settings: ${err.message}. Using fallback data.`);
       } finally {
         setLoading(false);
       }
@@ -130,7 +157,7 @@ export default function SettingsPage() {
         <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
           <TabsTrigger value="general"><Settings className="w-4 h-4 mr-2" />General</TabsTrigger>
           <TabsTrigger value="api"><Key className="w-4 h-4 mr-2" />API Keys</TabsTrigger>
-          <TabsTrigger value="features"><ToggleLeft className="w-4 h-4 mr-2" />Feature Flags</TabsTrigger>
+          <TabsTrigger value="features"><ToggleLeft className="w-4 h-4 mr-2" />Features</TabsTrigger>
           <TabsTrigger value="defaults"><Coins className="w-4 h-4 mr-2" />Defaults</TabsTrigger>
         </TabsList>
 
@@ -177,6 +204,8 @@ export default function SettingsPage() {
                 </CardContent>
             </Card>
         </TabsContent>
+
+
 
         <TabsContent value="defaults">
             <Card className="cyber-card border-cyan-500/30">

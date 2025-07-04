@@ -14,7 +14,7 @@ import {
 interface Stadium {
   id: string;
   name: string;
-  creator: {
+  creator?: {
     name: string;
     wallet: string;
   };
@@ -61,8 +61,8 @@ export default function StadiumsPage() {
 
   const filteredStadiums = stadiums.filter(stadium => {
     const matchesSearch = stadium.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         stadium.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         stadium.creator.wallet.toLowerCase().includes(searchTerm.toLowerCase());
+                         (stadium.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (stadium.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || stadium.status === filterStatus
     
     return matchesSearch && matchesStatus;
@@ -148,8 +148,8 @@ export default function StadiumsPage() {
                      </td>
                      <td className="p-4 font-medium text-white">{stadium.name}</td>
                      <td className="p-4">
-                       <div className="text-white">{stadium.creator.name}</div>
-                       <div className="text-gray-400 text-xs">{stadium.creator.wallet}</div>
+                       <div className="text-white">{stadium.creator?.name || 'Unknown'}</div>
+                       <div className="text-gray-400 text-xs">{stadium.creator?.wallet || 'Unknown'}</div>
                      </td>
                      <td className="p-4">
                        <Badge className={statusColors[stadium.status]}>{stadium.status}</Badge>

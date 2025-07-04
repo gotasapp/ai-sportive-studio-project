@@ -14,7 +14,7 @@ import {
 interface Badge {
   id: string;
   name: string;
-  creator: {
+  creator?: {
     name: string;
     wallet: string;
   };
@@ -60,7 +60,7 @@ export default function BadgesPage() {
 
   const filteredBadges = badges.filter(badge => {
     const matchesSearch = badge.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         badge.creator.name.toLowerCase().includes(searchTerm.toLowerCase());
+                         (badge.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || badge.status === filterStatus
     
     return matchesSearch && matchesStatus;
@@ -145,8 +145,8 @@ export default function BadgesPage() {
                      </td>
                      <td className="p-4 font-medium text-white">{badge.name}</td>
                      <td className="p-4">
-                       <div className="text-white">{badge.creator.name}</div>
-                       <div className="text-gray-400 text-xs">{badge.creator.wallet}</div>
+                       <div className="text-white">{badge.creator?.name || 'Unknown'}</div>
+                       <div className="text-gray-400 text-xs">{badge.creator?.wallet || 'Unknown'}</div>
                      </td>
                      <td className="p-4">
                        <UiBadge className={statusColors[badge.status]}>{badge.status}</UiBadge>

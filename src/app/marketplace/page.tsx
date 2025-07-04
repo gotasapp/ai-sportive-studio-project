@@ -5,82 +5,206 @@ import Header from '@/components/Header';
 import FeaturedCarousel from '@/components/marketplace/FeaturedCarousel';
 import RankingsTable from '@/components/marketplace/RankingsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
-import { Filter, Search } from 'lucide-react';
+import { Filter, Search, AlertCircle, Loader2 } from 'lucide-react';
 
-// Tipos de dados, o do DB é um pouco diferente
+// Tipos de dados exatamente como vêm do MongoDB
 interface NFT {
-  _id?: string; // ID do MongoDB é opcional
+  _id: string; // ID do MongoDB
   name: string;
-  imageUrl: string; // no DB é imageUrl
-  description?: string; // Opcional no DB
-  price?: string; // Virá do contrato/engine no futuro
+  imageUrl: string; // Campo real do DB
+  description?: string;
+  price?: string;
   category: 'jersey' | 'stadium' | 'badge';
   collection?: string;
-  creator?: { wallet: string; name: string };
+  creator?: { 
+    wallet: string; 
+    name: string; 
+  };
+  createdAt: string;
+  status: 'Approved';
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: NFT[];
+  count: number;
 }
 
 export default function MarketplacePage() {
   const [allNfts, setAllNfts] = useState<NFT[]>([]);
   const [filteredNfts, setFilteredNfts] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<'all' | 'jerseys' | 'stadiums' | 'badges'>('all');
+  const [searchTerm, setSearchTerm] = useState('');
   
   useEffect(() => {
-    const loadData = async () => {
+    const loadRealData = async () => {
       setLoading(true);
+      setError(null);
+      
       try {
-        // 1. Buscar Jerseys dinâmicas da nossa API
-        const jerseysResponse = await fetch('/api/jerseys');
-        if (!jerseysResponse.ok) {
-            console.error('Failed to fetch dynamic jerseys');
-            throw new Error('API Error for Jerseys');
-        }
-        const dynamicJerseys: NFT[] = await jerseysResponse.json();
-
-        // 2. Buscar dados estáticos para estádios e emblemas
-        const staticResponse = await fetch('/marketplace-images.json');
-        const staticData = await staticResponse.json();
+        console.log('🔄 Loading marketplace data from MongoDB APIs...');
         
-        const stadiums: NFT[] = staticData.marketplace_nfts.stadiums.map((n: any) => ({ ...n, category: 'stadium' as const, collection: n.collection || 'World Stadiums' }));
-        const badges: NFT[] = staticData.marketplace_nfts.badges.map((n: any) => ({ ...n, category: 'badge' as const, collection: n.collection || 'Champion Badges'}));
-        
-        // Adiciona a categoria 'jersey' aos itens vindo do DB
-        const categorizedJerseys = dynamicJerseys.map(j => ({ ...j, category: 'jersey' as const, price: '0.05 CHZ' }));
+        // Chamadas simultâneas para todas as APIs reais
+        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
+          fetch('/api/jerseys'),
+          fetch('/api/stadiums'), 
+          fetch('/api/badges')
+        ]);
 
-        // 3. Combinar tudo
-        const combined = [...categorizedJerseys, ...stadiums, ...badges];
-        setAllNfts(combined);
-        setFilteredNfts(combined);
-
-      } catch (error) {
-        console.error('Erro ao carregar dados do marketplace:', error);
-        // Fallback para dados estáticos em caso de erro na API
-        const staticResponse = await fetch('/marketplace-images.json').catch(() => null);
-        if (staticResponse) {
-          const staticData = await staticResponse.json();
-          const jerseys = staticData.marketplace_nfts.jerseys.map((n: any) => ({ ...n, category: 'jersey' as const, collection: n.collection || 'Official Jerseys' }));
-          const stadiums = staticData.marketplace_nfts.stadiums.map((n: any) => ({ ...n, category: 'stadium' as const, collection: n.collection || 'World Stadiums' }));
-          const badges = staticData.marketplace_nfts.badges.map((n: any) => ({ ...n, category: 'badge' as const, collection: n.collection || 'Champion Badges'}));
-          const combined = [...jerseys, ...stadiums, ...badges];
-          setAllNfts(combined);
-          setFilteredNfts(combined);
+        // Verificar se todas as respostas foram bem-sucedidas
+        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
+          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
         }
 
+        // Processar dados reais do MongoDB
+        const realJerseys: NFT[] = await jerseysResponse.json();
+        const realStadiums: NFT[] = await stadiumsResponse.json();
+        const realBadges: NFT[] = await badgesResponse.json();
+
+        console.log(`📊 Loaded from MongoDB:`, {
+          jerseys: realJerseys.length,
+          stadiums: realStadiums.length, 
+          badges: realBadges.length,
+          total: realJerseys.length + realStadiums.length + realBadges.length
+        });
+
+        // Categorizar dados reais
+        const categorizedJerseys = realJerseys.map(jersey => ({ 
+          ...jersey, 
+          category: 'jersey' as const, 
+          price: '0.05 CHZ',
+          collection: jersey.creator?.name || 'User Creations'
+        }));
+
+        const categorizedStadiums = realStadiums.map(stadium => ({ 
+          ...stadium, 
+          category: 'stadium' as const, 
+          price: '0.15 CHZ',
+          collection: stadium.creator?.name || 'Stadium Collection'
+        }));
+
+        const categorizedBadges = realBadges.map(badge => ({ 
+          ...badge, 
+          category: 'badge' as const, 
+          price: '0.03 CHZ',
+          collection: badge.creator?.name || 'Badge Collection'
+        }));
+
+        // Combinar todos os dados reais
+        const allRealNFTs = [...categorizedJerseys, ...categorizedStadiums, ...categorizedBadges];
+        
+        console.log(`✅ Total Real NFTs loaded: ${allRealNFTs.length}`);
+        
+        setAllNfts(allRealNFTs);
+        setFilteredNfts(allRealNFTs);
+
+      } catch (error: any) {
+        console.error('❌ Erro ao carregar dados reais do marketplace:', error);
+        setError(error.message || 'Failed to load marketplace data');
+        // NÃO há fallback - mostrar erro ao usuário
+        setAllNfts([]);
+        setFilteredNfts([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadData();
+    loadRealData();
   }, []);
 
+  // Filtro e busca
   useEffect(() => {
-    if (filter === 'all') {
-      setFilteredNfts(allNfts);
-    } else {
-      setFilteredNfts(allNfts.filter(nft => nft.category === filter));
+    let filtered = allNfts;
+    
+    // Aplicar filtro de categoria
+    if (filter !== 'all') {
+      // Mapear plural para singular
+      const categoryMap: Record<string, string> = {
+        'jerseys': 'jersey',
+        'stadiums': 'stadium', 
+        'badges': 'badge'
+      };
+      
+      const targetCategory = categoryMap[filter] || filter;
+      filtered = filtered.filter(nft => nft.category === targetCategory);
+      
+      console.log(`🔍 Filter applied: ${filter} → ${targetCategory}, found ${filtered.length} items`);
     }
-  }, [filter, allNfts]);
+    
+    // Aplicar busca por nome
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(nft => 
+        nft.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        nft.collection?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      console.log(`🔍 Search applied: "${searchTerm}", found ${filtered.length} items`);
+    }
+    
+    setFilteredNfts(filtered);
+  }, [filter, allNfts, searchTerm]);
+
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+
+  // Componente de erro
+  const ErrorState = () => (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
+      <h2 className="text-2xl font-bold text-white mb-2">Unable to Load Marketplace</h2>
+      <p className="text-gray-400 mb-4 max-w-md">
+        {error || 'Failed to connect to the database. Please check your connection and try again.'}
+      </p>
+      <button 
+        onClick={() => window.location.reload()} 
+        className="cyber-button px-6 py-2"
+      >
+        Retry
+      </button>
+    </div>
+  );
+
+  // Componente de loading
+  const LoadingState = () => (
+    <div className="flex flex-col items-center justify-center py-20">
+      <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
+      <h2 className="text-xl font-semibold text-white mb-2">Loading Real NFTs</h2>
+      <p className="text-gray-400">Fetching data from MongoDB...</p>
+    </div>
+  );
+
+  // Estado vazio (sem NFTs no banco)
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-20 text-center">
+      <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
+        <Search className="w-8 h-8 text-gray-600" />
+      </div>
+      <h2 className="text-2xl font-bold text-white mb-2">No NFTs Found</h2>
+      <p className="text-gray-400 mb-4">
+        {searchTerm && filter !== 'all' 
+          ? `No results for "${searchTerm}" in ${filter}`
+          : searchTerm 
+            ? `No results for "${searchTerm}"`
+            : filter !== 'all' 
+              ? `No ${filter} available yet`
+              : 'No NFTs have been created yet. Start generating some!'}
+      </p>
+      {(searchTerm || filter !== 'all') && (
+        <button 
+          onClick={() => {
+            setSearchTerm('');
+            setFilter('all');
+          }} 
+          className="cyber-button px-4 py-2 text-sm"
+        >
+          Clear Filters
+        </button>
+      )}
+    </div>
+  );
 
   return (
     <main className="flex min-h-screen flex-col bg-primary text-secondary">
@@ -92,50 +216,91 @@ export default function MarketplacePage() {
         
         <RankingsTable />
 
+        {/* Header & Filters */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <h2 className="text-3xl font-bold text-white">Explore NFTs</h2>
-            <div className="flex items-center gap-2">
-                <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50" />
-                    <input type="text" placeholder="Search items..." className="cyber-input w-full pl-10" />
-                </div>
-                <div className="flex items-center bg-card rounded-lg p-1 border border-secondary/10">
-                    {['all', 'jerseys', 'stadiums', 'badges'].map(f => (
-                         <button
-                            key={f}
-                            onClick={() => setFilter(f as any)}
-                            className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${
-                            filter === f
-                                ? 'bg-accent text-white'
-                                : 'text-secondary hover:text-white'
-                            }`}
-                        >
-                            {f.charAt(0).toUpperCase() + f.slice(1)}
-                        </button>
-                    ))}
-                </div>
+          <div>
+            <h2 className="text-3xl font-bold text-white">Live NFT Marketplace</h2>
+            <p className="text-gray-400 mt-1">
+              {loading ? 'Loading...' : `${filteredNfts.length} real NFTs from MongoDB`}
+            </p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            {/* Search */}
+            <div className="relative w-full md:w-64">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary/50" />
+              <input 
+                type="text" 
+                placeholder="Search NFTs..." 
+                value={searchTerm}
+                onChange={handleSearch}
+                className="cyber-input w-full pl-10" 
+              />
             </div>
+            
+            {/* Category Filter */}
+            <div className="flex items-center bg-card rounded-lg p-1 border border-secondary/10">
+              {['all', 'jerseys', 'stadiums', 'badges'].map(f => {
+                // Calcular contagem para cada categoria
+                let count = 0;
+                if (f === 'all') {
+                  count = allNfts.length;
+                } else {
+                  const categoryMap: Record<string, string> = {
+                    'jerseys': 'jersey',
+                    'stadiums': 'stadium', 
+                    'badges': 'badge'
+                  };
+                  const targetCategory = categoryMap[f] || f;
+                  count = allNfts.filter(nft => nft.category === targetCategory).length;
+                }
+                
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setFilter(f as any)}
+                    className={`px-3 py-1.5 rounded-md text-sm font-semibold transition-colors ${
+                      filter === f
+                        ? 'bg-accent text-white'
+                        : 'text-secondary hover:text-white'
+                    }`}
+                  >
+                    {f.charAt(0).toUpperCase() + f.slice(1)} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
-        {loading ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {Array.from({ length: 8 }).map((_, i) => (
-                    <div key={i} className="bg-card rounded-xl aspect-square animate-pulse"></div>
-                ))}
-             </div>
-        ) : (
+        {/* Content Area */}
+        {error ? (
+          <ErrorState />
+        ) : loading ? (
+          <>
+            <LoadingState />
+            {/* Loading Skeleton */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {filteredNfts.map((nft) => (
-                    <MarketplaceCard 
-                        key={nft._id || nft.name} // Usa o _id do DB se existir
-                        name={nft.name}
-                        imageUrl={nft.imageUrl} // Campo correto do DB
-                        price={nft.price || 'Not for sale'}
-                        collection={nft.collection || (nft.creator ? `Created by ${nft.creator.name}` : 'User Creations')}
-                        category={nft.category}
-                    />
-                ))}
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-card rounded-xl aspect-square animate-pulse"></div>
+              ))}
             </div>
+          </>
+        ) : filteredNfts.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredNfts.map((nft) => (
+              <MarketplaceCard 
+                key={nft._id}
+                name={nft.name}
+                imageUrl={nft.imageUrl}
+                price={nft.price || 'Not for sale'}
+                collection={nft.collection || `By ${nft.creator?.name || 'Anonymous'}`}
+                category={nft.category}
+              />
+            ))}
+          </div>
         )}
       </div>
     </main>

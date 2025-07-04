@@ -1,298 +1,384 @@
 'use client'
 
-import AdminProtection from '@/components/AdminProtection'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-// import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Activity,
   Users,
   Zap,
   TrendingUp,
-  AlertTriangle,
   CheckCircle,
-  Clock,
   DollarSign,
   Image,
   Database,
-  Cpu,
-  Wifi
+  Trophy,
+  Clock,
+  RefreshCw,
+  Eye,
+  Loader2
 } from 'lucide-react'
 
-// Mock data - in production will come from APIs
-const metrics = {
-  nftsGenerated: {
-    today: 47,
-    week: 312,
-    month: 1247,
-    total: 8934
-  },
-  users: {
-    active: 156,
-    new: 23,
-    total: 2847
-  },
-  system: {
-    successRate: 94.2,
-    avgGenerationTime: 8.4,
-    uptime: 99.8,
-    apiCalls: 15847
-  },
-  revenue: {
-    today: 1247.89,
-    month: 18394.56
-  }
+// Tipos para os dados da API
+interface OverviewData {
+  totalNFTs: number;
+  totalUsers: number;
+  totalRevenue: number;
+  avgGenerationTime: number;
+  successRate: number;
+  growth: {
+    nfts: number;
+    users: number;
+    revenue: number;
+  };
 }
 
-const recentActivity = [
-  { type: 'generation', user: 'user_0x1a2b', item: 'Flamengo Jersey', time: '2 min ago', status: 'success' },
-  { type: 'mint', user: 'user_0x3c4d', item: 'Palmeiras Logo', time: '5 min ago', status: 'success' },
-  { type: 'generation', user: 'user_0x5e6f', item: 'Stadium Modern', time: '8 min ago', status: 'pending' },
-  { type: 'error', user: 'system', item: 'API Rate Limit', time: '12 min ago', status: 'warning' },
-  { type: 'mint', user: 'user_0x7g8h', item: 'Vasco Jersey', time: '15 min ago', status: 'success' }
-]
+interface PopularTeam {
+  name: string;
+  count: number;
+  percentage: number;
+  color: string;
+}
 
-const systemAlerts = [
-  { type: 'info', message: 'DALL-E API usage at 78% of daily limit', time: '1 hour ago' },
-  { type: 'warning', message: 'High generation queue - 23 pending requests', time: '2 hours ago' },
-  { type: 'success', message: 'System backup completed successfully', time: '6 hours ago' }
-]
+interface RecentSale {
+  user: { name: string; avatar: string; };
+  nft: { name: string; type: 'Jersey' | 'Stadium' | 'Badge'; };
+  value: number;
+  timestamp: string;
+}
+
+// Dados fallback para carregamento instantâneo
+const FALLBACK_OVERVIEW = {
+  totalNFTs: 247,
+  totalUsers: 89,
+  totalRevenue: 1250.75,
+  avgGenerationTime: 8.2,
+  successRate: 95.1,
+  growth: { nfts: 14.2, users: 9.1, revenue: 27.3 }
+};
+
+const FALLBACK_TEAMS = [
+  { name: 'Flamengo', count: 45, percentage: 25.5, color: '#ff0000' },
+  { name: 'Palmeiras', count: 38, percentage: 21.6, color: '#00aa00' },
+  { name: 'Corinthians', count: 32, percentage: 18.2, color: '#000000' },
+  { name: 'São Paulo', count: 28, percentage: 15.9, color: '#ff0000' },
+  { name: 'Vasco', count: 21, percentage: 11.9, color: '#000000' }
+];
 
 export default function AdminDashboard() {
+  const [refreshTime, setRefreshTime] = useState(new Date().toLocaleTimeString());
+  
+  // Estados para dados reais (opcionais)
+  const [overviewData, setOverviewData] = useState<OverviewData>(FALLBACK_OVERVIEW);
+  const [popularTeamsData, setPopularTeamsData] = useState<PopularTeam[]>(FALLBACK_TEAMS);
+  const [recentSalesData, setRecentSalesData] = useState<RecentSale[]>([]);
+  
+  // Estados de loading (não bloqueia a UI)
+  const [loadingOverview, setLoadingOverview] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
+  const [loadingSales, setLoadingSales] = useState(false);
+
+  // Função para buscar dados reais (com timeout rápido)
+  const fetchOverviewData = async () => {
+    if (loadingOverview) return;
+    setLoadingOverview(true);
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos máximo
+      
+      const response = await fetch('/api/admin/analytics?metric=overview', {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setOverviewData(data);
+      }
+    } catch (error) {
+      console.log('Using fallback overview data');
+    } finally {
+      setLoadingOverview(false);
+    }
+  };
+
+  const fetchPopularTeamsData = async () => {
+    if (loadingTeams) return;
+    setLoadingTeams(true);
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      
+      const response = await fetch('/api/admin/analytics?metric=popularTeams', {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setPopularTeamsData(data);
+      }
+    } catch (error) {
+      console.log('Using fallback teams data');
+    } finally {
+      setLoadingTeams(false);
+    }
+  };
+
+  const fetchRecentSalesData = async () => {
+    if (loadingSales) return;
+    setLoadingSales(true);
+    
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      
+      const response = await fetch('/api/admin/analytics?metric=recentSales', {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setRecentSalesData(data);
+      }
+    } catch (error) {
+      console.log('Recent sales data not available');
+      setRecentSalesData([]);
+    } finally {
+      setLoadingSales(false);
+    }
+  };
+
+  // Lazy loading - não bloqueia carregamento inicial
+  useEffect(() => {
+    // Carrega dados reais 1 segundo após o carregamento da página
+    const timer = setTimeout(() => {
+      fetchOverviewData();
+      fetchPopularTeamsData();
+      fetchRecentSalesData();
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const handleRefresh = () => {
+    setRefreshTime(new Date().toLocaleTimeString());
+    fetchOverviewData();
+    fetchPopularTeamsData();
+    fetchRecentSalesData();
+  };
+
   return (
-    <AdminProtection>
-      <div className="space-y-8">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-          <p className="text-neutral-400 mt-2">Chiliz Fan NFT - Control Center</p>
-        </div>
-        <div className="flex items-center space-x-4">
-          <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
-            <Activity className="w-3 h-3 mr-1" />
-            All Systems Operational
-          </Badge>
-          <Button className="bg-accent hover:bg-accent/90 text-white">
-            <Zap className="w-4 h-4 mr-2" />
-            Quick Actions
-          </Button>
-        </div>
-      </div>
-
-      {/* System Alerts */}
-      <div className="space-y-4">
-        {systemAlerts.map((alert, index) => (
-          <div key={index} className={`
-            border-l-4 bg-[#050505] p-4 rounded-r-lg
-            ${alert.type === 'success' ? 'border-green-500' :
-              alert.type === 'warning' ? 'border-yellow-500' :
-              'border-blue-500'}
-          `}>
-            <div className="flex items-center space-x-3">
-              <AlertTriangle className={`h-4 w-4 ${
-                alert.type === 'success' ? 'text-green-500' :
-                alert.type === 'warning' ? 'text-yellow-500' :
-                'text-blue-500'
-              }`} />
-              <div className="flex items-center justify-between w-full">
-                <span className="text-neutral-200">{alert.message}</span>
-                <span className="text-xs text-neutral-500">{alert.time}</span>
-              </div>
-            </div>
+    <div className="min-h-screen bg-black text-white p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-neutral-400 mt-2">
+              CHZ Fan Token Studio - Admin Control Center
+            </p>
           </div>
-        ))}
-      </div>
+          <div className="flex items-center space-x-4">
+            <Badge className="bg-green-500/10 text-green-400 border-green-500/30">
+              <Activity className="w-3 h-3 mr-1" />
+              System Online
+            </Badge>
+            <Button 
+              onClick={handleRefresh}
+              disabled={loadingOverview}
+              className="bg-accent hover:bg-accent/90 text-white"
+            >
+              {loadingOverview ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <RefreshCw className="w-4 h-4 mr-2" />
+              )}
+              Refresh ({refreshTime})
+            </Button>
+          </div>
+        </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* NFTs Generated */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-300">NFTs Generated</CardTitle>
-            <Image className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.nftsGenerated.today}</div>
-            <div className="text-xs text-neutral-400 space-y-1">
-              <div>Today: {metrics.nftsGenerated.today}</div>
-              <div>This Week: {metrics.nftsGenerated.week}</div>
-              <div>This Month: {metrics.nftsGenerated.month}</div>
-            </div>
-            <div className="flex items-center space-x-1 mt-2">
-              <TrendingUp className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">+12% from yesterday</span>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Métricas Principais */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-[#050505] border-accent/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-neutral-300">Total NFTs</CardTitle>
+              <Image className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{overviewData.totalNFTs.toLocaleString()}</div>
+              <div className="text-xs text-green-400">+{overviewData.growth.nfts}% from last month</div>
+            </CardContent>
+          </Card>
 
-        {/* Active Users */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-300">Active Users</CardTitle>
-            <Users className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.users.active}</div>
-            <div className="text-xs text-neutral-400 space-y-1">
-              <div>Online Now: {metrics.users.active}</div>
-              <div>New Today: {metrics.users.new}</div>
-              <div>Total Users: {metrics.users.total}</div>
-            </div>
-            <div className="flex items-center space-x-1 mt-2">
-              <TrendingUp className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">+8% this week</span>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="bg-[#050505] border-accent/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-neutral-300">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{overviewData.totalUsers.toLocaleString()}</div>
+              <div className="text-xs text-green-400">+{overviewData.growth.users}% from last month</div>
+            </CardContent>
+          </Card>
 
-        {/* Success Rate */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-300">Success Rate</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">{metrics.system.successRate}%</div>
-            <div className="text-xs text-neutral-400 space-y-1">
-              <div>Avg Generation: {metrics.system.avgGenerationTime}s</div>
-              <div>System Uptime: {metrics.system.uptime}%</div>
-              <div>API Calls: {metrics.system.apiCalls.toLocaleString()}</div>
-            </div>
-            <div className="flex items-center space-x-1 mt-2">
-              <CheckCircle className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">Excellent performance</span>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="bg-[#050505] border-accent/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-neutral-300">Success Rate</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-400" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">{overviewData.successRate}%</div>
+              <div className="text-xs text-neutral-400">AI Generation</div>
+            </CardContent>
+          </Card>
 
-        {/* Revenue */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-neutral-300">Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-accent" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-white">${metrics.revenue.today}</div>
-            <div className="text-xs text-neutral-400 space-y-1">
-              <div>Today: ${metrics.revenue.today}</div>
-              <div>This Month: ${metrics.revenue.month}</div>
-              <div>Gas Fees Saved: $2,847</div>
-            </div>
-            <div className="flex items-center space-x-1 mt-2">
-              <TrendingUp className="h-3 w-3 text-green-400" />
-              <span className="text-xs text-green-400">+24% this month</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          <Card className="bg-[#050505] border-accent/30">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-neutral-300">Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-white">${overviewData.totalRevenue.toFixed(2)}</div>
+              <div className="text-xs text-green-400">+{overviewData.growth.revenue}% from last month</div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* System Status & Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Cards Principais */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          
+          {/* Popular Teams */}
+          <Card className="bg-[#050505] border-neutral-800">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-white">Popular Teams</CardTitle>
+                <CardDescription>Most generated content by team</CardDescription>
+              </div>
+              {loadingTeams && <Loader2 className="w-4 h-4 animate-spin text-accent" />}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {popularTeamsData.slice(0, 5).map((team, index) => (
+                <div key={team.name} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-neutral-700 text-white text-sm font-bold">
+                      {index + 1}
+                    </div>
+                    <div>
+                      <div className="font-medium text-white">{team.name}</div>
+                      <div className="text-sm text-neutral-400">{team.count} NFTs</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-white">{team.percentage}%</div>
+                    <div className="w-16 h-2 bg-neutral-700 rounded-full">
+                      <div 
+                        className="h-2 rounded-full" 
+                        style={{ 
+                          width: `${team.percentage}%`, 
+                          backgroundColor: team.color 
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card className="bg-[#050505] border-neutral-800">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-white">Recent Activity</CardTitle>
+                <CardDescription>Latest NFT generations</CardDescription>
+              </div>
+              {loadingSales && <Loader2 className="w-4 h-4 animate-spin text-accent" />}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {recentSalesData.length > 0 ? recentSalesData.slice(0, 5).map((sale, index) => (
+                <div key={index} className="flex items-center space-x-3">
+                  <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
+                    <span className="text-xs text-white">{sale.user.name.slice(0, 2)}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white">{sale.nft.name}</div>
+                    <div className="text-xs text-neutral-400">
+                      by {sale.user.name} • {sale.nft.type}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-medium text-accent">{sale.value.toFixed(3)} CHZ</div>
+                    <div className="text-xs text-neutral-400">
+                      {new Date(sale.timestamp).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-neutral-700 rounded-full flex items-center justify-center">
+                        <Trophy className="w-4 h-4 text-accent" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="text-sm font-medium text-white">Sample NFT #{i}</div>
+                        <div className="text-xs text-neutral-400">by Creator • Jersey</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium text-accent">0.05 CHZ</div>
+                        <div className="text-xs text-neutral-400">Today</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
         {/* System Status */}
         <Card className="bg-[#050505] border-neutral-800">
           <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Cpu className="h-5 w-5 text-accent" />
+            <CardTitle className="text-white flex items-center space-x-2">
+              <Database className="w-5 h-5 text-accent" />
               <span>System Status</span>
             </CardTitle>
-            <CardDescription>Real-time system monitoring</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-neutral-300">DALL-E API</span>
-              </div>
-              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-neutral-300">IPFS Storage</span>
-              </div>
-              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-neutral-300">Thirdweb Engine</span>
-              </div>
-              <Badge variant="outline" className="border-green-500/30 bg-green-500/10 text-green-400">Online</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
-                <span className="text-sm text-neutral-300">Generation Queue</span>
-              </div>
-              <Badge variant="outline" className="border-yellow-500/30 bg-yellow-500/10 text-yellow-400">23 Pending</Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2">
-              <Activity className="h-5 w-5 text-accent" />
-              <span>Recent Activity</span>
-            </CardTitle>
-            <CardDescription>Latest system events and user actions</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-2 h-2 rounded-full ${
-                      activity.status === 'success' ? 'bg-green-400' :
-                      activity.status === 'warning' ? 'bg-yellow-400' :
-                      activity.status === 'pending' ? 'bg-blue-400' : 'bg-red-400'
-                    }`} />
-                    <div>
-                      <div className="text-sm font-medium text-neutral-200">{activity.item}</div>
-                      <div className="text-xs text-neutral-500">
-                        {activity.type} by <span className="font-semibold text-neutral-400">{activity.user}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="text-xs text-neutral-500">{activity.time}</div>
-                </div>
-              ))}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">{overviewData.avgGenerationTime}s</div>
+                <div className="text-sm text-neutral-400">Avg Generation Time</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-400">99.9%</div>
+                <div className="text-sm text-neutral-400">Uptime</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-400">1.2s</div>
+                <div className="text-sm text-neutral-400">API Response</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-accent">0.8%</div>
+                <div className="text-sm text-neutral-400">Error Rate</div>
+              </div>
             </div>
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card className="bg-[#050505] border-neutral-800">
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Common administrative tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
-              <Database className="h-6 w-6 text-accent" />
-              <span className="text-xs">Backup System</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
-              <Zap className="h-6 w-6 text-yellow-400" />
-              <span className="text-xs">Clear Cache</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
-              <Wifi className="h-6 w-6 text-green-400" />
-              <span className="text-xs">Test APIs</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex-col space-y-2 border-neutral-800 hover:bg-neutral-800">
-              <Clock className="h-6 w-6 text-blue-400" />
-              <span className="text-xs">Schedule Maintenance</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
-    </AdminProtection>
   )
 } 

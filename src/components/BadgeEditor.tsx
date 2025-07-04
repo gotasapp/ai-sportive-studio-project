@@ -181,30 +181,54 @@ export default function BadgeEditor() {
     setError(null)
 
     try {
-      const prompt = `official e-sports team badge, team name ${selectedTeam}, ${selectedStyle} style, champion badge, name ${badgeName}, number ${badgeNumber}`;
-      const request: ImageGenerationRequest = { prompt, quality };
-      const result = await Dalle3Service.generateImage(request);
+      // Usar nossa nova API modular de badges
+      const request = {
+        team_name: selectedTeam,
+        badge_name: badgeName,
+        badge_number: badgeNumber,
+        style: selectedStyle,
+        quality: quality,
+      };
+      
+      console.log('Generating badge with request data:', request)
+      
+      // Chamar nossa nova API de badges
+      const response = await fetch('/api/badges/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request)
+      });
+      
+      const result = await response.json()
+      console.log('DALL-E 3 Result:', result)
 
-      if (result.success && result.image_base64) {
-        setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+      if (result.success && result.optimized_image) {
+        console.log('✅ Badge generation successful!');
+        console.log('📸 Image data length:', result.optimized_image.length);
+        setGeneratedImage(`data:image/png;base64,${result.optimized_image}`);
         
-        const response = await fetch(`data:image/png;base64,${result.image_base64}`)
+        const response = await fetch(`data:image/png;base64,${result.optimized_image}`)
         const blob = await response.blob()
         setGeneratedImageBlob(blob);
+        console.log('✅ Blob created successfully, size:', blob.size);
 
-        // Chamar a função para salvar no banco
+        // Call function to save to database with JSON stringified parameters
+        console.log('🎯 About to call saveBadgeToDB with blob size:', blob?.size);
         await saveBadgeToDB({
           name: `${selectedTeam} Badge ${badgeName} #${badgeNumber}`,
-          prompt: prompt,
+          prompt: JSON.stringify(request), // Use parameter object, not long prompt
           creatorWallet: address || "N/A",
           tags: [selectedTeam, selectedStyle, badgeName, badgeNumber],
         }, blob);
+        console.log('✅ saveBadgeToDB completed successfully');
 
       } else {
-        setError('Failed to generate image.');
+        console.error('❌ Badge generation failed:', result.error);
+        setError(result.error || 'Failed to generate badge.');
       }
     } catch (err: any) {
-      setError(err.message || 'Image generation failed');
+      console.error('Generation error:', err);
+      setError(err.message || 'Badge generation failed');
     } finally {
       setIsLoading(false)
     }
@@ -217,7 +241,7 @@ export default function BadgeEditor() {
     try {
       console.log('🏆 Saving badge to database...');
       
-      // 1. Primeiro, fazer upload da imagem para Cloudinary via nossa API
+      // 1. First, upload image to Cloudinary via our API
       console.log('📤 Uploading image to Cloudinary...');
       if (!imageBlob) {
         throw new Error('No image blob available for upload');
@@ -239,11 +263,11 @@ export default function BadgeEditor() {
       const uploadResult = await uploadResponse.json();
       console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
 
-      // 2. Agora salvar no banco com a URL do Cloudinary (não o base64)
+      // 2. Now save to database with Cloudinary URL (not base64)
       const badgeDataWithCloudinaryUrl = {
         ...badgeData,
-        imageUrl: uploadResult.url, // URL do Cloudinary
-        cloudinaryPublicId: uploadResult.publicId, // Para deletar depois se necessário
+        imageUrl: uploadResult.url, // Cloudinary URL
+        cloudinaryPublicId: uploadResult.publicId, // For deletion if needed
       };
 
       const response = await fetch('/api/badges', {
@@ -278,21 +302,21 @@ export default function BadgeEditor() {
         const response = await fetch('/api/teams');
         const data = await response.json();
         
-        // CORREÇÃO: Verifica se 'data' é um array antes de usá-lo.
+        // CORRECTION: Check if 'data' is an array before using it.
         if (Array.isArray(data)) {
           setAvailableTeams(data);
           if (data.length > 0) {
             setSelectedTeam(data[0]);
           }
         } else {
-            // Se não for um array, registra um erro e usa um array vazio.
+            // If not an array, log error and use empty array.
             console.error('Failed to load teams: API did not return an array.', data);
             setAvailableTeams([]);
         }
 
       } catch (error) {
         console.error('Failed to load teams:', error);
-        setAvailableTeams([]); // Garante que o estado não fique indefinido
+        setAvailableTeams([]); // Ensure state doesn't remain undefined
       }
     };
     loadData();

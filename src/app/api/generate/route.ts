@@ -8,12 +8,37 @@ export async function POST(request: NextRequest) {
     
     console.log('🔄 [GENERATE API] Received request');
     console.log('📦 [GENERATE API] Request type:', body.type || 'unknown');
+    console.log('📦 [GENERATE API] Request model_id:', body.model_id || 'unknown');
     console.log('📍 [GENERATE API] Target URL:', `${API_BASE_URL}/generate`);
     
-    // Adapt request for Vision Test
+    // Adapt request for different types
     let adaptedBody = { ...body };
     
-    if (body.type === 'vision-test') {
+    // Handle Badge Generation
+    if (body.badge_name || body.badge_number) {
+      console.log('🏆 [GENERATE API] Detected badge generation request');
+      console.log('🏆 [GENERATE API] Badge details:', {
+        model_id: body.model_id,
+        badge_name: body.badge_name,
+        badge_number: body.badge_number,
+        style: body.style
+      });
+      
+      // Adapt badge request to jersey format for Python API
+      adaptedBody = {
+        model_id: body.model_id, // Team name
+        player_name: body.badge_name || 'BADGE',
+        player_number: body.badge_number || '1',
+        quality: body.quality || 'standard',
+        style: body.style || 'modern',
+        type: 'badge' // Keep badge type for tracking
+      };
+      
+      console.log('✅ [GENERATE API] Adapted badge request for Python API:', adaptedBody);
+    }
+    
+    // Handle Vision Test
+    else if (body.type === 'vision-test') {
       console.log('🎯 [GENERATE API] Adapting Vision Test request for DALL-E 3 direct generation');
       
       // For Vision Test, use stadium type which allows direct DALL-E 3 generation
@@ -66,7 +91,7 @@ export async function POST(request: NextRequest) {
     const result = await response.json();
     console.log('✅ [GENERATE API] Python API success:', {
       success: result.success,
-      type: body.type,
+      type: body.type || body.badge_name ? 'badge' : 'unknown',
       hasImage: !!result.image_base64
     });
     

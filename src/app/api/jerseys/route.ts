@@ -31,6 +31,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // Verificar configuração de moderação
+    let status = 'Approved'; // Padrão
+    try {
+      const settingsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/settings/moderation`);
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json();
+        status = settings.moderationEnabled ? 'Pending' : 'Approved';
+        console.log(`📋 Jersey moderation setting: ${settings.moderationEnabled ? 'ON' : 'OFF'}, status: ${status}`);
+      }
+    } catch (settingError) {
+      console.log('⚠️ Could not fetch moderation settings, using default (Approved)');
+    }
+
     const newJersey = {
       name: data.name,
       prompt: data.prompt,
@@ -40,7 +53,7 @@ export async function POST(request: Request) {
         name: data.creatorName || 'Anonymous', // O nome pode ser opcional
       },
       createdAt: new Date(),
-      status: 'Approved', // Alterado de 'Pending' para 'Approved'
+      status: status, // Baseado na configuração de moderação
       mintCount: 0,
       editionSize: 100, // Valor padrão
       tags: data.tags || [],

@@ -21,6 +21,19 @@ export async function POST(request: NextRequest) {
     const db = client.db(DB_NAME);
     const collection = db.collection(COLLECTION_NAME);
 
+    // Verificar configuração de moderação
+    let status = 'Approved'; // Padrão
+    try {
+      const settingsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/settings/moderation`);
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json();
+        status = settings.moderationEnabled ? 'Pending' : 'Approved';
+        console.log(`📋 Stadium moderation setting: ${settings.moderationEnabled ? 'ON' : 'OFF'}, status: ${status}`);
+      }
+    } catch (settingError) {
+      console.log('⚠️ Could not fetch moderation settings, using default (Approved)');
+    }
+
     // Inserir o stadium
     const stadiumDoc = {
       name: body.name,
@@ -29,6 +42,7 @@ export async function POST(request: NextRequest) {
       cloudinaryPublicId: body.cloudinaryPublicId,
       creatorWallet: body.creatorWallet,
       tags: body.tags || [],
+      status: status, // Baseado na configuração de moderação
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -59,9 +73,9 @@ export async function GET(request: NextRequest) {
     const db = client.db(DB_NAME);
     const collection = db.collection(COLLECTION_NAME);
 
-    // Buscar stadiums (ordenados por data de criação, mais recentes primeiro)
+    // Buscar stadiums aprovados (ordenados por data de criação, mais recentes primeiro)
     const stadiums = await collection
-      .find({})
+      .find({ status: 'Approved' })
       .sort({ createdAt: -1 })
       .limit(50) // Limitar a 50 mais recentes
       .toArray()

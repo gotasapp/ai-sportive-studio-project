@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "node scripts/seed.js"
+    "db:populate": "node scripts/populate-db.js",
+    "db:seed": "npm run db:populate",
+    "dev:fresh": "npm run db:populate && npm run dev"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

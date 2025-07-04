@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MongoClient } from 'mongodb'
+import clientPromise from '@/lib/mongodb';
 
-const uri = process.env.MONGODB_URI!
-const dbName = process.env.MONGODB_DB!
-
-let clientPromise: Promise<MongoClient>
-
-if (!process.env.MONGODB_URI) {
-  throw new Error('Please add your Mongo URI to .env.local')
-}
-
-if (!global._mongoClientPromise) {
-  const client = new MongoClient(uri)
-  global._mongoClientPromise = client.connect()
-}
-
-clientPromise = global._mongoClientPromise
+const DB_NAME = 'chz-app-db';
+const COLLECTION_NAME = 'badges';
 
 export async function POST(request: NextRequest) {
   console.log('🏆 Badge API: POST request received')
@@ -29,10 +16,23 @@ export async function POST(request: NextRequest) {
       tags: body.tags 
     })
 
-    // Conectar ao MongoDB
-    const client = await clientPromise
-    const db = client.db(dbName)
-    const collection = db.collection('badges')
+    // Conectar ao MongoDB usando a mesma configuração das jerseys
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
+
+    // Verificar configuração de moderação
+    let status = 'Approved'; // Padrão
+    try {
+      const settingsResponse = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/settings/moderation`);
+      if (settingsResponse.ok) {
+        const settings = await settingsResponse.json();
+        status = settings.moderationEnabled ? 'Pending' : 'Approved';
+        console.log(`📋 Badge moderation setting: ${settings.moderationEnabled ? 'ON' : 'OFF'}, status: ${status}`);
+      }
+    } catch (settingError) {
+      console.log('⚠️ Could not fetch moderation settings, using default (Approved)');
+    }
 
     // Inserir o badge
     const badgeDoc = {
@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       cloudinaryPublicId: body.cloudinaryPublicId,
       creatorWallet: body.creatorWallet,
       tags: body.tags || [],
+      status: status, // Baseado na configuração de moderação
       createdAt: new Date(),
       updatedAt: new Date()
     }
@@ -67,14 +68,14 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    // Conectar ao MongoDB
-    const client = await clientPromise
-    const db = client.db(dbName)
-    const collection = db.collection('badges')
+    // Conectar ao MongoDB usando a mesma configuração das jerseys
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
 
-    // Buscar badges (ordenados por data de criação, mais recentes primeiro)
+    // Buscar badges aprovados (ordenados por data de criação, mais recentes primeiro)
     const badges = await collection
-      .find({})
+      .find({ status: 'Approved' })
       .sort({ createdAt: -1 })
       .limit(50) // Limitar a 50 mais recentes
       .toArray()
@@ -96,10 +97,10 @@ export async function DELETE(request: NextRequest) {
   try {
     console.log('🗑️ DELETE request received for badges collection')
     
-    // Conectar ao MongoDB
-    const client = await clientPromise
-    const db = client.db(dbName)
-    const collection = db.collection('badges')
+    // Conectar ao MongoDB usando a mesma configuração das jerseys
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
 
     // Deletar todos os badges
     const result = await collection.deleteMany({})

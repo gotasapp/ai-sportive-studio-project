@@ -15,7 +15,7 @@ import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/comp
 interface Logo {
   id: string;
   name: string;
-  creator: {
+  creator?: {
     name: string;
     wallet: string;
   };
@@ -62,7 +62,7 @@ export default function LogosPage() {
 
   const filteredLogos = logos.filter(logo => {
     const matchesSearch = logo.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         logo.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (logo.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          logo.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesStatus = filterStatus === 'all' || logo.status === filterStatus
     
@@ -151,8 +151,8 @@ export default function LogosPage() {
                      </td>
                      <td className="p-4 font-medium text-white">{logo.name}</td>
                      <td className="p-4">
-                       <div className="text-white">{logo.creator.name}</div>
-                       <div className="text-gray-400 text-xs">{logo.creator.wallet}</div>
+                       <div className="text-white">{logo.creator?.name || 'Unknown'}</div>
+                       <div className="text-gray-400 text-xs">{logo.creator?.wallet || 'Unknown'}</div>
                      </td>
                      <td className="p-4">
                        <Badge className={statusColors[logo.status]}>{logo.status}</Badge>

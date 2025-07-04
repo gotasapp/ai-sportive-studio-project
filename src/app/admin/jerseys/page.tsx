@@ -14,7 +14,7 @@ import {
 interface Jersey {
   id: string;
   name: string;
-  creator: {
+  creator?: {
     name: string;
     wallet: string;
   };
@@ -61,8 +61,8 @@ export default function JerseysPage() {
 
   const filteredJerseys = jerseys.filter(jersey => {
     const matchesSearch = jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         jersey.creator.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         jersey.creator.wallet.toLowerCase().includes(searchTerm.toLowerCase());
+                         (jersey.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (jersey.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus
     
     return matchesSearch && matchesStatus;
@@ -148,8 +148,8 @@ export default function JerseysPage() {
                      </td>
                      <td className="p-4 font-medium text-white">{jersey.name}</td>
                      <td className="p-4">
-                       <div className="text-white">{jersey.creator.name}</div>
-                       <div className="text-gray-400 text-xs">{jersey.creator.wallet}</div>
+                       <div className="text-white">{jersey.creator?.name || 'Unknown'}</div>
+                       <div className="text-gray-400 text-xs">{jersey.creator?.wallet || 'Unknown'}</div>
                      </td>
                      <td className="p-4">
                        <Badge className={statusColors[jersey.status]}>{jersey.status}</Badge>
