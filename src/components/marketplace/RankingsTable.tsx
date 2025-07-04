@@ -39,8 +39,6 @@ export default function RankingsTable() {
       setError(null);
       
       try {
-        console.log('🔄 Loading real collection data from APIs...');
-        
         // Buscar dados reais de todas as APIs
         const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
           fetch('/api/jerseys'),
@@ -178,11 +176,6 @@ export default function RankingsTable() {
     <div className="bg-card rounded-2xl p-6 border border-secondary/10">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-2xl font-bold text-white">Top Collections</h2>
-        {!loading && !error && collections.length > 0 && (
-          <span className="text-sm text-gray-400">
-            Live data from MongoDB
-          </span>
-        )}
       </div>
 
       {error ? (

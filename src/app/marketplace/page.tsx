@@ -44,8 +44,6 @@ export default function MarketplacePage() {
       setError(null);
       
       try {
-        console.log('🔄 Loading marketplace data from MongoDB APIs...');
-        
         // Chamadas simultâneas para todas as APIs reais
         const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
           fetch('/api/jerseys'),
@@ -62,13 +60,6 @@ export default function MarketplacePage() {
         const realJerseys: NFT[] = await jerseysResponse.json();
         const realStadiums: NFT[] = await stadiumsResponse.json();
         const realBadges: NFT[] = await badgesResponse.json();
-
-        console.log(`📊 Loaded from MongoDB:`, {
-          jerseys: realJerseys.length,
-          stadiums: realStadiums.length, 
-          badges: realBadges.length,
-          total: realJerseys.length + realStadiums.length + realBadges.length
-        });
 
         // Categorizar dados reais
         const categorizedJerseys = realJerseys.map(jersey => ({ 
@@ -94,8 +85,6 @@ export default function MarketplacePage() {
 
         // Combinar todos os dados reais
         const allRealNFTs = [...categorizedJerseys, ...categorizedStadiums, ...categorizedBadges];
-        
-        console.log(`✅ Total Real NFTs loaded: ${allRealNFTs.length}`);
         
         setAllNfts(allRealNFTs);
         setFilteredNfts(allRealNFTs);
@@ -129,8 +118,6 @@ export default function MarketplacePage() {
       
       const targetCategory = categoryMap[filter] || filter;
       filtered = filtered.filter(nft => nft.category === targetCategory);
-      
-      console.log(`🔍 Filter applied: ${filter} → ${targetCategory}, found ${filtered.length} items`);
     }
     
     // Aplicar busca por nome
@@ -139,8 +126,6 @@ export default function MarketplacePage() {
         nft.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         nft.collection?.toLowerCase().includes(searchTerm.toLowerCase())
       );
-      
-      console.log(`🔍 Search applied: "${searchTerm}", found ${filtered.length} items`);
     }
     
     setFilteredNfts(filtered);
@@ -171,8 +156,8 @@ export default function MarketplacePage() {
   const LoadingState = () => (
     <div className="flex flex-col items-center justify-center py-20">
       <Loader2 className="w-12 h-12 text-accent animate-spin mb-4" />
-      <h2 className="text-xl font-semibold text-white mb-2">Loading Real NFTs</h2>
-      <p className="text-gray-400">Fetching data from MongoDB...</p>
+      <h2 className="text-xl font-semibold text-white mb-2">Loading NFTs</h2>
+      <p className="text-gray-400">Please wait...</p>
     </div>
   );
 
@@ -219,9 +204,9 @@ export default function MarketplacePage() {
         {/* Header & Filters */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-bold text-white">Live NFT Marketplace</h2>
+            <h2 className="text-3xl font-bold text-white">NFT Marketplace</h2>
             <p className="text-gray-400 mt-1">
-              {loading ? 'Loading...' : `${filteredNfts.length} real NFTs from MongoDB`}
+              {loading ? 'Loading...' : `${filteredNfts.length} NFTs available`}
             </p>
           </div>
           

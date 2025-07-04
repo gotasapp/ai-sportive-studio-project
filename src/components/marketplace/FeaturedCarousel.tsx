@@ -36,8 +36,6 @@ export default function FeaturedCarousel() {
       setError(null);
       
       try {
-        console.log('🎯 Loading featured NFTs from real APIs...');
-        
         // Buscar dados reais de todas as APIs
         const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
           fetch('/api/jerseys'),
@@ -59,8 +57,6 @@ export default function FeaturedCarousel() {
           ...stadiums.map(s => ({ ...s, category: 'stadium' as const })),
           ...badges.map(b => ({ ...b, category: 'badge' as const }))
         ];
-
-        console.log(`🎯 Found ${allNFTs.length} total NFTs for featured carousel`);
 
         if (allNFTs.length === 0) {
           setFeaturedNFTs([]);
@@ -85,7 +81,6 @@ export default function FeaturedCarousel() {
           createdAt: nft.createdAt
         }));
 
-        console.log(`✅ Featured NFTs prepared:`, featured.map(f => f.name));
         setFeaturedNFTs(featured);
 
       } catch (error: any) {
@@ -203,12 +198,7 @@ export default function FeaturedCarousel() {
         </div>
       </div>
 
-      {/* Live Data Badge */}
-      <div className="absolute top-4 right-4">
-        <div className="bg-green-500/20 backdrop-blur-sm border border-green-500/30 px-3 py-1 rounded-full">
-          <span className="text-green-400 text-xs font-semibold">Live from MongoDB</span>
-        </div>
-      </div>
+
 
       {/* Content */}
       <div className="absolute bottom-0 left-0 right-0 p-8 text-white">

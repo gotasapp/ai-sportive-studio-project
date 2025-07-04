@@ -57,7 +57,7 @@ const STADIUM_WEATHER_FILTERS = [
 // Marketplace data will be loaded from JSON
 interface MarketplaceNFT {
   name: string;
-  image_url: string;
+  imageUrl: string; // CORRIGIDO: sem underscore para ser consistente
   description: string;
   price: string;
 }
@@ -217,28 +217,108 @@ export default function StadiumEditor() {
     checkApiStatus();
   }, []);
 
-  // Load marketplace data
+  // Load top collections data
   useEffect(() => {
-    const loadMarketplaceData = async () => {
-      try {
-        console.log('🔄 Loading marketplace data for stadiums...')
-        const response = await fetch('/marketplace-images.json')
-        if (!response.ok) throw new Error('Failed to load marketplace data')
-        
-        const data = await response.json()
-        console.log('✅ Marketplace data loaded for stadiums:', data)
-        
-        // Combine jerseys and stadiums for the marketplace carousel
-        const allNFTs = [...data.marketplace_nfts.jerseys, ...data.marketplace_nfts.stadiums]
-        setMarketplaceNFTs(allNFTs)
-      } catch (error) {
-        console.error('❌ Error loading marketplace data for stadiums:', error)
-      } finally {
-        setMarketplaceLoading(false)
-      }
-    }
+    const loadTopCollectionsData = async () => {
+      // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs (prioridade stadiums)
+      const fallbackData = [
+        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', price: '0.15 CHZ' },
+        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', price: '0.05 CHZ' },
+        { name: 'Corinthians Champion Badge', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png', price: '0.03 CHZ' },
+      ];
+      setMarketplaceNFTs(fallbackData);
+      setMarketplaceLoading(false);
 
-    loadMarketplaceData()
+      try {
+        console.log('🔄 Loading top collections data for stadium editor...');
+        
+        // Buscar dados reais das 3 APIs em paralelo
+        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
+          fetch('/api/jerseys'),
+          fetch('/api/stadiums'),
+          fetch('/api/badges')
+        ]);
+
+        // Verificar se todas as respostas foram bem-sucedidas
+        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
+          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
+        }
+
+        // Processar dados reais
+        const jerseys = await jerseysResponse.json();
+        const stadiums = await stadiumsResponse.json();
+        const badges = await badgesResponse.json();
+
+        console.log('📊 Raw API data for stadiums:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
+
+        // Implementar lógica de "Top Collections" com foco em stadiums
+        // Top 2 Stadiums mais recentes (prioridade para página de stadiums)
+        const topStadiums = stadiums
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map(stadium => ({
+            name: stadium.name,
+            imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: stadium.description || 'AI-generated stadium',
+            price: '0.15 CHZ',
+            category: 'stadium',
+            createdAt: stadium.createdAt
+          }));
+
+        // Top 2 Jerseys mais recentes
+        const topJerseys = jerseys
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map(jersey => ({
+            name: jersey.name,
+            imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: jersey.description || 'AI-generated jersey',
+            price: '0.05 CHZ',
+            category: 'jersey',
+            createdAt: jersey.createdAt
+          }));
+
+        // Top 2 Badges mais recentes
+        const topBadges = badges
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map(badge => ({
+            name: badge.name,
+            imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: badge.description || 'AI-generated badge',
+            price: '0.03 CHZ',
+            category: 'badge',
+            createdAt: badge.createdAt
+          }));
+
+        // Combinar priorizando stadiums primeiro, depois outros por data
+        const allTopCollections = [
+          ...topStadiums,
+          ...topJerseys,
+          ...topBadges
+        ]
+        .sort((a, b) => {
+          // Stadiums primeiro, depois por data
+          if (a.category === 'stadium' && b.category !== 'stadium') return -1;
+          if (a.category !== 'stadium' && b.category === 'stadium') return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })
+        .slice(0, 6); // Limitar a 6 itens no carrossel
+
+        console.log('✅ Top Collections compiled for stadiums:', allTopCollections);
+        if (allTopCollections.length > 0) {
+          setMarketplaceNFTs(allTopCollections);
+        }
+        // Se APIs falharem, mantém fallback
+
+      } catch (error) {
+        console.error('❌ Error loading top collections data for stadiums:', error);
+        console.log('🔄 Keeping fallback NFT data due to API error');
+        // Mantém fallback com suas imagens reais
+      }
+    };
+
+    loadTopCollectionsData();
   }, []);
 
   // Convert base64 to blob when image is generated
@@ -858,7 +938,7 @@ export default function StadiumEditor() {
     <EditorLayout
       controls={renderControls()}
       preview={<PreviewPanel generatedImage={generatedImage} isLoading={isGenerating} error={error} onResetError={resetForm} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.image_url, price: nft.price }))} isLoading={marketplaceLoading} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.imageUrl, price: nft.price }))} isLoading={marketplaceLoading} />}
     />
   )
 } 

@@ -31,7 +31,7 @@ const STYLE_FILTERS = [
 // Marketplace data will be loaded from JSON
 interface MarketplaceNFT {
   name: string;
-  image_url: string;
+  imageUrl: string; // CORRIGIDO: sem underscore para ser consistente
   description: string;
   price: string;
 }
@@ -429,20 +429,101 @@ export default function JerseyEditor() {
   }, []);
 
   useEffect(() => {
-    const loadMarketplaceData = async () => {
+    const loadTopCollectionsData = async () => {
       setMarketplaceLoading(true);
+      
+      // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs
+      const fallbackData = [
+        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', price: '0.05 CHZ' },
+        { name: 'Jersey Collection #2', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', price: '0.05 CHZ' },
+        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', price: '0.15 CHZ' },
+      ];
+      setMarketplaceNFTs(fallbackData);
+      setMarketplaceLoading(false);
+
       try {
-        const response = await fetch('/marketplace-images.json')
-        const data = await response.json()
-        const allNFTs = [...(data.marketplace_nfts.jerseys || []), ...(data.marketplace_nfts.stadiums || [])]
-        setMarketplaceNFTs(allNFTs)
+        console.log('🔄 Loading top collections data for jersey editor...');
+        
+        // Buscar dados reais das 3 APIs em paralelo
+        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
+          fetch('/api/jerseys'),
+          fetch('/api/stadiums'),
+          fetch('/api/badges')
+        ]);
+
+        // Verificar se todas as respostas foram bem-sucedidas
+        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
+          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
+        }
+
+        // Processar dados reais
+        const jerseys = await jerseysResponse.json();
+        const stadiums = await stadiumsResponse.json();
+        const badges = await badgesResponse.json();
+
+        console.log('📊 Raw API data:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
+
+        // Implementar lógica de "Top Collections"
+        const topCollections = [];
+
+        // Top 3 Jerseys mais recentes
+        const topJerseys = jerseys
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 3)
+          .map(jersey => ({
+            name: jersey.name,
+            imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: jersey.description || 'AI-generated jersey',
+            price: '0.05 CHZ',
+            category: 'jersey',
+            createdAt: jersey.createdAt
+          }));
+
+        // Top 2 Stadiums mais recentes
+        const topStadiums = stadiums
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map(stadium => ({
+            name: stadium.name,
+            imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: stadium.description || 'AI-generated stadium',
+            price: '0.15 CHZ',
+            category: 'stadium',
+            createdAt: stadium.createdAt
+          }));
+
+        // Top 1 Badge mais recente
+        const topBadges = badges
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 1)
+          .map(badge => ({
+            name: badge.name,
+            imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            description: badge.description || 'AI-generated badge',
+            price: '0.03 CHZ',
+            category: 'badge',
+            createdAt: badge.createdAt
+          }));
+
+        // Combinar e ordenar por data de criação (mais recentes primeiro)
+        const allTopCollections = [...topJerseys, ...topStadiums, ...topBadges]
+          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 6); // Limitar a 6 itens no carrossel
+
+        console.log('✅ Top Collections compiled:', allTopCollections);
+        if (allTopCollections.length > 0) {
+          setMarketplaceNFTs(allTopCollections);
+        }
+        // Se APIs falharem, mantém fallback
+
       } catch (error) {
-        console.error('❌ Error loading marketplace data:', error)
-      } finally {
-        setMarketplaceLoading(false)
+        console.error('❌ Error loading top collections data:', error);
+        console.log('🔄 Keeping fallback NFT data due to API error');
+        // Mantém fallback com suas imagens reais
       }
-    }
-    loadMarketplaceData()
+    };
+
+    loadTopCollectionsData();
   }, []);
 
   const renderControls = () => (
@@ -529,7 +610,7 @@ export default function JerseyEditor() {
     <EditorLayout
       controls={renderControls()}
       preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.image_url, price: nft.price }))} isLoading={marketplaceLoading} />}
+      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.imageUrl, price: nft.price }))} isLoading={marketplaceLoading} />}
     />
   )
 } 
