@@ -317,54 +317,24 @@ export default function JerseyEditor() {
       const result = await Dalle3Service.generateImage(request)
       console.log('DALL-E 3 Result:', result)
       
-      if (result.error) {
-        throw new Error(result.error)
-      }
-      
-      if (result.image_base64) {
-        const imageUrl = Dalle3Service.base64ToImageUrl(result.image_base64);
-        setGeneratedImage(imageUrl);
+      if (result.success && result.image_base64) {
+        setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+        
+        const response = await fetch(`data:image/png;base64,${result.image_base64}`)
+        const blob = await response.blob()
+        setGeneratedImageBlob(blob); // ⚠️ LINHA IMPORTANTE: salvar o blob no state
 
-        const blob = await (await fetch(imageUrl)).blob();
-        setGeneratedImageBlob(blob);
-
-        setIsSaving(true);
-        try {
-          const jerseyName = `${selectedTeam} ${playerName} #${playerNumber}`
-          const dbPrompt = `AI-generated jersey for ${selectedTeam}, player ${playerName} #${playerNumber}, style: ${selectedStyle}.`
-
-          const creationData = {
-            name: jerseyName,
-            prompt: dbPrompt,
-            imageUrl: imageUrl,
-            creatorWallet: address,
-            tags: [selectedTeam, selectedStyle],
-          };
-
-          const response = await fetch('/api/jerseys', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(creationData),
-          });
-
-          const responseData = await response.json();
-
-          if (!response.ok) {
-            throw new Error(responseData.error || 'Failed to save jersey.');
-          }
-          
-          setSaveSuccess('Jersey created! It is now available in the marketplace.');
-          console.log('Jersey saved to DB:', responseData);
-
-        } catch (dbError: any) {
-          console.error('Database save error:', dbError);
-          setSaveError(dbError.message || 'An error occurred while saving.');
-        } finally {
-          setIsSaving(false);
-        }
+        // Chamar a função isolada para salvar no banco
+        await saveJerseyToDB({
+          name: `${selectedTeam} ${playerName} #${playerNumber}`,
+          prompt: JSON.stringify(request),
+          imageUrl: `data:image/png;base64,${result.image_base64}`,
+          creatorWallet: address || "N/A",
+          tags: [selectedTeam, selectedStyle],
+        }, blob);
 
       } else {
-        throw new Error('Image generation failed, no image data returned from API.')
+        throw new Error(result.error || 'Image generation failed, no image data returned from API.')
       }
     } catch (err: any) {
       console.error('Generation failed:', err)
@@ -373,6 +343,66 @@ export default function JerseyEditor() {
       setIsLoading(false)
     }
   }
+
+  const saveJerseyToDB = async (jerseyData: any, imageBlob: Blob) => {
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      console.log('💾 Saving jersey to database...');
+      
+      // 1. Primeiro, fazer upload da imagem para Cloudinary via nossa API
+      console.log('📤 Uploading image to Cloudinary...');
+      if (!imageBlob) {
+        throw new Error('No image blob available for upload');
+      }
+
+      const formData = new FormData();
+      formData.append('file', imageBlob, `${jerseyData.name}.png`);
+      formData.append('fileName', `${selectedTeam}_${playerName}_${playerNumber}_${Date.now()}`);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+      // 2. Agora salvar no banco com a URL do Cloudinary (não o base64)
+      const jerseyDataWithCloudinaryUrl = {
+        ...jerseyData,
+        imageUrl: uploadResult.url, // URL do Cloudinary
+        cloudinaryPublicId: uploadResult.publicId, // Para deletar depois se necessário
+      };
+
+      const response = await fetch('/api/jerseys', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(jerseyDataWithCloudinaryUrl),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save jersey to database');
+      }
+
+      const result = await response.json();
+      console.log('✅ Jersey saved to DB:', result);
+      setSaveSuccess(`Jersey saved successfully! DB ID: ${result.jerseyId}`);
+    } catch (error: any) {
+      console.error('❌ Error saving jersey to DB:', error);
+      setSaveError(`Image generated, but failed to save: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const resetError = () => {
     setError(null);
