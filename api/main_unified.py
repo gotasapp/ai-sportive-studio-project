@@ -19,6 +19,15 @@ from pathlib import Path
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
 
+# Importar sistema modular de badges
+try:
+    from badge_api import register_badge_routes
+    BADGES_AVAILABLE = True
+    print("✅ Sistema de badges disponível")
+except ImportError as e:
+    print(f"⚠️ Sistema de badges não disponível: {e}")
+    BADGES_AVAILABLE = False
+
 load_dotenv()
 
 # Configurações
@@ -38,6 +47,21 @@ class GenerationResponse(BaseModel):
     image_base64: Optional[str] = None
     cost_usd: Optional[float] = None
     error: Optional[str] = None
+
+# --- MODELOS DE DADOS PARA BADGES ---
+class BadgeGenerationRequest(BaseModel):
+    model_id: str  # Team name
+    badge_name: str
+    badge_number: str
+    style: str = "modern"
+    quality: str = "standard"
+
+class BadgeResponse(BaseModel):
+    success: bool
+    image_base64: Optional[str] = None
+    cost_usd: Optional[float] = None
+    error: Optional[str] = None
+    prompt_used: Optional[str] = None
 
 # --- MODELOS DE DADOS PARA STADIUMS ---
 class StadiumReferenceRequest(BaseModel):
@@ -465,17 +489,32 @@ app.add_middleware(
 jersey_generator = JerseyGenerator()
 stadium_generator = StadiumReferenceGenerator()
 
+# Registrar rotas de badges se disponível
+if BADGES_AVAILABLE:
+    try:
+        register_badge_routes(app)
+        print("✅ Rotas de badges registradas com sucesso")
+    except Exception as e:
+        print(f"❌ Erro ao registrar rotas de badges: {e}")
+        BADGES_AVAILABLE = False
+
 # --- ENDPOINTS PRINCIPAIS ---
 @app.get("/")
 async def root():
+    endpoints = {
+        "jerseys": "/generate, /teams",
+        "stadiums": "/stadiums, /generate-from-reference, /generate-custom"
+    }
+    
+    if BADGES_AVAILABLE:
+        endpoints["badges"] = "/badges/generate, /badges/styles, /badges/teams, /badges/info"
+    
     return {
         "status": "online", 
-        "service": "Unified API - Jerseys + Stadiums", 
+        "service": "Unified API - Jerseys + Stadiums + Badges", 
         "version": "1.0.0",
-        "endpoints": {
-            "jerseys": "/generate, /teams",
-            "stadiums": "/stadiums, /generate-from-reference, /generate-custom"
-        }
+        "badges_available": BADGES_AVAILABLE,
+        "endpoints": endpoints
     }
 
 # --- ENDPOINTS DE JERSEYS ---
@@ -538,13 +577,20 @@ async def generate_custom_stadium(request: CustomStadiumRequest):
 # --- HEALTH CHECK ---
 @app.get("/health")
 async def health_check():
-    return {
+    health_status = {
         "status": "ok",
         "jersey_generator": "operational",
         "stadium_generator": "operational",
         "openai": "connected",
         "openrouter": "connected"
     }
+    
+    if BADGES_AVAILABLE:
+        health_status["badge_generator"] = "operational"
+    else:
+        health_status["badge_generator"] = "not_available"
+    
+    return health_status
 
 if __name__ == "__main__":
     import uvicorn
