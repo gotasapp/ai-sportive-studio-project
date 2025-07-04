@@ -130,6 +130,11 @@ export default function StadiumEditor() {
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
+  // Save to DB state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
   // Marketplace state
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
@@ -617,9 +622,38 @@ export default function StadiumEditor() {
         console.log('📸 Image data length:', response.generated_image_base64.length);
         setGeneratedImage(`data:image/png;base64,${response.generated_image_base64}`);
         setResult(response);
-        console.log('🎯 Result set, useEffect should trigger blob conversion');
+        
+        const blob = await (await fetch(`data:image/png;base64,${response.generated_image_base64}`)).blob();
+        setGeneratedImageBlob(blob); // RESTAURAR ESTA LINHA CRUCIAL
+
+        // Construir o objeto de parâmetros, assim como na Jersey
+        const stadiumParams = {
+          stadium_id: selectedStadium,
+          reference_type: referenceType,
+          generation_style: generationStyle,
+          perspective,
+          atmosphere,
+          time_of_day: timeOfDay,
+          weather,
+          quality,
+          custom_prompt: customPrompt,
+          final_prompt_used: response.prompt_used // Guardamos o prompt final também
+        };
+
+        // Chamar a função para salvar no banco com o objeto de parâmetros stringificado
+        console.log('🎯 About to call saveStadiumToDB with blob size:', blob?.size);
+        await saveStadiumToDB({
+          name: selectedStadium !== 'custom_only' 
+            ? `${availableStadiums.find(s => s.id === selectedStadium)?.name || 'Custom'} Stadium` 
+            : `Custom Stadium`,
+          prompt: JSON.stringify(stadiumParams), // CORREÇÃO: Enviar parâmetros como JSON stringificado
+          creatorWallet: address || "N/A",
+          tags: [selectedStadium === 'custom_only' ? 'Custom' : selectedStadium, generationStyle, atmosphere, timeOfDay],
+        }, blob);
+        console.log('✅ saveStadiumToDB completed successfully');
+
       } else {
-        console.log('❌ Stadium generation failed:', response.error);
+        console.error('❌ Stadium generation failed:', response.error);
         setError(response.error || 'Generation failed');
       }
     } catch (error) {
@@ -627,6 +661,87 @@ export default function StadiumEditor() {
       setError('Failed to generate stadium');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const saveStadiumToDB = async (stadiumData: any, imageBlob: Blob) => {
+    console.log('🏟️ saveStadiumToDB called with:', { stadiumData, imageBlobSize: imageBlob?.size });
+    
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    
+    try {
+      console.log('🏟️ Saving stadium to database...');
+      
+      // 1. Primeiro, fazer upload da imagem para Cloudinary via nossa API
+      console.log('📤 Uploading image to Cloudinary...');
+      if (!imageBlob) {
+        throw new Error('No image blob available for upload');
+      }
+
+      const formData = new FormData();
+      formData.append('file', imageBlob, `${stadiumData.name}.png`);
+      formData.append('fileName', `stadium_${selectedStadium}_${generationStyle}_${Date.now()}`);
+      
+      console.log('📤 Making upload request to /api/upload...');
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      console.log('📤 Upload response status:', uploadResponse.status, uploadResponse.statusText);
+
+      if (!uploadResponse.ok) {
+        const uploadError = await uploadResponse.text();
+        console.error('❌ Upload failed with response:', uploadError);
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+      // 2. Agora salvar no banco com a URL do Cloudinary (não o base64)
+      const stadiumDataWithCloudinaryUrl = {
+        ...stadiumData,
+        imageUrl: uploadResult.url, // URL do Cloudinary
+        cloudinaryPublicId: uploadResult.publicId, // Para deletar depois se necessário
+      };
+
+      console.log('💾 Final payload to be sent to /api/stadiums:', JSON.stringify(stadiumDataWithCloudinaryUrl, null, 2));
+
+      console.log('📤 Making save request to /api/stadiums...');
+      const response = await fetch('/api/stadiums', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(stadiumDataWithCloudinaryUrl),
+      });
+
+      console.log('📤 Save response status:', response.status, response.statusText);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Save failed with response:', errorText);
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText };
+        }
+        throw new Error(errorData.error || 'Failed to save stadium to database');
+      }
+
+      const result = await response.json();
+      console.log('✅ Stadium saved to DB:', result);
+      setSaveSuccess(`Stadium saved successfully! DB ID: ${result.stadiumId}`);
+      
+    } catch (error: any) {
+      console.error('❌ Error saving stadium to DB:', error);
+      setSaveError(`Image generated, but failed to save: ${error.message}`);
+    } finally {
+      setIsSaving(false);
     }
   };
 

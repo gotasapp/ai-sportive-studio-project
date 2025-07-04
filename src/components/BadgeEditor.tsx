@@ -65,6 +65,11 @@ export default function BadgeEditor() {
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
+  // Save to DB state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
   
@@ -180,9 +185,21 @@ export default function BadgeEditor() {
       const request: ImageGenerationRequest = { prompt, quality };
       const result = await Dalle3Service.generateImage(request);
 
-      if (result.imageUrl && result.imageBlob) {
-        setGeneratedImage(result.imageUrl);
-        setGeneratedImageBlob(result.imageBlob);
+      if (result.success && result.image_base64) {
+        setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+        
+        const response = await fetch(`data:image/png;base64,${result.image_base64}`)
+        const blob = await response.blob()
+        setGeneratedImageBlob(blob);
+
+        // Chamar a função para salvar no banco
+        await saveBadgeToDB({
+          name: `${selectedTeam} Badge ${badgeName} #${badgeNumber}`,
+          prompt: prompt,
+          creatorWallet: address || "N/A",
+          tags: [selectedTeam, selectedStyle, badgeName, badgeNumber],
+        }, blob);
+
       } else {
         setError('Failed to generate image.');
       }
@@ -192,6 +209,66 @@ export default function BadgeEditor() {
       setIsLoading(false)
     }
   }
+
+  const saveBadgeToDB = async (badgeData: any, imageBlob: Blob) => {
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      console.log('🏆 Saving badge to database...');
+      
+      // 1. Primeiro, fazer upload da imagem para Cloudinary via nossa API
+      console.log('📤 Uploading image to Cloudinary...');
+      if (!imageBlob) {
+        throw new Error('No image blob available for upload');
+      }
+
+      const formData = new FormData();
+      formData.append('file', imageBlob, `${badgeData.name}.png`);
+      formData.append('fileName', `badge_${selectedTeam}_${badgeName}_${badgeNumber}_${Date.now()}`);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+      // 2. Agora salvar no banco com a URL do Cloudinary (não o base64)
+      const badgeDataWithCloudinaryUrl = {
+        ...badgeData,
+        imageUrl: uploadResult.url, // URL do Cloudinary
+        cloudinaryPublicId: uploadResult.publicId, // Para deletar depois se necessário
+      };
+
+      const response = await fetch('/api/badges', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(badgeDataWithCloudinaryUrl),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save badge to database');
+      }
+
+      const result = await response.json();
+      console.log('✅ Badge saved to DB:', result);
+      setSaveSuccess(`Badge saved successfully! DB ID: ${result.badgeId}`);
+    } catch (error: any) {
+      console.error('❌ Error saving badge to DB:', error);
+      setSaveError(`Image generated, but failed to save: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const resetError = () => setError(null);
 

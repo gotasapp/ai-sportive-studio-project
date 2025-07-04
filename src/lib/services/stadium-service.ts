@@ -121,47 +121,16 @@ export class StadiumService {
   
   static async generateFromReference(request: StadiumGenerationRequest): Promise<StadiumResponse> {
     try {
-      // Usar prompt base do estádio se disponível
-      const basePrompt = STADIUM_BASE_PROMPTS[request.stadium_id] || request.custom_prompt || 'Modern stadium';
-      
-      // Construir prompt melhorado
-      const enhancedPrompt = StadiumService.buildEnhancedPrompt({
-        architectural_analysis: basePrompt,
-        style: request.generation_style,
-        perspective: request.perspective,
-        atmosphere: request.atmosphere,
-        time_of_day: request.time_of_day,
-        weather: request.weather
-      });
-
-      console.log('🏟️ Enhanced stadium prompt:', enhancedPrompt);
-
-      // Payload com campos dummy para compatibilidade com API antiga do Render
-      const payload = {
-        prompt: enhancedPrompt,
-        quality: request.quality || 'standard',
-        type: 'stadium',
-        // Campos dummy necessários até API ser atualizada
-        model_id: 'stadium_dummy',
-        player_name: 'STADIUM',
-        player_number: '00'
-      };
-
-      console.log('📦 Stadium API Payload:', JSON.stringify(payload, null, 2));
-
-      // Usar DALL-E 3 service diretamente por enquanto
+      console.log('🏟️ Calling /generate-from-reference with:', request);
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/generate`, {
+      const response = await fetch(`${baseUrl}/generate-from-reference`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(request),
       });
-      
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()));
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('❌ API Error Response:', errorText);
@@ -170,18 +139,10 @@ export class StadiumService {
       
       const result = await response.json();
       console.log('✅ API Success Response:', result);
-      
-      return {
-        success: result.success,
-        generated_image_base64: result.image_base64 || result.generated_image_base64 || result.image_url,
-        reference_used: request.stadium_id,
-        reference_source: 'predefined',
-        cost_usd: 0.04, // DALL-E 3 cost
-        prompt_used: enhancedPrompt,
-        error: result.error
-      };
+      return result;
+
     } catch (error) {
-      console.error('Error generating stadium:', error);
+      console.error('Error generating stadium from reference:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Stadium generation failed'
@@ -191,54 +152,25 @@ export class StadiumService {
   
   static async generateCustom(request: CustomStadiumRequest): Promise<StadiumResponse> {
     try {
-      // Construir prompt melhorado
-      const enhancedPrompt = StadiumService.buildEnhancedPrompt({
-        architectural_analysis: request.prompt,
-        style: request.generation_style,
-        perspective: request.perspective,
-        atmosphere: request.atmosphere,
-        time_of_day: request.time_of_day,
-        weather: request.weather || 'clear'
-      });
-
-      console.log('🏟️ Custom stadium prompt:', enhancedPrompt);
-
-      const payload = {
-        prompt: enhancedPrompt,
-        quality: request.quality || 'standard',
-        type: 'stadium',
-        // Campos dummy necessários até API ser atualizada
-        model_id: 'stadium_dummy',
-        player_name: 'STADIUM',
-        player_number: '00'
-      };
-
-      console.log('📦 Custom Stadium API Payload:', JSON.stringify(payload, null, 2));
-
+      console.log('🏟️ Calling /generate-custom with:', request);
       const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
-      const response = await fetch(`${baseUrl}/generate`, {
+      const response = await fetch(`${baseUrl}/generate-custom`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(request),
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('❌ API Error Response:', errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
       
       const result = await response.json();
-      
-      return {
-        success: result.success,
-        generated_image_base64: result.image_base64 || result.generated_image_base64 || result.image_url,
-        reference_used: 'custom',
-        reference_source: 'custom_prompt',
-        cost_usd: 0.04,
-        prompt_used: enhancedPrompt,
-        error: result.error
-      };
+      console.log('✅ API Success Response:', result);
+      return result;
     } catch (error) {
       console.error('Error generating custom stadium:', error);
       return {
