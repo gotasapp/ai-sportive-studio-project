@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check, Eye, FileImage, X } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
@@ -26,6 +26,25 @@ const STYLE_FILTERS = [
   { id: 'national', label: 'National', icon: Globe },
   { id: 'urban', label: 'Urban', icon: Palette },
   { id: 'classic', label: 'Classic', icon: Crown }
+]
+
+// Vision Analysis Options (from VisionTestEditor)
+const SPORTS_OPTIONS = [
+  { id: 'soccer', name: 'Soccer/Football', description: 'Professional soccer jersey' },
+  { id: 'basketball', name: 'Basketball', description: 'NBA/Basketball jersey' },
+  { id: 'nfl', name: 'American Football', description: 'NFL jersey' }
+]
+
+const VIEW_OPTIONS = [
+  { id: 'back', name: 'Back View', description: 'Jersey back with player name/number' },
+  { id: 'front', name: 'Front View', description: 'Jersey front with logo/badge' }
+]
+
+const VISION_MODELS = [
+  { id: 'openai/gpt-4o-mini', name: 'GPT-4O Mini', cost: '~$0.01' },
+  { id: 'openai/gpt-4o', name: 'GPT-4O', cost: '~$0.03' },
+  { id: 'meta-llama/llama-3.2-11b-vision-instruct', name: 'Llama 3.2 Vision', cost: '~$0.02' },
+  { id: 'qwen/qwen-2-vl-72b-instruct', name: 'Qwen 2 VL', cost: '~$0.025' }
 ]
 
 // Marketplace data will be loaded from JSON
@@ -62,7 +81,7 @@ export default function JerseyEditor() {
     getTransactionStatus,
   } = useEngine()
 
-  // Component state
+  // ===== EXISTING STATES =====
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<string>('')
   const [playerName, setPlayerName] = useState<string>('JEFF')
@@ -100,6 +119,20 @@ export default function JerseyEditor() {
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
 
+  // ===== NEW VISION ANALYSIS STATES =====
+  const [isVisionMode, setIsVisionMode] = useState(false)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  const [referenceImageBlob, setReferenceImageBlob] = useState<Blob | null>(null)
+  const [customPrompt, setCustomPrompt] = useState<string>('')
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const [selectedVisionModel, setSelectedVisionModel] = useState<string>('openai/gpt-4o-mini')
+  const [selectedSport, setSelectedSport] = useState('soccer')
+  const [selectedView, setSelectedView] = useState('back')
+  
+  // Refs
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
   // Network validation (simplified for CHZ + Polygon)
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
   const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
@@ -110,6 +143,170 @@ export default function JerseyEditor() {
   // Mint conditions
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
   const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber && isUserAdmin // Gasless only for admins
+
+  // ===== NEW VISION ANALYSIS FUNCTIONS =====
+  
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      setError(null)
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file (JPG, PNG, WebP)')
+        return
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Image too large. Please upload an image smaller than 10MB')
+        return
+      }
+
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setReferenceImage(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+      
+      // Store blob for analysis
+      setReferenceImageBlob(file)
+      setIsVisionMode(true)
+      
+      console.log('📸 Reference image uploaded:', file.name, file.size)
+      
+    } catch (error) {
+      console.error('❌ Upload error:', error)
+      setError('Failed to upload image')
+    }
+  }
+
+  const clearReferenceImage = () => {
+    setReferenceImage(null)
+    setReferenceImageBlob(null)
+    setCustomPrompt('')
+    setAnalysisResult(null)
+    setIsVisionMode(false)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  // Get sport-specific labels
+  const getSportLabel = () => {
+    const sport = SPORTS_OPTIONS.find(s => s.id === selectedSport)
+    return sport ? sport.name : 'Soccer'
+  }
+
+  const getViewLabel = () => {
+    const view = VIEW_OPTIONS.find(v => v.id === selectedView)
+    return view ? view.name : 'Back View'
+  }
+
+  const analyzeReferenceImage = async () => {
+    if (!referenceImageBlob) return
+
+    setIsAnalyzing(true)
+    setError(null)
+
+    try {
+      console.log('🔍 [VISION ANALYSIS] Starting reference image analysis using original vision-test flow...')
+      
+      // Convert to base64
+      const base64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => {
+          const result = reader.result as string
+          const base64String = result.split(',')[1]
+          resolve(base64String)
+        }
+        reader.readAsDataURL(referenceImageBlob)
+      })
+
+      // STEP 1: Get structured ANALYSIS PROMPT from our new API
+      console.log('📋 [VISION ANALYSIS] Step 1: Getting structured analysis prompt...')
+      const analysisPromptResponse = await fetch('/api/vision-prompts/analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sport: selectedSport,
+          view: selectedView
+        }),
+      })
+
+      if (!analysisPromptResponse.ok) {
+        throw new Error(`Failed to get analysis prompt: ${analysisPromptResponse.status}`)
+      }
+
+      const promptData = await analysisPromptResponse.json()
+      
+      if (!promptData.success) {
+        throw new Error(promptData.error || 'Failed to get analysis prompt')
+      }
+
+      const structuredAnalysisPrompt = promptData.analysis_prompt
+      console.log('✅ [VISION ANALYSIS] Got structured analysis prompt:', {
+        sport: selectedSport,
+        view: selectedView,
+        promptLength: structuredAnalysisPrompt.length,
+        focusAreas: promptData.metadata?.focus_areas?.length || 0
+      })
+
+      // STEP 2: Call vision API with structured prompt
+      console.log('👁️ [VISION ANALYSIS] Step 2: Sending to Vision API for analysis...')
+      const visionResponse = await fetch('/api/vision-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_base64: base64,
+          prompt: structuredAnalysisPrompt,
+          model: selectedVisionModel
+        }),
+      })
+
+      if (!visionResponse.ok) {
+        throw new Error(`Vision analysis failed: ${visionResponse.status}`)
+      }
+
+      const visionResult = await visionResponse.json()
+      
+      if (!visionResult.success) {
+        throw new Error(visionResult.error || 'Vision analysis failed')
+      }
+
+      console.log('✅ [VISION ANALYSIS] Analysis completed successfully:', {
+        model: visionResult.model_used,
+        cost: visionResult.cost_estimate,
+        analysisLength: visionResult.analysis?.length || 0
+      })
+
+      // Try to parse as JSON if possible, otherwise keep as string
+      let parsedAnalysis = visionResult.analysis
+      try {
+        parsedAnalysis = JSON.parse(visionResult.analysis)
+        console.log('✅ [VISION ANALYSIS] Successfully parsed JSON analysis')
+      } catch {
+        console.log('ℹ️ [VISION ANALYSIS] Analysis is text format (not JSON)')
+      }
+
+      setAnalysisResult(parsedAnalysis)
+
+    } catch (error: any) {
+      console.error('❌ [VISION ANALYSIS] Error:', error)
+      setError(error.message || 'Failed to analyze reference image')
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  // ===== EXISTING FUNCTIONS (keeping all current logic) =====
 
   // Function to configure Claim Conditions (Admin)
   const handleSetClaimConditions = async () => {
@@ -198,40 +395,6 @@ export default function JerseyEditor() {
     }
   }
 
-  // Effect to poll transaction status
-  useEffect(() => {
-    if (mintStatus === 'pending' && mintedTokenId) {
-      const interval = setInterval(async () => {
-        console.log(`🔎 Checking status for queueId: ${mintedTokenId}`);
-        const statusResult = await getTransactionStatus(mintedTokenId);
-        
-        if (statusResult.result) {
-            const { status, transactionHash: finalTxHash, errorMessage } = statusResult.result;
-            console.log('Status da Engine:', status);
-
-            if (status === 'mined') {
-                setMintStatus('success');
-                setMintSuccess('NFT successfully created on blockchain!');
-                setTransactionHash(finalTxHash);
-                clearInterval(interval);
-            } else if (status === 'errored' || status === 'cancelled') {
-                setMintStatus('error');
-                setMintError(`Transaction failed: ${errorMessage || 'Unknown error'}`);
-                clearInterval(interval);
-            }
-        } else if (statusResult.error) {
-            setMintStatus('error');
-            setMintError(`Error checking status: ${statusResult.error}`);
-            clearInterval(interval);
-        }
-
-      }, 3000);
-
-      return () => clearInterval(interval);
-    }
-  }, [mintStatus, mintedTokenId, getTransactionStatus]);
-
-  // 🎯 LEGACY MINT - Direct SDK (fallback) - THE MAIN USER FLOW
   const handleMintNFT = async () => {
     if (!generatedImageBlob || !selectedTeam || !playerName || !playerNumber) {
       setMintError('Missing required data for minting')
@@ -288,6 +451,7 @@ export default function JerseyEditor() {
     }
   }
 
+  // ===== MODIFIED GENERATION FUNCTION - DUAL SYSTEM =====
   const generateContent = async () => {
     resetError()
     setIsLoading(true)
@@ -306,35 +470,172 @@ export default function JerseyEditor() {
     }
 
     try {
-      const request = {
-        model_id: selectedTeam,
-        player_name: playerName,
-        player_number: playerNumber,
-        quality: quality,
-      };
+      console.log('🎯 DUAL SYSTEM: Detecting generation mode...')
       
-      console.log('Generating image with request data:', request)
-      const result = await Dalle3Service.generateImage(request)
-      console.log('DALL-E 3 Result:', result)
-      
-      if (result.success && result.image_base64) {
-        setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+      // ===== DUAL SYSTEM DETECTION =====
+      if (isVisionMode && referenceImageBlob) {
+        console.log('👁️ [VISION GENERATION] Using complete vision-test flow...')
         
-        const response = await fetch(`data:image/png;base64,${result.image_base64}`)
-        const blob = await response.blob()
-        setGeneratedImageBlob(blob); // ⚠️ LINHA IMPORTANTE: salvar o blob no state
+        // Ensure we have analysis result - if not, analyze first
+        if (!analysisResult) {
+          console.log('⚠️ [VISION GENERATION] No analysis result found, analyzing first...')
+          await analyzeReferenceImage()
+          
+          if (!analysisResult) {
+            throw new Error('Failed to analyze reference image. Please try analyzing first.')
+          }
+        }
 
-        // Chamar a função isolada para salvar no banco
+        // STEP 1: Get BASE PROMPT from our new API
+        console.log('📋 [VISION GENERATION] Step 1: Getting base generation prompt...')
+        const basePromptResponse = await fetch('/api/vision-prompts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sport: selectedSport,
+            view: selectedView,
+            playerName: playerName || "",
+            playerNumber: playerNumber || "",
+            style: selectedStyle || "classic",
+            qualityLevel: "advanced" // Use advanced quality for vision mode
+          }),
+        })
+
+        if (!basePromptResponse.ok) {
+          throw new Error(`Failed to get base prompt: ${basePromptResponse.status}`)
+        }
+
+        const basePromptData = await basePromptResponse.json()
+        
+        if (!basePromptData.success) {
+          throw new Error(basePromptData.error || 'Failed to get base prompt')
+        }
+
+        const basePrompt = basePromptData.prompt
+        console.log('✅ [VISION GENERATION] Got base prompt:', {
+          sport: selectedSport,
+          view: selectedView,
+          style: selectedStyle,
+          hasPlayerData: !!(playerName && playerNumber),
+          promptLength: basePrompt.length,
+          qualityEnhanced: true
+        })
+
+        // STEP 2: Combine BASE PROMPT + ANALYSIS + Quality enhancers (exactly like vision-test)
+        const analysisText = typeof analysisResult === 'object' 
+          ? JSON.stringify(analysisResult, null, 2)
+          : analysisResult
+        
+        const finalCombinedPrompt = `${basePrompt}
+
+ORIGINAL DESIGN ANALYSIS: ${analysisText}
+
+${customPrompt ? `CUSTOM INSTRUCTIONS: ${customPrompt}` : ''}
+
+NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, watermark, text overlay, logo overlay, multiple jerseys, person wearing, mannequin, human model, body, arms, torso.`.trim()
+
+        console.log('🎨 [VISION GENERATION] Step 2: Combined prompt ready:', {
+          baseLength: basePrompt.length,
+          analysisLength: analysisText.length,
+          customLength: customPrompt?.length || 0,
+          finalLength: finalCombinedPrompt.length,
+          preview: finalCombinedPrompt.substring(0, 200) + '...'
+        })
+
+        // STEP 3: Generate image using vision-generate API (same as vision-test)
+        console.log('🖼️ [VISION GENERATION] Step 3: Generating image with DALL-E 3...')
+        const visionGenerateResponse = await fetch('/api/vision-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: finalCombinedPrompt,
+            quality: quality
+          }),
+        })
+
+        if (!visionGenerateResponse.ok) {
+          throw new Error(`Vision generation failed: ${visionGenerateResponse.status}`)
+        }
+
+        const visionResult = await visionGenerateResponse.json()
+        
+        if (!visionResult.success) {
+          throw new Error(visionResult.error || 'Vision image generation failed')
+        }
+
+        console.log('✅ [VISION GENERATION] Image generated successfully:', {
+          cost: visionResult.cost_usd,
+          imageSize: visionResult.image_base64?.length || 0
+        })
+
+        setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`);
+        
+        const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
+        const blob = await response.blob()
+        setGeneratedImageBlob(blob);
+
+        // Save to DB with complete vision metadata
         await saveJerseyToDB({
-          name: `${selectedTeam} ${playerName} #${playerNumber}`,
-          prompt: JSON.stringify(request),
-          imageUrl: `data:image/png;base64,${result.image_base64}`,
+          name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
+          prompt: finalCombinedPrompt,
+          imageUrl: `data:image/png;base64,${visionResult.image_base64}`,
           creatorWallet: address || "N/A",
-          tags: [selectedTeam, selectedStyle],
+          tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
+          metadata: {
+            generationMode: 'vision_enhanced',
+            hasReferenceImage: true,
+            analysisUsed: !!analysisResult,
+            sport: selectedSport,
+            view: selectedView,
+            visionModel: selectedVisionModel,
+            qualityLevel: 'advanced',
+            costUsd: visionResult.cost_usd
+          }
         }, blob);
 
+        console.log('🎉 [VISION GENERATION] Complete vision-test flow completed successfully!')
+        
       } else {
-        throw new Error(result.error || 'Image generation failed, no image data returned from API.')
+        console.log('🎨 STANDARD MODE: Using original system')
+        
+        // Original system request
+        const request = {
+          model_id: selectedTeam,
+          player_name: playerName,
+          player_number: playerNumber,
+          quality: quality,
+        };
+        
+        console.log('Generating image with request data:', request)
+        const result = await Dalle3Service.generateImage(request)
+        console.log('DALL-E 3 Result:', result)
+        
+        if (result.success && result.image_base64) {
+          setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+          
+          const response = await fetch(`data:image/png;base64,${result.image_base64}`)
+          const blob = await response.blob()
+          setGeneratedImageBlob(blob);
+
+          // Save to DB with standard metadata
+          await saveJerseyToDB({
+            name: `${selectedTeam} ${playerName} #${playerNumber}`,
+            prompt: JSON.stringify(request),
+            imageUrl: `data:image/png;base64,${result.image_base64}`,
+            creatorWallet: address || "N/A",
+            tags: [selectedTeam, selectedStyle],
+            metadata: {
+              generationMode: 'standard'
+            }
+          }, blob);
+
+        } else {
+          throw new Error(result.error || 'Image generation failed, no image data returned from API.')
+        }
       }
     } catch (err: any) {
       console.error('Generation failed:', err)
@@ -528,6 +829,119 @@ export default function JerseyEditor() {
 
   const renderControls = () => (
     <>
+      {/* Vision Analysis Section - Compacta no topo */}
+      <EditorPanel title="🔍 Reference Analysis (Optional)">
+        <div className="space-y-3">
+          {/* Vision Options - Always visible but compact */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <select 
+              value={selectedSport} 
+              onChange={(e) => setSelectedSport(e.target.value)}
+              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+            >
+              {SPORTS_OPTIONS.map(sport => (
+                <option key={sport.id} value={sport.id}>{sport.name}</option>
+              ))}
+            </select>
+            
+            <select 
+              value={selectedView} 
+              onChange={(e) => setSelectedView(e.target.value)}
+              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+            >
+              {VIEW_OPTIONS.map(view => (
+                <option key={view.id} value={view.id}>{view.name}</option>
+              ))}
+            </select>
+            
+            <select 
+              value={selectedVisionModel} 
+              onChange={(e) => setSelectedVisionModel(e.target.value)}
+              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+            >
+              {VISION_MODELS.map(model => (
+                <option key={model.id} value={model.id}>{model.name}</option>
+              ))}
+            </select>
+          </div>
+
+          {!referenceImage ? (
+            <div
+              className="relative border-2 border-dashed border-gray-600 rounded-lg p-4 hover:border-accent transition-colors cursor-pointer bg-gray-900/50"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+              <div className="flex items-center justify-center space-x-2 text-gray-400">
+                <FileImage className="w-5 h-5" />
+                <span className="text-sm">Upload {selectedSport} jersey reference</span>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {/* Preview compacto */}
+              <div className="relative">
+                <img
+                  src={referenceImage}
+                  alt="Reference"
+                  className="w-full h-24 object-cover rounded-lg border border-gray-600"
+                />
+                <button
+                  onClick={clearReferenceImage}
+                  className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-colors"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              
+              {/* Botões de ação compactos */}
+              <div className="flex gap-2">
+                <button
+                  onClick={analyzeReferenceImage}
+                  disabled={isAnalyzing}
+                  className="flex-1 cyber-button py-2 px-3 text-sm rounded disabled:opacity-50"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Eye className="w-4 h-4 mr-1 animate-pulse" />
+                      Analyzing {getSportLabel()}...
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="w-4 h-4 mr-1" />
+                      Analyze {getSportLabel()} ({getViewLabel()})
+                    </>
+                  )}
+                </button>
+                
+                {analysisResult && (
+                  <div className="flex-1 text-xs text-green-400 flex items-center justify-center">
+                    <Check className="w-3 h-3 mr-1" />
+                    Analysis complete
+                  </div>
+                )}
+              </div>
+
+              {/* Custom prompt opcional - muito compacto */}
+              {analysisResult && (
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="Optional: Customize the prompt..."
+                  className="w-full px-3 py-2 text-xs bg-gray-800 border border-gray-600 rounded resize-none"
+                  rows={2}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </EditorPanel>
+
       <EditorPanel title="1. Select Style">
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           {STYLE_FILTERS.map((filter) => (
@@ -562,7 +976,16 @@ export default function JerseyEditor() {
             </div>
           </div>
           <button onClick={generateContent} disabled={isLoading || !selectedTeam} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-            {isLoading ? 'Generating...' : 'Generate Jersey'}
+            {isLoading ? (
+              isVisionMode ? `AI Vision Analysis + Generating ${getSportLabel()}...` : 'Generating...'
+            ) : (
+              <div className="flex items-center justify-center">
+                {isVisionMode && (
+                  <Eye className="w-5 h-5 mr-2 text-accent" />
+                )}
+                {isVisionMode ? `Generate ${getSportLabel()} (${getViewLabel()}) with AI Vision` : 'Generate Jersey'}
+              </div>
+            )}
           </button>
         </div>
       </EditorPanel>

@@ -11,11 +11,56 @@ export async function POST(request: NextRequest) {
     console.log('📦 [GENERATE API] Request model_id:', body.model_id || 'unknown');
     console.log('📍 [GENERATE API] Target URL:', `${API_BASE_URL}/generate`);
     
+    // ===== DUAL SYSTEM DETECTION =====
+    const isVisionEnhanced = !!(body.reference_image_base64 || body.generation_mode === 'vision_enhanced');
+    const isBadgeGeneration = !!(body.badge_name || body.badge_number);
+    const isVisionTest = body.type === 'vision-test';
+    
+    console.log('🎯 [GENERATE API] System detection:', {
+      isVisionEnhanced,
+      isBadgeGeneration,
+      isVisionTest,
+      hasReferenceImage: !!body.reference_image_base64,
+      hasVisionAnalysis: !!body.vision_analysis
+    });
+    
     // Adapt request for different types
     let adaptedBody = { ...body };
     
+    // ===== VISION ENHANCED GENERATION =====
+    if (isVisionEnhanced) {
+      console.log('👁️ [GENERATE API] Processing Vision Enhanced generation');
+      console.log('👁️ [GENERATE API] Vision details:', {
+        model_id: body.model_id,
+        player_name: body.player_name,
+        player_number: body.player_number,
+        hasCustomPrompt: !!body.custom_prompt,
+        hasAnalysis: !!body.vision_analysis
+      });
+      
+      // Enhanced request with vision data
+      adaptedBody = {
+        model_id: body.model_id,
+        player_name: body.player_name || 'PLAYER',
+        player_number: body.player_number || '10',
+        quality: body.quality || 'standard',
+        // Vision Analysis fields
+        reference_image_base64: body.reference_image_base64,
+        custom_prompt: body.custom_prompt,
+        vision_analysis: body.vision_analysis,
+        generation_mode: 'vision_enhanced',
+        // Sport-specific context
+        sport: body.sport || 'soccer',
+        view: body.view || 'back',
+        vision_model: body.vision_model || 'openai/gpt-4o-mini',
+        type: 'jersey-vision' // Special type for vision-enhanced jerseys
+      };
+      
+      console.log('✅ [GENERATE API] Prepared Vision Enhanced request for Python API');
+    }
+    
     // Handle Badge Generation
-    if (body.badge_name || body.badge_number) {
+    else if (body.badge_name || body.badge_number) {
       console.log('🏆 [GENERATE API] Detected badge generation request');
       console.log('🏆 [GENERATE API] Badge details:', {
         model_id: body.model_id,
@@ -89,11 +134,34 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
+    
+    // Enhanced logging for different generation types
+    let generationType = 'standard';
+    if (isVisionEnhanced) {
+      generationType = 'vision-enhanced';
+    } else if (isBadgeGeneration) {
+      generationType = 'badge';
+    } else if (isVisionTest) {
+      generationType = 'vision-test';
+    }
+    
     console.log('✅ [GENERATE API] Python API success:', {
       success: result.success,
-      type: body.type || body.badge_name ? 'badge' : 'unknown',
-      hasImage: !!result.image_base64
+      generationType,
+      hasImage: !!result.image_base64,
+      hasPromptUsed: !!result.prompt_used,
+      cost: result.cost_usd || 'unknown'
     });
+    
+    // Add generation metadata to response
+    if (result.success) {
+      result.metadata = {
+        ...result.metadata,
+        generation_type: generationType,
+        timestamp: new Date().toISOString(),
+        vision_enhanced: isVisionEnhanced
+      };
+    }
     
     return NextResponse.json(result);
     
