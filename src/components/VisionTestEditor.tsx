@@ -975,7 +975,7 @@ export default function VisionTestEditor() {
                     </p>
                     {transactionHash && (
                       <a
-                        href={getTransactionUrl(transactionHash, chainId || 137)}
+                        href={getTransactionUrl(transactionHash)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-blue-400 hover:text-blue-300 text-sm underline"
