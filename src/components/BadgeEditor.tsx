@@ -46,10 +46,8 @@ export default function BadgeEditor() {
   const { mintNFTWithMetadata, setClaimConditions } = useWeb3()
   const { mintGasless, createNFTMetadata, getTransactionStatus } = useEngine()
 
-  const [availableTeams, setAvailableTeams] = useState<string[]>([])
-  const [selectedTeam, setSelectedTeam] = useState<string>('')
   const [badgeName, setBadgeName] = useState<string>('CHAMPION')
-  const [badgeNumber, setBadgeNumber] = useState<string>('1')
+  const [customPrompt, setCustomPrompt] = useState<string>('')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
   const [selectedStyle, setSelectedStyle] = useState<string>('modern')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
@@ -87,7 +85,7 @@ export default function BadgeEditor() {
   const isUserAdmin = isAdmin(account)
   
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
-  const canMintGasless = generatedImage && selectedTeam && badgeName && badgeNumber && isUserAdmin
+  const canMintGasless = generatedImage && badgeName && isUserAdmin
 
   const handleEngineNormalMint = async () => {
     if (!canMintGasless || !generatedImageBlob || !address) {
@@ -100,17 +98,17 @@ export default function BadgeEditor() {
     setMintStatus('pending');
 
     try {
-        const nftName = `${selectedTeam} Badge ${badgeName} #${badgeNumber}`;
-        const nftDescription = `AI-generated ${selectedTeam} badge. Style: ${selectedStyle}.`;
+        const nftName = `${badgeName} Badge`;
+        const nftDescription = `AI-generated badge. Style: ${selectedStyle}.`;
 
         const ipfsResult = await IPFSService.uploadComplete(
             generatedImageBlob,
             nftName,
             nftDescription,
-            selectedTeam,
+            'Custom',
             selectedStyle,
             badgeName,
-            badgeNumber
+            ''
         );
 
         const result = await mintGasless({
@@ -158,14 +156,13 @@ export default function BadgeEditor() {
     setMintStatus('pending');
 
     try {
-        const nftName = `${selectedTeam} Badge ${badgeName} #${badgeNumber}`;
-        const nftDescription = `AI-generated ${selectedTeam} badge. Style: ${selectedStyle}.`;
+        const nftName = `${badgeName} Badge`;
+        const nftDescription = `AI-generated badge. Style: ${selectedStyle}.`;
         const imageFile = new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' });
         const attributes = [
-          { trait_type: 'Team', value: selectedTeam },
           { trait_type: 'Name', value: badgeName },
-          { trait_type: 'Number', value: badgeNumber },
           { trait_type: 'Style', value: selectedStyle },
+          { trait_type: 'Custom Prompt', value: customPrompt || 'None' },
         ];
         
         const result = await mintNFTWithMetadata(nftName, nftDescription, imageFile, attributes, editionSize);
@@ -181,8 +178,8 @@ export default function BadgeEditor() {
   }
 
   const generateContent = async () => {
-    if (!selectedTeam) {
-      setError('Please select a team')
+    if (!badgeName.trim()) {
+      setError('Please enter a badge name')
       return
     }
     setIsLoading(true)
@@ -192,6 +189,17 @@ export default function BadgeEditor() {
       if (isVisionMode && referenceImageBlob) {
         // Vision-enhanced generation flow
         console.log('🎨 Starting Vision-enhanced badge generation...')
+        
+        // Validate reference image
+        if (!referenceImageBlob || referenceImageBlob.size === 0) {
+          throw new Error('No reference image available. Please upload an image first.')
+        }
+        
+        console.log('📸 Reference image info:', {
+          size: referenceImageBlob.size,
+          type: referenceImageBlob.type,
+          lastModified: referenceImageBlob instanceof File ? referenceImageBlob.lastModified : 'N/A'
+        })
         
         // Step 1: Get analysis prompt
         setIsAnalyzing(true)
@@ -214,20 +222,49 @@ export default function BadgeEditor() {
 
         // Step 2: Analyze the uploaded image
         console.log('🔍 Step 2: Analyzing uploaded badge image...')
-        const formData = new FormData()
-        formData.append('image', referenceImageBlob)
-        formData.append('prompt', analysisPromptData.analysis_prompt)
+        
+        // Convert blob to base64 for vision-test API
+        const imageBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(referenceImageBlob)
+        })
+
+        // Debug payload
+        const payload = {
+          image_base64: imageBase64,
+          prompt: analysisPromptData.analysis_prompt,
+          model: 'openai/gpt-4o-mini'
+        }
+        
+        console.log('📤 Sending to vision-test API:', {
+          hasImage: !!payload.image_base64,
+          imageLength: payload.image_base64?.length || 0,
+          imagePrefix: payload.image_base64?.substring(0, 30) || 'none',
+          hasPrompt: !!payload.prompt,
+          promptLength: payload.prompt?.length || 0,
+          model: payload.model
+        })
 
         const analysisResponse = await fetch('/api/vision-test', {
           method: 'POST',
-          body: formData
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
         })
 
         if (!analysisResponse.ok) {
-          throw new Error('Failed to analyze image')
+          const errorData = await analysisResponse.json().catch(() => ({}))
+          console.error('❌ Vision-test API error response:', errorData)
+          throw new Error(`Analysis failed! Status: ${analysisResponse.status} - ${JSON.stringify(errorData)}`)
         }
 
         const analysisData = await analysisResponse.json()
+        console.log('📥 Received from vision-test API:', analysisData)
+        
+        if (!analysisData.success) {
+          throw new Error(`Analysis error: ${analysisData.error}`)
+        }
+
         console.log('✅ Image analysis completed:', analysisData)
         setAnalysisResult(analysisData)
         setIsAnalyzing(false)
@@ -240,9 +277,9 @@ export default function BadgeEditor() {
           body: JSON.stringify({
             sport: 'badge',
             view: selectedBadgeView,
-            teamName: selectedTeam,
+            teamName: 'Custom',
             badgeName: badgeName,
-            badgeNumber: badgeNumber,
+            badgeNumber: '',
             style: selectedStyle,
             qualityLevel: quality === 'hd' ? 'advanced' : 'base'
           })
@@ -257,45 +294,60 @@ export default function BadgeEditor() {
 
         // Step 4: Generate using vision-generate API
         console.log('🎨 Step 4: Generating badge with Vision...')
+        
+        // Prepare final prompt by combining base prompt with analysis and custom prompt
+        const finalPrompt = `${basePromptData.prompt}
+        
+ORIGINAL DESIGN ANALYSIS: ${analysisData.analysis}
+
+${customPrompt.trim() ? `CUSTOM REQUIREMENTS: ${customPrompt.trim()}` : ''}
+
+QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio lighting, 4K quality, transparent background, vector-quality edges.`.trim()
+
+        console.log('📝 Final combined prompt ready:', {
+          basePromptLength: basePromptData.prompt.length,
+          analysisLength: analysisData.analysis.length,
+          finalPromptLength: finalPrompt.length,
+          preview: finalPrompt.substring(0, 200) + '...'
+        })
+
         const visionGenerateResponse = await fetch('/api/vision-generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            basePrompt: basePromptData.prompt,
-            analysisResult: analysisData.analysis,
-            sport: 'badge',
-            view: selectedBadgeView,
-            style: selectedStyle,
-            teamName: selectedTeam,
-            badgeName: badgeName,
-            badgeNumber: badgeNumber
+            prompt: finalPrompt,
+            quality: quality === 'hd' ? 'hd' : 'standard'
           })
         })
 
         if (!visionGenerateResponse.ok) {
-          throw new Error('Failed to generate with Vision')
+          const errorData = await visionGenerateResponse.json().catch(() => ({}))
+          console.error('❌ Vision-generate API error:', errorData)
+          throw new Error(`Vision generation failed! Status: ${visionGenerateResponse.status} - ${JSON.stringify(errorData)}`)
         }
 
         const visionResult = await visionGenerateResponse.json()
-        console.log('✅ Vision generation completed')
+        console.log('✅ Vision generation completed:', visionResult)
 
-        if (visionResult.success && visionResult.optimized_image) {
-          setGeneratedImage(`data:image/png;base64,${visionResult.optimized_image}`)
+        if (visionResult.success && visionResult.image_base64) {
+          setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`)
           
-          const response = await fetch(`data:image/png;base64,${visionResult.optimized_image}`)
+          const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
           const blob = await response.blob()
           setGeneratedImageBlob(blob)
 
           // Save to database with vision metadata
           await saveBadgeToDB({
-            name: `${selectedTeam} Badge ${badgeName} #${badgeNumber}`,
-            prompt: visionResult.final_prompt,
+            name: `${badgeName} Badge`,
+            prompt: finalPrompt,
             generationMode: 'vision_enhanced',
             badgeType: selectedBadgeView,
-            visionModel: visionResult.vision_model || 'gpt-4o-mini',
+            visionModel: 'gpt-4o-mini',
             analysisData: analysisData.analysis,
+            customPrompt: customPrompt || '',
+            costUsd: visionResult.cost_usd || 0,
             creatorWallet: address || "N/A",
-            tags: [selectedTeam, selectedStyle, badgeName, badgeNumber, 'vision_enhanced', selectedBadgeView],
+            tags: [selectedStyle, badgeName, 'vision_enhanced', selectedBadgeView, ...(customPrompt.trim() ? ['custom'] : [])],
           }, blob)
           
           console.log('✅ Vision-enhanced badge generated and saved!')
@@ -306,9 +358,10 @@ export default function BadgeEditor() {
       } else {
         // Standard generation flow
         const request = {
-          team_name: selectedTeam,
+          team_name: 'Custom',
           badge_name: badgeName,
-          badge_number: badgeNumber,
+          badge_number: '',
+          custom_prompt: customPrompt || '',
           style: selectedStyle,
           quality: quality,
         };
@@ -333,10 +386,12 @@ export default function BadgeEditor() {
           setGeneratedImageBlob(blob);
 
           await saveBadgeToDB({
-            name: `${selectedTeam} Badge ${badgeName} #${badgeNumber}`,
+            name: `${badgeName} Badge`,
             prompt: JSON.stringify(request),
+            generationMode: 'standard',
+            customPrompt: customPrompt || '',
             creatorWallet: address || "N/A",
-            tags: [selectedTeam, selectedStyle, badgeName, badgeNumber],
+            tags: [selectedStyle, badgeName, ...(customPrompt.trim() ? ['custom'] : [])],
           }, blob);
 
         } else {
@@ -368,7 +423,7 @@ export default function BadgeEditor() {
 
       const formData = new FormData();
       formData.append('file', imageBlob, `${badgeData.name}.png`);
-      formData.append('fileName', `badge_${selectedTeam}_${badgeName}_${badgeNumber}_${Date.now()}`);
+      formData.append('fileName', `badge_${badgeName}_${Date.now()}`);
       
       const uploadResponse = await fetch('/api/upload', {
         method: 'POST',
@@ -451,31 +506,7 @@ export default function BadgeEditor() {
     setIsAnalyzing(false)
   }
 
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const response = await fetch('/api/teams');
-        const data = await response.json();
-        
-        // CORRECTION: Check if 'data' is an array before using it.
-        if (Array.isArray(data)) {
-          setAvailableTeams(data);
-          if (data.length > 0) {
-            setSelectedTeam(data[0]);
-          }
-        } else {
-            // If not an array, log error and use empty array.
-            console.error('Failed to load teams: API did not return an array.', data);
-            setAvailableTeams([]);
-        }
 
-      } catch (error) {
-        console.error('Failed to load teams:', error);
-        setAvailableTeams([]); // Ensure state doesn't remain undefined
-      }
-    };
-    loadData();
-  }, []);
 
   useEffect(() => {
     const loadTopCollectionsData = async () => {
@@ -655,27 +686,25 @@ export default function BadgeEditor() {
       <EditorPanel title={isVisionMode ? "3. Badge Details" : "2. Badge Details"}>
         <div className="space-y-4">
             <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-gray-300">Team</label>
-              <select 
-                value={selectedTeam} 
-                onChange={(e) => setSelectedTeam(e.target.value)} 
-                className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white"
-                disabled={isVisionMode}
-              >
-                <option value="" disabled>Select Team</option>
-                {availableTeams.map((team) => <option key={team} value={team}>{team}</option>)}
-              </select>
-              {isVisionMode && <p className="text-xs text-gray-500">Team selector disabled in Vision mode</p>}
+              <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
+              <input 
+                type="text" 
+                value={badgeName} 
+                onChange={(e) => setBadgeName(e.target.value)} 
+                className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" 
+                placeholder="CHAMPION" 
+              />
             </div>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div>
-                <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
-                <input type="text" value={badgeName} onChange={(e) => setBadgeName(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="CHAMPION" />
-              </div>
-              <div>
-                <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
-                <input type="text" value={badgeNumber} onChange={(e) => setBadgeNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="1" />
-              </div>
+            <div className="space-y-4 mb-6">
+              <label className="text-sm font-medium text-gray-300 block mb-2">Custom Prompt (Optional)</label>
+              <textarea 
+                value={customPrompt} 
+                onChange={(e) => setCustomPrompt(e.target.value)} 
+                className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white min-h-[80px] resize-none" 
+                placeholder="Additional requirements for your badge design..."
+                rows={3}
+              />
+              <p className="text-xs text-gray-500">This will be added to the generation prompt</p>
             </div>
             <Button onClick={generateContent} disabled={isLoading || isAnalyzing} className="w-full">
                 {isAnalyzing ? 'Analyzing...' : isLoading ? 'Generating...' : 'Generate'}

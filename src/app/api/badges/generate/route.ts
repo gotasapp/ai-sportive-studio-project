@@ -4,6 +4,7 @@ interface BadgeGenerationRequest {
   team_name: string
   badge_name: string
   badge_number: string
+  custom_prompt?: string
   style?: string
   quality?: string
 }
@@ -15,9 +16,9 @@ export async function POST(request: NextRequest) {
     console.log('🎨 Badge generation request:', body)
     
     // Validate required fields
-    if (!body.team_name || !body.badge_name || !body.badge_number) {
+    if (!body.badge_name) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: team_name, badge_name, badge_number' },
+        { success: false, error: 'Missing required field: badge_name' },
         { status: 400 }
       )
     }
@@ -31,9 +32,10 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        team_name: body.team_name,
+        team_name: body.team_name || 'Custom',
         badge_name: body.badge_name,
-        badge_number: body.badge_number,
+        badge_number: body.badge_number || '',
+        custom_prompt: body.custom_prompt || '',
         style: body.style || 'modern',
         quality: body.quality || 'standard'
       })
