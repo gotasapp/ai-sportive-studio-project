@@ -94,7 +94,7 @@ function getPrompt(sport: string, view: string, playerName: string = "", playerN
   }
   
   const promptTemplate = sportPrompts[view as keyof typeof sportPrompts]
-  const styleDescription = STYLE_THEMES[style as keyof typeof STYLE_THEMES] || style
+      const styleDescription = (STYLE_THEMES[style as keyof typeof STYLE_THEMES] || style) as string
   
   return promptTemplate
     .replace('{PLAYER_NAME}', playerName.toUpperCase())
@@ -111,8 +111,8 @@ function getEnhancedPrompt(sport: string, view: string, playerName: string = "",
                           style: string = "classic", qualityLevel: string = "base", teamName: string = "", badgeName: string = "", badgeNumber: string = ""): string {
   const basePrompt = getPrompt(sport, view, playerName, playerNumber, style, teamName, badgeName, badgeNumber)
   
-  // Adiciona melhorias de qualidade
-  const qualityAdditions = QUALITY_ENHANCERS[qualityLevel as keyof typeof QUALITY_ENHANCERS] || QUALITY_ENHANCERS["base"]
+      // Adiciona melhorias de qualidade
+      const qualityAdditions = (QUALITY_ENHANCERS[qualityLevel as keyof typeof QUALITY_ENHANCERS] || QUALITY_ENHANCERS["base"]) as string[]
   const enhancedPrompt = `${basePrompt}\n\nQUALITY: ${qualityAdditions.join(', ')}`
   
   return enhancedPrompt
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
           sport,
           view,
           style: style || 'classic',
-          style_description: STYLE_THEMES[style as keyof typeof STYLE_THEMES] || style,
+          style_description: (STYLE_THEMES[style as keyof typeof STYLE_THEMES] || style) as string,
           hasPlayerData: !!(playerName && playerNumber),
           prompt_length: prompt.length,
           quality_level: qualityLevel || 'base',

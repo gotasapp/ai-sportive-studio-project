@@ -309,14 +309,14 @@ export async function POST(request: NextRequest) {
 
     // Obter áreas de foco
     const sportFocusAreas = SPORT_FOCUS_AREAS[sport as keyof typeof SPORT_FOCUS_AREAS]
-    const focusAreas = sportFocusAreas?.[view as keyof typeof sportFocusAreas] || []
+    const focusAreas = (sportFocusAreas?.[view as keyof typeof sportFocusAreas] || []) as string[]
 
     console.log('✅ [ANALYSIS PROMPT API] Successfully retrieved structured prompt:', {
       sport,
       view,
       promptLength: (analysisPrompt as string).length,
       type: 'JSON_STRUCTURED',
-      focusAreasCount: focusAreas.length,
+      focusAreasCount: (focusAreas as string[]).length,
       preview: (analysisPrompt as string).substring(0, 150) + '...'
     })
 
