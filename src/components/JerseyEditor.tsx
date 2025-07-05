@@ -684,6 +684,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
         // Original system request
         const request = {
           model_id: selectedTeam,
+          team: selectedTeam,
           player_name: playerName,
           player_number: playerNumber,
           quality: quality,
@@ -814,9 +815,9 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
       
       // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs
       const fallbackData = [
-        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', price: '0.05 CHZ' },
-        { name: 'Jersey Collection #2', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', price: '0.05 CHZ' },
-        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', price: '0.15 CHZ' },
+        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
+        { name: 'Jersey Collection #2', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
+        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'AI-generated stadium', price: '0.15 CHZ' },
       ];
       setMarketplaceNFTs(fallbackData);
       setMarketplaceLoading(false);
@@ -848,9 +849,9 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
         // Top 3 Jerseys mais recentes
         const topJerseys = jerseys
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 3)
-          .map(jersey => ({
+          .map((jersey: any) => ({
             name: jersey.name,
             imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: jersey.description || 'AI-generated jersey',
@@ -861,9 +862,9 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
         // Top 2 Stadiums mais recentes
         const topStadiums = stadiums
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(stadium => ({
+          .map((stadium: any) => ({
             name: stadium.name,
             imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: stadium.description || 'AI-generated stadium',
@@ -874,9 +875,9 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
         // Top 1 Badge mais recente
         const topBadges = badges
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 1)
-          .map(badge => ({
+          .map((badge: any) => ({
             name: badge.name,
             imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: badge.description || 'AI-generated badge',
@@ -887,7 +888,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
         // Combinar e ordenar por data de criação (mais recentes primeiro)
         const allTopCollections = [...topJerseys, ...topStadiums, ...topBadges]
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 6); // Limitar a 6 itens no carrossel
 
         console.log('✅ Top Collections compiled:', allTopCollections);

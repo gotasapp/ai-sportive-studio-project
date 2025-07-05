@@ -232,9 +232,9 @@ export default function StadiumEditor() {
     const loadTopCollectionsData = async () => {
       // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs (prioridade stadiums)
       const fallbackData = [
-        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', price: '0.15 CHZ' },
-        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', price: '0.05 CHZ' },
-        { name: 'Corinthians Champion Badge', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png', price: '0.03 CHZ' },
+        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'AI-generated stadium', price: '0.15 CHZ' },
+        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
+        { name: 'Corinthians Champion Badge', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png', description: 'AI-generated badge', price: '0.03 CHZ' },
       ];
       setMarketplaceNFTs(fallbackData);
       setMarketplaceLoading(false);
@@ -264,9 +264,9 @@ export default function StadiumEditor() {
         // Implementar lógica de "Top Collections" com foco em stadiums
         // Top 2 Stadiums mais recentes (prioridade para página de stadiums)
         const topStadiums = stadiums
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(stadium => ({
+          .map((stadium: any) => ({
             name: stadium.name,
             imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: stadium.description || 'AI-generated stadium',
@@ -277,9 +277,9 @@ export default function StadiumEditor() {
 
         // Top 2 Jerseys mais recentes
         const topJerseys = jerseys
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(jersey => ({
+          .map((jersey: any) => ({
             name: jersey.name,
             imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: jersey.description || 'AI-generated jersey',
@@ -290,9 +290,9 @@ export default function StadiumEditor() {
 
         // Top 2 Badges mais recentes
         const topBadges = badges
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(badge => ({
+          .map((badge: any) => ({
             name: badge.name,
             imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: badge.description || 'AI-generated badge',
@@ -307,7 +307,7 @@ export default function StadiumEditor() {
           ...topJerseys,
           ...topBadges
         ]
-        .sort((a, b) => {
+        .sort((a: any, b: any) => {
           // Stadiums primeiro, depois por data
           if (a.category === 'stadium' && b.category !== 'stadium') return -1;
           if (a.category !== 'stadium' && b.category === 'stadium') return 1;
