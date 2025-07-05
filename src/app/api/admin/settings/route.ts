@@ -71,22 +71,19 @@ async function getSettings() {
     const db = client.db('chz-app-db');
     const settingsCollection = db.collection('settings');
     
-    // Buscar especificamente configurações (não dados de moderação)
+    // Buscar especificamente as configurações da aplicação
     let settings = await settingsCollection.findOne({ 
-      $or: [
-        { siteName: { $exists: true } },
-        { configType: { $ne: 'moderation_config' } }
-      ]
+      _id: 'app_settings'
     });
 
-    if (!settings || settings.configType === 'moderation_config') {
-      // Se não encontrou ou é config de moderação, inserir settings iniciais
+    if (!settings) {
+      // Se não encontrou, inserir settings iniciais
       await settingsCollection.insertOne({ 
+        _id: 'app_settings',
         ...initialSettings, 
-        configType: 'app_settings',
         updatedAt: new Date()
       });
-      settings = { ...initialSettings, configType: 'app_settings' };
+      settings = { _id: 'app_settings', ...initialSettings };
     }
 
     // Salvar backup no arquivo
@@ -112,11 +109,10 @@ async function saveSettings(settings: any) {
     const settingsCollection = db.collection('settings');
 
     await settingsCollection.updateOne(
-      { configType: 'app_settings' },
+      { _id: 'app_settings' },
       { 
         $set: { 
           ...settings, 
-          configType: 'app_settings',
           updatedAt: new Date()
         } 
       },
@@ -162,7 +158,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const newSettings = await request.json();
-    const { configType, ...configData } = newSettings;
+    const { _id, ...configData } = newSettings;
 
     // Buscar a config atual para não sobrescrever as chaves de API com valores mascarados
     const currentSettings = await getSettings();
