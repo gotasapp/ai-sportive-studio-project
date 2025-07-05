@@ -438,12 +438,10 @@ export default function VisionTestEditor() {
       const name = `Vision Test - ${selectedSport} ${selectedView}`
       const description = `AI Vision Analysis + Generated Improvement`
 
-      const result = await mintGasless(
-        address!,
-        name,
-        description,
-        ipfsUrl!
-      )
+      const result = await mintGasless({
+        to: address!,
+        metadataUri: ipfsUrl!
+      })
 
       if (result.success) {
         setMintSuccess('NFT minted successfully!')

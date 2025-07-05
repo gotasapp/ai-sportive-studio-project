@@ -684,7 +684,6 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
         // Original system request
         const request = {
           model_id: selectedTeam,
-          team: selectedTeam,
           player_name: playerName,
           player_number: playerNumber,
           quality: quality,

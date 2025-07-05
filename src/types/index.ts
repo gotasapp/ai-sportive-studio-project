@@ -1,6 +1,6 @@
 export interface ImageGenerationRequest {
   model_id: string; // Ex: "corinthians_2022"
-  team: string;
+  team?: string; // Opcional para manter compatibilidade
   player_name: string;
   player_number: string;
   style?: string; // Para manter compatibilidade
