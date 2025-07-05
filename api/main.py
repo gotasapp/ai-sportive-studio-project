@@ -76,6 +76,20 @@ class StadiumResponse(BaseModel):
     cost_usd: Optional[float] = None
     prompt_used: Optional[str] = None
 
+# --- MODELOS PARA VISION ANALYSIS ---
+class VisionAnalysisRequest(BaseModel):
+    image_base64: str
+    prompt: str
+    model: str = "openai/gpt-4o-mini"
+    type: str = "vision-analysis"
+
+class VisionAnalysisResponse(BaseModel):
+    success: bool
+    analysis: Optional[str] = None
+    model_used: Optional[str] = None
+    cost_estimate: Optional[float] = None
+    error: Optional[str] = None
+
 # --- GERADOR DE JERSEYS ---
 class JerseyGenerator:
     def __init__(self):
@@ -442,6 +456,88 @@ Provide a detailed architectural description for NFT generation."""
                 error=str(e)
             )
 
+# --- SISTEMA DE ANÁLISE DE IMAGEM (Vision Analysis) ---
+class VisionAnalysisSystem:
+    """Sistema unificado de análise de imagem para integração na API principal"""
+    
+    def __init__(self):
+        self.openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        # Configuração OpenRouter
+        self.openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.openrouter_key = OPENROUTER_API_KEY
+        
+        if not self.openrouter_key:
+            print("⚠️ OPENROUTER_API_KEY not found, using fallback analysis")
+    
+    def analyze_image_with_vision(self, image_base64: str, prompt: str, model: str = "openai/gpt-4o-mini") -> Dict[str, Any]:
+        """Analisa imagem usando vision models com fallback para OpenAI"""
+        try:
+            # Se temos OpenRouter, usar vision model
+            if self.openrouter_key and model.startswith("openai/"):
+                return self._analyze_with_openrouter(image_base64, prompt, model)
+            
+            # Fallback: análise textual baseada na imagem
+            return self._analyze_with_fallback(prompt, model)
+            
+        except Exception as e:
+            print(f"❌ Vision analysis error: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+    
+    def _analyze_with_openrouter(self, image_base64: str, prompt: str, model: str) -> Dict[str, Any]:
+        """Análise via OpenRouter vision model"""
+        headers = {
+            "Authorization": f"Bearer {self.openrouter_key}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
+                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 1000
+        }
+        
+        response = requests.post(self.openrouter_url, headers=headers, json=payload, timeout=60)
+        
+        if response.status_code == 200:
+            result = response.json()
+            analysis_text = result["choices"][0]["message"]["content"]
+            
+            return {
+                "success": True,
+                "analysis": analysis_text,
+                "model_used": model,
+                "cost_estimate": 0.01
+            }
+        else:
+            raise Exception(f"OpenRouter API error: {response.status_code}")
+    
+    def _analyze_with_fallback(self, prompt: str, model: str) -> Dict[str, Any]:
+        """Fallback quando vision não está disponível"""
+        fallback_analysis = f"Analysis based on prompt: {prompt}. Vision analysis not available, using structured response for jersey generation."
+        
+        return {
+            "success": True,
+            "analysis": fallback_analysis,
+            "model_used": f"{model} (fallback)",
+            "cost_estimate": 0,
+            "fallback": True
+        }
+
 # --- CONFIGURAÇÃO DA API FASTAPI ---
 app = FastAPI(title="Unified API - Jerseys + Stadiums", version="1.0.0")
 
@@ -469,18 +565,25 @@ app.add_middleware(
 # Inicializar geradores
 jersey_generator = JerseyGenerator()
 stadium_generator = StadiumReferenceGenerator()
+vision_analysis_system = VisionAnalysisSystem()
 
 # --- ENDPOINTS PRINCIPAIS ---
 @app.get("/")
 async def root():
     return {
         "status": "online", 
-        "service": "Unified API - Jerseys + Stadiums", 
-        "version": "1.0.0",
+        "service": "Unified API - Jerseys + Stadiums + Vision Analysis", 
+        "version": "1.1.0",
         "endpoints": {
             "jerseys": "/generate, /teams",
-            "stadiums": "/stadiums, /generate-from-reference, /generate-custom"
-        }
+            "stadiums": "/stadiums, /generate-from-reference, /generate-custom",
+            "vision": "/analyze-image"
+        },
+        "features": [
+            "Jersey Generation (DALL-E 3)",
+            "Stadium Generation with References", 
+            "Image Analysis (Vision AI)"
+        ]
     }
 
 # --- ENDPOINTS DE JERSEYS ---
@@ -540,6 +643,41 @@ async def generate_custom_stadium(request: CustomStadiumRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# --- VISION ANALYSIS ENDPOINT ---
+@app.post("/analyze-image", response_model=VisionAnalysisResponse)
+async def analyze_image_endpoint(request: VisionAnalysisRequest):
+    """Endpoint para análise de imagem - unificado na API principal"""
+    try:
+        print(f"🔍 [VISION ANALYSIS] Received request: model={request.model}, prompt_length={len(request.prompt)}")
+        
+        result = vision_analysis_system.analyze_image_with_vision(
+            request.image_base64,
+            request.prompt,
+            request.model
+        )
+        
+        if result["success"]:
+            print(f"✅ [VISION ANALYSIS] Analysis completed successfully")
+            return VisionAnalysisResponse(
+                success=True,
+                analysis=result["analysis"],
+                model_used=result["model_used"],
+                cost_estimate=result.get("cost_estimate", 0)
+            )
+        else:
+            print(f"❌ [VISION ANALYSIS] Analysis failed: {result.get('error')}")
+            return VisionAnalysisResponse(
+                success=False,
+                error=result.get("error", "Vision analysis failed")
+            )
+            
+    except Exception as e:
+        print(f"❌ [VISION ANALYSIS] Endpoint error: {str(e)}")
+        return VisionAnalysisResponse(
+            success=False,
+            error=str(e)
+        )
+
 # --- HEALTH CHECK ---
 @app.get("/health")
 async def health_check():
@@ -547,8 +685,9 @@ async def health_check():
         "status": "ok",
         "jersey_generator": "operational",
         "stadium_generator": "operational",
+        "vision_analysis": "operational",
         "openai": "connected",
-        "openrouter": "connected"
+        "openrouter": "connected" if OPENROUTER_API_KEY else "not_configured"
     }
 
 if __name__ == "__main__":

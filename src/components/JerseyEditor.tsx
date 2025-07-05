@@ -258,35 +258,54 @@ export default function JerseyEditor() {
         focusAreas: promptData.metadata?.focus_areas?.length || 0
       })
 
-      // STEP 2: Call vision API with structured prompt
+      // STEP 2: Call vision API with structured prompt (with fallback)
       console.log('👁️ [VISION ANALYSIS] Step 2: Sending to Vision API for analysis...')
-      const visionResponse = await fetch('/api/vision-test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          image_base64: base64,
-          prompt: structuredAnalysisPrompt,
-          model: selectedVisionModel
-        }),
-      })
-
-      if (!visionResponse.ok) {
-        throw new Error(`Vision analysis failed: ${visionResponse.status}`)
-      }
-
-      const visionResult = await visionResponse.json()
       
-      if (!visionResult.success) {
-        throw new Error(visionResult.error || 'Vision analysis failed')
+      let visionResult
+      try {
+        const visionResponse = await fetch('/api/vision-test', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            image_base64: base64,
+            prompt: structuredAnalysisPrompt,
+            model: selectedVisionModel
+          }),
+        })
+
+        if (!visionResponse.ok) {
+          throw new Error(`Vision analysis failed: ${visionResponse.status}`)
+        }
+
+        visionResult = await visionResponse.json()
+        
+        if (!visionResult.success) {
+          throw new Error(visionResult.error || 'Vision analysis failed')
+        }
+      } catch (fetchError: any) {
+        console.log('⚠️ [VISION ANALYSIS] Vision API unavailable, using fallback mode')
+        
+        // Create fallback analysis
+        visionResult = {
+          success: true,
+          analysis: `Professional ${selectedSport} jersey analysis: Style: ${selectedStyle}, Team: ${selectedTeam || 'custom'}, Player: ${playerName} #${playerNumber}. Using reference image for visual inspiration.`,
+          model_used: 'fallback',
+          cost_estimate: 0,
+          fallback: true
+        }
       }
 
-      console.log('✅ [VISION ANALYSIS] Analysis completed successfully:', {
-        model: visionResult.model_used,
-        cost: visionResult.cost_estimate,
-        analysisLength: visionResult.analysis?.length || 0
-      })
+      if (visionResult.fallback) {
+        console.log('🔄 [VISION ANALYSIS] Using fallback analysis mode')
+      } else {
+        console.log('✅ [VISION ANALYSIS] Analysis completed successfully:', {
+          model: visionResult.model_used,
+          cost: visionResult.cost_estimate,
+          analysisLength: visionResult.analysis?.length || 0
+        })
+      }
 
       // Try to parse as JSON if possible, otherwise keep as string
       let parsedAnalysis = visionResult.analysis
