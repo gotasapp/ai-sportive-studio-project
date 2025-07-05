@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Unificada com a API principal do Render
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
 
 export async function POST(request: NextRequest) {
   try {
     const { image_base64, prompt, model } = await request.json()
 
     console.log('🎯 [VISION-TEST API] Received analysis request')
+    console.log('🔧 [VISION-TEST API] Environment check:', {
+      API_BASE_URL,
+      isProduction: process.env.NODE_ENV === 'production',
+      hasApiUrl: !!process.env.NEXT_PUBLIC_API_URL
+    })
 
     // Validação dos parâmetros obrigatórios
     if (!image_base64) {
@@ -26,6 +31,19 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Verificar se a API base URL está configurada
+    if (!API_BASE_URL) {
+      console.log('❌ [VISION-TEST API] API_BASE_URL not configured')
+      return NextResponse.json({
+        success: false,
+        error: 'API base URL not configured.',
+        debug: {
+          currentUrl: API_BASE_URL,
+          environment: process.env.NODE_ENV
+        }
+      }, { status: 500 })
+    }
+
     const isStructuredPrompt = prompt.includes('return ONLY a valid JSON object')
     
     console.log(`🔍 [VISION-TEST API] Processing analysis:`, {
@@ -39,28 +57,98 @@ export async function POST(request: NextRequest) {
     
     console.log(`📝 [VISION-TEST API] Prompt preview:`, (prompt as string).substring(0, 150) + '...')
 
-    // Chamar a API unificada do Render com endpoint de vision analysis
-    const pythonResponse = await fetch(`${API_BASE_URL}/analyze-image`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        image_base64,
-        prompt: prompt, // Usando 'prompt' em vez de 'analysis_prompt' para consistência
-        model: model || 'openai/gpt-4o-mini',
-        type: 'vision-analysis' // Identificar como análise de visão
-      }),
-    })
-
-    if (!pythonResponse.ok) {
-      const errorText = await pythonResponse.text()
-      console.error(`❌ Vision API error (${pythonResponse.status}):`, errorText)
+    // Primeiro, verificar se a API está online
+    try {
+      const healthResponse = await fetch(`${API_BASE_URL}/health`, {
+        method: 'GET',
+        timeout: 10000 // 10 segundos para health check
+      })
+      
+      if (!healthResponse.ok) {
+        console.log('❌ [VISION-TEST API] API health check failed:', {
+          status: healthResponse.status,
+          statusText: healthResponse.statusText
+        })
+        
+        return NextResponse.json({
+          success: false,
+          error: 'Python API is not responding. Please check if the service is running.',
+          debug: {
+            apiUrl: API_BASE_URL,
+            healthStatus: healthResponse.status
+          }
+        }, { status: 503 })
+      }
+      
+      console.log('✅ [VISION-TEST API] Python API health check passed')
+      
+    } catch (healthError: any) {
+      console.error('❌ [VISION-TEST API] Failed to connect to Python API:', healthError.message)
       
       return NextResponse.json({
         success: false,
-        error: `Vision analysis failed: ${pythonResponse.status} - ${errorText}`
-      }, { status: 400 })
+        error: `Cannot connect to Python API: ${healthError.message}`,
+        debug: {
+          apiUrl: API_BASE_URL,
+          errorType: 'connection_error'
+        }
+      }, { status: 503 })
+    }
+
+    // Chamar a API unificada do Render com endpoint de vision analysis
+    const targetUrl = `${API_BASE_URL}/analyze-image`
+    console.log(`🌐 [VISION-TEST API] Calling unified API:`, {
+      url: targetUrl,
+      hasImageData: !!image_base64,
+      model: model || 'openai/gpt-4o-mini'
+    })
+
+    try {
+      const pythonResponse = await fetch(targetUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          image_base64,
+          prompt: prompt, // Usando 'prompt' em vez de 'analysis_prompt' para consistência
+          model: model || 'openai/gpt-4o-mini',
+          type: 'vision-analysis' // Identificar como análise de visão
+        }),
+        timeout: 60000 // 60 segundos timeout
+      })
+
+      console.log(`🔄 [VISION-TEST API] Python API response:`, {
+        status: pythonResponse.status,
+        statusText: pythonResponse.statusText,
+        ok: pythonResponse.ok
+      })
+
+      if (!pythonResponse.ok) {
+        const errorText = await pythonResponse.text()
+        console.error(`❌ Vision API error (${pythonResponse.status}):`, errorText)
+        
+        return NextResponse.json({
+          success: false,
+          error: `Vision analysis failed: ${pythonResponse.status} - ${errorText}`,
+          debug: {
+            apiUrl: targetUrl,
+            status: pythonResponse.status,
+            statusText: pythonResponse.statusText
+          }
+        }, { status: 400 })
+      }
+    } catch (fetchError: any) {
+      console.error(`❌ [VISION-TEST API] Fetch error:`, fetchError.message)
+      
+      return NextResponse.json({
+        success: false,
+        error: `Failed to connect to unified API: ${fetchError.message}`,
+        debug: {
+          apiUrl: targetUrl,
+          errorType: 'fetch_error'
+        }
+      }, { status: 500 })
     }
 
     const result = await pythonResponse.json()
