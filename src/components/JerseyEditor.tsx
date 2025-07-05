@@ -542,16 +542,15 @@ export default function JerseyEditor() {
             const structuredPrompt = analysisPromptData.prompt
             console.log('✅ [VISION ANALYSIS] Got structured analysis prompt')
 
-            // Send to Vision API
-            const visionApiUrl = process.env.NEXT_PUBLIC_VISION_API_URL || 'http://localhost:8002';
-            const visionResponse = await fetch(`${visionApiUrl}/analyze-image-base64`, {
+            // Send to Vision API (agora unificada)
+            const visionResponse = await fetch('/api/vision-test', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
                 image_base64: imageBase64,
-                analysis_prompt: structuredPrompt,
+                prompt: structuredPrompt, // Usar 'prompt' para consistência com API unificada
                 model: selectedVisionModel
               }),
             })
