@@ -1,13 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Use server-side environment variable (not NEXT_PUBLIC_)
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-
 export async function POST(request: NextRequest) {
   try {
+    // Verify API key at runtime
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json({
+        success: false,
+        error: 'Missing OPENAI_API_KEY in environment variables'
+      }, { status: 500 });
+    }
+
+    // Initialize OpenAI client with runtime verification
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    });
+
     console.log('🎨 [VISION-GENERATE] Direct DALL-E 3 generation for Vision Test');
     
     const { prompt, quality = 'standard' } = await request.json();
