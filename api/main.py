@@ -525,6 +525,10 @@ class VisionAnalysisSystem:
         
         print(f"🔄 [OPENROUTER] Making request to {self.openrouter_url}")
         print(f"📊 [OPENROUTER] Payload size: {len(str(payload))} chars")
+        print(f"📊 [OPENROUTER] Image size: {len(image_base64)} chars")
+        print(f"📊 [OPENROUTER] Prompt length: {len(prompt)} chars")
+        print(f"📊 [OPENROUTER] Model: {working_model}")
+        print(f"📊 [OPENROUTER] Max tokens: {payload['max_tokens']}")
         
         try:
             response = requests.post(self.openrouter_url, headers=headers, json=payload, timeout=60)
@@ -546,14 +550,17 @@ class VisionAnalysisSystem:
             else:
                 error_text = response.text
                 print(f"❌ [OPENROUTER] Error {response.status_code}: {error_text}")
+                print(f"❌ [OPENROUTER] Request headers: {headers}")
+                print(f"❌ [OPENROUTER] Request model: {working_model}")
+                print(f"❌ [OPENROUTER] Payload keys: {list(payload.keys())}")
                 
-                # Em caso de erro, usar fallback
-                print("🔄 [OPENROUTER] Using fallback analysis...")
-                return self._analyze_with_fallback(prompt, working_model)
+                # RETORNAR O ERRO REAL, não fallback
+                raise Exception(f"OpenRouter API error {response.status_code}: {error_text}")
                 
         except Exception as e:
             print(f"❌ [OPENROUTER] Request failed: {str(e)}")
-            return self._analyze_with_fallback(prompt, model)
+            # RETORNAR O ERRO REAL para debug
+            raise e
     
     def _analyze_with_fallback(self, prompt: str, model: str) -> Dict[str, Any]:
         """Fallback quando vision não está disponível - cria análise estruturada"""
