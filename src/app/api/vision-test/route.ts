@@ -136,6 +136,31 @@ export async function POST(request: NextRequest) {
           }
         }, { status: 400 })
       }
+
+      const result = await pythonResponse.json()
+      
+      if (!result.success) {
+        console.error('❌ Vision API returned error:', result.error)
+        return NextResponse.json({
+          success: false,
+          error: result.error || 'Vision analysis failed'
+        }, { status: 400 })
+      }
+
+      console.log('✅ Vision Test: Analysis completed successfully')
+      
+      return NextResponse.json({
+        success: true,
+        analysis: result.analysis,
+        model_used: result.model_used || model,
+        cost_estimate: result.cost_estimate || 0,
+        metadata: {
+          prompt_length: prompt.length,
+          api_endpoint: `${API_BASE_URL}/analyze-image`,
+          timestamp: new Date().toISOString()
+        }
+      })
+
     } catch (fetchError: any) {
       console.error(`❌ [VISION-TEST API] Fetch error:`, fetchError.message)
       
@@ -148,30 +173,6 @@ export async function POST(request: NextRequest) {
         }
       }, { status: 500 })
     }
-
-    const result = await pythonResponse.json()
-    
-    if (!result.success) {
-      console.error('❌ Vision API returned error:', result.error)
-      return NextResponse.json({
-        success: false,
-        error: result.error || 'Vision analysis failed'
-      }, { status: 400 })
-    }
-
-    console.log('✅ Vision Test: Analysis completed successfully')
-    
-    return NextResponse.json({
-      success: true,
-      analysis: result.analysis,
-      model_used: result.model_used || model,
-      cost_estimate: result.cost_estimate || 0,
-      metadata: {
-        prompt_length: prompt.length,
-        api_endpoint: `${API_BASE_URL}/analyze-image`,
-        timestamp: new Date().toISOString()
-      }
-    })
 
   } catch (error: any) {
     console.error('❌ Vision Test route error:', error)
