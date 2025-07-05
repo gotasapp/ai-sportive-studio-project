@@ -26,6 +26,14 @@ export async function GET() {
       setting = await collection.findOne({ configType: 'moderation_config' });
     }
 
+    // Fallback de segurança caso setting ainda seja null
+    if (!setting) {
+      return NextResponse.json({
+        moderationEnabled: DEFAULT_MODERATION_SETTING.moderationEnabled,
+        autoApprove: DEFAULT_MODERATION_SETTING.autoApprove
+      });
+    }
+
     return NextResponse.json({
       moderationEnabled: setting.moderationEnabled,
       autoApprove: setting.autoApprove
