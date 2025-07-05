@@ -23,7 +23,7 @@ export async function GET() {
     if (!setting) {
       // Criar configuração padrão se não existir
       await collection.insertOne(DEFAULT_MODERATION_SETTING);
-      setting = DEFAULT_MODERATION_SETTING;
+      setting = await collection.findOne({ configType: 'moderation_config' });
     }
 
     return NextResponse.json({
