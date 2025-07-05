@@ -193,7 +193,12 @@ const getRecentSalesData = async () => {
       { name: 'badges', type: 'Badge', price: 0.03 }
     ];
 
-    const recentItems = [];
+    const recentItems: Array<{
+      user: { name: string; avatar: string };
+      nft: { name: string; type: string };
+      value: number;
+      timestamp: string;
+    }> = [];
 
     // Queries paralelas com timeout e limite
     const itemPromises = collections.map(async (collection) => {
