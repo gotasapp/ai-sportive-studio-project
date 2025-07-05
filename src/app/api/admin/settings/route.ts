@@ -91,7 +91,7 @@ async function getSettings() {
     
     return settings;
   } catch (error) {
-    console.warn('MongoDB not available, using file fallback:', error.message);
+    console.warn('MongoDB not available, using file fallback:', error instanceof Error ? error.message : error);
     // Fallback para arquivo
     return await readSettingsFromFile();
   }
@@ -119,7 +119,7 @@ async function saveSettings(settings: any) {
       { upsert: true }
     );
   } catch (error) {
-    console.warn('MongoDB not available for saving, using file only:', error.message);
+    console.warn('MongoDB not available for saving, using file only:', error instanceof Error ? error.message : error);
   }
 }
 
@@ -177,6 +177,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: 'Settings saved successfully', settings: configData });
   } catch (error) {
     console.error('Error saving settings:', error);
-    return NextResponse.json({ error: 'Failed to save settings', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to save settings', details: error instanceof Error ? error.message : String(error) }, { status: 500 });
   }
 } 
