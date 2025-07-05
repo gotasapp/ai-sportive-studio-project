@@ -322,7 +322,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      analysis_prompt: (analysisPrompt as string).trim(),
+      prompt: (analysisPrompt as string).trim(), // CORRIGIDO: Frontend espera .prompt
+      analysis_prompt: (analysisPrompt as string).trim(), // Manter para compatibilidade
       metadata: {
         sport,
         view,
