@@ -65,7 +65,7 @@ export async function GET() {
     // Se não houver configuração, criamos uma com os dados iniciais
     if (!config) {
       await configs.insertOne(initialConfig);
-      config = initialConfig;
+      config = await configs.findOne({});
     }
 
     return NextResponse.json(config);
