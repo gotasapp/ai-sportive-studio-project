@@ -126,7 +126,8 @@ export default function JerseyEditor() {
   const [customPrompt, setCustomPrompt] = useState<string>('')
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState<any>(null)
-  const [selectedVisionModel, setSelectedVisionModel] = useState<string>('openai/gpt-4o-mini')
+  // Vision model fixed to default (admin can change in settings)
+  const selectedVisionModel = 'openai/gpt-4o-mini'
   const [selectedSport, setSelectedSport] = useState('soccer')
   const [selectedView, setSelectedView] = useState('back')
   
@@ -476,13 +477,84 @@ export default function JerseyEditor() {
       if (isVisionMode && referenceImageBlob) {
         console.log('👁️ [VISION GENERATION] Using complete vision-test flow...')
         
-        // Ensure we have analysis result - if not, analyze first
+        // **ANÁLISE AUTOMÁTICA TRANSPARENTE** - Sempre analisar se não há resultado
         if (!analysisResult) {
-          console.log('⚠️ [VISION GENERATION] No analysis result found, analyzing first...')
-          await analyzeReferenceImage()
+          console.log('🔍 [VISION ANALYSIS] Starting automatic reference image analysis...')
           
-          if (!analysisResult) {
-            throw new Error('Failed to analyze reference image. Please try analyzing first.')
+          // Análise automática usando a mesma função, mas sem UI separada
+          try {
+            setIsAnalyzing(true) // Para mostrar feedback visual
+            
+            // Convert blob to base64
+            const reader = new FileReader()
+            const imageBase64 = await new Promise((resolve, reject) => {
+              reader.onload = () => resolve(reader.result as string)
+              reader.onerror = reject
+              reader.readAsDataURL(referenceImageBlob)
+            }) as string
+
+            // Get analysis prompt from API
+            const analysisPromptResponse = await fetch('/api/vision-prompts/analysis', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sport: selectedSport,
+                view: selectedView
+              }),
+            })
+
+            if (!analysisPromptResponse.ok) {
+              throw new Error(`Failed to get analysis prompt: ${analysisPromptResponse.status}`)
+            }
+
+            const analysisPromptData = await analysisPromptResponse.json()
+            if (!analysisPromptData.success) {
+              throw new Error(analysisPromptData.error || 'Failed to get analysis prompt')
+            }
+
+            const structuredPrompt = analysisPromptData.prompt
+            console.log('✅ [VISION ANALYSIS] Got structured analysis prompt')
+
+            // Send to Vision API
+            const visionResponse = await fetch('http://localhost:8002/analyze-image-base64', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                image_base64: imageBase64,
+                analysis_prompt: structuredPrompt,
+                model: selectedVisionModel
+              }),
+            })
+
+            if (!visionResponse.ok) {
+              throw new Error(`Vision analysis failed: ${visionResponse.status}`)
+            }
+
+            const analysisData = await visionResponse.json()
+            if (!analysisData.success) {
+              throw new Error(analysisData.error || 'Vision analysis failed')
+            }
+
+            // Parse JSON result ou usar texto direto
+            let finalResult = analysisData.analysis
+            try {
+              finalResult = JSON.parse(analysisData.analysis)
+            } catch {
+              // Se não conseguir fazer parse, usar como texto
+            }
+
+            setAnalysisResult(finalResult)
+            console.log('✅ [VISION ANALYSIS] Analysis completed successfully')
+            
+          } catch (analysisError: any) {
+            console.error('❌ [VISION ANALYSIS] Failed:', analysisError)
+            throw new Error(`Failed to analyze reference image: ${analysisError.message}`)
+          } finally {
+            setIsAnalyzing(false)
           }
         }
 
@@ -833,7 +905,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
       <EditorPanel title="🔍 Reference Analysis (Optional)">
         <div className="space-y-3">
           {/* Vision Options - Always visible but compact */}
-          <div className="grid grid-cols-3 gap-2 mb-3">
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <select 
               value={selectedSport} 
               onChange={(e) => setSelectedSport(e.target.value)}
@@ -851,16 +923,6 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
             >
               {VIEW_OPTIONS.map(view => (
                 <option key={view.id} value={view.id}>{view.name}</option>
-              ))}
-            </select>
-            
-            <select 
-              value={selectedVisionModel} 
-              onChange={(e) => setSelectedVisionModel(e.target.value)}
-              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
-            >
-              {VISION_MODELS.map(model => (
-                <option key={model.id} value={model.id}>{model.name}</option>
               ))}
             </select>
           </div>
@@ -899,33 +961,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
                 </button>
               </div>
               
-              {/* Botões de ação compactos */}
-              <div className="flex gap-2">
-                <button
-                  onClick={analyzeReferenceImage}
-                  disabled={isAnalyzing}
-                  className="flex-1 cyber-button py-2 px-3 text-sm rounded disabled:opacity-50"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Eye className="w-4 h-4 mr-1 animate-pulse" />
-                      Analyzing {getSportLabel()}...
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="w-4 h-4 mr-1" />
-                      Analyze {getSportLabel()} ({getViewLabel()})
-                    </>
-                  )}
-                </button>
-                
-                {analysisResult && (
-                  <div className="flex-1 text-xs text-green-400 flex items-center justify-center">
-                    <Check className="w-3 h-3 mr-1" />
-                    Analysis complete
-                  </div>
-                )}
-              </div>
+
 
               {/* Custom prompt opcional - muito compacto */}
               {analysisResult && (
@@ -960,8 +996,17 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
         <div className="space-y-4">
           <div className="space-y-4 mb-6">
             <label className="text-sm font-medium text-gray-300">Team</label>
-            <select value={selectedTeam} onChange={(e) => setSelectedTeam(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white">
-              <option value="" className="bg-black text-white">Select Team</option>
+            <select 
+              value={selectedTeam} 
+              onChange={(e) => setSelectedTeam(e.target.value)} 
+              disabled={isVisionMode}
+              className={`cyber-input w-full px-4 py-3 rounded-lg bg-black text-white ${
+                isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <option value="" className="bg-black text-white">
+                Select Team
+              </option>
               {availableTeams.map((team) => <option key={team} value={team} className="bg-black text-white">{team}</option>)}
             </select>
           </div>
@@ -975,15 +1020,22 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
               <input type="text" value={playerNumber} onChange={(e) => setPlayerNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="10" />
             </div>
           </div>
-          <button onClick={generateContent} disabled={isLoading || !selectedTeam} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+          <button onClick={generateContent} disabled={isLoading || (!isVisionMode && !selectedTeam)} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
             {isLoading ? (
-              isVisionMode ? `AI Vision Analysis + Generating ${getSportLabel()}...` : 'Generating...'
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                {isVisionMode ? (
+                  isAnalyzing ? 
+                    'Analyzing...' : 
+                    'Generating...'
+                ) : (
+                  'Generating...'
+                )}
+              </div>
             ) : (
               <div className="flex items-center justify-center">
-                {isVisionMode && (
-                  <Eye className="w-5 h-5 mr-2 text-accent" />
-                )}
-                {isVisionMode ? `Generate ${getSportLabel()} (${getViewLabel()}) with AI Vision` : 'Generate Jersey'}
+                <Zap className="w-5 h-5 mr-2" />
+                Generate
               </div>
             )}
           </button>
