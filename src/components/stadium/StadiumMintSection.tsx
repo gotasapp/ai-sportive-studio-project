@@ -320,7 +320,7 @@ export default function StadiumMintSection({
           {transactionHash && (
             <div className="mt-3">
               <a
-                href={getTransactionUrl(transactionHash, chainId)}
+                href={getTransactionUrl(transactionHash)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 text-sm"
