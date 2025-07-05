@@ -99,7 +99,7 @@ export default function SettingsPage() {
     fetchSettings();
   }, []);
 
-  const handleInputChange = (category: keyof Settings, key: string, value: string | number) => {
+  const handleInputChange = (category: keyof Settings, key: string, value: string | number | boolean) => {
       setSettings(prev => {
           if (!prev) return null;
           return {
