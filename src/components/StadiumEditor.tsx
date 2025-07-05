@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Upload, Zap, Building, Eye, Camera, Sunset, Cloud, Users, RefreshCw, Image as ImageIcon, ChevronLeft, ChevronRight, Wallet, AlertTriangle, Check, Loader2, Sparkles } from 'lucide-react';
+import { Upload, Zap, Building, Eye, Camera, Sunset, Cloud, Users, RefreshCw, Image as ImageIcon, ChevronLeft, ChevronRight, Wallet, AlertTriangle, Check, Loader2, Sparkles, X } from 'lucide-react';
 import { useActiveAccount, useActiveWallet, useActiveWalletChain } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1127,20 +1127,20 @@ export default function StadiumEditor() {
         <div className="space-y-4">
           {/* Vision Reference Upload */}
           <div className="space-y-3">
-            <label className="text-sm font-medium text-gray-300">Upload Stadium Reference</label>
+            <label className="text-sm font-medium text-secondary">Upload Stadium Reference</label>
             
             {!referenceImage ? (
-              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-cyan-500 transition-colors cursor-pointer"
+              <div className="cyber-border border-2 border-dashed rounded-lg p-6 text-center hover:border-accent transition-colors cursor-pointer bg-primary/10"
                    onClick={() => document.getElementById('stadium-vision-upload')?.click()}>
-                <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-400">Click to upload stadium image</p>
-                <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 10MB</p>
+                <Upload className="mx-auto h-8 w-8 text-secondary mb-2" />
+                <p className="text-sm text-secondary">Click to upload stadium image</p>
+                <p className="text-xs text-secondary/70 mt-1">JPG, PNG, WebP up to 10MB</p>
               </div>
             ) : (
               <div className="relative">
-                <img src={referenceImage} alt="Stadium Reference" className="w-full h-32 object-cover rounded-lg" />
-                <button onClick={clearVisionImage} className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700">
-                  <span className="w-4 h-4 block text-xs leading-none">✕</span>
+                <img src={referenceImage} alt="Stadium Reference" className="w-full h-32 object-cover rounded-lg cyber-border" />
+                <button onClick={clearVisionImage} className="absolute top-2 right-2 cyber-button bg-accent hover:bg-accent/80 text-black rounded-full p-1 transition-colors">
+                  <X className="w-4 h-4" />
                 </button>
               </div>
             )}
@@ -1156,12 +1156,12 @@ export default function StadiumEditor() {
 
           {/* Stadium Selector - Disabled in Vision Mode */}
           <div className="space-y-4 mb-6">
-            <label className="text-sm font-medium text-gray-300">Stadium Template</label>
+            <label className="text-sm font-medium text-secondary">Stadium Template</label>
             <select 
               value={selectedStadium} 
               onChange={(e) => setSelectedStadium(e.target.value)} 
               disabled={isVisionMode}
-              className={`cyber-input w-full px-4 py-3 rounded-lg bg-black text-white ${
+              className={`cyber-input w-full px-4 py-3 rounded-lg ${
                 isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -1178,13 +1178,13 @@ export default function StadiumEditor() {
 
           {/* View Selection for Vision Mode */}
           {isVisionMode && (
-            <div className="grid grid-cols-2 gap-2 mb-4">
+            <div className="grid grid-cols-2 gap-3 mb-4">
               <button
                 onClick={() => setSelectedView('external')}
-                className={`p-3 rounded-lg border transition-all ${
+                className={`style-button p-3 rounded-lg border transition-all ${
                   selectedView === 'external'
-                    ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
-                    : 'border-gray-600 bg-gray-800/30 text-gray-300'
+                    ? 'border-accent bg-accent/10 text-accent'
+                    : 'border-secondary/30 bg-primary/10 text-secondary'
                 }`}
               >
                 <Building className="w-4 h-4 mx-auto mb-1" />
@@ -1192,10 +1192,10 @@ export default function StadiumEditor() {
               </button>
               <button
                 onClick={() => setSelectedView('internal')}
-                className={`p-3 rounded-lg border transition-all ${
+                className={`style-button p-3 rounded-lg border transition-all ${
                   selectedView === 'internal'
-                    ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
-                    : 'border-gray-600 bg-gray-800/30 text-gray-300'
+                    ? 'border-accent bg-accent/10 text-accent'
+                    : 'border-secondary/30 bg-primary/10 text-secondary'
                 }`}
               >
                 <Users className="w-4 h-4 mx-auto mb-1" />

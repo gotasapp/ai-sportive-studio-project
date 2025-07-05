@@ -640,7 +640,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
       <EditorPanel title="2. Reference Image (Optional)">
         {!isVisionMode ? (
           <div className="space-y-4">
-            <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-accent transition-colors">
+            <div className="cyber-border border-2 border-dashed rounded-lg p-6 text-center hover:border-accent transition-colors cursor-pointer bg-primary/10">
               <input
                 type="file"
                 accept="image/*"
@@ -650,9 +650,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
               />
               <label htmlFor="badge-vision-upload" className="cursor-pointer">
                 <div className="space-y-2">
-                  <div className="text-4xl text-gray-400">📎</div>
-                  <p className="text-gray-300">Upload badge reference</p>
-                  <p className="text-xs text-gray-500">AI will analyze and enhance your design</p>
+                  <div className="text-4xl text-secondary">📎</div>
+                  <p className="text-secondary">Upload badge reference</p>
+                  <p className="text-xs text-secondary/70">AI will analyze and enhance your design</p>
                 </div>
               </label>
             </div>
@@ -660,16 +660,16 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         ) : (
           <div className="space-y-4">
             <div className="relative">
-              <img src={referenceImage!} alt="Reference" className="w-full h-32 object-cover rounded-lg" />
+              <img src={referenceImage!} alt="Reference" className="w-full h-32 object-cover rounded-lg cyber-border" />
               <button
                 onClick={exitVisionMode}
-                className="absolute top-2 right-2 bg-red-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-700"
+                className="absolute top-2 right-2 cyber-button bg-accent hover:bg-accent/80 text-black rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
               >
                 ×
               </button>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-300">Badge View</label>
+              <label className="text-sm font-medium text-secondary">Badge View</label>
               <div className="grid grid-cols-2 gap-2">
                 <StyleButton
                   onClick={() => setSelectedBadgeView('logo')}
@@ -692,30 +692,30 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
       <EditorPanel title={isVisionMode ? "3. Badge Details" : "2. Badge Details"}>
         <div className="space-y-4">
             <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-gray-300 block mb-2">Badge Name</label>
+              <label className="text-sm font-medium text-secondary block mb-2">Badge Name</label>
               <input 
                 type="text" 
                 value={badgeName} 
                 onChange={(e) => setBadgeName(e.target.value)} 
-                className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" 
+                className="cyber-input w-full px-4 py-3 rounded-lg" 
                 placeholder="CHAMPION" 
               />
             </div>
             <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-gray-300 block mb-2">Custom Prompt (Optional)</label>
+              <label className="text-sm font-medium text-secondary block mb-2">Custom Prompt (Optional)</label>
               <textarea 
                 value={customPrompt} 
                 onChange={(e) => setCustomPrompt(e.target.value)} 
-                className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white min-h-[80px] resize-none" 
+                className="cyber-input w-full px-4 py-3 rounded-lg min-h-[80px] resize-none" 
                 placeholder="Additional requirements for your badge design..."
                 rows={3}
               />
-              <p className="text-xs text-gray-500">This will be added to the generation prompt</p>
+              <p className="text-xs text-secondary/70">This will be added to the generation prompt</p>
             </div>
             <Button 
               onClick={generateContent} 
               disabled={!isConnected || isLoading || isAnalyzing} 
-              className={`w-full ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`cyber-button w-full ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
                 {!isConnected ? '🔒 Connect Wallet First' : 
                  isAnalyzing ? 'Analyzing...' : 
@@ -725,7 +725,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
       </EditorPanel>
       <EditorPanel title={isVisionMode ? "4. Mint NFT" : "3. Mint NFT"}>
         <div>
-          <label className="text-sm font-medium text-gray-300">Edition Size: <span className="text-cyan-400 font-semibold">{editionSize}</span></label>
+          <label className="text-sm font-medium text-secondary">Edition Size: <span className="text-accent font-semibold">{editionSize}</span></label>
           <input type="range" min="1" max="1000" value={editionSize} onChange={(e) => setEditionSize(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider mt-2" />
         </div>
         <div className="space-y-3 mt-4">

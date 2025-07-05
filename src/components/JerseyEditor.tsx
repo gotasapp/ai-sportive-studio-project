@@ -912,11 +912,11 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
       <EditorPanel title="🔍 Reference Analysis (Optional)">
         <div className="space-y-3">
           {/* Vision Options - Always visible but compact */}
-          <div className="grid grid-cols-2 gap-2 mb-3">
+          <div className="grid grid-cols-2 gap-3 mb-4">
             <select 
               value={selectedSport} 
               onChange={(e) => setSelectedSport(e.target.value)}
-              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+              className="cyber-input text-sm py-2 px-3"
             >
               {SPORTS_OPTIONS.map(sport => (
                 <option key={sport.id} value={sport.id}>{sport.name}</option>
@@ -926,7 +926,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
             <select 
               value={selectedView} 
               onChange={(e) => setSelectedView(e.target.value)}
-              className="text-xs bg-gray-800 border border-gray-600 rounded px-2 py-1"
+              className="cyber-input text-sm py-2 px-3"
             >
               {VIEW_OPTIONS.map(view => (
                 <option key={view.id} value={view.id}>{view.name}</option>
@@ -936,7 +936,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
           {!referenceImage ? (
             <div
-              className="relative border-2 border-dashed border-gray-600 rounded-lg p-4 hover:border-accent transition-colors cursor-pointer bg-gray-900/50"
+              className="relative cyber-border border-2 border-dashed rounded-lg p-6 hover:border-accent transition-colors cursor-pointer bg-primary/10"
               onClick={() => fileInputRef.current?.click()}
             >
               <input
@@ -946,37 +946,35 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              <div className="flex items-center justify-center space-x-2 text-gray-400">
+              <div className="flex items-center justify-center space-x-2 text-secondary">
                 <FileImage className="w-5 h-5" />
                 <span className="text-sm">Upload {selectedSport} jersey reference</span>
               </div>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {/* Preview compacto */}
               <div className="relative">
                 <img
                   src={referenceImage}
                   alt="Reference"
-                  className="w-full h-24 object-cover rounded-lg border border-gray-600"
+                  className="w-full h-32 object-cover rounded-lg cyber-border"
                 />
                 <button
                   onClick={clearReferenceImage}
-                  className="absolute top-1 right-1 bg-red-500 hover:bg-red-600 text-white p-1 rounded-full transition-colors"
+                  className="absolute top-2 right-2 cyber-button bg-accent hover:bg-accent/80 text-black p-1 rounded-full transition-colors"
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
               
-
-
               {/* Custom prompt opcional - muito compacto */}
               {analysisResult && (
                 <textarea
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
                   placeholder="Optional: Customize the prompt..."
-                  className="w-full px-3 py-2 text-xs bg-gray-800 border border-gray-600 rounded resize-none"
+                  className="cyber-input w-full text-xs resize-none"
                   rows={2}
                 />
               )}

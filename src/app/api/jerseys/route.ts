@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-// import clientPromise from '@/lib/mongodb';
-// import { Collection, Db } from 'mongodb';
+import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'jerseys';
@@ -9,10 +8,8 @@ const LOG_COLLECTION_NAME = 'jerseys_log';
 // POST handler para criar uma nova Jersey
 export async function POST(request: Request) {
   try {
-    console.log('🧪 POST Jersey - MongoDB temporariamente desabilitado');
-    return NextResponse.json({ message: 'MongoDB temporariamente desabilitado para teste' }, { status: 503 });
+    console.log('👕 Jersey API: POST request received');
     
-    /* CÓDIGO ORIGINAL COMENTADO
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const jerseys = db.collection(COLLECTION_NAME);
@@ -66,7 +63,6 @@ export async function POST(request: Request) {
       jerseyId: result.insertedId,
       logId: logResult.insertedId
     }, { status: 201 });
-    */
 
   } catch (error) {
     console.error('Error creating jersey:', error);
@@ -74,34 +70,11 @@ export async function POST(request: Request) {
   }
 }
 
-// GET handler SIMPLIFICADO para teste
+// GET handler para buscar jerseys aprovados do MongoDB
 export async function GET() {
   try {
-    console.log('🧪 GET Jerseys - Retornando dados mock para teste');
+    console.log('✅ GET Jerseys - Buscando do MongoDB');
     
-    // Dados mock para teste
-    const mockJerseys = [
-      {
-        _id: 'mock1',
-        name: 'Mock Jersey 1',
-        imageUrl: 'https://via.placeholder.com/400',
-        creator: { wallet: '0x123', name: 'Mock User' },
-        createdAt: new Date(),
-        status: 'Approved'
-      },
-      {
-        _id: 'mock2',
-        name: 'Mock Jersey 2', 
-        imageUrl: 'https://via.placeholder.com/400',
-        creator: { wallet: '0x456', name: 'Mock User 2' },
-        createdAt: new Date(),
-        status: 'Approved'
-      }
-    ];
-
-    return NextResponse.json(mockJerseys);
-
-    /* CÓDIGO ORIGINAL COMENTADO
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const jerseys = db.collection(COLLECTION_NAME);
@@ -109,10 +82,11 @@ export async function GET() {
     const approvedJerseys = await jerseys
       .find({ status: 'Approved' })
       .sort({ createdAt: -1 })
+      .limit(50)
       .toArray();
 
+    console.log(`✅ Found ${approvedJerseys.length} approved jerseys`);
     return NextResponse.json(approvedJerseys);
-    */
 
   } catch (error) {
     console.error('Error fetching jerseys:', error);
@@ -123,10 +97,8 @@ export async function GET() {
 // DELETE handler
 export async function DELETE() {
   try {
-    console.log('🧪 DELETE Jerseys - MongoDB temporariamente desabilitado');
-    return NextResponse.json({ message: 'MongoDB temporariamente desabilitado para teste' }, { status: 503 });
+    console.log('🗑️ DELETE request received for jerseys collection');
     
-    /* CÓDIGO ORIGINAL COMENTADO
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const jerseys = db.collection(COLLECTION_NAME);
@@ -137,7 +109,6 @@ export async function DELETE() {
       message: `Successfully deleted ${result.deletedCount} documents from jerseys collection`,
       deletedCount: result.deletedCount
     }, { status: 200 });
-    */
 
   } catch (error) {
     console.error('Error deleting jerseys:', error);
