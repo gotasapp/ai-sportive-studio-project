@@ -1,20 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, Engine } from 'thirdweb';
 
-const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
-const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
-const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
-
-if (!THIRDWEB_SECRET_KEY) {
-  throw new Error("Missing THIRDWEB_SECRET_KEY in .env.local");
-}
-if (!BACKEND_WALLET_ADDRESS) {
-  throw new Error("Missing BACKEND_WALLET_ADDRESS in .env.local");
-}
-if (!VAULT_ACCESS_TOKEN) {
-    throw new Error("Missing VAULT_ACCESS_TOKEN in .env.local");
-}
-
 export async function GET(
   request: NextRequest,
   { params }: { params: { queueId: string } }
@@ -23,6 +9,21 @@ export async function GET(
 
   if (!queueId) {
     return NextResponse.json({ error: 'queueId is required' }, { status: 400 });
+  }
+
+  // Verificar variáveis de ambiente apenas quando a função é chamada
+  const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
+  const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
+  const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
+
+  if (!THIRDWEB_SECRET_KEY) {
+    return NextResponse.json({ error: 'Missing THIRDWEB_SECRET_KEY in .env.local' }, { status: 500 });
+  }
+  if (!BACKEND_WALLET_ADDRESS) {
+    return NextResponse.json({ error: 'Missing BACKEND_WALLET_ADDRESS in .env.local' }, { status: 500 });
+  }
+  if (!VAULT_ACCESS_TOKEN) {
+    return NextResponse.json({ error: 'Missing VAULT_ACCESS_TOKEN in .env.local' }, { status: 500 });
   }
 
   try {
