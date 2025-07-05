@@ -83,7 +83,7 @@ async function getSettings() {
         ...initialSettings, 
         updatedAt: new Date()
       });
-      settings = { _id: 'app_settings', ...initialSettings };
+      settings = { _id: 'app_settings' as any, ...initialSettings };
     }
 
     // Salvar backup no arquivo
