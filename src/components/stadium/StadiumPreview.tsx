@@ -46,7 +46,7 @@ export default function StadiumPreview({
 
   const getStadiumName = () => {
     if (selectedStadium === 'custom_only') return 'Custom Stadium'
-    return result?.stadium_name || selectedStadium
+    return selectedStadium || 'Stadium'
   }
 
   return (
