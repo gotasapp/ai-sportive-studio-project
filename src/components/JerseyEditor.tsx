@@ -454,6 +454,12 @@ export default function JerseyEditor() {
 
   // ===== MODIFIED GENERATION FUNCTION - DUAL SYSTEM =====
   const generateContent = async () => {
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    if (!isConnected) {
+      setError('🔒 Please connect your wallet to generate jerseys')
+      return
+    }
+
     resetError()
     setIsLoading(true)
     setGeneratedImage(null)
@@ -518,7 +524,8 @@ export default function JerseyEditor() {
             console.log('✅ [VISION ANALYSIS] Got structured analysis prompt')
 
             // Send to Vision API
-            const visionResponse = await fetch('http://localhost:8002/analyze-image-base64', {
+            const visionApiUrl = process.env.NEXT_PUBLIC_VISION_API_URL || 'http://localhost:8002';
+            const visionResponse = await fetch(`${visionApiUrl}/analyze-image-base64`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -1020,8 +1027,16 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
               <input type="text" value={playerNumber} onChange={(e) => setPlayerNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="10" />
             </div>
           </div>
-          <button onClick={generateContent} disabled={isLoading || (!isVisionMode && !selectedTeam)} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-            {isLoading ? (
+          <button 
+            onClick={generateContent} 
+            disabled={!isConnected || isLoading || (!isVisionMode && !selectedTeam)} 
+            className={`cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {!isConnected ? (
+              <div className="flex items-center justify-center">
+                <span>🔒 Connect Wallet First</span>
+              </div>
+            ) : isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
                 {isVisionMode ? (

@@ -369,8 +369,13 @@ app = FastAPI(
 origins = [
     "http://localhost",
     "http://localhost:3000",
+    "https://localhost:3000", 
     "https://jersey-generator-ai2-git-master-jeffnight15s-projects.vercel.app",
-    "https://jersey-generator-ai2.vercel.app"
+    "https://jersey-generator-ai2.vercel.app",
+    "https://*.vercel.app",
+    "https://*.netlify.app", 
+    "https://*.railway.app",
+    "https://*.render.com"
 ]
 
 app.add_middleware(

@@ -152,6 +152,12 @@ export default function ContentGenerator() {
 
   // Generate content based on type
   const generateContent = async () => {
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    if (!isConnected) {
+      setError('🔒 Please connect your wallet to generate content')
+      return
+    }
+
     if (contentType === 'jersey') {
       return generateJersey()
     } else {
@@ -782,10 +788,14 @@ export default function ContentGenerator() {
           <div className="flex gap-4">
             <Button
               onClick={generateContent}
-              disabled={isLoading || !apiStatus}
-              className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600"
+              disabled={!isConnected || isLoading || !apiStatus}
+              className={`flex-1 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {isLoading ? (
+              {!isConnected ? (
+                <>
+                  <span>🔒 Connect Wallet First</span>
+                </>
+              ) : isLoading ? (
                 <>
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
                   Generating...

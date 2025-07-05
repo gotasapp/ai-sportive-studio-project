@@ -13,7 +13,7 @@ const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || ''
 const metadata = {
   name: 'AI Sports NFT Generator',
   description: 'Generate and mint sports NFTs with AI',
-  url: 'https://localhost:3000', // origin must match your domain & subdomain
+        url: process.env.NEXT_PUBLIC_APP_DOMAIN || 'https://localhost:3000', // origin must match your domain & subdomain
   icons: ['https://avatars.githubusercontent.com/u/179229932']
 }
 

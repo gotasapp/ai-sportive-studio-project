@@ -178,6 +178,12 @@ export default function BadgeEditor() {
   }
 
   const generateContent = async () => {
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    if (!isConnected) {
+      setError('🔒 Please connect your wallet to generate badges')
+      return
+    }
+
     if (!badgeName.trim()) {
       setError('Please enter a badge name')
       return
@@ -706,8 +712,14 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
               />
               <p className="text-xs text-gray-500">This will be added to the generation prompt</p>
             </div>
-            <Button onClick={generateContent} disabled={isLoading || isAnalyzing} className="w-full">
-                {isAnalyzing ? 'Analyzing...' : isLoading ? 'Generating...' : 'Generate'}
+            <Button 
+              onClick={generateContent} 
+              disabled={!isConnected || isLoading || isAnalyzing} 
+              className={`w-full ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+                {!isConnected ? '🔒 Connect Wallet First' : 
+                 isAnalyzing ? 'Analyzing...' : 
+                 isLoading ? 'Generating...' : 'Generate'}
             </Button>
         </div>
       </EditorPanel>

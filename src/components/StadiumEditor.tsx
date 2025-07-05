@@ -706,6 +706,12 @@ export default function StadiumEditor() {
   };
 
   const generateStadium = async () => {
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    if (!isConnected) {
+      setError('🔒 Please connect your wallet to generate stadiums')
+      return
+    }
+
     setIsGenerating(true);
     setError('');
     setGeneratedImage('');
@@ -1251,8 +1257,16 @@ export default function StadiumEditor() {
                 <Label>Custom Prompt (Optional)</Label>
                 <Textarea value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} placeholder="e.g., a futuristic stadium on Mars" />
             </div>
-            <button onClick={generateStadium} disabled={isGenerating || (!isVisionMode && !selectedStadium && !customPrompt)} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
-              {isGenerating ? (
+            <button 
+              onClick={generateStadium} 
+              disabled={!isConnected || isGenerating || (!isVisionMode && !selectedStadium && !customPrompt)} 
+              className={`cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {!isConnected ? (
+                <div className="flex items-center justify-center">
+                  <span>🔒 Connect Wallet First</span>
+                </div>
+              ) : isGenerating ? (
                 <div className="flex items-center justify-center">
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
                   {isVisionMode ? (
