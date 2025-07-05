@@ -27,6 +27,12 @@ const VISION_BASE_PROMPTS = {
     "external": `A stunning photorealistic external view of a sports stadium. The architectural design, color scheme, and structural elements must be heavily inspired by the uploaded reference image. Preserve the architectural style, facade materials, roof design, and overall proportions from the reference. The stadium should feature the generation style of "{STYLE}" with enhanced professional finish. Display the stadium from an elevated perspective showing the complete exterior structure. Include atmospheric lighting that matches the time of day and weather conditions detected in the reference. Use ultra-high definition 4K rendering, professional architectural photography angle, dramatic sky background that complements the stadium's design. Capture the grandeur and scale typical of professional sports venues.`,
     
     "internal": `A breathtaking photorealistic interior view of a sports stadium. Base the design entirely on the uploaded reference image, preserving the seating layout, architectural features, field surface, and interior color scheme. Maintain the crowd density, lighting type, and atmospheric mood from the reference. The interior should reflect the "{STYLE}" theme with enhanced professional quality. Show the stadium interior from an optimal viewing angle that captures the scale and atmosphere. Include detailed seating sections, field/pitch surface, architectural elements like screens or overhangs, and appropriate lighting (natural/artificial/mixed). Render in ultra-high definition 4K with professional sports photography quality, capturing the energy and atmosphere of a world-class sports venue.`
+  },
+  
+  "badge": {
+    "logo": `A premium quality badge/logo design inspired directly by the uploaded reference image. Preserve the core design elements, color palette, shape structure, and visual style from the reference while enhancing clarity and professional finish. Incorporate the team name "{TEAM_NAME}" and the text "{BADGE_NAME}" seamlessly into the design. Add the number "{BADGE_NUMBER}" if specified. The design should follow the "{STYLE}" aesthetic theme with enhanced typography and refined graphic elements. Create a clean, scalable logo suitable for digital and print use. Render on a transparent background with crisp vector-quality edges. Use professional graphic design principles: balanced composition, clear hierarchy, and premium visual impact. The result should be publication-ready with sharp details and perfect color harmony.`,
+    
+    "emblem": `A distinguished heraldic emblem/crest based entirely on the uploaded reference image. Maintain the traditional emblem structure, symbolic elements, color scheme, and decorative details from the reference. Integrate the team name "{TEAM_NAME}" and the badge designation "{BADGE_NAME}" using classic heraldic typography. Include the number "{BADGE_NUMBER}" if provided, positioned according to traditional crest conventions. The design should embody the "{STYLE}" theme while preserving heraldic authenticity. Feature premium craftsmanship with enhanced symbolic elements, refined borders, and professional heraldic design principles. Create a prestigious emblem suitable for official use, with rich details and traditional proportions. Render with vector-quality precision on a transparent background, emphasizing prestige and institutional quality.`
   }
 }
 
@@ -41,7 +47,11 @@ const STYLE_THEMES = {
   // Stadium-specific styles
   "realistic": "hyper-realistic architectural design",
   "cinematic": "cinematic dramatic architectural style",
-  "dramatic": "dramatic lighting and atmospheric design"
+  "dramatic": "dramatic lighting and atmospheric design",
+  // Badge-specific styles
+  "minimalist": "clean minimalist design with essential elements",
+  "emblem": "traditional heraldic emblem style",
+  "crest": "official institutional crest design"
 }
 
 // Quality enhancers baseados no sistema original
@@ -73,7 +83,7 @@ const NEGATIVE_PROMPTS = [
 ]
 
 // Função principal para obter prompt formatado (igual ao sistema original)
-function getPrompt(sport: string, view: string, playerName: string = "", playerNumber: string = "", style: string = "classic"): string {
+function getPrompt(sport: string, view: string, playerName: string = "", playerNumber: string = "", style: string = "classic", teamName: string = "", badgeName: string = "", badgeNumber: string = ""): string {
   if (!VISION_BASE_PROMPTS[sport as keyof typeof VISION_BASE_PROMPTS]) {
     throw new Error(`Sport '${sport}' not supported`)
   }
@@ -89,14 +99,17 @@ function getPrompt(sport: string, view: string, playerName: string = "", playerN
   return promptTemplate
     .replace('{PLAYER_NAME}', playerName.toUpperCase())
     .replace('{PLAYER_NUMBER}', playerNumber)
+    .replace('{TEAM_NAME}', teamName.toUpperCase())
+    .replace('{BADGE_NAME}', badgeName.toUpperCase())
+    .replace('{BADGE_NUMBER}', badgeNumber)
     .replace('{STYLE}', styleDescription)
     .trim()
 }
 
 // Função para prompt com melhorias de qualidade (igual ao sistema original)
 function getEnhancedPrompt(sport: string, view: string, playerName: string = "", playerNumber: string = "", 
-                          style: string = "classic", qualityLevel: string = "base"): string {
-  const basePrompt = getPrompt(sport, view, playerName, playerNumber, style)
+                          style: string = "classic", qualityLevel: string = "base", teamName: string = "", badgeName: string = "", badgeNumber: string = ""): string {
+  const basePrompt = getPrompt(sport, view, playerName, playerNumber, style, teamName, badgeName, badgeNumber)
   
   // Adiciona melhorias de qualidade
   const qualityAdditions = QUALITY_ENHANCERS[qualityLevel as keyof typeof QUALITY_ENHANCERS] || QUALITY_ENHANCERS["base"]
@@ -109,13 +122,14 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🎨 [BASE PROMPTS API] Received request for base generation prompt')
     
-    const { sport, view, playerName, playerNumber, style, qualityLevel } = await request.json()
+    const { sport, view, playerName, playerNumber, style, qualityLevel, teamName, badgeName, badgeNumber } = await request.json()
     
     console.log('📋 [BASE PROMPTS API] Request details:', {
       sport,
       view,
       style: style || 'classic',
       hasPlayerData: !!(playerName && playerNumber),
+      hasBadgeData: !!(teamName && badgeName),
       qualityLevel: qualityLevel || 'base',
       timestamp: new Date().toISOString()
     })
@@ -129,17 +143,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Validar sport/type (includes stadium)
-    if (!['soccer', 'basketball', 'nfl', 'stadium'].includes(sport)) {
+    // Validar sport/type (includes stadium and badge)
+    if (!['soccer', 'basketball', 'nfl', 'stadium', 'badge'].includes(sport)) {
       console.log('❌ [BASE PROMPTS API] Invalid sport/type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid type. Must be: soccer, basketball, nfl, or stadium'
+        error: 'Invalid type. Must be: soccer, basketball, nfl, stadium, or badge'
       }, { status: 400 })
     }
 
-    // Validar view (different for stadium)
-    const validViews = sport === 'stadium' ? ['external', 'internal'] : ['front', 'back']
+    // Validar view (different for stadium and badge)
+    let validViews = ['front', 'back'] // default for sports
+    if (sport === 'stadium') validViews = ['external', 'internal']
+    if (sport === 'badge') validViews = ['logo', 'emblem']
+    
     if (!validViews.includes(view)) {
       console.log('❌ [BASE PROMPTS API] Invalid view:', view, 'for type:', sport)
       return NextResponse.json({
@@ -151,8 +168,8 @@ export async function POST(request: NextRequest) {
     try {
       // Usar a função de enhanced prompt se qualityLevel especificado
       const prompt = qualityLevel 
-        ? getEnhancedPrompt(sport, view, playerName || "", playerNumber || "", style || "classic", qualityLevel)
-        : getPrompt(sport, view, playerName || "", playerNumber || "", style || "classic")
+        ? getEnhancedPrompt(sport, view, playerName || "", playerNumber || "", style || "classic", qualityLevel, teamName || "", badgeName || "", badgeNumber || "")
+        : getPrompt(sport, view, playerName || "", playerNumber || "", style || "classic", teamName || "", badgeName || "", badgeNumber || "")
       
       console.log('✅ [BASE PROMPTS API] Successfully generated base prompt:', {
         sport,

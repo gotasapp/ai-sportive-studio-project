@@ -178,6 +178,55 @@ Focus on interior architecture, seating arrangements, lighting, atmosphere, and 
   }
 }
 
+// Badge Analysis Prompts
+const BADGE_ANALYSIS_PROMPTS = {
+  badge: {
+    logo: `Analyze this badge/logo image and return a JSON object with the following structure:
+{
+  "design_style": "modern/classic/retro/minimalist/emblem/crest",
+  "shape_type": "circular/shield/rectangular/hexagonal/custom",
+  "color_palette": ["primary color", "secondary color", "accent colors"],
+  "typography": "serif/sans-serif/script/custom/none",
+  "central_element": "description of main focal point (logo, text, symbol)",
+  "layout_composition": "centered/asymmetric/layered/geometric",
+  "visual_effects": "gradient/flat/3d/metallic/matte",
+  "border_style": "thick/thin/none/decorative/double",
+  "background_treatment": "solid/gradient/textured/transparent",
+  "symbolic_elements": ["list of symbols, icons, or graphic elements"],
+  "text_elements": ["any visible text or typography"],
+  "complexity_level": "simple/moderate/detailed/complex",
+  "design_era": "contemporary/vintage/classic/futuristic",
+  "professional_quality": "amateur/intermediate/professional/premium",
+  "unique_features": "distinctive design elements that make this badge special"
+}
+
+Focus on: logo design principles, color harmony, typography choices, symbolic elements, visual hierarchy, and overall graphic design quality.
+Return ONLY valid JSON, no additional text.`,
+
+    emblem: `Analyze this emblem/crest image and return a JSON object with the following structure:
+{
+  "emblem_type": "sports/corporate/institutional/heraldic/custom",
+  "design_style": "traditional/modern/vintage/minimalist/ornate",
+  "shape_framework": "shield/circle/banner/custom/geometric",
+  "color_scheme": ["dominant colors in order of prominence"],
+  "heraldic_elements": ["crowns, ribbons, stars, animals, etc"],
+  "central_motif": "main symbol or focal design element",
+  "text_integration": "team name, motto, founding year, etc",
+  "decorative_details": "ornamental elements, filigree, patterns",
+  "symmetry": "perfectly symmetric/asymmetric/radially symmetric",
+  "visual_weight": "light/balanced/heavy/bold",
+  "craftsmanship": "hand-drawn/digital/vector/photographic",
+  "cultural_influences": "regional, national, or cultural design elements",
+  "scalability": "works at small sizes/medium only/large format",
+  "prestige_level": "casual/professional/premium/luxury",
+  "unique_characteristics": "what makes this emblem distinctive and memorable"
+}
+
+Focus on: heraldic principles, symbolic meaning, visual impact, scalability, and traditional emblem design elements.
+Return ONLY valid JSON, no additional text.`
+  }
+}
+
 // Sport-specific focus areas for analysis guidance
 const SPORT_FOCUS_AREAS = {
   "soccer": {
@@ -195,6 +244,10 @@ const SPORT_FOCUS_AREAS = {
   "stadium": {
     "external": ["architectural style", "structure type", "roof design", "facade materials", "lighting setup", "landscape context"],
     "internal": ["seating layout", "field surface", "lighting type", "crowd density", "architectural features", "atmosphere mood"]
+  },
+  "badge": {
+    "logo": ["design style", "color palette", "typography", "central element", "layout composition", "visual effects"],
+    "emblem": ["emblem type", "heraldic elements", "central motif", "text integration", "symmetry", "craftsmanship"]
   }
 }
 
@@ -219,17 +272,20 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Validar sport/type (includes stadium)
-    if (!['soccer', 'basketball', 'nfl', 'stadium'].includes(sport)) {
+    // Validar sport/type (includes stadium and badge)
+    if (!['soccer', 'basketball', 'nfl', 'stadium', 'badge'].includes(sport)) {
       console.log('❌ [ANALYSIS PROMPT API] Invalid sport/type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid type. Must be: soccer, basketball, nfl, or stadium'
+        error: 'Invalid type. Must be: soccer, basketball, nfl, stadium, or badge'
       }, { status: 400 })
     }
 
-    // Validar view (different for stadium)
-    const validViews = sport === 'stadium' ? ['external', 'internal'] : ['front', 'back']
+    // Validar view (different for stadium and badge)
+    let validViews = ['front', 'back'] // default for sports
+    if (sport === 'stadium') validViews = ['external', 'internal']
+    if (sport === 'badge') validViews = ['logo', 'emblem']
+    
     if (!validViews.includes(view)) {
       console.log('❌ [ANALYSIS PROMPT API] Invalid view:', view, 'for type:', sport)
       return NextResponse.json({
@@ -238,8 +294,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Obter prompt estruturado específico (support both sports and stadium)
-    const allPrompts = { ...STRUCTURED_ANALYSIS_PROMPTS, ...STADIUM_ANALYSIS_PROMPTS }
+    // Obter prompt estruturado específico (support sports, stadium and badge)
+    const allPrompts = { ...STRUCTURED_ANALYSIS_PROMPTS, ...STADIUM_ANALYSIS_PROMPTS, ...BADGE_ANALYSIS_PROMPTS }
     const sportPrompts = allPrompts[sport as keyof typeof allPrompts]
     const analysisPrompt = sportPrompts?.[view as keyof typeof sportPrompts]
 
@@ -292,16 +348,18 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json({
       success: true,
-      available_sports: Object.keys(STRUCTURED_ANALYSIS_PROMPTS),
+      available_types: ['soccer', 'basketball', 'nfl', 'stadium', 'badge'],
       available_views: {
         soccer: ['front', 'back'],
         basketball: ['front', 'back'],
-        nfl: ['front', 'back']
+        nfl: ['front', 'back'],
+        stadium: ['external', 'internal'],
+        badge: ['logo', 'emblem']
       },
-      sport_focus_areas: SPORT_FOCUS_AREAS,
+      focus_areas: SPORT_FOCUS_AREAS,
       prompt_type: 'structured_json_analysis',
-      description: 'Analysis prompts that return JSON with visual characteristics for each sport and view combination',
-      usage: 'POST with {"sport": "soccer|basketball|nfl", "view": "front|back"}',
+      description: 'Analysis prompts that return JSON with visual characteristics for each type and view combination',
+      usage: 'POST with {"sport": "soccer|basketball|nfl|stadium|badge", "view": "front|back|external|internal|logo|emblem"}',
       timestamp: new Date().toISOString()
     })
 
