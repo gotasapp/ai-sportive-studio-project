@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
     
-    console.log(`📝 [VISION-TEST API] Prompt preview:`, prompt.substring(0, 150) + '...')
+          console.log(`📝 [VISION-TEST API] Prompt preview:`, (prompt as string).substring(0, 150) + '...')
 
     // Chamar a API Python do Vision Test
     const pythonResponse = await fetch(`${VISION_API_BASE_URL}/analyze-image-base64`, {

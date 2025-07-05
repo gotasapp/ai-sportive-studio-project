@@ -93,14 +93,14 @@ export async function POST(request: NextRequest) {
     if (action === 'add' && prompt) {
       // Adicionar novo prompt personalizado
       const newCustomPrompts = [...(settings.contentFilters.customPrompts || [])];
-      if (!newCustomPrompts.includes(prompt.toLowerCase().trim())) {
-        newCustomPrompts.push(prompt.toLowerCase().trim());
+              if (!newCustomPrompts.includes((prompt || '').toLowerCase().trim())) {
+          newCustomPrompts.push((prompt || '').toLowerCase().trim());
       }
       settings.contentFilters.customPrompts = newCustomPrompts;
     } else if (action === 'remove' && prompt) {
       // Remover prompt personalizado
       settings.contentFilters.customPrompts = (settings.contentFilters.customPrompts || []).filter(
-        (p: string) => p !== prompt.toLowerCase().trim()
+        (p: string) => p !== (prompt || '').toLowerCase().trim()
       );
     } else if (action === 'toggle') {
       // Toggle enabled/disabled
@@ -155,9 +155,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Remover apenas de customPrompts (não dos padrão)
-    settings.contentFilters.customPrompts = (settings.contentFilters.customPrompts || []).filter(
-      (p: string) => p !== prompt.toLowerCase().trim()
-    );
+          settings.contentFilters.customPrompts = (settings.contentFilters.customPrompts || []).filter(
+        (p: string) => p !== (prompt || '').toLowerCase().trim()
+      );
 
     await collection.updateOne(
       {},

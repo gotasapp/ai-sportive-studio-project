@@ -93,15 +93,15 @@ function getPrompt(sport: string, view: string, playerName: string = "", playerN
     throw new Error(`View '${view}' not available for ${sport}`)
   }
   
-  const promptTemplate = sportPrompts[view as keyof typeof sportPrompts]
+  const promptTemplate = sportPrompts[view as keyof typeof sportPrompts] as string
       const styleDescription = (STYLE_THEMES[style as keyof typeof STYLE_THEMES] || style) as string
   
-  return promptTemplate
-    .replace('{PLAYER_NAME}', playerName.toUpperCase())
-    .replace('{PLAYER_NUMBER}', playerNumber)
-    .replace('{TEAM_NAME}', teamName.toUpperCase())
-    .replace('{BADGE_NAME}', badgeName.toUpperCase())
-    .replace('{BADGE_NUMBER}', badgeNumber)
+  return (promptTemplate as string)
+    .replace('{PLAYER_NAME}', (playerName || '').toUpperCase())
+    .replace('{PLAYER_NUMBER}', playerNumber || '')
+    .replace('{TEAM_NAME}', (teamName || '').toUpperCase())
+    .replace('{BADGE_NAME}', (badgeName || '').toUpperCase())
+    .replace('{BADGE_NUMBER}', badgeNumber || '')
     .replace('{STYLE}', styleDescription)
     .trim()
 }
@@ -178,7 +178,7 @@ export async function POST(request: NextRequest) {
         promptLength: prompt.length,
         hasPlayerData: !!(playerName && playerNumber),
         qualityEnhanced: !!qualityLevel,
-        preview: prompt.substring(0, 150) + '...'
+                  preview: (prompt as string).substring(0, 150) + '...'
       })
 
       return NextResponse.json({

@@ -297,7 +297,7 @@ export async function POST(request: NextRequest) {
     // Obter prompt estruturado específico (support sports, stadium and badge)
     const allPrompts = { ...STRUCTURED_ANALYSIS_PROMPTS, ...STADIUM_ANALYSIS_PROMPTS, ...BADGE_ANALYSIS_PROMPTS }
     const sportPrompts = allPrompts[sport as keyof typeof allPrompts]
-    const analysisPrompt = sportPrompts?.[view as keyof typeof sportPrompts]
+    const analysisPrompt = (sportPrompts?.[view as keyof typeof sportPrompts]) as string
 
     if (!analysisPrompt) {
       console.log('❌ [ANALYSIS PROMPT API] Prompt not found for:', sport, view)

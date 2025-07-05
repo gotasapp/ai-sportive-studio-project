@@ -36,7 +36,7 @@ async function getPendingItems(limit = 50) {
     // Mapear com tipo
     return pendingItems.map(item => ({
       id: item._id.toString(),
-      type: collectionName.charAt(0).toUpperCase() + collectionName.slice(1, -1),
+                type: (collectionName || '').charAt(0).toUpperCase() + (collectionName || '').slice(1, -1),
       name: item.name || 'Unnamed',
       imageUrl: item.imageUrl || item.image || '/placeholder.png',
       creator: item.creator || { name: 'Unknown', wallet: 'Unknown' },
