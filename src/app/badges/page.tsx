@@ -2,7 +2,6 @@
 
 import BadgeEditor from '@/components/BadgeEditor';
 import Header from '@/components/Header';
-import MobileNav from '@/components/MobileNav';
 
 export default function BadgesPage() {
   return (
@@ -11,8 +10,6 @@ export default function BadgesPage() {
       <div className="w-full max-w-7xl px-4">
         <BadgeEditor />
       </div>
-      {/* Mobile Navigation */}
-      <MobileNav />
     </main>
   );
 } 
