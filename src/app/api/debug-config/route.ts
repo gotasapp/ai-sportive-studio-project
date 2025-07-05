@@ -6,8 +6,7 @@ export async function GET() {
   try {
     // Teste de health check da API Python
     const healthResponse = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET',
-      timeout: 10000
+      method: 'GET'
     });
     
     const healthData = healthResponse.ok ? await healthResponse.json() : null;

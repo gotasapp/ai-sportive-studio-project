@@ -60,8 +60,7 @@ export async function POST(request: NextRequest) {
     // Primeiro, verificar se a API está online
     try {
       const healthResponse = await fetch(`${API_BASE_URL}/health`, {
-        method: 'GET',
-        timeout: 10000 // 10 segundos para health check
+        method: 'GET'
       })
       
       if (!healthResponse.ok) {
@@ -114,8 +113,7 @@ export async function POST(request: NextRequest) {
           prompt: prompt, // Usando 'prompt' em vez de 'analysis_prompt' para consistência
           model: model || 'openai/gpt-4o-mini',
           type: 'vision-analysis' // Identificar como análise de visão
-        }),
-        timeout: 60000 // 60 segundos timeout
+        })
       })
 
       console.log(`🔄 [VISION-TEST API] Python API response:`, {
