@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Badge API Error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to save badge' },
+              { error: error instanceof Error ? error.message : 'Failed to save badge' },
       { status: 500 }
     )
   }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error fetching badges:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch badges' },
+              { error: error instanceof Error ? error.message : 'Failed to fetch badges' },
       { status: 500 }
     )
   }
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error deleting badges:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete badges' },
+              { error: error instanceof Error ? error.message : 'Failed to delete badges' },
       { status: 500 }
     )
   }

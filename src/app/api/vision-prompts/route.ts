@@ -198,10 +198,10 @@ export async function POST(request: NextRequest) {
       })
       
     } catch (promptError: any) {
-      console.log('❌ [BASE PROMPTS API] Prompt generation error:', promptError.message)
-      return NextResponse.json({
-        success: false,
-        error: promptError.message
+              console.log('❌ [BASE PROMPTS API] Prompt generation error:', promptError instanceof Error ? promptError.message : promptError)
+        return NextResponse.json({
+          success: false,
+          error: promptError instanceof Error ? promptError.message : String(promptError)
       }, { status: 400 })
     }
     

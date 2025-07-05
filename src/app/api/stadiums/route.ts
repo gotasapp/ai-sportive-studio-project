@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Stadium API Error:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to save stadium' },
+              { error: error instanceof Error ? error.message : 'Failed to save stadium' },
       { status: 500 }
     )
   }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error fetching stadiums:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch stadiums' },
+              { error: error instanceof Error ? error.message : 'Failed to fetch stadiums' },
       { status: 500 }
     )
   }
@@ -115,7 +115,7 @@ export async function DELETE(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error deleting stadiums:', error)
     return NextResponse.json(
-      { error: error.message || 'Failed to delete stadiums' },
+              { error: error instanceof Error ? error.message : 'Failed to delete stadiums' },
       { status: 500 }
     )
   }

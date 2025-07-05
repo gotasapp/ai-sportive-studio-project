@@ -135,7 +135,7 @@ export class EngineService {
       
     } catch (error) {
       console.error('❌ Engine: Gift mint failed:', error);
-      throw new Error(`Gift mint failed: ${error.message}`);
+      throw new Error(`Gift mint failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
   */
