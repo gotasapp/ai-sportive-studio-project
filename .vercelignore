@@ -1,2 +1,9 @@
-# Ignorar APENAS a pasta da API Python da raiz (não as APIs Next.js)
-/api 
+# Ignorar arquivos Python específicos (não a pasta /api inteira)
+*.py
+*.pyc
+__pycache__/
+venv/
+api/venv/
+api/*.py
+api/requirements*.txt
+api/Procfile 
