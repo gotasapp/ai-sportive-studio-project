@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     let settings = await collection.findOne({});
     
     if (!settings) {
-      settings = {
+      const defaultSettings = {
         contentFilters: {
           enabled: true,
           defaultPrompts: [
@@ -69,6 +69,13 @@ export async function POST(request: NextRequest) {
           customPrompts: []
         }
       };
+      await collection.insertOne(defaultSettings);
+      settings = await collection.findOne({});
+    }
+
+    // Fallback de segurança caso settings ainda seja null
+    if (!settings) {
+      return NextResponse.json({ error: 'Failed to create or retrieve settings' }, { status: 500 });
     }
 
     if (!settings.contentFilters) {
