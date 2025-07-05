@@ -314,20 +314,20 @@ export async function POST(request: NextRequest) {
     console.log('✅ [ANALYSIS PROMPT API] Successfully retrieved structured prompt:', {
       sport,
       view,
-      promptLength: analysisPrompt.length,
+      promptLength: (analysisPrompt as string).length,
       type: 'JSON_STRUCTURED',
       focusAreasCount: focusAreas.length,
-      preview: analysisPrompt.substring(0, 150) + '...'
+      preview: (analysisPrompt as string).substring(0, 150) + '...'
     })
 
     return NextResponse.json({
       success: true,
-      analysis_prompt: analysisPrompt.trim(),
+      analysis_prompt: (analysisPrompt as string).trim(),
       metadata: {
         sport,
         view,
         type: 'structured_json',
-        prompt_length: analysisPrompt.length,
+        prompt_length: (analysisPrompt as string).length,
         focus_areas: focusAreas,
         expected_output: 'JSON',
         timestamp: new Date().toISOString()
