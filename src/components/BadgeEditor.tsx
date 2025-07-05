@@ -552,9 +552,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         // Implementar lógica de "Top Collections" com foco em badges
         // Top 2 Badges mais recentes (prioridade para página de badges)
         const topBadges = badges
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(badge => ({
+          .map((badge: any) => ({
             name: badge.name,
             imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: badge.description || 'AI-generated badge',
@@ -565,9 +565,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
         // Top 2 Jerseys mais recentes
         const topJerseys = jerseys
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(jersey => ({
+          .map((jersey: any) => ({
             name: jersey.name,
             imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: jersey.description || 'AI-generated jersey',
@@ -578,9 +578,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
         // Top 2 Stadiums mais recentes
         const topStadiums = stadiums
-          .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
-          .map(stadium => ({
+          .map((stadium: any) => ({
             name: stadium.name,
             imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
             description: stadium.description || 'AI-generated stadium',
@@ -595,7 +595,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           ...topJerseys,
           ...topStadiums
         ]
-        .sort((a, b) => {
+        .sort((a: any, b: any) => {
           // Badges primeiro, depois por data
           if (a.category === 'badge' && b.category !== 'badge') return -1;
           if (a.category !== 'badge' && b.category === 'badge') return 1;
