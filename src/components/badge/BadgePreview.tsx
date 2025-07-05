@@ -60,7 +60,7 @@ export function BadgePreview({
                       Seu badge aparecerá aqui
                     </p>
                     <p className="text-xs text-muted-foreground/70">
-                      Configure os parâmetros e clique em "Gerar Badge"
+                      Configure os parâmetros e clique em &quot;Gerar Badge&quot;
                     </p>
                   </div>
                 </div>
