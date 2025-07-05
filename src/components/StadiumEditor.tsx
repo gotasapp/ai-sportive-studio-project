@@ -139,6 +139,16 @@ export default function StadiumEditor() {
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
   
+  // ===== VISION ANALYSIS STATES =====
+  const [isVisionMode, setIsVisionMode] = useState(false)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  const [referenceImageBlob, setReferenceImageBlob] = useState<Blob | null>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  // Vision model fixed to default (admin can change in settings)
+  const selectedVisionModel = 'openai/gpt-4o-mini'
+  const [selectedView, setSelectedView] = useState('external')
+  
   // Smooth Carousel state with drag & scroll
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isDragging, setIsDragging] = useState(false)
@@ -620,6 +630,53 @@ export default function StadiumEditor() {
     }
   }
 
+  // ===== VISION ANALYSIS FUNCTIONS =====
+  
+  const handleVisionFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      setError('')
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setError('Please upload an image file (JPG, PNG, WebP)')
+        return
+      }
+      
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setError('Image too large. Please upload an image smaller than 10MB')
+        return
+      }
+
+      // Create preview
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setReferenceImage(e.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+      
+      // Store blob for analysis
+      setReferenceImageBlob(file)
+      setIsVisionMode(true)
+      
+      console.log('📸 Stadium reference image uploaded:', file.name, file.size)
+      
+    } catch (error) {
+      console.error('❌ Upload error:', error)
+      setError('Failed to upload image')
+    }
+  }
+
+  const clearVisionImage = () => {
+    setReferenceImage(null)
+    setReferenceImageBlob(null)
+    setAnalysisResult(null)
+    setIsVisionMode(false)
+  }
+
   const convertFileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -649,17 +706,224 @@ export default function StadiumEditor() {
   };
 
   const generateStadium = async () => {
-    if (!selectedStadium && !customPrompt) {
-      setError('Select a stadium or enter a custom prompt');
-      return;
-    }
-
     setIsGenerating(true);
     setError('');
     setGeneratedImage('');
     setResult(null);
 
     try {
+      // ===== DUAL SYSTEM DETECTION (Using Same Flow as JerseyEditor) =====
+      if (isVisionMode && referenceImageBlob) {
+        console.log('👁️ [VISION GENERATION] Using complete vision flow (same as jerseys)...')
+        
+        // **ANÁLISE AUTOMÁTICA TRANSPARENTE** - Sempre analisar se não há resultado
+        if (!analysisResult) {
+          console.log('🔍 [VISION ANALYSIS] Starting automatic stadium reference analysis...')
+          
+          try {
+            setIsAnalyzing(true)
+            
+            // Convert blob to base64
+            const base64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                const result = reader.result as string
+                const base64String = result.split(',')[1]
+                resolve(base64String)
+              }
+              reader.readAsDataURL(referenceImageBlob)
+            })
+
+            // STEP 1: Get structured ANALYSIS PROMPT from API (same as jersey)
+            console.log('📋 [VISION ANALYSIS] Step 1: Getting structured analysis prompt...')
+            const analysisPromptResponse = await fetch('/api/vision-prompts/analysis', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sport: 'stadium',
+                view: selectedView
+              }),
+            })
+
+            if (!analysisPromptResponse.ok) {
+              throw new Error(`Failed to get analysis prompt: ${analysisPromptResponse.status}`)
+            }
+
+            const promptData = await analysisPromptResponse.json()
+            
+            if (!promptData.success) {
+              throw new Error(promptData.error || 'Failed to get analysis prompt')
+            }
+
+            const structuredAnalysisPrompt = promptData.analysis_prompt
+            console.log('✅ [VISION ANALYSIS] Got structured analysis prompt:', {
+              view: selectedView,
+              promptLength: structuredAnalysisPrompt.length
+            })
+
+            // STEP 2: Call vision API with structured prompt (same as jersey)
+            console.log('👁️ [VISION ANALYSIS] Step 2: Sending to Vision API for analysis...')
+            const visionResponse = await fetch('/api/vision-test', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                image_base64: base64,
+                prompt: structuredAnalysisPrompt,
+                model: selectedVisionModel
+              }),
+            })
+
+            if (!visionResponse.ok) {
+              throw new Error(`Vision analysis failed: ${visionResponse.status}`)
+            }
+
+            const visionResult = await visionResponse.json()
+            
+            if (!visionResult.success) {
+              throw new Error(visionResult.error || 'Vision analysis failed')
+            }
+
+            console.log('✅ [VISION ANALYSIS] Analysis completed successfully:', {
+              model: visionResult.model_used,
+              cost: visionResult.cost_estimate,
+              analysisLength: visionResult.analysis?.length || 0
+            })
+
+            // Try to parse as JSON if possible, otherwise keep as string
+            let parsedAnalysis = visionResult.analysis
+            try {
+              parsedAnalysis = JSON.parse(visionResult.analysis)
+              console.log('✅ [VISION ANALYSIS] Successfully parsed JSON analysis')
+            } catch {
+              console.log('ℹ️ [VISION ANALYSIS] Analysis is text format (not JSON)')
+            }
+
+            setAnalysisResult(parsedAnalysis)
+            
+          } catch (error: any) {
+            console.error('❌ [VISION ANALYSIS] Error:', error)
+            setError(error.message || 'Failed to analyze stadium reference image')
+            return
+          } finally {
+            setIsAnalyzing(false)
+          }
+        }
+        
+        // **GERAÇÃO COM VISION** (same pattern as jersey)
+        console.log('🎨 [VISION GENERATION] Step 3: Getting base prompt and generating...')
+        
+        // Get base prompt from API
+        const basePromptResponse = await fetch('/api/vision-prompts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            sport: 'stadium',
+            view: selectedView,
+            style: generationStyle,
+            qualityLevel: 'advanced'
+          }),
+        })
+
+        if (!basePromptResponse.ok) {
+          throw new Error(`Failed to get base prompt: ${basePromptResponse.status}`)
+        }
+
+        const basePromptData = await basePromptResponse.json()
+        
+        if (!basePromptData.success) {
+          throw new Error(basePromptData.error || 'Failed to get base prompt')
+        }
+
+        const basePrompt = basePromptData.prompt
+        
+        // Combine analysis with base prompt
+        const analysisText = typeof analysisResult === 'string' 
+          ? analysisResult 
+          : JSON.stringify(analysisResult, null, 2)
+          
+        const finalCombinedPrompt = `${basePrompt}\n\nANALYSIS CONTEXT:\n${analysisText}\n\nSTADIUM PARAMETERS: Style=${generationStyle}, Perspective=${perspective}, Atmosphere=${atmosphere}, Time=${timeOfDay}, Weather=${weather}`
+
+        console.log('🎨 [VISION GENERATION] Combined prompt ready:', {
+          baseLength: basePrompt.length,
+          analysisLength: analysisText.length,
+          finalLength: finalCombinedPrompt.length
+        })
+
+        // Generate image using vision-generate API (same as jersey)
+        console.log('🖼️ [VISION GENERATION] Generating image with DALL-E 3...')
+        const visionGenerateResponse = await fetch('/api/vision-generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: finalCombinedPrompt,
+            quality: quality
+          }),
+        })
+
+        if (!visionGenerateResponse.ok) {
+          throw new Error(`Vision generation failed: ${visionGenerateResponse.status}`)
+        }
+
+        const visionGenerateResult = await visionGenerateResponse.json()
+        
+        if (!visionGenerateResult.success) {
+          throw new Error(visionGenerateResult.error || 'Vision image generation failed')
+        }
+
+        console.log('✅ [VISION GENERATION] Image generated successfully:', {
+          cost: visionGenerateResult.cost_usd,
+          imageSize: visionGenerateResult.image_base64?.length || 0
+        })
+
+        setGeneratedImage(`data:image/png;base64,${visionGenerateResult.image_base64}`)
+        
+        const response = await fetch(`data:image/png;base64,${visionGenerateResult.image_base64}`)
+        const blob = await response.blob()
+        setGeneratedImageBlob(blob)
+
+        // Save to DB with complete vision metadata (same as jersey)
+        await saveStadiumToDB({
+          name: `Stadium (Vision) - ${generationStyle}`,
+          prompt: finalCombinedPrompt,
+          imageUrl: `data:image/png;base64,${visionGenerateResult.image_base64}`,
+          creatorWallet: address || "N/A",
+          tags: [generationStyle, 'vision-generated', selectedView, atmosphere, timeOfDay],
+          metadata: {
+            generationMode: 'vision_enhanced',
+            hasReferenceImage: true,
+            analysisUsed: !!analysisResult,
+            stadium_type: selectedView,
+            visionModel: selectedVisionModel,
+            qualityLevel: 'advanced',
+            costUsd: visionGenerateResult.cost_usd,
+            generation_params: {
+              style: generationStyle,
+              perspective,
+              atmosphere,
+              time_of_day: timeOfDay,
+              weather
+            }
+          }
+        }, blob)
+
+        console.log('🎉 [VISION GENERATION] Complete stadium vision flow completed successfully!')
+        return
+      }
+      
+      // ===== STANDARD GENERATION (FALLBACK) =====
+      if (!selectedStadium && !customPrompt) {
+        setError('Select a stadium or enter a custom prompt');
+        return;
+      }
+
       let response: StadiumResponse;
 
       if (selectedStadium && selectedStadium !== 'custom_only') {
@@ -836,6 +1100,14 @@ export default function StadiumEditor() {
     setIpfsUrl('');
     setIpfsError('');
     setGeneratedImageBlob(null);
+    
+    // Reset Vision states
+    setReferenceImage(null);
+    setReferenceImageBlob(null);
+    setAnalysisResult(null);
+    setIsVisionMode(false);
+    setIsAnalyzing(false);
+    
     if (availableStadiums.length > 0) {
       setSelectedStadium(availableStadiums[0].id);
     } else {
@@ -845,36 +1117,105 @@ export default function StadiumEditor() {
 
   const renderControls = () => (
     <>
-      <EditorPanel title="1. Architecture">
+      <EditorPanel title="1. Stadium Reference">
         <div className="space-y-4">
-            <div>
-                <Label>Reference Stadium</Label>
-                <Select value={selectedStadium} onValueChange={setSelectedStadium}>
-                    <SelectTrigger className="cyber-input bg-black text-white"><SelectValue /></SelectTrigger>
-                    <SelectContent className="bg-black">
-                        <SelectItem value="custom_only" className="bg-black text-white">No Reference (Custom Prompt)</SelectItem>
-                        {availableStadiums.map(s => <SelectItem key={s.id} value={s.id} className="bg-black text-white">{s.name}</SelectItem>)}
-                    </SelectContent>
-                </Select>
+          {/* Vision Reference Upload */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-300">Upload Stadium Reference</label>
+            
+            {!referenceImage ? (
+              <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-cyan-500 transition-colors cursor-pointer"
+                   onClick={() => document.getElementById('stadium-vision-upload')?.click()}>
+                <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-400">Click to upload stadium image</p>
+                <p className="text-xs text-gray-500 mt-1">JPG, PNG, WebP up to 10MB</p>
+              </div>
+            ) : (
+              <div className="relative">
+                <img src={referenceImage} alt="Stadium Reference" className="w-full h-32 object-cover rounded-lg" />
+                <button onClick={clearVisionImage} className="absolute top-2 right-2 bg-red-600 text-white rounded-full p-1 hover:bg-red-700">
+                  <span className="w-4 h-4 block text-xs leading-none">✕</span>
+                </button>
+              </div>
+            )}
+            
+            <input
+              id="stadium-vision-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleVisionFileUpload}
+              className="hidden"
+            />
+          </div>
+
+          {/* Stadium Selector - Disabled in Vision Mode */}
+          <div className="space-y-4 mb-6">
+            <label className="text-sm font-medium text-gray-300">Stadium Template</label>
+            <select 
+              value={selectedStadium} 
+              onChange={(e) => setSelectedStadium(e.target.value)} 
+              disabled={isVisionMode}
+              className={`cyber-input w-full px-4 py-3 rounded-lg bg-black text-white ${
+                isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              <option value="custom_only" className="bg-black text-white">
+                {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
+              </option>
+              {availableStadiums.map((stadium) => (
+                <option key={stadium.id} value={stadium.id} className="bg-black text-white">
+                  {stadium.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* View Selection for Vision Mode */}
+          {isVisionMode && (
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <button
+                onClick={() => setSelectedView('external')}
+                className={`p-3 rounded-lg border transition-all ${
+                  selectedView === 'external'
+                    ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
+                    : 'border-gray-600 bg-gray-800/30 text-gray-300'
+                }`}
+              >
+                <Building className="w-4 h-4 mx-auto mb-1" />
+                <span className="text-xs">External</span>
+              </button>
+              <button
+                onClick={() => setSelectedView('internal')}
+                className={`p-3 rounded-lg border transition-all ${
+                  selectedView === 'internal'
+                    ? 'border-cyan-500 bg-cyan-500/10 text-cyan-400'
+                    : 'border-gray-600 bg-gray-800/30 text-gray-300'
+                }`}
+              >
+                <Users className="w-4 h-4 mx-auto mb-1" />
+                <span className="text-xs">Internal</span>
+              </button>
             </div>
-            <div>
-                <Label>Generation Style</Label>
-                <div className="grid grid-cols-3 gap-2">
-                    {STADIUM_STYLE_FILTERS.map(f => <StyleButton key={f.id} onClick={() => setGenerationStyle(f.id)} isActive={generationStyle === f.id}>
-                        <f.icon className="w-4 h-4 mr-2" />
-                        <span className="text-sm font-medium">{f.label}</span>
-                    </StyleButton>)}
-                </div>
-            </div>
-             <div>
-                <Label>Perspective</Label>
-                <div className="grid grid-cols-3 gap-2">
-                    {STADIUM_PERSPECTIVE_FILTERS.map(f => <StyleButton key={f.id} onClick={() => setPerspective(f.id)} isActive={perspective === f.id}>
-                        <f.icon className="w-4 h-4 mr-2" />
-                        <span className="text-sm font-medium">{f.label}</span>
-                    </StyleButton>)}
-                </div>
-            </div>
+          )}
+
+          <div>
+              <Label>Generation Style</Label>
+              <div className="grid grid-cols-3 gap-2">
+                  {STADIUM_STYLE_FILTERS.map(f => <StyleButton key={f.id} onClick={() => setGenerationStyle(f.id)} isActive={generationStyle === f.id}>
+                      <f.icon className="w-4 h-4 mr-2" />
+                      <span className="text-sm font-medium">{f.label}</span>
+                  </StyleButton>)}
+              </div>
+          </div>
+           <div>
+              <Label>Perspective</Label>
+              <div className="grid grid-cols-3 gap-2">
+                  {STADIUM_PERSPECTIVE_FILTERS.map(f => <StyleButton key={f.id} onClick={() => setPerspective(f.id)} isActive={perspective === f.id}>
+                      <f.icon className="w-4 h-4 mr-2" />
+                      <span className="text-sm font-medium">{f.label}</span>
+                  </StyleButton>)}
+              </div>
+          </div>
         </div>
       </EditorPanel>
       <EditorPanel title="2. Customization">
@@ -910,9 +1251,25 @@ export default function StadiumEditor() {
                 <Label>Custom Prompt (Optional)</Label>
                 <Textarea value={customPrompt} onChange={(e) => setCustomPrompt(e.target.value)} placeholder="e.g., a futuristic stadium on Mars" />
             </div>
-            <Button onClick={generateStadium} disabled={isGenerating} className="w-full">
-                {isGenerating ? 'Generating...' : 'Generate Stadium'}
-            </Button>
+            <button onClick={generateStadium} disabled={isGenerating || (!isVisionMode && !selectedStadium && !customPrompt)} className="cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+              {isGenerating ? (
+                <div className="flex items-center justify-center">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
+                  {isVisionMode ? (
+                    isAnalyzing ? 
+                      'Analyzing...' : 
+                      'Generating...'
+                  ) : (
+                    'Generating...'
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  <Zap className="w-5 h-5 mr-2" />
+                  Generate
+                </div>
+              )}
+            </button>
         </div>
       </EditorPanel>
       <EditorPanel title="3. Mint NFT">

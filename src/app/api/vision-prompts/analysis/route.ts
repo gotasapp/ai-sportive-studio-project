@@ -134,6 +134,50 @@ Return ONLY valid JSON, no additional text.`
   }
 }
 
+// Stadium Analysis Prompts
+const STADIUM_ANALYSIS_PROMPTS = {
+  stadium: {
+    external: `Analyze this stadium image and return a JSON object with the following structure:
+{
+  "architectural_style": "modern/classic/traditional/futuristic",
+  "structure_type": "bowl/horseshoe/oval/rectangular", 
+  "capacity_estimate": "small/medium/large/massive",
+  "roof_type": "open/partial/closed/retractable",
+  "facade_materials": "concrete/steel/glass/mixed",
+  "seating_colors": ["primary color", "secondary color"],
+  "lighting_setup": "day/night/mixed/floodlights",
+  "atmosphere": "packed/moderate/empty",
+  "perspective": "aerial/ground/elevated/internal",
+  "weather_conditions": "clear/cloudy/dramatic/sunset",
+  "architectural_features": ["notable features like towers, arches, etc"],
+  "landscape_context": "urban/suburban/isolated/integrated",
+  "predominant_colors": ["list of main colors seen"],
+  "unique_characteristics": "brief description of what makes this stadium distinctive"
+}
+
+Focus on architectural elements, structural design, capacity indicators, materials, and atmospheric conditions.`,
+
+    internal: `Analyze this stadium interior image and return a JSON object with the following structure:
+{
+  "interior_type": "bowl/tier/box/field_level",
+  "seating_layout": "single_tier/multi_tier/curved/straight",
+  "field_surface": "grass/artificial/track/court",
+  "seating_colors": ["primary color", "secondary color"],
+  "crowd_density": "packed/half_full/empty/sparse",
+  "lighting_type": "natural/artificial/mixed/dramatic",
+  "roof_visibility": "open/covered/partial/retractable",
+  "architectural_features": ["pillars, arches, screens, etc"],
+  "atmosphere_mood": "energetic/calm/dramatic/professional",
+  "perspective_level": "field/lower_tier/upper_tier/premium",
+  "predominant_colors": ["list of main interior colors"],
+  "scale_indicators": "intimate/medium/large/massive",
+  "unique_elements": "description of distinctive interior features"
+}
+
+Focus on interior architecture, seating arrangements, lighting, atmosphere, and spatial characteristics.`
+  }
+}
+
 // Sport-specific focus areas for analysis guidance
 const SPORT_FOCUS_AREAS = {
   "soccer": {
@@ -147,6 +191,10 @@ const SPORT_FOCUS_AREAS = {
   "nfl": {
     "front": ["chest logo", "shoulder pads", "neckline design", "sleeve elements", "thick fabric"],
     "back": ["top-back name", "large number", "shoulder details", "jersey shape"]
+  },
+  "stadium": {
+    "external": ["architectural style", "structure type", "roof design", "facade materials", "lighting setup", "landscape context"],
+    "internal": ["seating layout", "field surface", "lighting type", "crowd density", "architectural features", "atmosphere mood"]
   }
 }
 
@@ -171,26 +219,28 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Validar sport
-    if (!['soccer', 'basketball', 'nfl'].includes(sport)) {
-      console.log('❌ [ANALYSIS PROMPT API] Invalid sport:', sport)
+    // Validar sport/type (includes stadium)
+    if (!['soccer', 'basketball', 'nfl', 'stadium'].includes(sport)) {
+      console.log('❌ [ANALYSIS PROMPT API] Invalid sport/type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid sport. Must be: soccer, basketball, or nfl'
+        error: 'Invalid type. Must be: soccer, basketball, nfl, or stadium'
       }, { status: 400 })
     }
 
-    // Validar view
-    if (!['front', 'back'].includes(view)) {
-      console.log('❌ [ANALYSIS PROMPT API] Invalid view:', view)
+    // Validar view (different for stadium)
+    const validViews = sport === 'stadium' ? ['external', 'internal'] : ['front', 'back']
+    if (!validViews.includes(view)) {
+      console.log('❌ [ANALYSIS PROMPT API] Invalid view:', view, 'for type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid view. Must be: front or back'
+        error: `Invalid view. For ${sport} must be: ${validViews.join(' or ')}`
       }, { status: 400 })
     }
 
-    // Obter prompt estruturado específico
-    const sportPrompts = STRUCTURED_ANALYSIS_PROMPTS[sport as keyof typeof STRUCTURED_ANALYSIS_PROMPTS]
+    // Obter prompt estruturado específico (support both sports and stadium)
+    const allPrompts = { ...STRUCTURED_ANALYSIS_PROMPTS, ...STADIUM_ANALYSIS_PROMPTS }
+    const sportPrompts = allPrompts[sport as keyof typeof allPrompts]
     const analysisPrompt = sportPrompts?.[view as keyof typeof sportPrompts]
 
     if (!analysisPrompt) {

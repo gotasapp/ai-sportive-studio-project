@@ -21,6 +21,12 @@ const VISION_BASE_PROMPTS = {
     "back": `A photorealistic back view of an American football jersey based entirely on the uploaded reference image. Preserve the original color scheme, striping, stitching, and shoulder pad silhouette. At the top of the back, above the shoulder area, display the player name "{PLAYER_NAME}" in bold white uppercase lettering. Below it, centered, add the number "{PLAYER_NUMBER}" in large, thick white font, in traditional NFL style. The theme is "{STYLE}" (e.g., classic, modern, retro, urban). Render the jersey isolated on a clean white studio background, flat view, no mannequin or human model, with 4K resolution, premium fabric texture, and professional studio lighting.`,
     
     "front": `A hyper-realistic front view of a professional NFL jersey inspired by the uploaded image. Recreate the front design faithfully: shoulder stripe patterns, chest logo or number, neckline style, and fabric details. Use the uploaded image as base visual guidance. The jersey should reflect the style "{STYLE}" chosen by the user. Place the number "{PLAYER_NUMBER}" at the center of the chest, using a bold, thick font in white or the most readable contrast color. Use a clean white background, floating jersey layout (no mannequin), 4K resolution, soft shadows and professional lighting.`
+  },
+  
+  "stadium": {
+    "external": `A stunning photorealistic external view of a sports stadium. The architectural design, color scheme, and structural elements must be heavily inspired by the uploaded reference image. Preserve the architectural style, facade materials, roof design, and overall proportions from the reference. The stadium should feature the generation style of "{STYLE}" with enhanced professional finish. Display the stadium from an elevated perspective showing the complete exterior structure. Include atmospheric lighting that matches the time of day and weather conditions detected in the reference. Use ultra-high definition 4K rendering, professional architectural photography angle, dramatic sky background that complements the stadium's design. Capture the grandeur and scale typical of professional sports venues.`,
+    
+    "internal": `A breathtaking photorealistic interior view of a sports stadium. Base the design entirely on the uploaded reference image, preserving the seating layout, architectural features, field surface, and interior color scheme. Maintain the crowd density, lighting type, and atmospheric mood from the reference. The interior should reflect the "{STYLE}" theme with enhanced professional quality. Show the stadium interior from an optimal viewing angle that captures the scale and atmosphere. Include detailed seating sections, field/pitch surface, architectural elements like screens or overhangs, and appropriate lighting (natural/artificial/mixed). Render in ultra-high definition 4K with professional sports photography quality, capturing the energy and atmosphere of a world-class sports venue.`
   }
 }
 
@@ -31,7 +37,11 @@ const STYLE_THEMES = {
   "retro": "vintage retro sports aesthetic",
   "urban": "urban street sports style",
   "premium": "luxury premium sports merchandise",
-  "vintage": "classic vintage sports uniform style"
+  "vintage": "classic vintage sports uniform style",
+  // Stadium-specific styles
+  "realistic": "hyper-realistic architectural design",
+  "cinematic": "cinematic dramatic architectural style",
+  "dramatic": "dramatic lighting and atmospheric design"
 }
 
 // Quality enhancers baseados no sistema original
@@ -119,21 +129,22 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Validar sport
-    if (!['soccer', 'basketball', 'nfl'].includes(sport)) {
-      console.log('❌ [BASE PROMPTS API] Invalid sport:', sport)
+    // Validar sport/type (includes stadium)
+    if (!['soccer', 'basketball', 'nfl', 'stadium'].includes(sport)) {
+      console.log('❌ [BASE PROMPTS API] Invalid sport/type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid sport. Must be: soccer, basketball, or nfl'
+        error: 'Invalid type. Must be: soccer, basketball, nfl, or stadium'
       }, { status: 400 })
     }
 
-    // Validar view
-    if (!['front', 'back'].includes(view)) {
-      console.log('❌ [BASE PROMPTS API] Invalid view:', view)
+    // Validar view (different for stadium)
+    const validViews = sport === 'stadium' ? ['external', 'internal'] : ['front', 'back']
+    if (!validViews.includes(view)) {
+      console.log('❌ [BASE PROMPTS API] Invalid view:', view, 'for type:', sport)
       return NextResponse.json({
         success: false,
-        error: 'Invalid view. Must be: front or back'
+        error: `Invalid view. For ${sport} must be: ${validViews.join(' or ')}`
       }, { status: 400 })
     }
 
@@ -196,7 +207,8 @@ export async function GET() {
       available_views: {
         soccer: Object.keys(VISION_BASE_PROMPTS.soccer),
         basketball: Object.keys(VISION_BASE_PROMPTS.basketball),
-        nfl: Object.keys(VISION_BASE_PROMPTS.nfl)
+        nfl: Object.keys(VISION_BASE_PROMPTS.nfl),
+        stadium: Object.keys(VISION_BASE_PROMPTS.stadium)
       },
       available_styles: Object.keys(STYLE_THEMES),
       style_descriptions: STYLE_THEMES,
