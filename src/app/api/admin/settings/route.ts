@@ -75,18 +75,18 @@ async function getSettings() {
     let settings = await settingsCollection.findOne({ 
       $or: [
         { siteName: { $exists: true } },
-        { _id: { $ne: 'moderation_config' } }
+        { configType: { $ne: 'moderation_config' } }
       ]
     });
 
-    if (!settings || settings._id === 'moderation_config') {
+    if (!settings || settings.configType === 'moderation_config') {
       // Se não encontrou ou é config de moderação, inserir settings iniciais
       await settingsCollection.insertOne({ 
         ...initialSettings, 
-        _id: 'app_settings',
+        configType: 'app_settings',
         updatedAt: new Date()
       });
-      settings = { ...initialSettings, _id: 'app_settings' };
+      settings = { ...initialSettings, configType: 'app_settings' };
     }
 
     // Salvar backup no arquivo
@@ -112,11 +112,11 @@ async function saveSettings(settings: any) {
     const settingsCollection = db.collection('settings');
 
     await settingsCollection.updateOne(
-      { _id: 'app_settings' },
+      { configType: 'app_settings' },
       { 
         $set: { 
           ...settings, 
-          _id: 'app_settings',
+          configType: 'app_settings',
           updatedAt: new Date()
         } 
       },
@@ -162,7 +162,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const newSettings = await request.json();
-    const { _id, ...configData } = newSettings;
+    const { configType, ...configData } = newSettings;
 
     // Buscar a config atual para não sobrescrever as chaves de API com valores mascarados
     const currentSettings = await getSettings();
