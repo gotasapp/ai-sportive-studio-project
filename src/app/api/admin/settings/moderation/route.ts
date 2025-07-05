@@ -6,7 +6,7 @@ const COLLECTION_NAME = 'settings';
 
 // Configuração padrão
 const DEFAULT_MODERATION_SETTING = {
-  _id: 'moderation_config',
+  configType: 'moderation_config',
   moderationEnabled: false, // Por padrão desabilitado
   autoApprove: true,
   updatedAt: new Date()
@@ -18,7 +18,7 @@ export async function GET() {
     const db = client.db(DB_NAME);
     const collection = db.collection(COLLECTION_NAME);
 
-    let setting = await collection.findOne({ _id: 'moderation_config' });
+    let setting = await collection.findOne({ configType: 'moderation_config' });
     
     if (!setting) {
       // Criar configuração padrão se não existir
@@ -46,14 +46,14 @@ export async function POST(request: NextRequest) {
     const collection = db.collection(COLLECTION_NAME);
 
     const updatedSetting = {
-      _id: 'moderation_config',
+      configType: 'moderation_config',
       moderationEnabled: moderationEnabled ?? false,
       autoApprove: autoApprove ?? true,
       updatedAt: new Date()
     };
 
     await collection.replaceOne(
-      { _id: 'moderation_config' },
+      { configType: 'moderation_config' },
       updatedSetting,
       { upsert: true }
     );
