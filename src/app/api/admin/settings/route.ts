@@ -73,13 +73,13 @@ async function getSettings() {
     
     // Buscar especificamente as configurações da aplicação
     let settings = await settingsCollection.findOne({ 
-      _id: 'app_settings'
+      _id: 'app_settings' as any
     });
 
     if (!settings) {
       // Se não encontrou, inserir settings iniciais
       await settingsCollection.insertOne({ 
-        _id: 'app_settings',
+        _id: 'app_settings' as any,
         ...initialSettings, 
         updatedAt: new Date()
       });
@@ -109,7 +109,7 @@ async function saveSettings(settings: any) {
     const settingsCollection = db.collection('settings');
 
     await settingsCollection.updateOne(
-      { _id: 'app_settings' },
+      { _id: 'app_settings' as any },
       { 
         $set: { 
           ...settings, 
