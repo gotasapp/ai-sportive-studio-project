@@ -10,28 +10,39 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['-apple-system', '"Atyp Text"', 'sans-serif'],
-        'system': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'],
-        'display': ['"Atyp Display"', 'sans-serif'],
+        'jakarta': ['"Plus Jakarta Sans"', 'sans-serif'],
+        'system': ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', '"Helvetica Neue"', 'Arial', '"Noto Sans"', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'], // Preservar para o logo
+        'sans': ['"Plus Jakarta Sans"', 'sans-serif'], // Fallback
       },
-      fontSize: {
-        'xs': ['0.75rem', { lineHeight: '1rem' }],
-        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
-        'base': ['1rem', { lineHeight: '1.5rem' }],
-        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
-        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-      },
-      fontWeight: {
-        'normal': '400',
-        'medium': '500',
-        'semibold': '600',
-        'bold': '700',
-      },
+              fontSize: {
+          // Caption e small text
+          'caption': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.01em' }],       // 12px
+          'xs': ['0.8125rem', { lineHeight: '1.125rem', letterSpacing: '0.01em' }],     // 13px
+          
+          // Body text
+          'sm': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.005em' }],      // 14px
+          'base': ['1rem', { lineHeight: '1.5rem', letterSpacing: '0em' }],             // 16px
+          'body-lg': ['1.125rem', { lineHeight: '1.625rem', letterSpacing: '-0.005em' }], // 18px
+          
+          // Headings
+          'lg': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.01em' }],       // 20px - H4
+          'xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.015em' }],          // 24px - H3
+          '2xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.02em' }],     // 30px - H2
+          '3xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em' }],      // 36px - H1
+          
+          // Display headings
+          '4xl': ['3rem', { lineHeight: '3.25rem', letterSpacing: '-0.03em' }],         // 48px
+          '5xl': ['3.75rem', { lineHeight: '4rem', letterSpacing: '-0.035em' }],        // 60px
+          '6xl': ['4.5rem', { lineHeight: '4.75rem', letterSpacing: '-0.04em' }],       // 72px
+        },
+              fontWeight: {
+          'light': '300',
+          'normal': '400',
+          'medium': '500',
+          'semibold': '600',
+          'bold': '700',
+          'extrabold': '800',
+        },
       colors: {
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
@@ -105,15 +116,120 @@ const config: Config = {
     require("tailwindcss-animate"),
     function({ addUtilities }: any) {
       addUtilities({
-        '.heading-style': {
-          fontFamily: '"Atyp Display", sans-serif',
-          fontWeight: '500',
-          fontSize: '0.875rem', // Reduzido de 14px para 14px mas com line-height menor
-          lineHeight: '1.5rem', // Reduzido de 40px para 24px
-          color: '#FDFDFD', // Mudado para branco para ser mais minimalista
-          fontStyle: 'normal',
+        // Headings - Sistema tipográfico profissional
+        '.heading-1': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '2.25rem',      // 36px
+          lineHeight: '2.5rem',     // 40px
+          fontWeight: '700',        // Bold
+          letterSpacing: '-0.025em',
+          color: '#FDFDFD',
         },
-        '.text-responsive': {
+        '.heading-2': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '1.875rem',     // 30px
+          lineHeight: '2.25rem',    // 36px
+          fontWeight: '600',        // Semibold
+          letterSpacing: '-0.02em',
+          color: '#FDFDFD',
+        },
+        '.heading-3': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '1.5rem',       // 24px
+          lineHeight: '2rem',       // 32px
+          fontWeight: '600',        // Semibold
+          letterSpacing: '-0.015em',
+          color: '#FDFDFD',
+        },
+        '.heading-4': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '1.25rem',      // 20px
+          lineHeight: '1.75rem',    // 28px
+          fontWeight: '600',        // Semibold
+          letterSpacing: '-0.01em',
+          color: '#FDFDFD',
+        },
+        
+        // Body text
+        '.body-lead': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '1.125rem',     // 18px
+          lineHeight: '1.625rem',   // 26px
+          fontWeight: '400',        // Normal
+          letterSpacing: '-0.005em',
+          color: '#FDFDFD',
+        },
+        '.body-large': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '1rem',         // 16px
+          lineHeight: '1.5rem',     // 24px
+          fontWeight: '400',        // Normal
+          letterSpacing: '0em',
+          color: '#FDFDFD',
+        },
+        '.body-medium': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.875rem',     // 14px
+          lineHeight: '1.25rem',    // 20px
+          fontWeight: '400',        // Normal
+          letterSpacing: '0.005em',
+          color: '#FDFDFD',
+        },
+        '.body-small': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.8125rem',    // 13px
+          lineHeight: '1.125rem',   // 18px
+          fontWeight: '400',        // Normal
+          letterSpacing: '0.01em',
+          color: '#ADADAD',         // Cinza claro para texto secundário
+        },
+        '.body-caption': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.75rem',      // 12px
+          lineHeight: '1rem',       // 16px
+          fontWeight: '400',        // Normal
+          letterSpacing: '0.01em',
+          color: '#707070',         // Cinza médio para captions
+        },
+        
+        // UI Elements
+        '.ui-button': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.875rem',     // 14px
+          lineHeight: '1.25rem',    // 20px
+          fontWeight: '600',        // Semibold
+          letterSpacing: '0.005em',
+          color: '#FDFDFD',
+        },
+        '.ui-label': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.875rem',     // 14px
+          lineHeight: '1.25rem',    // 20px
+          fontWeight: '500',        // Medium
+          letterSpacing: '0.005em',
+          color: '#FDFDFD',
+        },
+        '.ui-input': {
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
+          fontSize: '0.875rem',     // 14px
+          lineHeight: '1.25rem',    // 20px
+          fontWeight: '400',        // Normal
+          letterSpacing: '0.005em',
+          color: '#FDFDFD',
+        },
+        
+        // Responsivo para mobile
+        '.heading-responsive': {
+          fontSize: '1.5rem',
+          lineHeight: '2rem',
+          fontWeight: '600',
+          '@media (min-width: 768px)': {
+            fontSize: '2.25rem',
+            lineHeight: '2.5rem',
+            fontWeight: '700',
+          },
+        },
+        '.body-responsive': {
           fontSize: '0.875rem',
           lineHeight: '1.25rem',
           '@media (min-width: 768px)': {

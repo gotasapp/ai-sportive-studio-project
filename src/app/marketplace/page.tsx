@@ -204,12 +204,12 @@ export default function MarketplacePage() {
             />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-[#FDFDFD]">{nft.name}</h3>
-            <p className="text-sm text-[#FDFDFD]/70">{nft.collection}</p>
+            <h3 className="heading-4">{nft.name}</h3>
+            <p className="body-small">{nft.collection}</p>
           </div>
           <div className="text-right">
-            <div className="font-semibold text-[#FDFDFD]">{nft.price}</div>
-            <div className="text-sm text-[#FDFDFD]/70 capitalize">{nft.category}</div>
+            <div className="ui-label">{nft.price}</div>
+            <div className="body-caption capitalize">{nft.category}</div>
           </div>
         </div>
       ))}
@@ -221,8 +221,8 @@ export default function MarketplacePage() {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Unable to Load Marketplace</h2>
-          <p className="text-gray-400 mb-4 max-w-md">
+          <h2 className="heading-2 mb-2">Unable to Load Marketplace</h2>
+          <p className="body-medium max-w-md">
             {error || 'Failed to connect to the database. Please check your connection and try again.'}
           </p>
           <button 
@@ -239,8 +239,8 @@ export default function MarketplacePage() {
       return (
         <div className="flex flex-col items-center justify-center py-20">
           <Loader2 className="w-12 h-12 text-[#A20131] animate-spin mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Loading Collections</h2>
-          <p className="text-gray-400">Please wait...</p>
+          <h2 className="heading-3 mb-2">Loading Collections</h2>
+          <p className="body-medium">Please wait...</p>
         </div>
       );
     }
@@ -267,8 +267,8 @@ export default function MarketplacePage() {
           <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
             {viewType === 'grid' ? <Grid3X3 className="w-8 h-8 text-gray-600" /> : <List className="w-8 h-8 text-gray-600" />}
           </div>
-          <h2 className="text-2xl font-bold text-white mb-2">No NFTs Found</h2>
-          <p className="text-gray-400 mb-4">
+          <h2 className="heading-2 mb-2">No NFTs Found</h2>
+          <p className="body-medium mb-4">
             {searchTerm && tokenType !== 'all' 
               ? `No results for "${searchTerm}" in ${tokenType}`
               : searchTerm 

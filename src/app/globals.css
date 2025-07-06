@@ -90,34 +90,96 @@
   }
   
   body {
-    @apply text-foreground text-sm; /* Reduzido para text-sm */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+    color: #FDFDFD;
     background: black; /* Fundo preto puro */
   }
   
-  /* Reduzir tamanhos de fontes globalmente */
+  /* Sistema tipográfico profissional */
   h1 {
-    @apply text-xl md:text-2xl font-semibold; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: #FDFDFD;
   }
   
   h2 {
-    @apply text-lg md:text-xl font-medium; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #FDFDFD;
   }
   
   h3 {
-    @apply text-base md:text-lg font-medium; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: #FDFDFD;
+  }
+  
+  h4 {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #FDFDFD;
   }
   
   p {
-    @apply text-sm leading-relaxed; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+    letter-spacing: 0em;
+    color: #FDFDFD;
   }
   
-  /* Tamanhos responsivos para componentes */
+  /* Classes para componentes padronizados */
   .card-title {
-    @apply text-sm md:text-base font-medium; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #FDFDFD;
   }
   
   .card-description {
-    @apply text-xs md:text-sm text-muted-foreground; /* Reduzido */
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 0.8125rem;
+    line-height: 1.125rem;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: #ADADAD;
+  }
+  
+  .section-title {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #FDFDFD;
+  }
+  
+  .section-subtitle {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    color: #FDFDFD;
   }
 }
 
@@ -143,11 +205,14 @@
 }
 
 .cyber-button {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: #FDFDFD;
   background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
   border: none;
-  font-weight: 500; /* Reduzido */
-  font-size: 0.875rem; /* Reduzido */
   transition: all 0.2s ease;
 }
 
@@ -163,10 +228,14 @@
 }
 
 .cyber-input {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+  color: #FDFDFD;
   background: rgba(17, 16, 17, 0.9);
   border: 1px solid #707070; /* Gray medium */
-  color: #FDFDFD;
-  font-size: 0.875rem; /* Reduzido */
 }
 
 .cyber-input:focus {
@@ -186,10 +255,14 @@
 }
 
 .style-button {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  color: #FDFDFD;
   background: rgba(17, 16, 17, 0.7);
   border: 1px solid #707070; /* Gray medium */
-  color: #FDFDFD;
-  font-size: 0.875rem; /* Reduzido */
   transition: all 0.2s ease;
 }
 
