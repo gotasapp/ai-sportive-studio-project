@@ -11,25 +11,69 @@
   display: none;  /* Safari and Chrome */
 }
 
-:root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --accent: #FD2163;
-}
-
-html, body {
-  background-color: var(--background);
-  color: var(--foreground);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #000000;
-    --foreground: #ffffff;
-  }
-}
-
 @layer base {
+  :root {
+    --background: 0 0% 0%; /* #000000 */
+    --foreground: 0 0% 99.2%; /* #FDFDFD */
+
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 99.2%;
+
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 99.2%;
+
+    --primary: 343 98% 56%; /* #FD2163 */
+    --primary-foreground: 0 0% 99.2%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 99.2%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 343 98% 56%;
+    --accent-foreground: 0 0% 99.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 99.2%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 343 98% 56%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 0 0% 0%; /* #000000 */
+    --foreground: 0 0% 99.2%; /* #FDFDFD */
+
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 99.2%;
+
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 99.2%;
+
+    --primary: 343 98% 56%; /* #FD2163 */
+    --primary-foreground: 0 0% 99.2%;
+
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 99.2%;
+
+    --muted: 0 0% 15%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 343 98% 56%;
+    --accent-foreground: 0 0% 99.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 99.2%;
+
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 343 98% 56%;
+  }
+
   * {
     @apply border-border;
   }
@@ -37,6 +81,7 @@ html, body {
     @apply bg-background text-foreground;
   }
 }
+
 
 /* Cyber Theme Styles */
 .cyber-glow {
@@ -107,14 +152,15 @@ html, body {
 }
 
 .style-button:hover {
-  border-color: rgba(253, 33, 99, 0.5);
-  background: rgba(253, 33, 99, 0.1);
+  border-color: rgba(253, 253, 253, 0.4); /* Minimalist white border hover */
+  background: rgba(0, 0, 0, 0.6); /* Keep background color on hover */
 }
 
 .style-button.active {
-  background: #FD2163;
-  color: #000000;
-  border-color: #FD2163;
+  background: #7C3AED; /* Dark purple for selected state */
+  color: #FFFFFF;
+  border-color: #7C3AED;
+  box-shadow: none; /* No shadow as requested */
 }
 
 .marketplace-card {
