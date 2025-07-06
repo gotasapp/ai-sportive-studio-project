@@ -619,10 +619,6 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
     loadTopCollectionsData();
   }, []);
 
-
-
-  const resetError = () => setError(null);
-
   return (
     <ProfessionalEditorLayout
       sidebar={
