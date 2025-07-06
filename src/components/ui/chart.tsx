@@ -112,7 +112,7 @@ type PayloadItem = {
   color?: string;
 };
 
-// Ajustar o tipo de payload para incluir PayloadItem[]
+// Ajustar o tipo de payload para garantir compatibilidade
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
@@ -127,7 +127,7 @@ const ChartTooltipContent = React.forwardRef<
   (
     {
       active,
-      payload = [] as PayloadItem[], // Definindo o tipo de payload
+      payload = [] as any, // Usar 'any' para garantir compatibilidade
       className,
       indicator = "dot",
       hideLabel = false,
