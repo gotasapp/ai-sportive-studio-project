@@ -123,6 +123,7 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed";
       nameKey?: string;
       labelKey?: string;
+      label?: string; // Adicionar a propriedade 'label' explicitamente
     }
 >(
   (
