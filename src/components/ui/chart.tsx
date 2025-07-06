@@ -4,6 +4,7 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
+import { TooltipProps, Payload } from "recharts";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
@@ -102,20 +103,10 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-type PayloadItem = {
-  dataKey?: string;
-  name?: string;
-  value?: number;
-  payload: {
-    fill?: string;
-  };
-  color?: string;
-};
-
 // Ajustar o tipo de payload para garantir compatibilidade
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
+  TooltipProps<any, any> &
     React.ComponentProps<"div"> & {
       hideLabel?: boolean;
       hideIndicator?: boolean;
@@ -127,7 +118,7 @@ const ChartTooltipContent = React.forwardRef<
   (
     {
       active,
-      payload = [] as any, // Usar 'any' para garantir compatibilidade
+      payload = [] as ReadonlyArray<Payload<any, any>>, // Usar ReadonlyArray<Payload<any, any>> para compatibilidade
       className,
       indicator = "dot",
       hideLabel = false,
