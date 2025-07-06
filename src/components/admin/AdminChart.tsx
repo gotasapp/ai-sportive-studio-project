@@ -153,7 +153,7 @@ export default function AdminChart({
         );
         
       default:
-        return null;
+        return <div>Tipo de gráfico não suportado</div>;
     }
   };
 

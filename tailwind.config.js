@@ -11,11 +11,11 @@ module.exports = {
   		fontFamily: {
   			sans: [
   				'-apple-system',
-  				'Atyp Text"',
+  				'Atyp Text',
   				'sans-serif'
   			],
   			display: [
-  				'Atyp Display"',
+  				'Atyp Display',
   				'sans-serif'
   			]
   		},

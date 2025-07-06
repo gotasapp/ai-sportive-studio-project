@@ -660,11 +660,11 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         <ProfessionalBadgeActionBar
           onGenerate={generateContent}
           isLoading={isLoading || isAnalyzing}
-          canGenerate={isConnected && badgeName.trim()}
+          canGenerate={!!(isConnected && badgeName.trim())}
           onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
-          canMintLegacy={canMintLegacy}
-          canMintGasless={canMintGasless}
+          canMintLegacy={!!canMintLegacy}
+          canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}
           mintSuccess={mintSuccess}

@@ -284,7 +284,7 @@ export default function ProfessionalMarketplace({
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
                   size="sm"
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => setSelectedCategory(category || null)}
                   className="text-xs h-6 px-2"
                 >
                   {category}

@@ -35,19 +35,19 @@ export default function MarketplaceCard({ name, imageUrl, price, collection, cat
         <div className="absolute top-3 right-3 bg-black/50 p-2 rounded-full cursor-pointer hover:text-accent">
             <Heart size={18} />
         </div>
-        <div className={`absolute top-3 left-3 body-caption font-bold px-2 py-1 rounded-full ${color}`}>
+        <div className={`absolute top-3 left-3 text-xs font-bold px-2 py-1 rounded-full ${color}`}>
             {category?.toUpperCase()}
         </div>
       </div>
       <div className="p-4">
-        <p className="body-small truncate">{collection}</p>
-        <h3 className="heading-4 truncate my-1">{name}</h3>
+        <p className="text-sm text-secondary truncate">{collection}</p>
+        <h3 className="text-lg font-semibold text-white truncate my-1">{name}</h3>
         <div className="flex justify-between items-center mt-3">
           <div>
-            <p className="body-caption">Price</p>
-            <p className="ui-label">{price}</p>
+            <p className="text-xs text-secondary">Price</p>
+            <p className="text-sm font-medium text-white">{price}</p>
           </div>
-          <button className="bg-accent text-white px-5 py-2 rounded-lg ui-button hover:bg-accent/90 transition-colors">
+          <button className="bg-accent text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-accent/90 transition-colors">
             Buy Now
           </button>
         </div>

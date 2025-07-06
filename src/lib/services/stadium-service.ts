@@ -47,6 +47,7 @@ export interface StadiumResponse {
   error?: string;
   cost_usd?: number;
   prompt_used?: string;
+  imageUrl?: string;
 }
 
 // Dados mock dos estádios predefinidos com prompts base

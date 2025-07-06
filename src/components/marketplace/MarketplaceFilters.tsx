@@ -108,7 +108,7 @@ export default function MarketplaceFilters({
       <div className="container mx-auto px-6 md:px-8 lg:px-12 py-4 space-y-4">
               {/* Header */}
         <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <h1 className="section-title">Collections</h1>
+        <h1 className="text-2xl font-bold text-[#FDFDFD]">Collections</h1>
         <div className="flex items-center gap-2">
           {/* Search */}
           <div className="relative w-64">
@@ -117,7 +117,7 @@ export default function MarketplaceFilters({
               placeholder="Search by item or trait"
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 ui-input bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] placeholder:text-[#FDFDFD]/50"
+              className="pl-10 text-sm bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] placeholder:text-[#FDFDFD]/50"
             />
           </div>
           
@@ -127,7 +127,7 @@ export default function MarketplaceFilters({
               variant="outline"
               size="sm"
               onClick={onShowInsights}
-              className="ui-button bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
+              className="text-sm font-semibold bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
             >
               <BarChart3 className="w-4 h-4 mr-2" />
               Insights
@@ -166,7 +166,7 @@ export default function MarketplaceFilters({
 
       {/* Last Updated Info */}
       <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <p className="body-small">
+        <p className="text-sm text-[#FDFDFD]/70">
           Last updated 3 hours ago.
         </p>
         
@@ -179,7 +179,7 @@ export default function MarketplaceFilters({
                 variant={timeFilter === option.value ? "default" : "ghost"}
                 size="sm"
                 onClick={() => onTimeFilterChange(option.value as TimeFilter)}
-                className={`h-8 px-3 body-caption ${
+                className={`h-8 px-3 text-xs ${
                   timeFilter === option.value 
                     ? 'bg-[#A20131] text-[#FDFDFD]' 
                     : 'text-[#FDFDFD]/70 hover:text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
@@ -238,15 +238,15 @@ export default function MarketplaceFilters({
       </div>
 
       {/* Results Count */}
-      <div className="flex items-center gap-4 body-small max-w-7xl mx-auto">
+      <div className="flex items-center gap-4 text-sm text-[#FDFDFD]/70 max-w-7xl mx-auto">
         <span>
           {activeTab === 'all' ? totalCollections : 
            activeTab === 'watchlist' ? watchlistCount : 
            ownedCount} collections
         </span>
         {searchTerm && (
-          <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] body-caption">
-            Search: "{searchTerm}"
+          <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] text-xs">
+            Search: &quot;{searchTerm}&quot;
           </Badge>
         )}
       </div>

@@ -973,12 +973,12 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
         <ProfessionalActionBar
           onGenerate={generateContent}
           isLoading={isLoading}
-          canGenerate={isConnected && ((selectedTeam && playerName && playerNumber) || isVisionMode)}
+          canGenerate={!!(isConnected && ((selectedTeam && playerName && playerNumber) || isVisionMode))}
           generationCost={generationCost}
           onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
-          canMintLegacy={canMintLegacy}
-          canMintGasless={canMintGasless}
+          canMintLegacy={Boolean(canMintLegacy)}
+          canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}
           mintSuccess={mintSuccess}

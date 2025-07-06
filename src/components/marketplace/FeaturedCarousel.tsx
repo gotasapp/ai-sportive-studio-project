@@ -206,13 +206,13 @@ export default function FeaturedCarousel() {
             <div className="absolute top-6 left-8 md:left-16 lg:left-24 z-10">
               <div className="bg-accent/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
                 <Star className="w-4 h-4 text-white" />
-                <span className="text-white ui-label">Featured</span>
+                <span className="text-white text-sm font-medium">Featured</span>
               </div>
             </div>
 
             {/* Content */}
             <div className="absolute bottom-0 left-0 right-0 p-8 md:px-16 lg:px-24 text-white">
-              <h2 className="heading-responsive mb-3">{nft.name}</h2>
+              <h2 className="text-2xl md:text-4xl font-bold mb-3 text-white">{nft.name}</h2>
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
@@ -222,8 +222,8 @@ export default function FeaturedCarousel() {
                     </span>
                   </div>
                   <div>
-                    <p className="heading-4">{nft.collection}</p>
-                    <p className="body-small">
+                    <p className="text-lg font-semibold text-white">{nft.collection}</p>
+                    <p className="text-sm text-gray-300">
                       Created {new Date(nft.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -231,7 +231,7 @@ export default function FeaturedCarousel() {
                 
                 {featuredNFTs.length > 1 && (
                   <div className="text-right">
-                    <p className="body-small">
+                    <p className="text-sm text-gray-300">
                       {index + 1} of {featuredNFTs.length}
                     </p>
                   </div>

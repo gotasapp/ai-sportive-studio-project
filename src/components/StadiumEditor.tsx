@@ -493,12 +493,12 @@ export default function StadiumEditor() {
         <ProfessionalStadiumActionBar
           onGenerate={generateStadium}
           isLoading={isGenerating}
-          canGenerate={isConnected && ((selectedStadium && selectedStadium !== 'custom_only') || customPrompt.trim() || isVisionMode)}
+          canGenerate={!!(isConnected && ((selectedStadium && selectedStadium !== 'custom_only') || customPrompt.trim() || isVisionMode))}
           generationCost={generationCost}
           onMintLegacy={() => handleMintNFT(false)}
           onMintGasless={() => handleMintNFT(true)}
-          canMintLegacy={canMintLegacy}
-          canMintGasless={canMintGasless}
+          canMintLegacy={!!canMintLegacy}
+          canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}
           mintSuccess={mintSuccess}

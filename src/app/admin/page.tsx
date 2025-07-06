@@ -376,22 +376,7 @@ export default function AdminDashboard() {
             value="99.9%"
             description="Sistema operacional"
             icon={Monitor}
-          >
-            <div className="space-y-2 mt-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-light">API Backend</span>
-                <Badge className="bg-primary text-white text-xs">Online</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-light">Database</span>
-                <Badge className="bg-primary text-white text-xs">Connected</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-light">DALL-E 3</span>
-                <Badge className="bg-primary text-white text-xs">Active</Badge>
-              </div>
-            </div>
-          </GlassMetricsCard>
+          />
 
         </div>
 
