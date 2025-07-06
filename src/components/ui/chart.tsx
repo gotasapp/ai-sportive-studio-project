@@ -275,7 +275,7 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
+    Omit<RechartsPrimitive.LegendProps, "payload"> & { // Remover 'payload' do Pick
       hideIcon?: boolean;
       nameKey?: string;
     }
