@@ -13,13 +13,13 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%; /* #000000 */
+    --background: 60 2% 6%; /* #111011 */
     --foreground: 0 0% 99.2%; /* #FDFDFD */
 
-    --card: 0 0% 0%;
+    --card: 60 2% 6%;
     --card-foreground: 0 0% 99.2%;
 
-    --popover: 0 0% 0%;
+    --popover: 60 2% 6%;
     --popover-foreground: 0 0% 99.2%;
 
     --primary: 343 98% 56%; /* #FD2163 */
@@ -45,13 +45,13 @@
   }
 
   .dark {
-    --background: 0 0% 0%; /* #000000 */
+    --background: 60 2% 6%; /* #111011 */
     --foreground: 0 0% 99.2%; /* #FDFDFD */
 
-    --card: 0 0% 0%;
+    --card: 60 2% 6%;
     --card-foreground: 0 0% 99.2%;
 
-    --popover: 0 0% 0%;
+    --popover: 60 2% 6%;
     --popover-foreground: 0 0% 99.2%;
 
     --primary: 343 98% 56%; /* #FD2163 */
@@ -94,7 +94,7 @@
 }
 
 .cyber-card {
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 20, 0.9) 100%);
+  background: hsl(var(--background));
   border: 1px solid rgba(253, 253, 253, 0.1);
   backdrop-filter: blur(10px);
 }
@@ -140,10 +140,6 @@
   border: 1px solid rgba(253, 33, 99, 0.3);
 }
 
-.jersey-preview {
-  background: radial-gradient(circle at 30% 30%, rgba(253, 33, 99, 0.1) 0%, transparent 50%);
-}
-
 .style-button {
   background: rgba(0, 0, 0, 0.6);
   border: 1px solid rgba(253, 253, 253, 0.2);
@@ -164,14 +160,14 @@
 }
 
 .marketplace-card {
-  background: rgba(0, 0, 0, 0.8);
+  background: hsl(var(--background));
   border: 1px solid rgba(253, 253, 253, 0.1);
   transition: all 0.3s ease;
 }
 
 .marketplace-card:hover {
-  border-color: rgba(253, 33, 99, 0.3);
-  box-shadow: 0 4px 20px rgba(253, 33, 99, 0.1);
+  border-color: rgba(253, 253, 253, 0.3); /* Keep hover subtle */
+  background: hsl(var(--background)); /* Ensure background doesn't change */
 }
 
 /* Slider customization */
