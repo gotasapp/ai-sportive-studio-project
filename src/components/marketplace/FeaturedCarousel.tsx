@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Star, AlertCircle } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Star, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
+import { gsap } from 'gsap';
 
 interface RealNFT {
   _id: string;
@@ -29,6 +30,8 @@ export default function FeaturedCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
     const loadRealFeaturedData = async () => {
@@ -95,24 +98,41 @@ export default function FeaturedCarousel() {
     loadRealFeaturedData();
   }, []);
   
-  // Auto-scroll
+  // GSAP Timeline para animação suave do carrossel
   useEffect(() => {
-    if (featuredNFTs.length <= 1) return;
+    if (featuredNFTs.length <= 1 || !containerRef.current) return;
+
+    // Cleanup da timeline anterior
+    if (timelineRef.current) {
+      timelineRef.current.kill();
+    }
+
+    // Criar nova timeline
+    const tl = gsap.timeline({ repeat: -1 });
     
-    const timer = setInterval(() => {
-      setCurrentIndex(prevIndex => (prevIndex + 1) % featuredNFTs.length);
-    }, 6000); // muda a cada 6 segundos
-    
-    return () => clearInterval(timer);
+    // Para cada slide, criar animação + pausa
+    for (let i = 0; i < featuredNFTs.length; i++) {
+      const nextIndex = (i + 1) % featuredNFTs.length;
+      
+      tl.to({}, { 
+        duration: 3, // 3 segundos parado
+        onComplete: () => setCurrentIndex(nextIndex)
+      })
+      .to(containerRef.current, {
+        x: `-${nextIndex * 100}%`,
+        duration: 1.8,
+        ease: "power2.inOut", // Easing muito suave
+      });
+    }
+
+    timelineRef.current = tl;
+
+    return () => {
+      if (timelineRef.current) {
+        timelineRef.current.kill();
+      }
+    };
   }, [featuredNFTs.length]);
-
-  const goToPrevious = () => {
-    setCurrentIndex(prevIndex => (prevIndex - 1 + featuredNFTs.length) % featuredNFTs.length);
-  };
-
-  const goToNext = () => {
-    setCurrentIndex(prevIndex => (prevIndex + 1) % featuredNFTs.length);
-  };
 
   // Estado de carregamento
   if (loading) {
@@ -156,8 +176,6 @@ export default function FeaturedCarousel() {
     );
   }
 
-  const activeNFT = featuredNFTs[currentIndex];
-
   // Mapear categoria para ícone/cor
   const getCategoryStyle = (category: string) => {
     switch (category) {
@@ -172,102 +190,78 @@ export default function FeaturedCarousel() {
     }
   };
 
-  const categoryStyle = getCategoryStyle(activeNFT.category);
-
   return (
-    <div className="relative w-full h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden group">
-      {/* Background Image */}
-      <Image
-        src={activeNFT.imageUrl}
-        alt={activeNFT.name}
-        fill
-        style={{ objectFit: 'cover' }}
-        className="transition-transform duration-500 ease-in-out group-hover:scale-105"
-        loading="eager"
-        priority
-      />
-      
-      {/* Overlay Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent"></div>
-
-      {/* Featured Badge */}
-      <div className="absolute top-6 left-8 md:left-16 lg:left-24 z-10">
-        <div className="bg-accent/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
-          <Star className="w-4 h-4 text-white" />
-          <span className="text-white text-sm font-semibold">Featured</span>
-        </div>
-      </div>
-
-
-
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 right-0 p-8 md:px-16 lg:px-24 text-white">
-        <div className="flex items-center space-x-2 mb-3">
-          <span className="text-2xl">{categoryStyle.icon}</span>
-          <span className={`text-sm font-semibold ${categoryStyle.color}`}>
-            {activeNFT.category.charAt(0).toUpperCase() + activeNFT.category.slice(1)}
-          </span>
-        </div>
-        
-        <h2 className="text-4xl font-bold mb-3 leading-tight">{activeNFT.name}</h2>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center border border-accent/30">
-              <span className="text-accent font-bold text-sm">
-                {activeNFT.collection.charAt(0).toUpperCase()}
-              </span>
-            </div>
-            <div>
-              <p className="font-semibold text-lg">{activeNFT.collection}</p>
-              <p className="text-gray-300 text-sm">
-                Created {new Date(activeNFT.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-          
-          {featuredNFTs.length > 1 && (
-            <div className="text-right">
-              <p className="text-gray-300 text-sm">
-                {currentIndex + 1} of {featuredNFTs.length}
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Navigation - só mostra se há mais de 1 NFT */}
-      {featuredNFTs.length > 1 && (
-        <>
-          <button 
-            onClick={goToPrevious} 
-            className="absolute left-8 md:left-16 lg:left-24 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-sm p-3 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/70"
+    <div className="relative w-full h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden">
+      {/* Container das imagens */}
+      <div
+        ref={containerRef}
+        className="flex h-full"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {featuredNFTs.map((nft, index) => (
+          <div
+            key={index}
+            className="relative w-full h-full flex-shrink-0"
           >
-            <ChevronLeft size={24} />
-          </button>
-          <button 
-            onClick={goToNext} 
-            className="absolute right-8 md:right-16 lg:right-24 top-1/2 -translate-y-1/2 bg-black/50 backdrop-blur-sm p-3 rounded-full text-white opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-black/70"
-          >
-            <ChevronRight size={24} />
-          </button>
-          
-          {/* Dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex space-x-2">
-            {featuredNFTs.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  index === currentIndex 
-                    ? 'bg-accent' 
-                    : 'bg-white/50 hover:bg-white/70'
-                }`}
-              />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
+            <Image
+              src={nft.imageUrl}
+              alt={nft.name}
+              fill
+              style={{ objectFit: 'cover' }}
+              className="transition-transform duration-300"
+              loading="eager"
+              priority={index < 2}
+            />
+            
+            {/* Overlay gradient */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent"></div>
+            
+            {/* Featured Badge */}
+            <div className="absolute top-6 left-8 md:left-16 lg:left-24 z-10">
+              <div className="bg-accent/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+                <Star className="w-4 h-4 text-white" />
+                <span className="text-white text-sm font-semibold">Featured</span>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="absolute bottom-0 left-0 right-0 p-8 md:px-16 lg:px-24 text-white">
+              <div className="flex items-center space-x-2 mb-3">
+                <span className="text-2xl">{getCategoryStyle(nft.category).icon}</span>
+                <span className={`text-sm font-semibold ${getCategoryStyle(nft.category).color}`}>
+                  {nft.category.charAt(0).toUpperCase() + nft.category.slice(1)}
+                </span>
+              </div>
+              
+              <h2 className="text-4xl font-bold mb-3 leading-tight">{nft.name}</h2>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-accent/20 rounded-full flex items-center justify-center border border-accent/30">
+                    <span className="text-accent font-bold text-sm">
+                      {nft.collection.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-lg">{nft.collection}</p>
+                    <p className="text-gray-300 text-sm">
+                      Created {new Date(nft.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                
+                {featuredNFTs.length > 1 && (
+                  <div className="text-right">
+                    <p className="text-gray-300 text-sm">
+                      {index + 1} of {featuredNFTs.length}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+                     </div>
+         ))}
+       </div>
+     </div>
+   );
 } 

@@ -95,7 +95,7 @@ export default function StadiumEditor() {
   const [referenceImageBlob, setReferenceImageBlob] = useState<Blob | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [selectedView, setSelectedView] = useState('external')
-
+  
   // Network validation
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
   const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
@@ -206,15 +206,15 @@ export default function StadiumEditor() {
 
   // Load available stadiums
   useEffect(() => {
-    const loadAvailableStadiums = async () => {
-      try {
-        const stadiums = await StadiumService.getAvailableStadiums();
-        setAvailableStadiums(stadiums);
-        if (stadiums.length > 0) {
-          setSelectedStadium(stadiums[0].id);
-        }
-      } catch (error) {
-        console.error('Error loading stadiums:', error);
+  const loadAvailableStadiums = async () => {
+    try {
+      const stadiums = await StadiumService.getAvailableStadiums();
+      setAvailableStadiums(stadiums);
+      if (stadiums.length > 0) {
+        setSelectedStadium(stadiums[0].id);
+      }
+    } catch (error) {
+      console.error('Error loading stadiums:', error);
         setAvailableStadiums([]);
         setSelectedStadium('custom_only');
       }
@@ -222,7 +222,7 @@ export default function StadiumEditor() {
 
     loadAvailableStadiums();
   }, []);
-
+  
   const handleVisionFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -280,10 +280,10 @@ export default function StadiumEditor() {
       if (isVisionMode && referenceImageBlob) {
         // Vision-enhanced generation
         console.log('🎨 Starting Vision-enhanced stadium generation...')
-        setIsAnalyzing(true)
-
+            setIsAnalyzing(true)
+            
         // Convert to base64
-        const reader = new FileReader()
+              const reader = new FileReader()
         reader.onload = async () => {
           try {
             const base64Data = reader.result as string
@@ -295,7 +295,7 @@ export default function StadiumEditor() {
               body: JSON.stringify({
                 imageData: base64Data,
                 sport: 'stadium',
-                view: selectedView,
+              view: selectedView,
                 customPrompt: customPrompt
               })
             })
@@ -317,7 +317,7 @@ export default function StadiumEditor() {
               
               console.log('✅ Vision-enhanced stadium generated successfully')
             }
-
+            
           } catch (error: any) {
             setIsAnalyzing(false)
             setError(error.message || 'Vision analysis failed')
@@ -329,7 +329,7 @@ export default function StadiumEditor() {
         // Standard generation
         const response = await StadiumService.generateStadium({
           stadiumId: selectedStadium !== 'custom_only' ? selectedStadium : undefined,
-          style: generationStyle,
+            style: generationStyle,
           perspective: perspective,
           atmosphere: atmosphere,
           timeOfDay: timeOfDay,
@@ -354,7 +354,7 @@ export default function StadiumEditor() {
       console.error('❌ Stadium generation error:', error);
       setError(error.message || 'Failed to generate stadium');
     } finally {
-      setIsGenerating(false);
+          setIsGenerating(false);
       setIsAnalyzing(false);
     }
   };
@@ -409,7 +409,7 @@ export default function StadiumEditor() {
         setMintSuccess(`Legacy mint successful!`);
         setTransactionHash(result.transactionHash || 'N/A');
       }
-
+      
     } catch (error: any) {
       setMintStatus('error');
       setMintError(error.message || 'Minting failed');
