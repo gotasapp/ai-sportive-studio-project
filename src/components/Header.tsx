@@ -196,9 +196,6 @@ export default function Header() {
           <NavLink href="/">Jerseys</NavLink>
           <NavLink href="/stadiums">Stadiums</NavLink>
           <NavLink href="/badges">Badges</NavLink>
-          {userIsAdmin && (
-            <NavLink href="/vision-test">Vision Test</NavLink>
-          )}
           <NavLink href="/marketplace">Marketplace</NavLink>
           
           <a href="#" className="text-secondary hover:text-white transition-colors duration-200 text-sm font-medium">

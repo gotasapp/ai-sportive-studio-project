@@ -17,8 +17,17 @@ import {
   Clock,
   RefreshCw,
   Eye,
-  Loader2
+  Loader2,
+  BarChart3,
+  PieChart,
+  Monitor
 } from 'lucide-react'
+
+// Importar componentes premium
+import { MetricsGrid, ProgressMetric, ComparisonMetric } from '@/components/admin/AdminMetrics'
+import { AdminEnhancedCard, GlassMetricsCard } from '@/components/admin/AdminEnhancedCard'
+import { AdminDashboardLoadingSkeleton, useLoadingState } from '@/components/admin/AdminLoadingStates'
+import AdminChart from '@/components/admin/AdminChart'
 
 // Tipos para os dados da API
 interface OverviewData {
@@ -48,7 +57,7 @@ interface RecentSale {
   timestamp: string;
 }
 
-// Dados fallback para carregamento instantâneo
+// Dados fallback otimizados
 const FALLBACK_OVERVIEW = {
   totalNFTs: 247,
   totalUsers: 89,
@@ -66,6 +75,33 @@ const FALLBACK_TEAMS = [
   { name: 'Vasco', count: 21, percentage: 11.9, color: '#000000' }
 ];
 
+// Dados para gráficos
+const CHART_DATA = {
+  monthlyNFTs: [
+    { name: 'Jan', value: 45 },
+    { name: 'Fev', value: 52 },
+    { name: 'Mar', value: 48 },
+    { name: 'Abr', value: 61 },
+    { name: 'Mai', value: 55 },
+    { name: 'Jun', value: 67 }
+  ],
+  teamDistribution: [
+    { name: 'Flamengo', value: 45 },
+    { name: 'Palmeiras', value: 38 },
+    { name: 'Corinthians', value: 32 },
+    { name: 'São Paulo', value: 28 },
+    { name: 'Vasco', value: 21 }
+  ],
+  userGrowth: [
+    { name: 'Sem 1', value: 12 },
+    { name: 'Sem 2', value: 18 },
+    { name: 'Sem 3', value: 15 },
+    { name: 'Sem 4', value: 23 },
+    { name: 'Sem 5', value: 19 },
+    { name: 'Sem 6', value: 31 }
+  ]
+};
+
 export default function AdminDashboard() {
   const [refreshTime, setRefreshTime] = useState(new Date().toLocaleTimeString());
   
@@ -74,19 +110,21 @@ export default function AdminDashboard() {
   const [popularTeamsData, setPopularTeamsData] = useState<PopularTeam[]>(FALLBACK_TEAMS);
   const [recentSalesData, setRecentSalesData] = useState<RecentSale[]>([]);
   
-  // Estados de loading (não bloqueia a UI)
-  const [loadingOverview, setLoadingOverview] = useState(false);
-  const [loadingTeams, setLoadingTeams] = useState(false);
-  const [loadingSales, setLoadingSales] = useState(false);
+  // Estados de loading premium
+  const { isLoading: loadingOverview, startLoading: startOverview, stopLoading: stopOverview } = useLoadingState();
+  const { isLoading: loadingTeams, startLoading: startTeams, stopLoading: stopTeams } = useLoadingState();
+  const { isLoading: loadingSales, startLoading: startSales, stopLoading: stopSales } = useLoadingState();
+  
+  // Loading inicial
+  const [initialLoading, setInitialLoading] = useState(true);
 
   // Função para buscar dados reais (com timeout rápido)
   const fetchOverviewData = async () => {
-    if (loadingOverview) return;
-    setLoadingOverview(true);
+    startOverview();
     
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 segundos máximo
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
       
       const response = await fetch('/api/admin/analytics?metric=overview', {
         signal: controller.signal,
@@ -102,13 +140,12 @@ export default function AdminDashboard() {
     } catch (error) {
       console.log('Using fallback overview data');
     } finally {
-      setLoadingOverview(false);
+      stopOverview();
     }
   };
 
   const fetchPopularTeamsData = async () => {
-    if (loadingTeams) return;
-    setLoadingTeams(true);
+    startTeams();
     
     try {
       const controller = new AbortController();
@@ -128,13 +165,12 @@ export default function AdminDashboard() {
     } catch (error) {
       console.log('Using fallback teams data');
     } finally {
-      setLoadingTeams(false);
+      stopTeams();
     }
   };
 
   const fetchRecentSalesData = async () => {
-    if (loadingSales) return;
-    setLoadingSales(true);
+    startSales();
     
     try {
       const controller = new AbortController();
@@ -155,14 +191,14 @@ export default function AdminDashboard() {
       console.log('Recent sales data not available');
       setRecentSalesData([]);
     } finally {
-      setLoadingSales(false);
+      stopSales();
     }
   };
 
   // Lazy loading - não bloqueia carregamento inicial
   useEffect(() => {
-    // Carrega dados reais 1 segundo após o carregamento da página
     const timer = setTimeout(() => {
+      setInitialLoading(false);
       fetchOverviewData();
       fetchPopularTeamsData();
       fetchRecentSalesData();
@@ -178,16 +214,73 @@ export default function AdminDashboard() {
     fetchRecentSalesData();
   };
 
+  // Configurar métricas principais com informações adicionais
+  const mainMetrics = [
+    {
+      title: 'Total NFTs',
+      value: overviewData.totalNFTs.toLocaleString(),
+      description: 'NFTs criados no total',
+      icon: Image,
+      trend: {
+        value: overviewData.growth.nfts,
+        isPositive: overviewData.growth.nfts > 0,
+        label: 'vs mês anterior'
+      },
+      additionalInfo: 'Inclui jerseys, stadiums e badges gerados pela plataforma'
+    },
+    {
+      title: 'Usuários Ativos',
+      value: overviewData.totalUsers.toLocaleString(),
+      description: 'Usuários registrados',
+      icon: Users,
+      trend: {
+        value: overviewData.growth.users,
+        isPositive: overviewData.growth.users > 0,
+        label: 'vs mês anterior'
+      },
+      additionalInfo: 'Usuários únicos que fizeram login nos últimos 30 dias'
+    },
+    {
+      title: 'Receita Total',
+      value: `$${overviewData.totalRevenue.toLocaleString()}`,
+      description: 'Receita acumulada',
+      icon: DollarSign,
+      trend: {
+        value: overviewData.growth.revenue,
+        isPositive: overviewData.growth.revenue > 0,
+        label: 'vs mês anterior'
+      },
+      additionalInfo: 'Receita bruta de todas as transações na plataforma'
+    },
+    {
+      title: 'Taxa de Sucesso',
+      value: `${overviewData.successRate}%`,
+      description: 'Gerações bem-sucedidas',
+      icon: CheckCircle,
+      trend: {
+        value: 2.1,
+        isPositive: true,
+        label: 'vs mês anterior'
+      },
+      additionalInfo: 'Porcentagem de gerações de NFT concluídas com sucesso'
+    }
+  ];
+
+  // Mostrar loading completo na primeira carga
+  if (initialLoading) {
+    return <AdminDashboardLoadingSkeleton />;
+  }
+
   return (
-    <div className="min-h-screen bg-black text-white p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
+    <div className="min-h-screen bg-black text-white p-4 md:p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
         
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-2 md:space-y-0">
+        {/* Header responsivo */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
-            <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-            <p className="text-sm text-neutral-400">
-              Welcome to the Admin Control Center.
+            <h1 className="text-xl md:text-2xl font-semibold text-white">Dashboard</h1>
+            <p className="text-sm text-gray-medium mt-1">
+              Controle e monitoramento do sistema
             </p>
           </div>
           <div className="flex items-center space-x-2">
@@ -196,131 +289,144 @@ export default function AdminDashboard() {
               disabled={loadingOverview}
               variant="outline"
               size="sm"
+              className="text-xs"
             >
               {loadingOverview ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                <Loader2 className="h-3 w-3 animate-spin mr-2" />
               ) : (
-                <RefreshCw className="w-4 h-4 mr-2" />
+                <RefreshCw className="h-3 w-3 mr-2" />
               )}
-              Refresh
+              Atualizar
             </Button>
+            <Badge variant="secondary" className="text-xs">
+              {refreshTime}
+            </Badge>
           </div>
         </div>
 
-        {/* Main Metrics */}
+        {/* Métricas Principais Premium */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card className="bg-[#050505] border-accent/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">Total NFTs</CardTitle>
-              <Image className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{overviewData.totalNFTs.toLocaleString()}</div>
-              <p className="text-xs text-green-400">+{overviewData.growth.nfts}% from last month</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#050505] border-accent/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{overviewData.totalUsers.toLocaleString()}</div>
-              <p className="text-xs text-green-400">+{overviewData.growth.users}% from last month</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#050505] border-accent/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">Success Rate</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-400" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{overviewData.successRate}%</div>
-              <p className="text-xs text-neutral-400">AI Generation</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-[#050505] border-accent/30">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-300">Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-accent" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">${overviewData.totalRevenue.toLocaleString()}</div>
-              <p className="text-xs text-green-400">+{overviewData.growth.revenue}% from last month</p>
-            </CardContent>
-          </Card>
+          {mainMetrics.map((metric, index) => (
+            <AdminEnhancedCard key={index} {...metric} />
+          ))}
         </div>
 
-        {/* Analytics and Sales */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Card className="col-span-4 bg-[#050505] border-neutral-800">
-            <CardHeader>
-              <CardTitle className="text-white">Fan Engagement</CardTitle>
-              <CardDescription className="text-neutral-400">Most popular teams by NFT generation.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-               {/* Placeholder for a chart */}
-              <div className="w-full h-[300px] bg-neutral-900 rounded-lg flex items-center justify-center">
-                <p className="text-neutral-500">Chart will be here</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="col-span-4 md:col-span-3 bg-[#050505] border-neutral-800">
-            <CardHeader>
-              <CardTitle className="text-white">Recent Sales</CardTitle>
-              <CardDescription className="text-neutral-400">Latest transactions across the platform.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentSalesData.length > 0 ? recentSalesData.map((sale, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="h-9 w-9 flex-shrink-0 rounded-full bg-neutral-800 flex items-center justify-center">
-                      <span className="text-sm font-semibold">{sale.user.name.charAt(0)}</span>
-                    </div>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">{sale.nft.name}</p>
-                      <p className="text-xs text-neutral-400">{sale.user.name}</p>
-                    </div>
-                    <div className="ml-auto font-medium">+${sale.value.toFixed(2)}</div>
-                  </div>
-                )) : (
-                  <p className="text-sm text-center text-neutral-400 py-8">No recent sales data.</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Gráficos */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          
+          {/* Gráfico de NFTs por Mês */}
+          <AdminChart
+            title="NFTs Criados por Mês"
+            description="Evolução mensal de criações"
+            data={CHART_DATA.monthlyNFTs}
+            type="area"
+            dataKey="value"
+            xKey="name"
+            height={250}
+          />
+
+          {/* Gráfico de Distribuição de Times */}
+          <AdminChart
+            title="Times Mais Populares"
+            description="Distribuição por preferência"
+            data={CHART_DATA.teamDistribution}
+            type="pie"
+            dataKey="value"
+            xKey="name"
+            height={250}
+          />
+
+          {/* Gráfico de Crescimento de Usuários */}
+          <AdminChart
+            title="Crescimento de Usuários"
+            description="Novos usuários por semana"
+            data={CHART_DATA.userGrowth}
+            type="line"
+            dataKey="value"
+            xKey="name"
+            height={250}
+          />
+
         </div>
 
-        {/* System Status */}
-        <Card className="bg-[#050505] border-neutral-800">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center space-x-2">
-              <Database className="w-5 h-5 text-accent" />
-              <span>System Status</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">{overviewData.avgGenerationTime}s</div>
-                <div className="text-sm text-neutral-400">Avg Generation Time</div>
+        {/* Métricas Detalhadas com Glass Effect */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          {/* Métrica de Progresso */}
+          <ProgressMetric
+            title="Tempo Médio de Geração"
+            value={overviewData.avgGenerationTime}
+            maxValue={15}
+            description="Segundos para gerar NFT"
+            icon={Clock}
+          />
+
+          {/* Métrica de Comparação */}
+          <ComparisonMetric
+            title="NFTs Este Mês"
+            current={67}
+            previous={55}
+            description="Comparado ao mês anterior"
+            icon={TrendingUp}
+          />
+
+          {/* Status do Sistema com Glass Effect */}
+          <GlassMetricsCard
+            title="Status do Sistema"
+            value="99.9%"
+            description="Sistema operacional"
+            icon={Monitor}
+          >
+            <div className="space-y-2 mt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-light">API Backend</span>
+                <Badge className="bg-primary text-white text-xs">Online</Badge>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-400">99.9%</div>
-                <div className="text-sm text-neutral-400">Uptime</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-light">Database</span>
+                <Badge className="bg-primary text-white text-xs">Connected</Badge>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-400">1.2s</div>
-                <div className="text-sm text-neutral-400">API Response</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-accent">0.8%</div>
-                <div className="text-sm text-neutral-400">Error Rate</div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-light">DALL-E 3</span>
+                <Badge className="bg-primary text-white text-xs">Active</Badge>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </GlassMetricsCard>
+
+        </div>
+
+        {/* Times Populares Premium */}
+        <AdminEnhancedCard
+          title="Times Mais Populares"
+          value={`${popularTeamsData.length} times`}
+          description="Distribuição de criações por equipe"
+          icon={Trophy}
+          additionalInfo="Baseado nas escolhas dos usuários nos últimos 30 dias"
+        >
+          <div className="space-y-3">
+            {popularTeamsData.map((team, index) => (
+              <div key={index} className="flex items-center justify-between group">
+                <div className="flex items-center space-x-3">
+                  <div 
+                    className="w-3 h-3 rounded-full group-hover:scale-110 transition-transform" 
+                    style={{ backgroundColor: team.color }} 
+                  />
+                  <span className="text-sm text-white group-hover:text-gray-light transition-colors">
+                    {team.name}
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-sm text-gray-light">{team.count}</span>
+                  <Badge variant="secondary" className="text-xs">
+                    {team.percentage}%
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
+        </AdminEnhancedCard>
+
       </div>
     </div>
-  )
+  );
 } 
