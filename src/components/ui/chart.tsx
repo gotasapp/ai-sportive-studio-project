@@ -275,7 +275,8 @@ const ChartLegend = RechartsPrimitive.Legend
 const ChartLegendContent = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<"div"> &
-    Omit<RechartsPrimitive.LegendProps, "payload"> & { // Remover 'payload' do Pick
+    Omit<RechartsPrimitive.LegendProps, "payload"> & {
+      payload?: PayloadItem[]; // Adicionar 'payload' manualmente
       hideIcon?: boolean;
       nameKey?: string;
     }
