@@ -157,9 +157,9 @@
 }
 
 .style-button.active {
-  background: #7C3AED; /* Dark purple for selected state */
+  background: #A20131; /* Correct dark red for selected state */
   color: #FFFFFF;
-  border-color: #7C3AED;
+  border-color: #A20131;
   box-shadow: none; /* No shadow as requested */
 }
 
