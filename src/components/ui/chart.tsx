@@ -112,11 +112,12 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-// Ajustar o tipo de payload para garantir compatibilidade
+// Ajustar o tipo de ChartTooltipContent para incluir 'payload' explicitamente
 const ChartTooltipContent = React.forwardRef<
   HTMLDivElement,
-  TooltipProps<any, any> &
+  Omit<TooltipProps<any, any>, 'payload'> &
     React.ComponentProps<"div"> & {
+      payload?: ReadonlyArray<Payload<any, any>>;
       hideLabel?: boolean;
       hideIndicator?: boolean;
       indicator?: "line" | "dot" | "dashed";
