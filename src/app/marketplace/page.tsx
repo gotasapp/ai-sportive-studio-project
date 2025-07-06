@@ -290,10 +290,8 @@ export default function MarketplacePage() {
       
       <div className="flex-1">
         {/* Featured Carousel */}
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 py-8">
-          <div className="max-w-7xl mx-auto">
-            <FeaturedCarousel />
-          </div>
+        <div className="w-full">
+          <FeaturedCarousel />
         </div>
 
         {/* Filters */}
