@@ -292,7 +292,7 @@ const ChartLegendContent = React.forwardRef<
     }
 >(
   (
-    { className, hideIcon = false, payload = [] as PayloadItem[], verticalAlign = "bottom", nameKey },
+    { className, hideIcon = false, payload = [] as PayloadItem[], verticalAlign = "bottom", nameKey, indicator = "dot" },
     ref
   ) => {
     const { config } = useChart();
@@ -332,13 +332,12 @@ const ChartLegendContent = React.forwardRef<
                       "w-1": indicator === "line",
                       "w-0 border-[1.5px] border-dashed bg-transparent":
                         indicator === "dashed",
-                      "my-0.5": nestLabel && indicator === "dashed",
                     }
                   )}
                   style={
                     {
-                      "--color-bg": indicatorColor,
-                      "--color-border": indicatorColor,
+                      "--color-bg": item.color || "#888",
+                      "--color-border": item.color || "#888",
                     } as React.CSSProperties
                   }
                 />
@@ -346,11 +345,10 @@ const ChartLegendContent = React.forwardRef<
               <div
                 className={cn(
                   "flex flex-1 justify-between leading-none",
-                  nestLabel ? "items-end" : "items-center"
+                  "items-center"
                 )}
               >
                 <div className="grid gap-1.5">
-                  {nestLabel ? tooltipLabel : null}
                   <span className="text-muted-foreground">
                     {itemConfig?.label || item.name}
                   </span>
