@@ -174,21 +174,7 @@ export default function FeaturedCarousel() {
         </p>
       </div>
     );
-  }
-
-  // Mapear categoria para ícone/cor
-  const getCategoryStyle = (category: string) => {
-    switch (category) {
-      case 'jersey':
-        return { color: 'text-blue-400', icon: '👕' };
-      case 'stadium':
-        return { color: 'text-green-400', icon: '🏟️' };
-      case 'badge':
-        return { color: 'text-yellow-400', icon: '🏆' };
-      default:
-        return { color: 'text-accent', icon: '⭐' };
-    }
-  };
+      }
 
   return (
     <div className="relative w-full h-[350px] md:h-[400px] lg:h-[450px] overflow-hidden">
@@ -226,13 +212,6 @@ export default function FeaturedCarousel() {
 
             {/* Content */}
             <div className="absolute bottom-0 left-0 right-0 p-8 md:px-16 lg:px-24 text-white">
-              <div className="flex items-center space-x-2 mb-3">
-                <span className="text-2xl">{getCategoryStyle(nft.category).icon}</span>
-                <span className={`text-sm font-semibold ${getCategoryStyle(nft.category).color}`}>
-                  {nft.category.charAt(0).toUpperCase() + nft.category.slice(1)}
-                </span>
-              </div>
-              
               <h2 className="text-4xl font-bold mb-3 leading-tight">{nft.name}</h2>
               
               <div className="flex items-center justify-between">
