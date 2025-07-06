@@ -925,83 +925,8 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
   }, []);
 
   const renderControls = () => (
-    <>
-      {/* Vision Analysis Section - Compacta no topo */}
-      <EditorPanel title="🔍 Reference Analysis (Optional)">
-        <div className="space-y-3">
-          {/* Vision Options - Always visible but compact */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <select 
-              value={selectedSport} 
-              onChange={(e) => setSelectedSport(e.target.value)}
-              className="cyber-input text-sm py-2 px-3"
-            >
-              {SPORTS_OPTIONS.map(sport => (
-                <option key={sport.id} value={sport.id}>{sport.name}</option>
-              ))}
-            </select>
-            
-            <select 
-              value={selectedView} 
-              onChange={(e) => setSelectedView(e.target.value)}
-              className="cyber-input text-sm py-2 px-3"
-            >
-              {VIEW_OPTIONS.map(view => (
-                <option key={view.id} value={view.id}>{view.name}</option>
-              ))}
-            </select>
-          </div>
-
-          {!referenceImage ? (
-            <div
-              className="relative cyber-border border-2 border-dashed rounded-lg p-6 hover:border-accent transition-colors cursor-pointer bg-primary/10"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-              <div className="flex items-center justify-center space-x-2 text-secondary">
-                <FileImage className="w-5 h-5" />
-                <span className="text-sm">Upload {selectedSport} jersey reference</span>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {/* Preview compacto */}
-              <div className="relative">
-                <img
-                  src={referenceImage}
-                  alt="Reference"
-                  className="w-full h-32 object-cover rounded-lg cyber-border"
-                />
-                <button
-                  onClick={clearReferenceImage}
-                  className="absolute top-2 right-2 cyber-button bg-accent hover:bg-accent/80 text-black p-1 rounded-full transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-              
-              {/* Custom prompt opcional - muito compacto */}
-              {analysisResult && (
-                <textarea
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder="Optional: Customize the prompt..."
-                  className="cyber-input w-full text-xs resize-none"
-                  rows={2}
-                />
-              )}
-            </div>
-          )}
-        </div>
-      </EditorPanel>
-
-      <EditorPanel title="1. Select Style">
+    <div className="space-y-6">
+      <EditorPanel title="1. Select Team & Style">
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
           {STYLE_FILTERS.map((filter) => (
             <StyleButton
@@ -1015,7 +940,7 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
           ))}
         </div>
       </EditorPanel>
-      <EditorPanel title="2. Custom Jersey">
+      <EditorPanel title="2. Customize Details (Optional)">
         <div className="space-y-4">
           <div className="space-y-4 mb-6">
             <label className="text-sm font-medium text-gray-300">Team</label>
@@ -1072,7 +997,58 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
           </button>
         </div>
       </EditorPanel>
-      <EditorPanel title="Mint NFT">
+      
+      <EditorPanel title="Reference Analysis (Optional)">
+        <div className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-neutral-700 rounded-lg text-center cursor-pointer hover:border-neutral-500 transition-colors"
+             onClick={() => fileInputRef.current?.click()}
+        >
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            className="hidden" 
+            onChange={handleFileUpload}
+            accept="image/png, image/jpeg, image/webp"
+          />
+          <FileImage className="w-8 h-8 text-neutral-500 mb-2" />
+          <p className="text-sm font-semibold text-neutral-300">Upload Reference Image</p>
+          <p className="text-xs text-neutral-500">PNG, JPG, WEBP up to 10MB</p>
+        </div>
+
+        {referenceImage && (
+          <div className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-neutral-400">Sport</label>
+              <div className="flex items-center gap-2">
+                {SPORTS_OPTIONS.map(sport => (
+                  <StyleButton
+                    key={sport.id}
+                    onClick={() => setSelectedSport(sport.id)}
+                    isActive={selectedSport === sport.id}
+                  >
+                    {sport.name}
+                  </StyleButton>
+                ))}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-neutral-400">View</label>
+              <div className="flex items-center gap-2">
+                {VIEW_OPTIONS.map(view => (
+                  <StyleButton
+                    key={view.id}
+                    onClick={() => setSelectedView(view.id)}
+                    isActive={selectedView === view.id}
+                  >
+                    {view.name}
+                  </StyleButton>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </EditorPanel>
+      
+      <EditorPanel title="4. Generate">
         <div>
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-gray-300">Edition Size</span>
@@ -1109,9 +1085,9 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
           </div>
         )}
       </EditorPanel>
-    </>
-  );
-
+    </div>
+  )
+  
   return (
     <EditorLayout
       controls={renderControls()}
