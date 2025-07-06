@@ -36,9 +36,11 @@ export default function Home() {
 
   // Se a verificação estiver completa e a conta existir, renderiza a página.
   return (
-    <main className="flex min-h-screen flex-col items-center pb-20 lg:pb-0 bg-black">
+    <div className="w-full min-h-screen bg-[#111011] flex flex-col">
       <Header />
-      <JerseyEditor />
-    </main>
+      <div className="flex-1 w-full">
+        <JerseyEditor />
+      </div>
+    </div>
   );
 }

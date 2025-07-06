@@ -13,12 +13,12 @@ import { getTransactionUrl } from '../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../lib/admin-config'
 
-// Importando os novos componentes reutilizáveis
-import EditorLayout from '@/components/layouts/EditorLayout'
-import EditorPanel from '@/components/editor/EditorPanel'
-import PreviewPanel from '@/components/editor/PreviewPanel'
-import MarketplaceCarousel from '@/components/editor/MarketplaceCarousel'
-import StyleButton from './ui/StyleButton'
+// Importando os novos componentes profissionais
+import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
+import ProfessionalSidebar from '@/components/editor/ProfessionalSidebar'
+import ProfessionalCanvas from '@/components/editor/ProfessionalCanvas'
+import ProfessionalActionBar from '@/components/editor/ProfessionalActionBar'
+import ProfessionalMarketplace from '@/components/editor/ProfessionalMarketplace'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -924,189 +924,91 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
     loadTopCollectionsData();
   }, []);
 
-  const renderControls = () => (
-    <div className="space-y-6">
-      <EditorPanel title="1. Select Team & Style">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-          {STYLE_FILTERS.map((filter) => (
-            <StyleButton
-              key={filter.id}
-              onClick={() => setSelectedStyle(filter.id)}
-              isActive={selectedStyle === filter.id}
-            >
-              <filter.icon className="w-4 h-4 mr-2" />
-              {filter.label}
-            </StyleButton>
-          ))}
-        </div>
-      </EditorPanel>
-      <EditorPanel title="2. Customize Details (Optional)">
-        <div className="space-y-4">
-          <div className="space-y-4 mb-6">
-            <label className="text-sm font-medium text-gray-300">Team</label>
-            <select 
-              value={selectedTeam} 
-              onChange={(e) => setSelectedTeam(e.target.value)} 
-              disabled={isVisionMode}
-              className={`cyber-input w-full px-4 py-3 rounded-lg bg-black text-white ${
-                isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            >
-              <option value="" className="bg-black text-white">
-                Select Team
-              </option>
-              {availableTeams.map((team) => <option key={team} value={team} className="bg-black text-white">{team}</option>)}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="text-sm font-medium text-gray-300 block mb-2">Player Name</label>
-              <input type="text" value={playerName} onChange={(e) => setPlayerName(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="JEFF" />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-300 block mb-2">Number</label>
-              <input type="text" value={playerNumber} onChange={(e) => setPlayerNumber(e.target.value)} className="cyber-input w-full px-4 py-3 rounded-lg bg-black text-white" placeholder="10" />
-            </div>
-          </div>
-          <button 
-            onClick={generateContent} 
-            disabled={!isConnected || isLoading || (!isVisionMode && !selectedTeam)} 
-            className={`cyber-button w-full py-4 rounded-lg font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {!isConnected ? (
-              <div className="flex items-center justify-center">
-                <span>🔒 Connect Wallet First</span>
-              </div>
-            ) : isLoading ? (
-              <div className="flex items-center justify-center">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-3"></div>
-                {isVisionMode ? (
-                  isAnalyzing ? 
-                    'Analyzing...' : 
-                    'Generating...'
-                ) : (
-                  'Generating...'
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center justify-center">
-                <Zap className="w-5 h-5 mr-2" />
-                Generate
-              </div>
-            )}
-          </button>
-        </div>
-      </EditorPanel>
-      
-      <EditorPanel title="Reference Analysis (Optional)">
-        <div className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-neutral-700 rounded-lg text-center cursor-pointer hover:border-neutral-500 transition-colors"
-             onClick={() => fileInputRef.current?.click()}
-        >
-          <input 
-            type="file" 
-            ref={fileInputRef} 
-            className="hidden" 
-            onChange={handleFileUpload}
-            accept="image/png, image/jpeg, image/webp"
-          />
-          <FileImage className="w-8 h-8 text-neutral-500 mb-2" />
-          <p className="text-sm font-semibold text-neutral-300">Upload Reference Image</p>
-          <p className="text-xs text-neutral-500">PNG, JPG, WEBP up to 10MB</p>
-        </div>
-
-        {referenceImage && (
-          <div className="space-y-4 pt-4">
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-neutral-400">Sport</label>
-              <div className="flex items-center gap-2">
-                {SPORTS_OPTIONS.map(sport => (
-                  <StyleButton
-                    key={sport.id}
-                    onClick={() => setSelectedSport(sport.id)}
-                    isActive={selectedSport === sport.id}
-                  >
-                    {sport.name}
-                  </StyleButton>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-neutral-400">View</label>
-              <div className="flex items-center gap-2">
-                {VIEW_OPTIONS.map(view => (
-                  <StyleButton
-                    key={view.id}
-                    onClick={() => setSelectedView(view.id)}
-                    isActive={selectedView === view.id}
-                  >
-                    {view.name}
-                  </StyleButton>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-      </EditorPanel>
-      
-      <EditorPanel title="4. Generate">
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <p className="text-sm font-medium">Generation Quality</p>
-            <div className="flex items-center gap-2">
-              <StyleButton onClick={() => setQuality('standard')} isActive={quality === 'standard'}>Standard</StyleButton>
-              <StyleButton onClick={() => setQuality('hd')} isActive={quality === 'hd'}>HD</StyleButton>
-            </div>
-          </div>
-          <Button 
-            className="w-full h-12 text-lg font-bold bg-[#A20131] hover:bg-[#A20131]/90" 
-            onClick={generateContent} 
-            disabled={isLoading || !selectedTeam}
-          >
-            {isLoading ? 'Generating...' : 'Generate'}
-          </Button>
-          {generationCost && !isLoading && (
-            <p className="text-xs text-center text-neutral-500 mt-2">
-              Approx. cost: ${generationCost.toFixed(4)}
-            </p>
-          )}
-        </div>
-        <div className="space-y-3 mt-4">
-          {isUserAdmin && (
-            <button 
-              className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${canMintGasless && !isMinting ? 'opacity-100 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
-              disabled={!canMintGasless || isMinting} onClick={handleEngineNormalMint}>
-              {isMinting && mintStatus === 'pending' ? 'Minting (Gasless)...' : '🚀 Mint via Engine (Gasless)'}
-            </button>
-          )}
-          <button 
-            className={`cyber-button w-full py-4 rounded-lg font-semibold transition-all ${canMintLegacy && !isMinting ? 'opacity-100 cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}
-            disabled={!canMintLegacy || isMinting} onClick={handleMintNFT}>
-            {isMinting && mintStatus === 'pending' ? 'Minting...' : !isConnected ? 'Connect Wallet' : !isOnSupportedChain ? 'Switch Network' : 'Mint'}
-          </button>
-        </div>
-        {(mintStatus !== 'idle') && (
-          <div className={`mt-4 p-3 rounded-lg border ${mintStatus === 'success' ? 'bg-green-500/10' : mintStatus === 'error' ? 'bg-red-500/10' : 'bg-yellow-500/10'}`}>
-            <p className={`text-sm ${mintStatus === 'success' ? 'text-green-400' : mintStatus === 'error' ? 'text-red-400' : 'text-yellow-400'}`}>
-              {mintStatus === 'pending' && 'Waiting for confirmation...'}
-              {mintStatus === 'success' && `✅ ${mintSuccess}`}
-              {mintStatus === 'error' && `❌ ${mintError}`}
-            </p>
-            {transactionHash && (
-              <a href={getTransactionUrl(transactionHash)} target="_blank" rel="noopener noreferrer" className="text-xs text-cyan-400 hover:underline mt-2 block truncate">
-                View on Explorer: {transactionHash}
-              </a>
-            )}
-          </div>
-        )}
-      </EditorPanel>
-    </div>
-  )
-  
   return (
-    <EditorLayout
-      controls={renderControls()}
-      preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.imageUrl, price: nft.price }))} isLoading={marketplaceLoading} />}
+    <ProfessionalEditorLayout
+      sidebar={
+        <ProfessionalSidebar
+          availableTeams={availableTeams}
+          selectedTeam={selectedTeam}
+          setSelectedTeam={setSelectedTeam}
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          playerNumber={playerNumber}
+          setPlayerNumber={setPlayerNumber}
+          selectedStyle={selectedStyle}
+          setSelectedStyle={setSelectedStyle}
+          quality={quality}
+          setQuality={setQuality}
+          isVisionMode={isVisionMode}
+          referenceImage={referenceImage}
+          selectedSport={selectedSport}
+          setSelectedSport={setSelectedSport}
+          selectedView={selectedView}
+          setSelectedView={setSelectedView}
+          onFileUpload={handleFileUpload}
+          onClearReference={clearReferenceImage}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+          generationCost={generationCost}
+          error={error}
+          onResetError={resetError}
+        />
+      }
+      canvas={
+        <ProfessionalCanvas
+          generatedImage={generatedImage}
+          isLoading={isLoading}
+          error={error}
+          onResetError={resetError}
+          playerName={playerName}
+          playerNumber={playerNumber}
+          selectedTeam={selectedTeam}
+          selectedStyle={selectedStyle}
+          quality={quality}
+          referenceImage={referenceImage}
+          isVisionMode={isVisionMode}
+        />
+      }
+      actionBar={
+        <ProfessionalActionBar
+          onGenerate={generateContent}
+          isLoading={isLoading}
+          canGenerate={isConnected && ((selectedTeam && playerName && playerNumber) || isVisionMode)}
+          generationCost={generationCost}
+          onMintLegacy={handleMintNFT}
+          onMintGasless={handleEngineNormalMint}
+          canMintLegacy={canMintLegacy}
+          canMintGasless={canMintGasless}
+          isMinting={isMinting}
+          mintStatus={mintStatus}
+          mintSuccess={mintSuccess}
+          mintError={mintError}
+          transactionHash={transactionHash}
+          isConnected={isConnected}
+          isOnSupportedChain={isOnSupportedChain}
+          isUserAdmin={isUserAdmin}
+          getTransactionUrl={getTransactionUrl}
+        />
+      }
+      marketplace={
+        <ProfessionalMarketplace
+          items={marketplaceNFTs}
+          isLoading={marketplaceLoading}
+          onItemClick={(item) => {
+            console.log('Clicked marketplace item:', item)
+            // Implementar navegação para o marketplace ou modal de detalhes
+          }}
+          onViewAll={() => {
+            console.log('View all marketplace items')
+            // Implementar navegação para o marketplace completo
+            window.open('/marketplace', '_blank')
+          }}
+          title="Trending NFTs"
+          showSearch={false}
+          showFilters={false}
+          maxItems={6}
+        />
+      }
     />
   )
 } 

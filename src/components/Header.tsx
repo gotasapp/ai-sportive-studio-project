@@ -179,8 +179,8 @@ export default function Header() {
 
 
   return (
-    <header className="w-full border-b border-cyan-800/30 bg-black">
-      <div className="container mx-auto px-6 py-4 flex justify-between items-center">
+    <header className="w-full border-b border-[#333333] bg-black relative z-50">
+      <div className="w-full px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <img 
             src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1750634725/th_24_vaq5es.jpg" 

@@ -90,7 +90,8 @@
   }
   
   body {
-    @apply bg-background text-foreground text-sm; /* Reduzido para text-sm */
+    @apply text-foreground text-sm; /* Reduzido para text-sm */
+    background: black; /* Fundo preto puro */
   }
   
   /* Reduzir tamanhos de fontes globalmente */
