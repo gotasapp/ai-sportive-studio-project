@@ -1051,10 +1051,24 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
       <EditorPanel title="4. Generate">
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm text-gray-300">Edition Size</span>
-            <span className="text-cyan-400 font-semibold">{editionSize}</span>
+            <p className="text-sm font-medium">Generation Quality</p>
+            <div className="flex items-center gap-2">
+              <StyleButton onClick={() => setQuality('standard')} isActive={quality === 'standard'}>Standard</StyleButton>
+              <StyleButton onClick={() => setQuality('hd')} isActive={quality === 'hd'}>HD</StyleButton>
+            </div>
           </div>
-          <input type="range" min="1" max="1000" value={editionSize} onChange={(e) => setEditionSize(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider" />
+          <Button 
+            className="w-full h-12 text-lg font-bold bg-[#A20131] hover:bg-[#A20131]/90" 
+            onClick={generateContent} 
+            disabled={isLoading || !selectedTeam}
+          >
+            {isLoading ? 'Generating...' : 'Generate'}
+          </Button>
+          {generationCost && !isLoading && (
+            <p className="text-xs text-center text-neutral-500 mt-2">
+              Approx. cost: ${generationCost.toFixed(4)}
+            </p>
+          )}
         </div>
         <div className="space-y-3 mt-4">
           {isUserAdmin && (

@@ -22,7 +22,8 @@
     --popover: 60 2% 6%;
     --popover-foreground: 0 0% 99.2%;
 
-    --primary: 343 98% 56%; /* #FD2163 */
+    /* Cor primária/destaque definida para o vermelho escuro solicitado */
+    --primary: 343 99% 32%; /* #A20131 */
     --primary-foreground: 0 0% 99.2%;
 
     --secondary: 0 0% 15%;
@@ -31,7 +32,8 @@
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 343 98% 56%;
+    /* Cor de destaque definida para o vermelho escuro solicitado */
+    --accent: 343 99% 32%; /* #A20131 */
     --accent-foreground: 0 0% 99.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -39,7 +41,7 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 343 98% 56%;
+    --ring: 0 0% 99.2%; /* Anel de foco branco para visibilidade */
 
     --radius: 0.5rem;
   }
@@ -54,7 +56,8 @@
     --popover: 60 2% 6%;
     --popover-foreground: 0 0% 99.2%;
 
-    --primary: 343 98% 56%; /* #FD2163 */
+    /* Cor primária/destaque definida para o vermelho escuro solicitado */
+    --primary: 343 99% 32%; /* #A20131 */
     --primary-foreground: 0 0% 99.2%;
 
     --secondary: 0 0% 15%;
@@ -63,7 +66,8 @@
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 343 98% 56%;
+    /* Cor de destaque definida para o vermelho escuro solicitado */
+    --accent: 343 99% 32%; /* #A20131 */
     --accent-foreground: 0 0% 99.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -71,7 +75,7 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 343 98% 56%;
+    --ring: 0 0% 99.2%; /* Anel de foco branco para visibilidade */
   }
 
   * {
@@ -83,9 +87,10 @@
 }
 
 
-/* Cyber Theme Styles */
+/* Cyber Theme Styles - Neutralized */
 .cyber-glow {
-  box-shadow: 0 0 10px rgba(253, 33, 99, 0.3), 0 0 20px rgba(253, 33, 99, 0.2), 0 0 30px rgba(253, 33, 99, 0.1);
+  /* Glow sutil e branco */
+  box-shadow: 0 0 10px rgba(253, 253, 253, 0.1), 0 0 20px rgba(253, 253, 253, 0.05);
 }
 
 .cyber-border {
@@ -96,20 +101,19 @@
 .cyber-card {
   background: hsl(var(--background));
   border: 1px solid rgba(253, 253, 253, 0.1);
-  backdrop-filter: blur(10px);
 }
 
 .cyber-button {
-  background: #FD2163;
-  color: #000000;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
   border: none;
   font-weight: 600;
   transition: all 0.3s ease;
 }
 
 .cyber-button:hover {
-  background: rgba(253, 33, 99, 0.8);
-  box-shadow: 0 0 15px rgba(253, 33, 99, 0.4);
+  filter: brightness(1.2);
+  box-shadow: none;
 }
 
 .cyber-button:disabled {
@@ -125,8 +129,8 @@
 }
 
 .cyber-input:focus {
-  border-color: #FD2163;
-  box-shadow: 0 0 0 1px rgba(253, 33, 99, 0.3);
+  border-color: #FDFDFD;
+  box-shadow: 0 0 0 1px rgba(253, 253, 253, 0.2);
   outline: none;
 }
 
@@ -136,8 +140,8 @@
 }
 
 .gradient-border {
-  background: linear-gradient(135deg, rgba(253, 33, 99, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%);
-  border: 1px solid rgba(253, 33, 99, 0.3);
+  background: linear-gradient(135deg, rgba(253, 253, 253, 0.05) 0%, rgba(253, 253, 253, 0) 100%);
+  border: 1px solid rgba(253, 253, 253, 0.2);
 }
 
 .style-button {
@@ -148,15 +152,15 @@
 }
 
 .style-button:hover {
-  border-color: rgba(253, 253, 253, 0.4); /* Minimalist white border hover */
-  background: rgba(0, 0, 0, 0.6); /* Keep background color on hover */
+  border-color: rgba(253, 253, 253, 0.4); 
+  background: rgba(0, 0, 0, 0.6); 
 }
 
 .style-button.active {
-  background: #A20131; /* Correct dark red for selected state */
+  background: #A20131; 
   color: #FFFFFF;
   border-color: #A20131;
-  box-shadow: none; /* No shadow as requested */
+  box-shadow: none;
 }
 
 .marketplace-card {
@@ -166,32 +170,32 @@
 }
 
 .marketplace-card:hover {
-  border-color: rgba(253, 253, 253, 0.3); /* Keep hover subtle */
-  background: hsl(var(--background)); /* Ensure background doesn't change */
+  border-color: rgba(253, 253, 253, 0.3);
+  background: hsl(var(--background));
 }
 
-/* Slider customization */
+/* Slider customization - Neutralized */
 .slider::-webkit-slider-thumb {
   appearance: none;
   width: 20px;
   height: 20px;
-  background: #FD2163;
+  background: #FDFDFD;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(253, 33, 99, 0.5);
+  box-shadow: none;
 }
 
 .slider::-moz-range-thumb {
   width: 20px;
   height: 20px;
-  background: #FD2163;
+  background: #FDFDFD;
   border-radius: 50%;
   cursor: pointer;
   border: none;
-  box-shadow: 0 0 10px rgba(253, 33, 99, 0.5);
+  box-shadow: none;
 }
 
-/* Custom scrollbars */
+/* Custom scrollbars - Neutralized */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -201,12 +205,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FD2163;
+  background: #FDFDFD;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(253, 33, 99, 0.8);
+  background: rgba(253, 253, 253, 0.8);
 }
 
 /* Mobile navigation glass effect */

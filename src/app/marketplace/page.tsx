@@ -192,7 +192,7 @@ export default function MarketplacePage() {
   );
 
   return (
-    <main className="flex min-h-screen flex-col bg-primary text-secondary">
+    <main className="flex min-h-screen flex-col text-secondary">
       <Header />
       
       <div className="container mx-auto px-4 md:px-6 py-8 space-y-12">
