@@ -288,6 +288,7 @@ const ChartLegendContent = React.forwardRef<
       payload?: PayloadItem[]; // Adicionar 'payload' manualmente
       hideIcon?: boolean;
       nameKey?: string;
+      indicator?: "line" | "dot" | "dashed"; // Adicionar 'indicator' como prop opcional
     }
 >(
   (
