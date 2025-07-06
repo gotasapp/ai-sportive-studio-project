@@ -4,7 +4,16 @@ import * as React from "react"
 import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
-import { TooltipProps, Payload } from "recharts";
+import { TooltipProps } from "recharts";
+
+// Definindo o tipo Payload localmente
+interface Payload<TValue, TName> {
+  dataKey?: string;
+  name?: TName;
+  value?: TValue;
+  payload?: any;
+  color?: string;
+}
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
