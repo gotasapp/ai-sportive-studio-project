@@ -3,22 +3,16 @@
 import React from 'react'
 import { 
   Zap, Wallet, Rocket, Clock, CheckCircle, AlertCircle, 
-  ExternalLink, Loader2
+  ExternalLink, Loader2, Shield
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 
-interface ProfessionalActionBarProps {
-  // Generation
+interface ProfessionalBadgeActionBarProps {
   onGenerate: () => void
   isLoading: boolean
   canGenerate: boolean
-  generationCost: number | null
-  
-  // Minting
   onMintLegacy: () => void
   onMintGasless: () => void
   canMintLegacy: boolean
@@ -28,25 +22,17 @@ interface ProfessionalActionBarProps {
   mintSuccess: string | null
   mintError: string | null
   transactionHash: string | null
-  
-  // Wallet
   isConnected: boolean
   isOnSupportedChain: boolean
   isUserAdmin: boolean
-  
-  // Progress
-  progress?: number
-  progressText?: string
-  
-  // Utils
   getTransactionUrl: (hash: string) => string
+  isAnalyzing?: boolean
 }
 
-export default function ProfessionalActionBar({
+export default function ProfessionalBadgeActionBar({
   onGenerate,
   isLoading,
   canGenerate,
-  generationCost,
   onMintLegacy,
   onMintGasless,
   canMintLegacy,
@@ -59,10 +45,9 @@ export default function ProfessionalActionBar({
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
-  progress,
-  progressText,
-  getTransactionUrl
-}: ProfessionalActionBarProps) {
+  getTransactionUrl,
+  isAnalyzing = false
+}: ProfessionalBadgeActionBarProps) {
   
   const renderGenerateButton = () => (
     <Button
@@ -78,17 +63,12 @@ export default function ProfessionalActionBar({
       {isLoading ? (
         <div className="flex items-center gap-3">
           <Loader2 className="w-6 h-6 animate-spin" />
-          <span>Generating...</span>
+          <span>{isAnalyzing ? 'Analyzing...' : 'Generating...'}</span>
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <Zap className="w-6 h-6" />
-          <span>Generate Jersey</span>
-          {generationCost && (
-            <Badge variant="secondary" className="bg-[#FDFDFD]/20 text-[#FDFDFD] border-[#FDFDFD]/30">
-              ${generationCost.toFixed(3)}
-            </Badge>
-          )}
+          <Shield className="w-6 h-6" />
+          <span>Generate Badge</span>
         </div>
       )}
     </Button>
@@ -194,32 +174,8 @@ export default function ProfessionalActionBar({
     )
   }
 
-  const renderProgress = () => {
-    if (!progress && !progressText) return null
-
-    return (
-      <div className="flex items-center justify-center gap-3">
-        <div className="flex-1 max-w-md">
-          <div className="flex items-center justify-between mb-1">
-            <span className="text-sm text-[#ADADAD]">{progressText || 'Processing...'}</span>
-            {progress && (
-              <span className="text-sm text-[#ADADAD]">{Math.round(progress)}%</span>
-            )}
-          </div>
-          <Progress 
-            value={progress || 0} 
-            className="h-2 bg-[#333333]/30"
-          />
-        </div>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-3">
-      {/* Progress Bar */}
-      {renderProgress()}
-
       {/* Status Display */}
       {renderStatus()}
 

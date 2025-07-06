@@ -13,12 +13,12 @@ import { getTransactionUrl } from '../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../lib/admin-config'
 
-// Importando os novos componentes reutilizáveis
-import EditorLayout from '@/components/layouts/EditorLayout'
-import EditorPanel from '@/components/editor/EditorPanel'
-import PreviewPanel from '@/components/editor/PreviewPanel'
-import MarketplaceCarousel from '@/components/editor/MarketplaceCarousel'
-import StyleButton from './ui/StyleButton'
+// Importando os novos componentes profissionais
+import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
+import ProfessionalBadgeSidebar from '@/components/badge/ProfessionalBadgeSidebar'
+import ProfessionalBadgeCanvas from '@/components/badge/ProfessionalBadgeCanvas'
+import ProfessionalBadgeActionBar from '@/components/badge/ProfessionalBadgeActionBar'
+import ProfessionalMarketplace from '@/components/editor/ProfessionalMarketplace'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -619,140 +619,85 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
     loadTopCollectionsData();
   }, []);
 
-  const renderControls = () => (
-    <>
-      <EditorPanel title="1. Select Style">
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
-          {STYLE_FILTERS.map((filter) => (
-            <StyleButton
-              key={filter.id}
-              onClick={() => setSelectedStyle(filter.id)}
-              isActive={selectedStyle === filter.id}
-            >
-              <filter.icon className="w-4 h-4 mr-2" />
-              {filter.label}
-            </StyleButton>
-          ))}
-        </div>
-      </EditorPanel>
 
-      {/* Vision Upload Section */}
-      <EditorPanel title="2. Reference Image (Optional)">
-        {!isVisionMode ? (
-          <div className="space-y-4">
-            <div className="cyber-border border-2 border-dashed rounded-lg p-6 text-center hover:border-accent transition-colors cursor-pointer bg-primary/10">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleVisionFileUpload}
-                className="hidden"
-                id="badge-vision-upload"
-              />
-              <label htmlFor="badge-vision-upload" className="cursor-pointer">
-                <div className="space-y-2">
-                  <div className="text-4xl text-secondary">📎</div>
-                  <p className="text-secondary">Upload badge reference</p>
-                  <p className="text-xs text-secondary/70">AI will analyze and enhance your design</p>
-                </div>
-              </label>
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="relative">
-              <img src={referenceImage!} alt="Reference" className="w-full h-32 object-cover rounded-lg cyber-border" />
-              <button
-                onClick={exitVisionMode}
-                className="absolute top-2 right-2 cyber-button bg-accent hover:bg-accent/80 text-black rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors"
-              >
-                ×
-              </button>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-secondary">Badge View</label>
-              <div className="grid grid-cols-2 gap-2">
-                <StyleButton
-                  onClick={() => setSelectedBadgeView('logo')}
-                  isActive={selectedBadgeView === 'logo'}
-                >
-                  Logo
-                </StyleButton>
-                <StyleButton
-                  onClick={() => setSelectedBadgeView('emblem')}
-                  isActive={selectedBadgeView === 'emblem'}
-                >
-                  Emblem
-                </StyleButton>
-              </div>
-            </div>
-          </div>
-        )}
-      </EditorPanel>
-      
-      <EditorPanel title={isVisionMode ? "3. Badge Details" : "2. Badge Details"}>
-        <div className="space-y-4">
-            <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-secondary block mb-2">Badge Name</label>
-              <input 
-                type="text" 
-                value={badgeName} 
-                onChange={(e) => setBadgeName(e.target.value)} 
-                className="cyber-input w-full px-4 py-3 rounded-lg" 
-                placeholder="CHAMPION" 
-              />
-            </div>
-            <div className="space-y-4 mb-6">
-              <label className="text-sm font-medium text-secondary block mb-2">Custom Prompt (Optional)</label>
-              <textarea 
-                value={customPrompt} 
-                onChange={(e) => setCustomPrompt(e.target.value)} 
-                className="cyber-input w-full px-4 py-3 rounded-lg min-h-[80px] resize-none" 
-                placeholder="Additional requirements for your badge design..."
-                rows={3}
-              />
-              <p className="text-xs text-secondary/70">This will be added to the generation prompt</p>
-            </div>
-            <Button 
-              onClick={generateContent} 
-              disabled={!isConnected || isLoading || isAnalyzing} 
-              className={`cyber-button w-full ${!isConnected ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-                {!isConnected ? '🔒 Connect Wallet First' : 
-                 isAnalyzing ? 'Analyzing...' : 
-                 isLoading ? 'Generating...' : 'Generate'}
-            </Button>
-        </div>
-      </EditorPanel>
-      <EditorPanel title={isVisionMode ? "4. Mint NFT" : "3. Mint NFT"}>
-        <div>
-          <label className="text-sm font-medium text-secondary">Edition Size: <span className="text-accent font-semibold">{editionSize}</span></label>
-          <input type="range" min="1" max="1000" value={editionSize} onChange={(e) => setEditionSize(Number(e.target.value))} className="w-full h-2 bg-gray-700 rounded-lg appearance-none slider mt-2" />
-        </div>
-        <div className="space-y-3 mt-4">
-          {isUserAdmin && (
-            <button className={`cyber-button w-full py-4 rounded-lg font-semibold ${!canMintGasless || isMinting ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!canMintGasless || isMinting} onClick={handleEngineNormalMint}>
-              {isMinting ? 'Minting...' : '🚀 Mint via Engine (Gasless)'}
-            </button>
-          )}
-          <button className={`cyber-button w-full py-4 rounded-lg font-semibold ${!canMintLegacy || isMinting ? 'opacity-50 cursor-not-allowed' : ''}`} disabled={!canMintLegacy || isMinting} onClick={handleMintNFT}>
-            {isMinting ? 'Minting...' : 'Mint (Legacy)'}
-          </button>
-        </div>
-        {mintStatus !== 'idle' && (
-          <div className={`mt-4 p-3 rounded-lg text-sm ${mintStatus === 'success' ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
-            <p>{mintStatus === 'success' ? `✅ ${mintSuccess}` : `❌ ${mintError}`}</p>
-            {transactionHash && <a href={getTransactionUrl(transactionHash)} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline mt-1 block truncate">View on Explorer</a>}
-          </div>
-        )}
-      </EditorPanel>
-    </>
-  );
+
+  const resetError = () => setError(null);
 
   return (
-    <EditorLayout
-      controls={renderControls()}
-      preview={<PreviewPanel generatedImage={generatedImage} isLoading={isLoading} error={error} onResetError={resetError} />}
-      marketplace={<MarketplaceCarousel items={marketplaceNFTs.map(nft => ({ name: nft.name, imageUrl: nft.imageUrl, price: nft.price }))} isLoading={marketplaceLoading} />}
+    <ProfessionalEditorLayout
+      sidebar={
+        <ProfessionalBadgeSidebar
+          badgeName={badgeName}
+          setBadgeName={setBadgeName}
+          selectedStyle={selectedStyle}
+          setSelectedStyle={setSelectedStyle}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+          quality={quality}
+          setQuality={setQuality}
+          isVisionMode={isVisionMode}
+          referenceImage={referenceImage}
+          selectedBadgeView={selectedBadgeView}
+          setSelectedBadgeView={setSelectedBadgeView}
+          onFileUpload={handleVisionFileUpload}
+          onClearReference={exitVisionMode}
+          error={error}
+          onResetError={resetError}
+        />
+      }
+      canvas={
+        <ProfessionalBadgeCanvas
+          generatedImage={generatedImage}
+          isLoading={isLoading}
+          error={error}
+          onResetError={resetError}
+          badgeName={badgeName}
+          selectedStyle={selectedStyle}
+          quality={quality}
+          customPrompt={customPrompt}
+          referenceImage={referenceImage}
+          isVisionMode={isVisionMode}
+          isAnalyzing={isAnalyzing}
+        />
+      }
+      actionBar={
+        <ProfessionalBadgeActionBar
+          onGenerate={generateContent}
+          isLoading={isLoading || isAnalyzing}
+          canGenerate={isConnected && badgeName.trim()}
+          onMintLegacy={handleMintNFT}
+          onMintGasless={handleEngineNormalMint}
+          canMintLegacy={canMintLegacy}
+          canMintGasless={canMintGasless}
+          isMinting={isMinting}
+          mintStatus={mintStatus}
+          mintSuccess={mintSuccess}
+          mintError={mintError}
+          transactionHash={transactionHash}
+          isConnected={isConnected}
+          isOnSupportedChain={isOnSupportedChain}
+          isUserAdmin={isUserAdmin}
+          getTransactionUrl={getTransactionUrl}
+          isAnalyzing={isAnalyzing}
+        />
+      }
+      marketplace={
+        <ProfessionalMarketplace
+          items={marketplaceNFTs}
+          isLoading={marketplaceLoading}
+          onItemClick={(item) => {
+            console.log('Clicked marketplace item:', item)
+          }}
+          onViewAll={() => {
+            console.log('View all marketplace items')
+            window.open('/marketplace', '_blank')
+          }}
+          title="Trending NFTs"
+          showSearch={false}
+          showFilters={false}
+          maxItems={6}
+        />
+      }
     />
   )
 } 
