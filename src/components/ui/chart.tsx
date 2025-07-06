@@ -15,6 +15,15 @@ interface Payload<TValue, TName> {
   color?: string;
 }
 
+// Definindo o tipo PayloadItem localmente
+interface PayloadItem {
+  dataKey?: string;
+  name?: string;
+  value?: any;
+  payload?: any;
+  color?: string;
+}
+
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
