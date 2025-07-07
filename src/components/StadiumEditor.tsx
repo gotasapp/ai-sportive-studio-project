@@ -442,6 +442,7 @@ export default function StadiumEditor() {
 
   return (
     <ProfessionalEditorLayout
+      showTitle={false}
       sidebar={
         <ProfessionalStadiumSidebar
           availableStadiums={availableStadiums}

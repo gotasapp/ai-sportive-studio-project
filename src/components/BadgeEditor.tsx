@@ -621,6 +621,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
   return (
     <ProfessionalEditorLayout
+      showTitle={false}
       sidebar={
         <ProfessionalBadgeSidebar
           badgeName={badgeName}

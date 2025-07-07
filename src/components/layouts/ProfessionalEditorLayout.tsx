@@ -11,6 +11,8 @@ interface ProfessionalEditorLayoutProps {
   actionBar: React.ReactNode
   marketplace: React.ReactNode
   className?: string
+  title?: string
+  showTitle?: boolean
 }
 
 export default function ProfessionalEditorLayout({
@@ -18,7 +20,9 @@ export default function ProfessionalEditorLayout({
   canvas,
   actionBar,
   marketplace,
-  className
+  className,
+  title = "Jersey Editor",
+  showTitle = true
 }: ProfessionalEditorLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
   const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(true)
@@ -38,21 +42,25 @@ export default function ProfessionalEditorLayout({
             !isSidebarOpen && "md:block hidden"
           )}>
             {/* Sidebar Header */}
-            <div className="sticky top-0 z-10 bg-black/95 backdrop-blur-sm border-b border-[#333333] p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
-                  Jersey Editor
-                </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(false)}
-                  className="md:hidden text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+            {showTitle && (
+              <div className="sticky top-0 z-10 bg-transparent p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 flex justify-center">
+                    <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
+                      {title}
+                    </h2>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="md:hidden text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
+                  >
+                    <X className="h-4 w-4 text-[#ADADAD]" />
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Sidebar Content */}
             <div className="p-4">
@@ -72,9 +80,9 @@ export default function ProfessionalEditorLayout({
             )}
           >
             {isSidebarOpen ? (
-              <ChevronLeft className="h-3 w-3" />
+              <ChevronLeft className="h-3 w-3 text-[#ADADAD]" />
             ) : (
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3 w-3 text-[#ADADAD]" />
             )}
           </Button>
         </div>
@@ -89,7 +97,7 @@ export default function ProfessionalEditorLayout({
               onClick={() => setIsSidebarOpen(true)}
               className="md:hidden text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
             >
-              <Menu className="h-4 w-4" />
+              <Menu className="h-4 w-4 text-[#ADADAD]" />
             </Button>
             <Button
               variant="ghost"
@@ -97,7 +105,7 @@ export default function ProfessionalEditorLayout({
               onClick={() => setIsMarketplaceOpen(!isMarketplaceOpen)}
               className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
             >
-              {isMarketplaceOpen ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {isMarketplaceOpen ? <EyeOff className="h-4 w-4 text-[#ADADAD]" /> : <Eye className="h-4 w-4 text-[#ADADAD]" />}
             </Button>
           </div>
 
@@ -121,18 +129,20 @@ export default function ProfessionalEditorLayout({
           {isMarketplaceOpen ? (
             <div className="h-full overflow-y-auto overflow-x-hidden">
               {/* Marketplace Header */}
-              <div className="sticky top-0 z-10 bg-black/95 backdrop-blur-sm border-b border-[#333333] p-4">
+              <div className="sticky top-0 z-10 bg-transparent p-4">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
-                    Marketplace
-                  </h2>
+                  <div className="flex-1 flex justify-center">
+                    <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
+                      Marketplace
+                    </h2>
+                  </div>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsMarketplaceOpen(false)}
                     className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
-                    <EyeOff className="h-4 w-4" />
+                    <EyeOff className="h-4 w-4 text-[#ADADAD]" />
                   </Button>
                 </div>
               </div>
@@ -150,7 +160,7 @@ export default function ProfessionalEditorLayout({
                 onClick={() => setIsMarketplaceOpen(true)}
                 className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 rotate-90"
               >
-                <Eye className="h-4 w-4" />
+                <Eye className="h-4 w-4 text-[#ADADAD]" />
               </Button>
             </div>
           )}
