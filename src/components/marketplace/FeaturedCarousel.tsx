@@ -137,7 +137,7 @@ export default function FeaturedCarousel() {
   // Estado de carregamento
   if (loading) {
     return (
-      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-card flex flex-col items-center justify-center">
+      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-transparent flex flex-col items-center justify-center">
         <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
         <p className="text-gray-400 text-sm">Loading featured NFTs...</p>
       </div>
@@ -147,7 +147,7 @@ export default function FeaturedCarousel() {
   // Estado de erro
   if (error) {
     return (
-      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-card flex flex-col items-center justify-center">
+      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-transparent flex flex-col items-center justify-center">
         <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
         <h3 className="text-lg font-semibold text-white mb-2">Unable to Load Featured NFTs</h3>
         <p className="text-gray-400 text-sm mb-4">{error}</p>
@@ -164,7 +164,7 @@ export default function FeaturedCarousel() {
   // Estado vazio (sem NFTs)
   if (featuredNFTs.length === 0) {
     return (
-      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-card flex flex-col items-center justify-center text-center p-8">
+      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-transparent flex flex-col items-center justify-center text-center p-8">
         <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
           <Star className="w-8 h-8 text-gray-600" />
         </div>

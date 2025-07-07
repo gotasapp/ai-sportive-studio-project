@@ -104,7 +104,7 @@ export default function MarketplaceFilters({
   ]
 
   return (
-    <div className="bg-[#000000] border-b border-[#FDFDFD]/10">
+    <div className="bg-transparent border-b border-[#FDFDFD]/10">
       <div className="container mx-auto px-6 md:px-8 lg:px-12 py-4 space-y-4">
               {/* Header */}
         <div className="flex items-center justify-between max-w-7xl mx-auto">

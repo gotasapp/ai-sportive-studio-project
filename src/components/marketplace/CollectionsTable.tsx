@@ -292,7 +292,7 @@ export default function CollectionsTable({
 
   if (loading) {
     return (
-      <div className="bg-[#000000] rounded-lg border border-[#FDFDFD]/10 p-6">
+      <div className="rounded-lg border border-[#FDFDFD]/10 p-6" style={{ backgroundColor: '#14101e' }}>
         <div className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 text-[#A20131] animate-spin mr-3" />
           <span className="text-[#FDFDFD]/70">Loading collections...</span>
@@ -303,7 +303,7 @@ export default function CollectionsTable({
 
   if (error) {
     return (
-      <div className="bg-[#000000] rounded-lg border border-[#FDFDFD]/10 p-6">
+      <div className="rounded-lg border border-[#FDFDFD]/10 p-6" style={{ backgroundColor: '#14101e' }}>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <AlertCircle className="w-12 h-12 text-red-500 mb-4" />
           <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">Failed to Load Collections</h3>
@@ -321,7 +321,7 @@ export default function CollectionsTable({
 
   if (collections.length === 0) {
     return (
-      <div className="bg-[#000000] rounded-lg border border-[#FDFDFD]/10 p-6">
+      <div className="rounded-lg border border-[#FDFDFD]/10 p-6" style={{ backgroundColor: '#14101e' }}>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="w-16 h-16 bg-[#FDFDFD]/10 rounded-full flex items-center justify-center mb-4">
             <Star className="w-8 h-8 text-[#FDFDFD]/50" />
@@ -339,7 +339,7 @@ export default function CollectionsTable({
   }
 
   return (
-    <div className="bg-[#000000] rounded-lg border border-[#FDFDFD]/10 overflow-hidden">
+    <div className="rounded-lg border border-[#FDFDFD]/10 overflow-hidden" style={{ backgroundColor: '#14101e' }}>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -473,7 +473,8 @@ export default function CollectionsTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent 
                       align="end" 
-                      className="bg-[#000000] border-[#FDFDFD]/20"
+                      className="border-[#FDFDFD]/20"
+                      style={{ backgroundColor: '#14101e' }}
                     >
                       <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#FDFDFD]/10">
                         <ExternalLink className="w-4 h-4 mr-2" />

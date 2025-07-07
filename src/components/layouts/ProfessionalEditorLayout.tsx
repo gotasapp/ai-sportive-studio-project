@@ -107,7 +107,7 @@ export default function ProfessionalEditorLayout({
           </div>
 
             {/* Action Bar */}
-            <div className="bg-transparent border-t border-[#333333] px-4 py-1 mt-[5px]" style={{height: '56px'}}>
+            <div className="bg-transparent px-4 py-1 mt-[5px]" style={{height: '56px'}}>
               {actionBar}
             </div>
           </div>
