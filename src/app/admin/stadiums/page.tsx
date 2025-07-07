@@ -174,3 +174,23 @@ export default function StadiumsPage() {
     </div>
   )
 }
+
+// Adicionando media queries para responsividade
+<style jsx>{`
+  @media (max-width: 768px) {
+    .flex-col {
+      flex-direction: column;
+    }
+    .text-3xl {
+      font-size: 1.5rem;
+    }
+    .p-4 {
+      padding: 1rem;
+    }
+    .space-y-8 > :not([hidden]) ~ :not([hidden]) {
+      --tw-space-y-reverse: 0;
+      margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
+      margin-bottom: calc(2rem * var(--tw-space-y-reverse));
+    }
+  }
+`}</style>

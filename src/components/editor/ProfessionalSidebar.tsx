@@ -169,7 +169,7 @@ export default function ProfessionalSidebar({
         )}
 
         {/* Upload Image */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="cyber-card-upload-jersey border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Upload Image" 

@@ -145,7 +145,7 @@ export default function ProfessionalBadgeSidebar({
         )}
 
         {/* Upload Image */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg rounded-[5px]">
+        <Card className="cyber-card-upload-badge border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Upload Image" 
