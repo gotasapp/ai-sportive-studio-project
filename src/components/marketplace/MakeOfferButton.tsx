@@ -46,6 +46,17 @@ export default function MakeOfferButton({
       }
 
       try {
+        // Verificar se está usando token nativo (modo teste)
+        const { getOfferCurrency, NATIVE_TOKEN_ADDRESS } = await import('@/lib/marketplace-config');
+        const offerCurrency = getOfferCurrency(chain.id);
+        
+        if (offerCurrency === NATIVE_TOKEN_ADDRESS) {
+          // Token nativo não precisa de aprovação
+          setNeedsApproval(false);
+          console.log('🪙 Usando token nativo - não precisa de aprovação');
+          return;
+        }
+
         const { isApproved } = await MarketplaceService.checkOfferTokenAllowance(
           account,
           chain.id,
@@ -54,7 +65,7 @@ export default function MakeOfferButton({
         setNeedsApproval(!isApproved);
       } catch (error) {
         console.log('Erro ao verificar aprovação:', error);
-        setNeedsApproval(true); // Assumir que precisa de aprovação em caso de erro
+        setNeedsApproval(false); // Assumir que não precisa de aprovação em caso de erro
       }
     };
 
@@ -97,15 +108,24 @@ export default function MakeOfferButton({
 
     // Verificar aprovação uma última vez
     try {
-      const { isApproved } = await MarketplaceService.checkOfferTokenAllowance(
-        account,
-        chain.id,
-        offerAmount
-      );
-      if (!isApproved) {
-        toast.error('Token não aprovado. Aprove primeiro antes de fazer a oferta.');
-        setNeedsApproval(true);
-        return;
+      const { getOfferCurrency, NATIVE_TOKEN_ADDRESS } = await import('@/lib/marketplace-config');
+      const offerCurrency = getOfferCurrency(chain.id);
+      
+      if (offerCurrency === NATIVE_TOKEN_ADDRESS) {
+        // Token nativo não precisa de aprovação
+        setNeedsApproval(false);
+        console.log('🪙 Usando token nativo - não precisa de aprovação');
+      } else {
+        const { isApproved } = await MarketplaceService.checkOfferTokenAllowance(
+          account,
+          chain.id,
+          offerAmount
+        );
+        if (!isApproved) {
+          toast.error('Token não aprovado. Aprove primeiro antes de fazer a oferta.');
+          setNeedsApproval(true);
+          return;
+        }
       }
     } catch (error) {
       toast.error('Erro ao verificar aprovação do token.');
@@ -139,16 +159,17 @@ export default function MakeOfferButton({
 
       toast.success('Oferta criada com sucesso! 🎉');
       console.log('✅ Oferta criada:', result.transactionHash);
+      console.log('✅ Resultado completo da oferta:', result);
       
       setIsOpen(false);
       setOfferAmount('');
       setExpiryDays('7');
       setNeedsApproval(false);
       
-      // Opcional: Atualizar lista de ofertas
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // REMOVIDO: reload automático para poder ver os logs
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 2000);
 
     } catch (error: any) {
       console.error('❌ Erro ao criar oferta:', error);

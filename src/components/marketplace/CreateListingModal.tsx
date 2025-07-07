@@ -24,21 +24,30 @@ interface CreateListingModalProps {
 }
 
 export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingModalProps) {
+  const [price, setPrice] = useState('');
+  const [minBid, setMinBid] = useState('');
+  const [buyoutPrice, setBuyoutPrice] = useState('');
   const [listingType, setListingType] = useState<'direct' | 'auction'>('direct');
   const [isLoading, setIsLoading] = useState(false);
   
-  // Direct listing fields
-  const [price, setPrice] = useState('');
-  
-  // Auction fields  
-  const [minBid, setMinBid] = useState('');
-  const [buyoutPrice, setBuyoutPrice] = useState('');
-
-  // Thirdweb v5 hooks
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
 
+  // Debug da rede atual
+  console.log('🔍 DEBUG - Rede atual:', {
+    chainId: chain?.id,
+    chainName: chain?.name,
+    isPolygonAmoy: chain?.id === 80002,
+    needsNetworkSwitch: chain?.id !== 80002
+  });
+
   const handleSubmit = async () => {
+    // Verificar se está na rede correta
+    if (chain?.id !== 80002) {
+      toast.error('Por favor, troque para a rede Polygon Amoy (testnet) para listar NFTs.');
+      return;
+    }
+
     if (!account || !chain) {
       toast.error('Por favor, conecte sua carteira primeiro.');
       return;
@@ -61,6 +70,15 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
     toast.info('Criando listagem direta... Aprove a transação na sua carteira.');
     
     try {
+      // 🔍 DEBUG: Logs detalhados antes da criação
+      console.log('🔍 DEBUG - Parâmetros da listagem:');
+      console.log('📋 NFT Object:', nft);
+      console.log('📋 Asset Contract:', nft.assetContractAddress);
+      console.log('📋 Token ID:', nft.tokenId);
+      console.log('📋 Chain ID:', chain!.id);
+      console.log('📋 Account:', account!.address);
+      console.log('📋 Price:', price);
+      
       const result = await MarketplaceService.createDirectListing(
         account!,
         chain!.id,
@@ -72,12 +90,15 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         }
       );
 
-      toast.success('NFT listado com sucesso!');
+      toast.success('NFT listado com sucesso! 🎉');
       console.log('✅ Listagem criada:', result.transactionHash);
+      console.log('✅ Resultado completo da listagem:', result);
       onOpenChange(false);
       
       // Reset form
       setPrice('');
+      
+      // NOTA: Não recarregar automaticamente para ver logs
       
     } catch (error: any) {
       console.error('❌ Erro ao criar listagem:', error);

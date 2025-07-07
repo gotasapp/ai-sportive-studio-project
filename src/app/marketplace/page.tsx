@@ -71,8 +71,24 @@ export default function MarketplacePage() {
 
   // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
   const getContractByCategory = (category: string): string => {
-    const chainId = chain?.id || 88888; // Default para CHZ
-    return NFT_CONTRACTS[chainId] || '';
+    const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
+    const contractAddress = NFT_CONTRACTS[chainId];
+    
+    console.log('🔍 getContractByCategory Debug:', {
+      category,
+      chainId,
+      chainName: chain?.name || 'unknown',
+      contractAddress,
+      allContracts: NFT_CONTRACTS
+    });
+    
+    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
+    if (!contractAddress) {
+      console.warn(`⚠️ Contrato NFT não encontrado para rede ${chainId}, usando fallback para Polygon Amoy`);
+      return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
+    }
+    
+    return contractAddress;
   };
 
   useEffect(() => {

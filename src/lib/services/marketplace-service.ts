@@ -69,31 +69,98 @@ export class MarketplaceService {
     try {
       console.log('🎯 Criando listagem com parâmetros:', params);
       
+      // Verificar se o marketplace está aprovado para transferir o NFT
+      await MarketplaceService.checkAndApproveNFT(account, chainId, params.assetContract, params.tokenId);
+      
       const contract = getMarketplaceContract(chainId);
       const pricePerToken = priceToWei(params.pricePerToken);
       
-      // Validar e converter tokenId
+      // 🔍 DESCOBRIR O TOKEN ID REAL
       let numericTokenId: bigint;
-      try {
-        // Se é um número válido, usar diretamente
-        if (/^\d+$/.test(params.tokenId)) {
-          numericTokenId = BigInt(params.tokenId);
-        } else if (params.tokenId.length === 24) {
-          // Se é um ObjectId do MongoDB (24 caracteres hex), extrair timestamp como fallback
+      
+      // Se é um ObjectId do MongoDB, precisamos descobrir o tokenId real
+      if (params.tokenId.length === 24 && /^[0-9a-fA-F]{24}$/.test(params.tokenId)) {
+        console.log('🔍 TokenId é ObjectId do MongoDB, descobrindo tokenId real...');
+        
+        try {
+          // Tentar descobrir o último tokenId mintado
+          const lastTokenId = await MarketplaceService.getNextTokenId(chainId, params.assetContract);
+          console.log('📋 Último tokenId mintado:', lastTokenId.toString());
+          
+          // Verificar se o usuário é dono deste token
+          const isOwner = await MarketplaceService.checkTokenOwnership(
+            chainId, 
+            params.assetContract, 
+            lastTokenId.toString(), 
+            account.address
+          );
+          
+          if (isOwner) {
+            numericTokenId = lastTokenId;
+            console.log('✅ Usuário é dono do último token mintado:', numericTokenId.toString());
+          } else {
+            // Se não é dono do último, tentar alguns anteriores
+            console.log('⚠️ Usuário não é dono do último token, verificando anteriores...');
+            let found = false;
+            
+            for (let i = 1; i <= 5; i++) {
+              const testTokenId = lastTokenId - BigInt(i);
+              if (testTokenId < 0) break;
+              
+              const isOwnerTest = await MarketplaceService.checkTokenOwnership(
+                chainId, 
+                params.assetContract, 
+                testTokenId.toString(), 
+                account.address
+              );
+              
+              if (isOwnerTest) {
+                numericTokenId = testTokenId;
+                console.log(`✅ Encontrado token do usuário: ${numericTokenId.toString()}`);
+                found = true;
+                break;
+              }
+            }
+            
+            if (!found) {
+              // Fallback para timestamp
+              const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
+              numericTokenId = BigInt(timestamp % 10000);
+              console.log(`⚠️ Não encontrou token do usuário, usando fallback: ${numericTokenId.toString()}`);
+            }
+          }
+          
+        } catch (error) {
+          console.error('❌ Erro ao descobrir tokenId real:', error);
+          // Fallback para timestamp
           const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
-          numericTokenId = BigInt(timestamp % 10000); // Usar últimos 4 dígitos como tokenId
-          console.log(`⚠️ TokenId parece ser ObjectId, usando timestamp como fallback: ${numericTokenId}`);
-        } else {
-          // Tentar converter diretamente ou usar 0 como fallback
-          numericTokenId = BigInt(0);
-          console.log(`⚠️ TokenId inválido, usando 0 como fallback: ${params.tokenId}`);
+          numericTokenId = BigInt(timestamp % 10000);
+          console.log(`⚠️ Erro na descoberta, usando fallback: ${numericTokenId.toString()}`);
         }
-      } catch (error) {
+        
+      } else if (/^\d+$/.test(params.tokenId)) {
+        // Se é um número válido, usar diretamente
+        numericTokenId = BigInt(params.tokenId);
+        console.log('✅ TokenId numérico válido:', numericTokenId.toString());
+      } else {
+        // Fallback para 0
         numericTokenId = BigInt(0);
-        console.log(`❌ Erro ao converter tokenId, usando 0: ${params.tokenId}`, error);
+        console.log(`⚠️ TokenId inválido, usando 0 como fallback: ${params.tokenId}`);
       }
       
-      console.log('✅ TokenId convertido para:', numericTokenId.toString());
+      console.log('✅ TokenId final a ser usado:', numericTokenId.toString());
+      
+      // Verificar uma última vez se o usuário é dono do token
+      const finalOwnershipCheck = await MarketplaceService.checkTokenOwnership(
+        chainId, 
+        params.assetContract, 
+        numericTokenId.toString(), 
+        account.address
+      );
+      
+      if (!finalOwnershipCheck) {
+        throw new Error(`Você não é o dono do token ${numericTokenId.toString()}. Verifique se você realmente possui este NFT.`);
+      }
       
       const now = new Date();
       const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
@@ -118,6 +185,17 @@ export class MarketplaceService {
         account,
       });
 
+      console.log('🎉 LISTAGEM CRIADA COM SUCESSO!');
+      console.log('📄 Transaction Hash:', result.transactionHash);
+      console.log('📋 Parâmetros da listagem:', {
+        assetContract: params.assetContract,
+        tokenId: numericTokenId.toString(),
+        pricePerToken: params.pricePerToken,
+        account: account.address,
+        chainId
+      });
+      console.log('🔗 Ver transação no explorer:', `https://amoy.polygonscan.com/tx/${result.transactionHash}`);
+
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
       console.error('❌ Erro ao criar listing:', error);
@@ -138,20 +216,52 @@ export class MarketplaceService {
     }
   ) {
     try {
+      console.log('🛒 Comprando NFT com parâmetros:', params);
+      
       const contract = getMarketplaceContract(chainId);
-      const totalPrice = priceToWei(params.expectedTotalPrice);
+      const expectedPrice = priceToWei(params.expectedTotalPrice);
+      
+      // Validar e converter listingId
+      let numericListingId: bigint;
+      try {
+        // Se é um número válido, usar diretamente
+        if (/^\d+$/.test(params.listingId)) {
+          numericListingId = BigInt(params.listingId);
+        } else if (params.listingId.includes('-')) {
+          // Se contém hífen (ex: "listing-686bcc28550dc207b558c7c5"), extrair a parte numérica
+          const numericPart = params.listingId.split('-').pop();
+          if (numericPart && numericPart.length === 24) {
+            // ObjectId do MongoDB
+            const timestamp = parseInt(numericPart.substring(0, 8), 16);
+            numericListingId = BigInt(timestamp % 10000);
+            console.log(`⚠️ ListingId parece conter ObjectId, usando timestamp como fallback: ${numericListingId}`);
+          } else {
+            numericListingId = BigInt(0);
+            console.log(`⚠️ ListingId inválido, usando 0 como fallback: ${params.listingId}`);
+          }
+        } else {
+          // Tentar converter diretamente
+          numericListingId = BigInt(0);
+          console.log(`⚠️ ListingId inválido, usando 0 como fallback: ${params.listingId}`);
+        }
+      } catch (error) {
+        numericListingId = BigInt(0);
+        console.log(`❌ Erro ao converter listingId, usando 0: ${params.listingId}`, error);
+      }
+      
+      console.log('✅ ListingId convertido para:', numericListingId.toString());
       
       const transaction = prepareContractCall({
         contract,
         method: "function buyFromListing(uint256 listingId, address buyFor, uint256 quantity, address currency, uint256 expectedTotalPrice) payable",
         params: [
-          BigInt(params.listingId),
-          account.address, // buyFor
+          numericListingId,
+          account.address,
           BigInt(params.quantity || '1'),
           NATIVE_TOKEN_ADDRESS,
-          totalPrice
+          expectedPrice
         ],
-        value: totalPrice, // Enviar CHZ/ETH/MATIC junto com a transação
+        value: expectedPrice, // Pagar com token nativo
       });
 
       const result = await sendTransaction({
@@ -499,31 +609,53 @@ export class MarketplaceService {
       
       // Obter token ERC20 correto para ofertas (ofertas não podem usar tokens nativos)
       const offerCurrency = getOfferCurrency(chainId);
-      console.log('💰 Usando token ERC20 para oferta:', offerCurrency);
+      console.log('💰 Usando token para oferta:', offerCurrency);
       
       // Estrutura correta conforme documentação do Marketplace V3
       const offerParams = {
         assetContract: params.assetContract,
         tokenId: numericTokenId,
         quantity: BigInt(params.quantity || '1'),
-        currency: offerCurrency, // Token ERC20 (WMATIC, WETH, etc.)
+        currency: offerCurrency, // Token ERC20 (WMATIC, WETH, etc.) ou nativo para testes
         totalPrice: offerPrice,
         expirationTimestamp: BigInt(Math.floor((params.expirationTimestamp || defaultExpiry).getTime() / 1000)),
       };
       
       console.log('📋 OfferParams final:', offerParams);
       
-      const transaction = prepareContractCall({
+      // Se estiver usando token nativo (para testes), adicionar value
+      const transactionParams: any = {
         contract,
         method: "function makeOffer((address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 totalPrice, uint256 expirationTimestamp) params) returns (uint256 offerId)",
         params: [offerParams],
-        // Não usar 'value' para ofertas ERC20 - o usuário deve ter aprovado o token antes
-      });
+      };
+      
+      // Para testes com token nativo, adicionar value
+      if (offerCurrency === NATIVE_TOKEN_ADDRESS) {
+        transactionParams.value = offerPrice;
+        console.log('🪙 Usando token nativo para oferta (modo teste)');
+      } else {
+        console.log('💳 Usando token ERC20 para oferta (requer aprovação)');
+      }
+      
+      const transaction = prepareContractCall(transactionParams);
 
       const result = await sendTransaction({
         transaction,
         account,
       });
+
+      console.log('🎉 OFERTA CRIADA COM SUCESSO!');
+      console.log('📄 Transaction Hash:', result.transactionHash);
+      console.log('📋 Parâmetros da oferta enviados:', {
+        assetContract: params.assetContract,
+        tokenId: numericTokenId.toString(),
+        totalPrice: params.totalPrice,
+        currency: offerCurrency,
+        account: account.address,
+        chainId
+      });
+      console.log('🔗 Ver transação no explorer:', `https://amoy.polygonscan.com/tx/${result.transactionHash}`);
 
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
@@ -558,6 +690,171 @@ export class MarketplaceService {
     } catch (error: any) {
       console.error('❌ Erro ao aceitar oferta:', error);
       throw new Error(error?.reason || error?.message || 'Falha ao aceitar oferta');
+    }
+  }
+
+  // === NFT APPROVAL FUNCTIONS ===
+  
+  /**
+   * Verificar qual é o tokenId real do NFT no contrato
+   */
+  static async getNextTokenId(chainId: number, assetContract: string): Promise<bigint> {
+    try {
+      const nftContract = getContract({
+        client: getMarketplaceContract(chainId).client,
+        address: assetContract,
+        chain: getMarketplaceContract(chainId).chain,
+      });
+      
+      // Tentar obter o próximo tokenId (indica quantos foram mintados)
+      const nextTokenId = await readContract({
+        contract: nftContract,
+        method: "function nextTokenIdToMint() view returns (uint256)",
+        params: []
+      });
+      
+      console.log('📋 Próximo tokenId a ser mintado:', nextTokenId.toString());
+      console.log('📋 Isso significa que o último mintado foi:', (nextTokenId - BigInt(1)).toString());
+      
+      return nextTokenId - BigInt(1); // O último tokenId mintado
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao obter tokenId:', error);
+      
+      // Fallback: tentar totalSupply
+      try {
+        const nftContract = getContract({
+          client: getMarketplaceContract(chainId).client,
+          address: assetContract,
+          chain: getMarketplaceContract(chainId).chain,
+        });
+        
+        const totalSupply = await readContract({
+          contract: nftContract,
+          method: "function totalSupply() view returns (uint256)",
+          params: []
+        });
+        
+        console.log('📋 Total Supply:', totalSupply.toString());
+        return totalSupply - BigInt(1); // Assumindo que tokenIds começam em 0
+        
+      } catch (fallbackError: any) {
+        console.error('❌ Erro no fallback totalSupply:', fallbackError);
+        throw new Error('Não foi possível determinar o tokenId real');
+      }
+    }
+  }
+
+  /**
+   * Verificar se o usuário é dono de um tokenId específico
+   */
+  static async checkTokenOwnership(
+    chainId: number, 
+    assetContract: string, 
+    tokenId: string, 
+    ownerAddress: string
+  ): Promise<boolean> {
+    try {
+      const nftContract = getContract({
+        client: getMarketplaceContract(chainId).client,
+        address: assetContract,
+        chain: getMarketplaceContract(chainId).chain,
+      });
+      
+      const owner = await readContract({
+        contract: nftContract,
+        method: "function ownerOf(uint256 tokenId) view returns (address)",
+        params: [BigInt(tokenId)]
+      });
+      
+      console.log(`📋 Dono do token ${tokenId}:`, owner);
+      console.log(`📋 Endereço verificado:`, ownerAddress);
+      console.log(`📋 É o dono?`, owner.toLowerCase() === ownerAddress.toLowerCase());
+      
+      return owner.toLowerCase() === ownerAddress.toLowerCase();
+      
+    } catch (error: any) {
+      console.error(`❌ Erro ao verificar propriedade do token ${tokenId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Verificar e aprovar NFT para marketplace
+   */
+  static async checkAndApproveNFT(
+    account: Account,
+    chainId: number,
+    assetContract: string,
+    tokenId: string
+  ) {
+    try {
+      console.log('🔍 VERIFICANDO APROVAÇÃO DO NFT:');
+      console.log('📋 Asset Contract:', assetContract);
+      console.log('📋 Token ID:', tokenId);
+      console.log('📋 Chain ID:', chainId);
+      console.log('📋 Account:', account.address);
+      
+      const marketplaceContract = getMarketplaceContract(chainId);
+      console.log('📋 Marketplace Contract:', marketplaceContract.address);
+      
+      const nftContract = getContract({
+        client: marketplaceContract.client,
+        address: assetContract,
+        chain: marketplaceContract.chain,
+      });
+      
+      console.log('📋 NFT Contract criado para:', assetContract);
+      
+      // Verificar se o marketplace já está aprovado
+      console.log('🔍 Verificando se marketplace está aprovado...');
+      const isApproved = await readContract({
+        contract: nftContract,
+        method: "function isApprovedForAll(address owner, address operator) view returns (bool)",
+        params: [account.address, marketplaceContract.address]
+      });
+      
+      console.log('📋 Status da aprovação:', { 
+        isApproved, 
+        owner: account.address, 
+        marketplace: marketplaceContract.address 
+      });
+      
+      if (!isApproved) {
+        console.log('⚠️ NFT NÃO APROVADO! Solicitando aprovação...');
+        toast.info('Aprovando NFT para marketplace... Aprove a transação na sua carteira.');
+        
+        const approvalTransaction = prepareContractCall({
+          contract: nftContract,
+          method: "function setApprovalForAll(address operator, bool approved)",
+          params: [marketplaceContract.address, true]
+        });
+        
+        console.log('📤 Enviando transação de aprovação...');
+        const approvalResult = await sendTransaction({
+          transaction: approvalTransaction,
+          account,
+        });
+        
+        console.log('✅ NFT APROVADO COM SUCESSO!');
+        console.log('📄 Transaction Hash:', approvalResult.transactionHash);
+        console.log('🔗 Ver no explorer:', `https://amoy.polygonscan.com/tx/${approvalResult.transactionHash}`);
+        toast.success('NFT aprovado para marketplace! 🎉');
+      } else {
+        console.log('✅ NFT JÁ ESTÁ APROVADO para marketplace');
+      }
+      
+    } catch (error: any) {
+      console.error('❌ ERRO AO VERIFICAR/APROVAR NFT:', error);
+      console.error('❌ Detalhes do erro:', {
+        message: error.message,
+        reason: error.reason,
+        code: error.code,
+        assetContract,
+        tokenId,
+        chainId
+      });
+      throw new Error('Falha ao aprovar NFT para marketplace: ' + (error?.message || 'Erro desconhecido'));
     }
   }
 
@@ -640,5 +937,40 @@ export class MarketplaceService {
     });
 
     return result;
+  }
+
+  /**
+   * Obter todas as listagens válidas
+   */
+  static async getAllValidListings(chainId: number, startId: number = 0, endId?: number): Promise<DirectListing[]> {
+    try {
+      const contract = getMarketplaceContract(chainId);
+      
+      // Se endId não especificado, usar total de listagens
+      if (!endId) {
+        const total = await MarketplaceService.getTotalListings(chainId);
+        endId = Number(total) - 1;
+      }
+
+      if (endId < startId) {
+        console.log('📭 Nenhuma listagem encontrada');
+        return [];
+      }
+
+      console.log(`🔍 Buscando listagens de ${startId} até ${endId}...`);
+      
+      const result = await readContract({
+        contract,
+        method: "function getAllValidListings(uint256 startId, uint256 endId) view returns ((uint256 listingId, address listingCreator, address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 pricePerToken, uint128 startTimestamp, uint128 endTimestamp, bool reserved, uint8 tokenType, uint8 status)[] listings)",
+        params: [BigInt(startId), BigInt(endId)]
+      });
+
+      console.log(`✅ Encontradas ${result.length} listagens válidas`);
+      return result as DirectListing[];
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar listagens:', error);
+      return [];
+    }
   }
 } 

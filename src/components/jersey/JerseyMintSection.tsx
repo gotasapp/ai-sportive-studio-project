@@ -43,6 +43,9 @@ interface JerseyMintSectionProps {
   editionSize: number
   setRoyalties: (value: number) => void
   setEditionSize: (value: number) => void
+  
+  // Force Network (para teste)
+  forceNetwork?: 'polygon-amoy' | 'chz'
 }
 
 export default function JerseyMintSection({
@@ -73,10 +76,13 @@ export default function JerseyMintSection({
   royalties,
   editionSize,
   setRoyalties,
-  setEditionSize
+  setEditionSize,
+  forceNetwork
 }: JerseyMintSectionProps) {
   
   const getChainName = () => {
+    if (forceNetwork === 'polygon-amoy') return 'Polygon Amoy (Test)'
+    if (forceNetwork === 'chz') return 'CHZ Chain (Test)'
     if (isOnChzChain) return 'CHZ Chain'
     if (isOnPolygonChain) return 'Polygon'
     return 'Unknown Network'
@@ -120,6 +126,22 @@ export default function JerseyMintSection({
 
   return (
     <div className="w-full max-w-md space-y-6">
+      {/* Force Network Warning */}
+      {forceNetwork && (
+        <div className="bg-yellow-600/20 border border-yellow-500 rounded-lg p-3">
+          <div className="flex items-center space-x-2 text-yellow-200">
+            <AlertTriangle className="w-4 h-4" />
+            <span className="text-sm font-medium">Test Mode Active</span>
+          </div>
+          <p className="text-yellow-100 text-xs mt-1">
+            {forceNetwork === 'polygon-amoy' 
+              ? 'Forcing mint to Polygon Amoy for marketplace testing'
+              : 'Forcing mint to CHZ for testing'
+            }
+          </p>
+        </div>
+      )}
+
       {/* Wallet Status */}
       <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
         <div className="space-y-3">
@@ -137,13 +159,24 @@ export default function JerseyMintSection({
                 {address}
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Network</span>
-                <span className={`text-xs ${isOnSupportedChain ? 'text-green-400' : 'text-yellow-400'}`}>
+                <span className="text-sm text-gray-400">Target Network</span>
+                <span className={`text-xs ${forceNetwork ? 'text-yellow-400' : (isOnSupportedChain ? 'text-green-400' : 'text-red-400')}`}>
                   {getChainName()}
                 </span>
               </div>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Jersey Info */}
+      <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
+        <div className="space-y-2">
+          <div className="text-sm text-gray-400">Jersey Details</div>
+          <div className="space-y-1">
+            <div className="text-white text-sm">{selectedTeam} {playerName} #{playerNumber}</div>
+            <div className="text-gray-500 text-xs">Edition Size: {editionSize} | Royalties: {royalties}%</div>
+          </div>
         </div>
       </div>
 
@@ -200,37 +233,33 @@ export default function JerseyMintSection({
               <label className="block text-sm text-gray-400">Royalties (%)</label>
               <input
                 type="number"
+                min="0"
+                max="10"
                 value={royalties}
                 onChange={(e) => setRoyalties(Number(e.target.value))}
-                min="0"
-                max="25"
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
               />
             </div>
             <div className="space-y-2">
               <label className="block text-sm text-gray-400">Edition Size</label>
               <input
                 type="number"
+                min="1"
+                max="1000"
                 value={editionSize}
                 onChange={(e) => setEditionSize(Number(e.target.value))}
-                min="1"
-                max="10000"
-                className="w-full px-3 py-2 bg-gray-800/50 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500"
+                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
               />
             </div>
           </div>
-        </div>
-      )}
 
-      {/* Mint Buttons */}
-      {ipfsUrl && (
-        <div className="space-y-3">
-          {/* Gasless Mint (Admin Only) */}
-          {isUserAdmin && (
+          {/* Mint Buttons */}
+          <div className="space-y-3">
+            {/* Legacy Mint (User Pays Gas) */}
             <Button
-              onClick={onMintGasless}
-              disabled={!canMintGasless || isMinting}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              onClick={onMintLegacy}
+              disabled={!canMintLegacy || isMinting}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50"
             >
               {isMinting ? (
                 <div className="flex items-center space-x-2">
@@ -239,80 +268,73 @@ export default function JerseyMintSection({
                 </div>
               ) : (
                 <div className="flex items-center space-x-2">
-                  <Zap className="w-4 h-4" />
-                  <span>Gasless Mint (Admin)</span>
+                  <Wallet className="w-4 h-4" />
+                  <span>
+                    {forceNetwork === 'polygon-amoy' 
+                      ? 'Mint on Polygon Amoy' 
+                      : 'Mint NFT (User Pays Gas)'
+                    }
+                  </span>
                 </div>
               )}
             </Button>
-          )}
 
-          {/* Legacy Mint */}
-          <Button
-            onClick={onMintLegacy}
-            disabled={!canMintLegacy || isMinting}
-            className="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white"
-          >
-            {isMinting ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Minting...</span>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Wallet className="w-4 h-4" />
-                <span>Mint NFT</span>
-              </div>
+            {/* Engine Gasless Mint (Admin Only) */}
+            {isUserAdmin && canMintGasless && (
+              <Button
+                onClick={onMintGasless}
+                disabled={isMinting}
+                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+              >
+                <div className="flex items-center space-x-2">
+                  <Zap className="w-4 h-4" />
+                  <span>Engine Mint (Gasless)</span>
+                </div>
+              </Button>
             )}
-          </Button>
-        </div>
-      )}
-
-      {/* Mint Status */}
-      {mintStatus !== 'idle' && (
-        <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
-          <div className={`flex items-center space-x-2 ${getMintStatusColor()}`}>
-            {getMintStatusIcon()}
-            <span className="font-medium">
-              {mintStatus === 'pending' && 'Minting in progress...'}
-              {mintStatus === 'success' && 'Mint successful!'}
-              {mintStatus === 'error' && 'Mint failed'}
-            </span>
           </div>
 
-          {mintSuccess && (
-            <div className="mt-2 text-green-400 text-sm">{mintSuccess}</div>
-          )}
+          {/* Mint Status */}
+          {mintStatus !== 'idle' && (
+            <div className="space-y-3">
+              <div className={`flex items-center space-x-2 ${getMintStatusColor()}`}>
+                {getMintStatusIcon()}
+                <span className="text-sm font-medium">
+                  {mintStatus === 'pending' && 'Minting in progress...'}
+                  {mintStatus === 'success' && 'NFT minted successfully!'}
+                  {mintStatus === 'error' && 'Mint failed'}
+                </span>
+              </div>
 
-          {mintError && (
-            <div className="mt-2 text-red-400 text-sm">{mintError}</div>
-          )}
+              {mintSuccess && (
+                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                  <div className="text-green-400 text-sm">{mintSuccess}</div>
+                  {transactionHash && (
+                    <div className="mt-2">
+                      <a
+                        href={forceNetwork === 'polygon-amoy' 
+                          ? `https://amoy.polygonscan.com/tx/${transactionHash}`
+                          : getTransactionUrl(transactionHash, chainId || 88888)
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 text-xs"
+                      >
+                        <span>View Transaction</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
 
-          {transactionHash && (
-            <div className="mt-3">
-              <a
-                href={getTransactionUrl(transactionHash)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center space-x-2 text-cyan-400 hover:text-cyan-300 text-sm"
-              >
-                <ExternalLink className="w-3 h-3" />
-                <span>View Transaction</span>
-              </a>
+              {mintError && (
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <div className="text-red-400 text-sm">{mintError}</div>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* Network Warning */}
-      {isConnected && !isOnSupportedChain && (
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4">
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-yellow-400" />
-            <span className="text-yellow-400 font-medium">Unsupported Network</span>
-          </div>
-          <div className="text-yellow-300 text-sm mt-1">
-            Please switch to CHZ Chain or Polygon to mint NFTs
-          </div>
         </div>
       )}
     </div>
