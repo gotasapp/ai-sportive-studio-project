@@ -130,7 +130,7 @@ export default function ProfessionalSidebar({
       className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
     >
       <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-[#A20131]" />
+        <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
         {required && <span className="text-[#A20131] text-xs">*</span>}
         {badge && (
@@ -174,7 +174,7 @@ export default function ProfessionalSidebar({
             <SectionHeader 
               title="Upload Image" 
               section="vision" 
-              icon={User}
+              icon={FileImage}
               badge={referenceImage ? "Active" : undefined}
             />
           </CardHeader>
@@ -304,7 +304,7 @@ export default function ProfessionalSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Team Selection" 
+              title="Team" 
               section="team" 
               icon={Globe}
               required={!isVisionMode}
@@ -351,7 +351,7 @@ export default function ProfessionalSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Jersey Style" 
+              title="Style" 
               section="style" 
               icon={Palette}
               badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
@@ -386,7 +386,7 @@ export default function ProfessionalSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Player Details" 
+              title="Player" 
               section="player" 
               icon={User}
               required
@@ -437,7 +437,7 @@ export default function ProfessionalSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Quality Settings" 
+              title="Quality" 
               section="settings" 
               icon={Settings}
               badge={quality.toUpperCase()}

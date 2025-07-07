@@ -148,7 +148,7 @@ export default function ProfessionalStadiumSidebar({
       className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
     >
       <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-[#A20131]" />
+        <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
         {required && <span className="text-[#A20131] text-xs">*</span>}
         {badge && (
@@ -321,7 +321,7 @@ export default function ProfessionalStadiumSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Stadium Template" 
+              title="Template" 
               section="template" 
               icon={Building}
               required={!isVisionMode}
@@ -368,7 +368,7 @@ export default function ProfessionalStadiumSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Generation Style" 
+              title="Style" 
               section="style" 
               icon={Camera}
               badge={GENERATION_STYLES.find(s => s.id === generationStyle)?.label}
