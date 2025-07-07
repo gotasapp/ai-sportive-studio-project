@@ -63,6 +63,7 @@ export default function BadgeEditor() {
   const [analysisResult, setAnalysisResult] = useState<any>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [selectedBadgeView, setSelectedBadgeView] = useState<'logo' | 'emblem'>('logo')
+  const [selectedSport, setSelectedSport] = useState<string>('soccer')
   
   const [isMinting, setIsMinting] = useState(false)
   const [mintError, setMintError] = useState<string | null>(null)
@@ -634,6 +635,8 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           setQuality={setQuality}
           isVisionMode={isVisionMode}
           referenceImage={referenceImage}
+          selectedSport={selectedSport}
+          setSelectedSport={setSelectedSport}
           selectedBadgeView={selectedBadgeView}
           setSelectedBadgeView={setSelectedBadgeView}
           onFileUpload={handleVisionFileUpload}
