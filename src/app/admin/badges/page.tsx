@@ -31,7 +31,7 @@ const statusColors: { [key in Badge['status']]: string } = {
 }
 
 // Adicionando media queries para responsividade
-<style jsx>{`
+;<style jsx>{`
   @media (max-width: 768px) {
     .flex-col {
       flex-direction: column;
