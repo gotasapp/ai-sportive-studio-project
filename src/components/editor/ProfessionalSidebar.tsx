@@ -324,7 +324,7 @@ export default function ProfessionalSidebar({
                   isVisionMode && "opacity-50 cursor-not-allowed"
                 )}
                 style={{ 
-                  pointerEvents: 'auto !important',
+                  pointerEvents: 'auto',
                   zIndex: 10,
                   position: 'relative'
                 }}
@@ -364,7 +364,7 @@ export default function ProfessionalSidebar({
                 onChange={(e) => setSelectedStyle(e.target.value)}
                 className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
                 style={{ 
-                  pointerEvents: 'auto !important',
+                  pointerEvents: 'auto',
                   zIndex: 10,
                   position: 'relative'
                 }}
@@ -455,7 +455,7 @@ export default function ProfessionalSidebar({
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
-                    pointerEvents: 'auto !important',
+                    pointerEvents: 'auto',
                     zIndex: 10,
                     position: 'relative'
                   }}
@@ -472,7 +472,7 @@ export default function ProfessionalSidebar({
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
-                    pointerEvents: 'auto !important',
+                    pointerEvents: 'auto',
                     zIndex: 10,
                     position: 'relative'
                   }}

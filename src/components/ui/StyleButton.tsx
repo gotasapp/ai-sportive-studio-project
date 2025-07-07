@@ -18,7 +18,7 @@ export default function StyleButton({ onClick, isActive, children, className = '
       onClick={onClick}
       className={`${baseClasses} ${activeClasses} ${className}`}
       style={{ 
-        pointerEvents: 'auto !important',
+        pointerEvents: 'auto',
         zIndex: 10,
         position: 'relative'
       }}
