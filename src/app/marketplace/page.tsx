@@ -13,6 +13,12 @@ import MarketplaceFilters, {
 import CollectionsTable from '@/components/marketplace/CollectionsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
 import { AlertCircle, Loader2, Grid3X3, List } from 'lucide-react';
+import { useActiveWalletChain } from 'thirdweb/react';
+import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
+import { useMarketplaceData } from '@/hooks/useMarketplaceData';
+import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
+import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
+import MarketplaceDebug from '@/components/marketplace/MarketplaceDebug';
 
 // Tipos de dados exatamente como vêm do MongoDB
 interface NFT {
@@ -32,6 +38,12 @@ interface NFT {
 }
 
 export default function MarketplacePage() {
+  // Thirdweb hooks
+  const chain = useActiveWalletChain();
+  
+  // Marketplace data
+  const { items: marketplaceItems, stats, loading: marketplaceLoading, error: marketplaceError } = useMarketplaceData();
+  
   // Filter States
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
@@ -40,7 +52,7 @@ export default function MarketplacePage() {
   const [viewType, setViewType] = useState<ViewType>('table');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Data States
+  // Legacy data states (mantidos para compatibilidade com CollectionsTable)
   const [allNfts, setAllNfts] = useState<NFT[]>([]);
   const [filteredNfts, setFilteredNfts] = useState<NFT[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +68,12 @@ export default function MarketplacePage() {
   // Watchlist state (mock - in real app this would come from user data)
   const [watchlist, setWatchlist] = useState<string[]>(['Jersey Collection']);
   const [ownedCollections, setOwnedCollections] = useState<string[]>(['Badge Collection']);
+
+  // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
+  const getContractByCategory = (category: string): string => {
+    const chainId = chain?.id || 88888; // Default para CHZ
+    return NFT_CONTRACTS[chainId] || '';
+  };
 
   useEffect(() => {
     const loadRealData = async () => {
@@ -177,20 +195,38 @@ export default function MarketplacePage() {
     // Here you would open an insights modal or navigate to insights page
   };
 
-  const renderGridView = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-      {filteredNfts.map((nft) => (
-        <MarketplaceCard 
-          key={nft._id}
-          name={nft.name}
-          imageUrl={nft.imageUrl}
-          price={nft.price || 'Not for sale'}
-          collection={nft.collection || `By ${nft.creator?.name || 'Anonymous'}`}
-          category={nft.category}
-        />
-      ))}
-    </div>
-  );
+  const renderGridView = () => {
+    // Usar dados do marketplace se disponíveis, senão usar dados legacy
+    const itemsToShow = marketplaceItems.length > 0 ? marketplaceItems : filteredNfts;
+    
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+        {itemsToShow.map((item) => (
+          <MarketplaceCard 
+            key={item.id || item._id}
+            name={item.name}
+            imageUrl={item.imageUrl}
+            price={item.price || item.price || 'Not for sale'}
+            collection={item.collection || `By ${item.creator?.name || item.creator || 'Anonymous'}`}
+            category={item.category}
+            // Dados específicos do marketplace
+            tokenId={item.tokenId || item._id}
+            assetContract={item.contractAddress || getContractByCategory(item.category)}
+            owner={item.owner || item.creator?.wallet}
+            isListed={item.isListed || false}
+            listingId={item.listingId}
+            // Dados de leilão
+            isAuction={item.isAuction || false}
+            auctionId={item.auctionId}
+            currentBid={item.currentBid}
+            auctionEndTime={item.auctionEndTime}
+            // Outros dados
+            activeOffers={item.activeOffers || 0}
+          />
+        ))}
+      </div>
+    );
+  };
 
   const renderListView = () => (
     <div className="p-6 space-y-4">
@@ -220,13 +256,17 @@ export default function MarketplacePage() {
   );
 
   const renderContent = () => {
-    if (error) {
+    // Usar loading do marketplace se disponível
+    const isLoading = marketplaceLoading || loading;
+    const currentError = marketplaceError || error;
+
+    if (currentError) {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Unable to Load Marketplace</h2>
           <p className="text-sm text-gray-400 mb-4 max-w-md">
-            {error || 'Failed to connect to the database. Please check your connection and try again.'}
+            {currentError || 'Failed to connect to the database. Please check your connection and try again.'}
           </p>
           <button 
             onClick={() => window.location.reload()} 
@@ -238,14 +278,8 @@ export default function MarketplacePage() {
       );
     }
 
-    if (loading) {
-      return (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="w-12 h-12 text-[#A20131] animate-spin mb-4" />
-          <h2 className="text-xl font-semibold text-white mb-2">Loading Collections</h2>
-          <p className="text-gray-400">Please wait...</p>
-        </div>
-      );
+    if (isLoading) {
+      return <MarketplaceLoading view={viewType} itemCount={8} />;
     }
 
     // Table view - use CollectionsTable component
@@ -264,7 +298,8 @@ export default function MarketplacePage() {
     }
 
     // Grid/List views for individual NFTs
-    if (filteredNfts.length === 0) {
+    const itemsToShow = marketplaceItems.length > 0 ? marketplaceItems : filteredNfts;
+    if (itemsToShow.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
@@ -297,6 +332,20 @@ export default function MarketplacePage() {
           <FeaturedCarousel />
         </div>
 
+        {/* Marketplace Stats */}
+        <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
+          {marketplaceLoading ? (
+            <MarketplaceStatsLoading />
+          ) : stats ? (
+            <MarketplaceStats
+              totalListings={stats.totalListings}
+              totalAuctions={stats.totalAuctions}
+              totalVolume={stats.totalVolume}
+              floorPrice={stats.floorPrice}
+            />
+          ) : null}
+        </div>
+
         {/* Filters */}
         <MarketplaceFilters
           activeTab={activeTab}
@@ -324,6 +373,9 @@ export default function MarketplacePage() {
           </div>
         </div>
       </div>
+      
+      {/* Debug Component (only in development) */}
+      {process.env.NODE_ENV === 'development' && <MarketplaceDebug />}
     </main>
   );
 }
