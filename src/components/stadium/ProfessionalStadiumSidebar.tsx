@@ -1,10 +1,15 @@
 'use client'
 
-import React from 'react'
-import { Upload, X } from 'lucide-react'
+import React, { useRef } from 'react'
+import { 
+  Upload, X, Building, Users, Eye, Camera, Zap, Cloud, Sunset,
+  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Textarea } from '@/components/ui/textarea'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import { StadiumInfo } from '@/lib/services/stadium-service'
 
 const SPORTS_OPTIONS = [
@@ -16,6 +21,36 @@ const SPORTS_OPTIONS = [
 const VIEW_OPTIONS = [
   { id: 'external', name: 'External View', description: 'Stadium exterior view' },
   { id: 'internal', name: 'Internal View', description: 'Stadium interior view' }
+]
+
+const GENERATION_STYLES = [
+  { id: 'realistic', label: 'Realistic' },
+  { id: 'cinematic', label: 'Cinematic' },
+  { id: 'dramatic', label: 'Dramatic' }
+]
+
+const PERSPECTIVES = [
+  { id: 'external', label: 'External' },
+  { id: 'internal', label: 'Internal' },
+  { id: 'mixed', label: 'Mixed' }
+]
+
+const ATMOSPHERES = [
+  { id: 'packed', label: 'Packed' },
+  { id: 'half_full', label: 'Half Full' },
+  { id: 'empty', label: 'Empty' }
+]
+
+const TIME_OPTIONS = [
+  { id: 'day', label: 'Day' },
+  { id: 'night', label: 'Night' },
+  { id: 'sunset', label: 'Sunset' }
+]
+
+const WEATHER_OPTIONS = [
+  { id: 'clear', label: 'Clear' },
+  { id: 'dramatic', label: 'Dramatic' },
+  { id: 'cloudy', label: 'Cloudy' }
 ]
 
 interface ProfessionalStadiumSidebarProps {
@@ -75,243 +110,447 @@ export default function ProfessionalStadiumSidebar({
   error,
   onResetError
 }: ProfessionalStadiumSidebarProps) {
-  return (
-    <div className="space-y-6">
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-3">
-          <div className="flex items-center justify-between">
-            <p className="text-red-300 text-sm">{error}</p>
-            <Button variant="ghost" size="sm" onClick={onResetError}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [expandedSections, setExpandedSections] = React.useState({
+    vision: false,
+    prompt: false,
+    template: true,
+    style: true,
+    perspective: true,
+    atmosphere: true,
+    time: true,
+    weather: true,
+    settings: false
+  })
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
+  const SectionHeader = ({ 
+    title, 
+    section, 
+    icon: Icon, 
+    required = false,
+    badge
+  }: { 
+    title: string
+    section: keyof typeof expandedSections
+    icon: React.ComponentType<any>
+    required?: boolean
+    badge?: string
+  }) => (
+    <button
+      onClick={() => toggleSection(section)}
+      className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="h-4 w-4 text-[#A20131]" />
+        <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
+        {required && <span className="text-[#A20131] text-xs">*</span>}
+        {badge && (
+          <Badge variant="secondary" className="text-xs bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+            {badge}
+          </Badge>
+        )}
+      </div>
+      {expandedSections[section] ? (
+        <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
+      ) : (
+        <ChevronDown className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
       )}
+    </button>
+  )
 
-      {/* Vision Reference Upload */}
+  return (
+    <TooltipProvider>
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
-            Stadium Reference
-          </h3>
-        </div>
-        
-        {!referenceImage ? (
-          <div className="border-2 border-dashed border-[#333333] rounded-lg p-6 text-center hover:border-[#A20131] transition-colors cursor-pointer bg-[#111011]/50"
-               onClick={() => document.getElementById('stadium-vision-upload')?.click()}>
-            <Upload className="mx-auto h-8 w-8 text-[#ADADAD] mb-2" />
-            <p className="text-sm text-[#ADADAD]">Click to upload stadium image</p>
-            <p className="text-xs text-[#ADADAD]/70 mt-1">JPG, PNG, WebP up to 10MB</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="relative">
-              <img 
-                src={referenceImage} 
-                alt="Stadium Reference" 
-                className="w-full h-32 object-cover rounded-lg border border-[#333333]" 
-              />
-              <button 
-                onClick={onClearReference} 
-                className="absolute top-2 right-2 bg-[#A20131] hover:bg-[#A20131]/80 text-white rounded-full p-1 transition-colors"
+        {/* Error Display */}
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <div className="flex items-start justify-between">
+              <p className="text-sm text-red-400 flex-1">{error}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onResetError}
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-auto"
               >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {/* Sport Selection */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-[#ADADAD]">Sport</Label>
-              <select 
-                value={selectedSport} 
-                onChange={(e) => setSelectedSport(e.target.value)} 
-                className="w-full px-3 py-2 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] text-sm focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {SPORTS_OPTIONS.map((sport) => (
-                  <option key={sport.id} value={sport.id} className="bg-[#111011] text-[#FDFDFD]">
-                    {sport.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* View Selection */}
-            <div className="space-y-2">
-              <Label className="text-xs font-medium text-[#ADADAD]">View</Label>
-              <select 
-                value={selectedView} 
-                onChange={(e) => setSelectedView(e.target.value)} 
-                className="w-full px-3 py-2 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] text-sm focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {VIEW_OPTIONS.map((view) => (
-                  <option key={view.id} value={view.id} className="bg-[#111011] text-[#FDFDFD]">
-                    {view.name}
-                  </option>
-                ))}
-              </select>
+                <X className="h-3 w-3" />
+              </Button>
             </div>
           </div>
         )}
-        
-        <input
-          id="stadium-vision-upload"
-          type="file"
-          accept="image/*"
-          onChange={onFileUpload}
-          className="hidden"
-        />
-      </div>
 
-      {/* Custom Prompt */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Custom Prompt (Optional)</Label>
-        <Textarea 
-          value={customPrompt} 
-          onChange={(e) => setCustomPrompt(e.target.value)} 
-          placeholder="e.g., a futuristic stadium on Mars"
-          className="min-h-[80px] bg-[#111011] border-[#333333] text-[#FDFDFD] focus:border-[#A20131]"
-        />
-      </div>
+        {/* Upload Image */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Upload Image" 
+              section="vision" 
+              icon={FileImage}
+              badge={referenceImage ? "Active" : undefined}
+            />
+          </CardHeader>
+          {expandedSections.vision && (
+            <CardContent className="p-3 pt-0 space-y-3">
+              {!referenceImage ? (
+                <div
+                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={onFileUpload}
+                    accept="image/png, image/jpeg, image/webp"
+                  />
+                  <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
+                  <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
+                  <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <img
+                      src={referenceImage}
+                      alt="Reference"
+                      className="w-full h-24 object-cover rounded-lg border border-[#333333]"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onClearReference}
+                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {SPORTS_OPTIONS.map(sport => (
+                          <button
+                            key={sport.id}
+                            onClick={() => setSelectedSport(sport.id)}
+                            className={cn(
+                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              selectedSport === sport.id
+                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{sport.name}</div>
+                            <div className="text-xs opacity-70">{sport.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {VIEW_OPTIONS.map(view => (
+                          <button
+                            key={view.id}
+                            onClick={() => setSelectedView(view.id)}
+                            className={cn(
+                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              selectedView === view.id
+                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{view.name}</div>
+                            <div className="text-xs opacity-70">{view.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Stadium Template Selector */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Stadium Template</Label>
-        <select 
-          value={selectedStadium} 
-          onChange={(e) => setSelectedStadium(e.target.value)} 
-          disabled={isVisionMode}
-          className={`w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative ${
-            isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="custom_only">
-            {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
-          </option>
-          {availableStadiums.map((stadium) => (
-            <option key={stadium.id} value={stadium.id}>
-              {stadium.name}
-            </option>
-          ))}
-        </select>
-      </div>
+        {/* Custom Prompt */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Custom Prompt" 
+              section="prompt" 
+              icon={MessageSquare}
+              badge={customPrompt ? "Added" : undefined}
+            />
+          </CardHeader>
+          {expandedSections.prompt && (
+            <CardContent className="p-3 pt-0 space-y-2">
+              <div>
+                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+                  Additional Instructions (Optional)
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., a futuristic stadium on Mars, with neon lights..."
+                  rows={3}
+                  maxLength={200}
+                  className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none"
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-[#ADADAD]">
+                    Custom instructions for AI generation
+                  </p>
+                  <span className="text-xs text-[#ADADAD]">
+                    {customPrompt.length}/200
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Generation Style */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Generation Style</Label>
-        <select 
-          value={generationStyle} 
-          onChange={(e) => setGenerationStyle(e.target.value)} 
-          className="w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="realistic">Realistic</option>
-          <option value="cinematic">Cinematic</option>
-          <option value="dramatic">Dramatic</option>
-        </select>
-      </div>
+        {/* Stadium Template */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Stadium Template" 
+              section="template" 
+              icon={Building}
+              required={!isVisionMode}
+              badge={selectedStadium || undefined}
+            />
+          </CardHeader>
+          {expandedSections.template && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={selectedStadium}
+                onChange={(e) => setSelectedStadium(e.target.value)}
+                disabled={isVisionMode}
+                className={cn(
+                  "w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm",
+                  "focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                  "pointer-events-auto relative",
+                  isVisionMode && "opacity-50 cursor-not-allowed"
+                )}
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                <option value="custom_only" className="bg-[#111011] text-[#FDFDFD]">
+                  {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
+                </option>
+                {availableStadiums.map((stadium) => (
+                  <option key={stadium.id} value={stadium.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {stadium.name}
+                  </option>
+                ))}
+              </select>
+              {isVisionMode && (
+                <p className="text-xs text-[#ADADAD] mt-2">
+                  Template auto-detected from reference image
+                </p>
+              )}
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Perspective */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Perspective</Label>
-        <select 
-          value={perspective} 
-          onChange={(e) => setPerspective(e.target.value)} 
-          className="w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="external">External</option>
-          <option value="internal">Internal</option>
-          <option value="mixed">Mixed</option>
-        </select>
-      </div>
+        {/* Generation Style */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Generation Style" 
+              section="style" 
+              icon={Camera}
+              badge={GENERATION_STYLES.find(s => s.id === generationStyle)?.label}
+            />
+          </CardHeader>
+          {expandedSections.style && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={generationStyle}
+                onChange={(e) => setGenerationStyle(e.target.value)}
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {GENERATION_STYLES.map((style) => (
+                  <option key={style.id} value={style.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {style.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {GENERATION_STYLES.find(s => s.id === generationStyle)?.label} style
+              </p>
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Atmosphere */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Atmosphere</Label>
-        <select 
-          value={atmosphere} 
-          onChange={(e) => setAtmosphere(e.target.value)} 
-          className="w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="packed">Packed</option>
-          <option value="half_full">Half Full</option>
-          <option value="empty">Empty</option>
-        </select>
-      </div>
+        {/* Perspective */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Perspective" 
+              section="perspective" 
+              icon={Eye}
+              badge={PERSPECTIVES.find(p => p.id === perspective)?.label}
+            />
+          </CardHeader>
+          {expandedSections.perspective && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={perspective}
+                onChange={(e) => setPerspective(e.target.value)}
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {PERSPECTIVES.map((persp) => (
+                  <option key={persp.id} value={persp.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {persp.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {PERSPECTIVES.find(p => p.id === perspective)?.label} perspective
+              </p>
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Time of Day */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Time of Day</Label>
-        <select 
-          value={timeOfDay} 
-          onChange={(e) => setTimeOfDay(e.target.value)} 
-          className="w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="day">Day</option>
-          <option value="night">Night</option>
-          <option value="sunset">Sunset</option>
-        </select>
-      </div>
+        {/* Atmosphere */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Atmosphere" 
+              section="atmosphere" 
+              icon={Users}
+              badge={ATMOSPHERES.find(a => a.id === atmosphere)?.label}
+            />
+          </CardHeader>
+          {expandedSections.atmosphere && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={atmosphere}
+                onChange={(e) => setAtmosphere(e.target.value)}
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {ATMOSPHERES.map((atm) => (
+                  <option key={atm.id} value={atm.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {atm.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {ATMOSPHERES.find(a => a.id === atmosphere)?.label} atmosphere
+              </p>
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Weather */}
-      <div className="space-y-4">
-        <Label className="text-sm font-medium text-[#FDFDFD]">Weather</Label>
-        <select 
-          value={weather} 
-          onChange={(e) => setWeather(e.target.value)} 
-          className="w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative"
-          style={{ 
-            pointerEvents: 'auto',
-            zIndex: 10,
-            position: 'relative'
-          }}
-        >
-          <option value="clear">Clear</option>
-          <option value="dramatic">Dramatic</option>
-          <option value="cloudy">Cloudy</option>
-        </select>
-      </div>
+        {/* Time of Day */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Time of Day" 
+              section="time" 
+              icon={Sunset}
+              badge={TIME_OPTIONS.find(t => t.id === timeOfDay)?.label}
+            />
+          </CardHeader>
+          {expandedSections.time && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={timeOfDay}
+                onChange={(e) => setTimeOfDay(e.target.value)}
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time.id} value={time.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {time.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {TIME_OPTIONS.find(t => t.id === timeOfDay)?.label} time
+              </p>
+            </CardContent>
+          )}
+        </Card>
 
-      {/* Generation Cost */}
-      {generationCost && (
-        <div className="text-xs text-[#ADADAD] text-center">
-          Est. cost: ${generationCost.toFixed(3)}
-        </div>
-      )}
-    </div>
+        {/* Weather */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Weather" 
+              section="weather" 
+              icon={Cloud}
+              badge={WEATHER_OPTIONS.find(w => w.id === weather)?.label}
+            />
+          </CardHeader>
+          {expandedSections.weather && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={weather}
+                onChange={(e) => setWeather(e.target.value)}
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {WEATHER_OPTIONS.map((w) => (
+                  <option key={w.id} value={w.id} className="bg-[#111011] text-[#FDFDFD]">
+                    {w.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {WEATHER_OPTIONS.find(w => w.id === weather)?.label} weather
+              </p>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Generation Cost */}
+        {generationCost && (
+          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+            <CardContent className="p-4">
+              <div className="p-2 bg-[#111011] rounded-lg border border-[#333333]">
+                <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
+                <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </TooltipProvider>
   )
 } 

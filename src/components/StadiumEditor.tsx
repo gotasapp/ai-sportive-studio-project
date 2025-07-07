@@ -95,6 +95,7 @@ export default function StadiumEditor() {
   const [referenceImageBlob, setReferenceImageBlob] = useState<Blob | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [selectedView, setSelectedView] = useState('external')
+  const [selectedSport, setSelectedSport] = useState('soccer')
   
   // Network validation
   const supportedChainIds = [88888, 88882, 137, 80002] // CHZ + Amoy
@@ -462,6 +463,8 @@ export default function StadiumEditor() {
           setCustomPrompt={setCustomPrompt}
           isVisionMode={isVisionMode}
           referenceImage={referenceImage}
+          selectedSport={selectedSport}
+          setSelectedSport={setSelectedSport}
           selectedView={selectedView}
           setSelectedView={setSelectedView}
           onFileUpload={handleVisionFileUpload}
