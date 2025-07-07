@@ -282,7 +282,7 @@ export default function ProfessionalBadgeSidebar({
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
-              title="Details" 
+              title="Badge Details" 
               section="details" 
               icon={User}
               required
@@ -314,7 +314,7 @@ export default function ProfessionalBadgeSidebar({
             </CardContent>
           )}
         </Card>
-
+        
         {/* Badge Style */}
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">

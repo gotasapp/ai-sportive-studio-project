@@ -127,7 +127,7 @@ export default function ProfessionalSidebar({
   }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
+      className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-[2px] transition-colors group"
     >
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-[#ADADAD]" />
@@ -153,7 +153,7 @@ export default function ProfessionalSidebar({
 
         {/* Error Display */}
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-[2px]">
             <div className="flex items-start justify-between">
               <p className="text-sm text-red-400 flex-1">{error}</p>
               <Button
@@ -182,7 +182,7 @@ export default function ProfessionalSidebar({
             <CardContent className="p-3 pt-0 space-y-3">
               {!referenceImage ? (
                 <div
-                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
@@ -202,7 +202,7 @@ export default function ProfessionalSidebar({
                     <img
                       src={referenceImage}
                       alt="Reference"
-                      className="w-full h-24 object-cover rounded-lg border border-[#333333]"
+                      className="w-full h-24 object-cover rounded-[2px] border border-[#333333]"
                     />
                     <Button
                       variant="ghost"
@@ -223,7 +223,7 @@ export default function ProfessionalSidebar({
                             key={sport.id}
                             onClick={() => setSelectedSport(sport.id)}
                             className={cn(
-                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedSport === sport.id
                                 ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
                                 : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
@@ -244,7 +244,7 @@ export default function ProfessionalSidebar({
                             key={view.id}
                             onClick={() => setSelectedView(view.id)}
                             className={cn(
-                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedView === view.id
                                 ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
                                 : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
@@ -318,9 +318,9 @@ export default function ProfessionalSidebar({
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 disabled={isVisionMode}
                 className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm",
+                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px]",
                   "transition-colors",
-                  "pointer-events-auto relative", // ADICIONADO: relative para z-index
+                  "pointer-events-auto relative", 
                   selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
                   isVisionMode && "opacity-50 cursor-not-allowed"
                 )}
@@ -364,7 +364,7 @@ export default function ProfessionalSidebar({
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
                 className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px] transition-colors pointer-events-auto relative", 
                   selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
                 )}
                 style={{ 
@@ -412,7 +412,7 @@ export default function ProfessionalSidebar({
                     placeholder="JEFF"
                     maxLength={12}
                     className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
                       playerName ? "text-[#707070]" : "text-[#FDFDFD]"
                     )}
                   />
@@ -432,7 +432,7 @@ export default function ProfessionalSidebar({
                     placeholder="10"
                     maxLength={2}
                     className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
                       playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
                     )}
                   />
@@ -454,47 +454,37 @@ export default function ProfessionalSidebar({
             />
           </CardHeader>
           {expandedSections.settings && (
-            <CardContent className="p-4 pt-0">
+            <CardContent className="p-3 pt-0">
               <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={() => setQuality('standard')}
                   className={cn(
-                    "p-3 cyber-select transition-all duration-200 text-center pointer-events-auto relative",
-                    quality === 'standard'
-                      ? "bg-[#A20131]/10 text-[#A20131]"
-                      : "bg-[#333333]/20 text-[#ADADAD] hover:text-[#FDFDFD]"
+                    "p-2 rounded-[2px] border transition-colors",
+                    quality === 'standard' 
+                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
+                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
                 >
-                  <div className="text-sm font-medium">Standard</div>
-                  <div className="text-xs opacity-70">Fast generation</div>
+                  <span className="font-semibold text-sm">STANDARD</span>
                 </button>
                 <button
                   onClick={() => setQuality('hd')}
                   className={cn(
-                    "p-3 cyber-select transition-all duration-200 text-center pointer-events-auto relative",
+                    "p-2 rounded-[2px] border transition-colors",
                     quality === 'hd'
-                      ? "bg-[#A20131]/10 text-[#A20131]"
-                      : "bg-[#333333]/20 text-[#ADADAD] hover:text-[#FDFDFD]"
+                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
+                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
                 >
-                  <div className="text-sm font-medium">HD</div>
-                  <div className="text-xs opacity-70">High quality</div>
+                  <span className="font-semibold text-sm">HD</span>
                 </button>
               </div>
               {generationCost && (
-                <div className="mt-3 p-2 cyber-select">
-                  <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
-                  <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
+                <div className="mt-3 p-2 rounded-[2px] bg-[#333333]/20 border border-[#333333]">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className='text-gray-400'>Generation Cost:</span>
+                    <span className="text-white font-mono">{generationCost.toFixed(2)} Credits</span>
+                  </div>
                 </div>
               )}
             </CardContent>

@@ -163,7 +163,7 @@
 .cyber-card-upload-badge {
   position: relative;
   background: #14101e;
-  border-radius: 5px;
+  border-radius: 2px;
   transition: all 0.2s ease;
 }
 
@@ -172,7 +172,7 @@
   position: absolute;
   inset: 0;
   border: 1px solid transparent;
-  border-radius: 5px;
+  border-radius: 2px;
   padding: 0.25px;
   background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -190,7 +190,7 @@
 .cyber-card {
   position: relative;
   background: #14101e;
-  border-radius: 0.5rem;
+  border-radius: 2px;
   transition: all 0.2s ease;
 }
 
@@ -199,7 +199,7 @@
   position: absolute;
   inset: 0;
   border: 1px solid transparent;
-  border-radius: 0.75rem;
+  border-radius: 2px;
   padding: 0.25px;
   background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);

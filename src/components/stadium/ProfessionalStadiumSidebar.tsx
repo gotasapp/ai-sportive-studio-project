@@ -364,7 +364,7 @@ export default function ProfessionalStadiumSidebar({
             </CardContent>
           )}
         </Card>
-
+        
         {/* Generation Style */}
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
