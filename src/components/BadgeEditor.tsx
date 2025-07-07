@@ -622,7 +622,8 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
   return (
     <ProfessionalEditorLayout
-      showTitle={false}
+      title="Badge Fan NFT"
+      showTitle={true}
       sidebar={
         <ProfessionalBadgeSidebar
           badgeName={badgeName}

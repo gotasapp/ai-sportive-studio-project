@@ -302,7 +302,7 @@ export default function ProfessionalStadiumSidebar({
                   placeholder="e.g., a futuristic stadium on Mars, with neon lights..."
                   rows={3}
                   maxLength={200}
-                  className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none"
+                  className="w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none"
                 />
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-xs text-[#ADADAD]">
@@ -335,9 +335,10 @@ export default function ProfessionalStadiumSidebar({
                 onChange={(e) => setSelectedStadium(e.target.value)}
                 disabled={isVisionMode}
                 className={cn(
-                  "w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm",
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm",
                   "focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
                   "pointer-events-auto relative",
+                  selectedStadium && selectedStadium !== "custom_only" ? "text-[#707070]" : "text-[#FDFDFD]",
                   isVisionMode && "opacity-50 cursor-not-allowed"
                 )}
                 style={{ 
@@ -346,11 +347,11 @@ export default function ProfessionalStadiumSidebar({
                   position: 'relative'
                 }}
               >
-                <option value="custom_only" className="bg-[#111011] text-[#FDFDFD]">
+                <option value="custom_only" className="bg-[#14101e] text-[#FDFDFD]">
                   {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
                 </option>
                 {availableStadiums.map((stadium) => (
-                  <option key={stadium.id} value={stadium.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={stadium.id} value={stadium.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {stadium.name}
                   </option>
                 ))}
@@ -379,7 +380,10 @@ export default function ProfessionalStadiumSidebar({
               <select
                 value={generationStyle}
                 onChange={(e) => setGenerationStyle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  generationStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -387,7 +391,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {GENERATION_STYLES.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
@@ -414,7 +418,10 @@ export default function ProfessionalStadiumSidebar({
               <select
                 value={perspective}
                 onChange={(e) => setPerspective(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  perspective ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -422,7 +429,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {PERSPECTIVES.map((persp) => (
-                  <option key={persp.id} value={persp.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={persp.id} value={persp.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {persp.label}
                   </option>
                 ))}
@@ -449,7 +456,10 @@ export default function ProfessionalStadiumSidebar({
               <select
                 value={atmosphere}
                 onChange={(e) => setAtmosphere(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  atmosphere ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -457,7 +467,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {ATMOSPHERES.map((atm) => (
-                  <option key={atm.id} value={atm.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={atm.id} value={atm.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {atm.label}
                   </option>
                 ))}
@@ -484,7 +494,10 @@ export default function ProfessionalStadiumSidebar({
               <select
                 value={timeOfDay}
                 onChange={(e) => setTimeOfDay(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  timeOfDay ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -492,7 +505,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {TIME_OPTIONS.map((time) => (
-                  <option key={time.id} value={time.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={time.id} value={time.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {time.label}
                   </option>
                 ))}
@@ -519,7 +532,10 @@ export default function ProfessionalStadiumSidebar({
               <select
                 value={weather}
                 onChange={(e) => setWeather(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  weather ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -527,7 +543,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {WEATHER_OPTIONS.map((w) => (
-                  <option key={w.id} value={w.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={w.id} value={w.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {w.label}
                   </option>
                 ))}
@@ -543,7 +559,7 @@ export default function ProfessionalStadiumSidebar({
         {generationCost && (
           <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
             <CardContent className="p-4">
-              <div className="p-2 bg-[#111011] rounded-lg border border-[#333333]">
+              <div className="p-2 bg-[#14101e] rounded-lg border border-[#333333]">
                 <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
                 <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
               </div>

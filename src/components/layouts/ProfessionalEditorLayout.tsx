@@ -21,7 +21,7 @@ export default function ProfessionalEditorLayout({
   actionBar,
   marketplace,
   className,
-  title = "Jersey Editor",
+  title = "Jersey Fan NFT",
   showTitle = true
 }: ProfessionalEditorLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
@@ -46,7 +46,7 @@ export default function ProfessionalEditorLayout({
               <div className="sticky top-0 z-10 bg-transparent p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 flex justify-center">
-                    <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
+                    <h2 className="text-sm md:text-xl font-system font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent" style={{ fontWeight: 500 }}>
                       {title}
                     </h2>
                   </div>

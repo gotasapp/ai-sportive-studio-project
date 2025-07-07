@@ -443,7 +443,8 @@ export default function StadiumEditor() {
 
   return (
     <ProfessionalEditorLayout
-      showTitle={false}
+      title="Stadium Fan NFT"
+      showTitle={true}
       sidebar={
         <ProfessionalStadiumSidebar
           availableStadiums={availableStadiums}

@@ -261,7 +261,10 @@ export default function ProfessionalBadgeSidebar({
                   placeholder="e.g., add golden elements, vintage style, medieval theme..."
                   rows={3}
                   maxLength={200}
-                  className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none"
+                  className={cn(
+                    "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none",
+                    customPrompt ? "text-[#707070]" : "text-[#FDFDFD]"
+                  )}
                 />
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-xs text-[#ADADAD]">
@@ -301,7 +304,10 @@ export default function ProfessionalBadgeSidebar({
                     onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
                     placeholder="CHAMPION"
                     maxLength={15}
-                    className="w-full pl-10 pr-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors"
+                    className={cn(
+                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
+                    )}
                   />
                 </div>
               </div>
@@ -325,7 +331,10 @@ export default function ProfessionalBadgeSidebar({
               <select
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -333,7 +342,7 @@ export default function ProfessionalBadgeSidebar({
                 }}
               >
                 {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
@@ -394,7 +403,7 @@ export default function ProfessionalBadgeSidebar({
                 </button>
               </div>
               {generationCost && (
-                <div className="mt-3 p-2 bg-[#111011] rounded-lg border border-[#333333]">
+                <div className="mt-3 p-2 bg-[#14101e] rounded-lg border border-[#333333]">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
                   <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
                 </div>

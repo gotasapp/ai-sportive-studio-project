@@ -318,9 +318,10 @@ export default function ProfessionalSidebar({
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 disabled={isVisionMode}
                 className={cn(
-                  "w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm",
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm",
                   "focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
                   "pointer-events-auto relative", // ADICIONADO: relative para z-index
+                  selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
                   isVisionMode && "opacity-50 cursor-not-allowed"
                 )}
                 style={{ 
@@ -329,11 +330,11 @@ export default function ProfessionalSidebar({
                   position: 'relative'
                 }}
               >
-                <option value="" className="bg-[#111011] text-[#FDFDFD]">
+                <option value="" className="bg-[#14101e] text-[#FDFDFD]">
                   Select a team...
                 </option>
                 {availableTeams.map((team) => (
-                  <option key={team} value={team} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={team} value={team} className="bg-[#14101e] text-[#FDFDFD]">
                     {team}
                   </option>
                 ))}
@@ -362,7 +363,10 @@ export default function ProfessionalSidebar({
               <select
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                className={cn(
+                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
                 style={{ 
                   pointerEvents: 'auto',
                   zIndex: 10,
@@ -370,7 +374,7 @@ export default function ProfessionalSidebar({
                 }}
               >
                 {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#111011] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
@@ -407,7 +411,10 @@ export default function ProfessionalSidebar({
                     onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
                     placeholder="JEFF"
                     maxLength={12}
-                    className="w-full pl-10 pr-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors"
+                    className={cn(
+                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      playerName ? "text-[#707070]" : "text-[#FDFDFD]"
+                    )}
                   />
                 </div>
               </div>
@@ -424,7 +431,10 @@ export default function ProfessionalSidebar({
                     onChange={(e) => setPlayerNumber(e.target.value)}
                     placeholder="10"
                     maxLength={2}
-                    className="w-full pl-10 pr-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors"
+                    className={cn(
+                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
+                    )}
                   />
                 </div>
               </div>
