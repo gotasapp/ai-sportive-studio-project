@@ -2,8 +2,7 @@
 
 import React from 'react'
 import Image from 'next/image'
-import { Download, Building, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
 import { StadiumResponse } from '@/lib/services/stadium-service'
 
 interface StadiumPreviewProps {
@@ -13,110 +12,73 @@ interface StadiumPreviewProps {
   result: StadiumResponse | null
   selectedStadium: string
   generationStyle: string
-  perspective: string
-  atmosphere: string
-  timeOfDay: string
-  weather: string
-  quality: string
 }
+
+const ChilizLogo = () => (
+  <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="w-24 h-24 text-white/50">
+    <title>Chiliz</title>
+    <path fill="currentColor" d="M17.387 3.582H6.613L2.4 12l4.213 8.418h10.774L21.6 12zM6.918 19.543l-3.6-7.214 3.6-7.213h4.15v14.427zm10.164 0h-5.11V4.116h5.11l3.6 7.214z"/>
+  </svg>
+);
 
 export default function StadiumPreview({
   generatedImage,
   isGenerating,
   error,
-  result,
   selectedStadium,
   generationStyle,
-  perspective,
-  atmosphere,
-  timeOfDay,
-  weather,
-  quality
 }: StadiumPreviewProps) {
-  const handleDownload = () => {
-    if (!generatedImage) return
-    
-    const link = document.createElement('a')
-    link.href = generatedImage
-    link.download = `stadium_${selectedStadium}_${generationStyle}.png`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
 
   const getStadiumName = () => {
     if (selectedStadium === 'custom_only') return 'Custom Stadium'
-    return selectedStadium || 'Stadium'
+    return selectedStadium.replace(/_/g, ' ') || 'Stadium'
   }
 
   return (
-    <>
+    <div className="w-[92%] mx-auto aspect-[3/5] mt-[10px] bg-black/30 rounded-2xl flex items-center justify-center p-2 relative overflow-hidden shadow-lg">
+      <div className="absolute inset-0 bg-white/5 backdrop-blur-md"></div>
+      
       {isGenerating && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="w-24 h-24 border-4 border-white border-t-transparent rounded-full animate-spin mb-8"></div>
-          <p className="text-white text-2xl font-semibold">Generating stadium...</p>
-          <div className="mt-6 w-64 h-3 bg-gray-700 rounded-full overflow-hidden">
-            <div className="h-full bg-white rounded-full animate-pulse"></div>
-          </div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/20 z-20">
+          <Loader2 className="w-16 h-16 text-white animate-spin" />
+        </div>
+      )}
+
+      {!generatedImage && !isGenerating && (
+        <div className="z-10 flex flex-col items-center justify-center text-center">
+          <ChilizLogo />
+          <p className="mt-4 text-sm text-white/60">O estádio gerado aparecerá aqui</p>
         </div>
       )}
       
-      {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8">
-          <div className="text-center">
-            <div className="w-24 h-24 bg-red-500/20 rounded-full flex items-center justify-center mb-8">
-              <span className="text-red-400 text-4xl">⚠</span>
-            </div>
-            <p className="text-red-400 mb-8 text-center text-xl">{error}</p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="px-8 py-4 bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-colors text-lg"
-            >
-              Try again
-            </button>
-          </div>
+      {error && !isGenerating && (
+        <div className="z-10 text-center p-4">
+           <p className="font-semibold text-red-400">Generation Failed</p>
+           <p className="text-xs text-red-400/70 mt-1">{error}</p>
         </div>
       )}
-      
-      {generatedImage && !isGenerating && !error && (
-        <div className="absolute inset-0 p-6 lg:p-3">
+
+      {generatedImage && !isGenerating && (
+        <>
           <Image 
             src={generatedImage} 
             alt="Generated Stadium" 
-            width={1024} 
-            height={1024} 
-            className="w-full h-full object-contain rounded-lg" 
+            layout="fill"
+            className="object-cover z-0"
           />
-          <div className="absolute inset-0 lg:inset-3 rounded-lg border-2 border-white/50 pointer-events-none"></div>
-          <div className="absolute -top-3 lg:top-1 -right-3 lg:right-1 w-8 lg:w-6 h-8 lg:h-6 bg-white rounded-full animate-pulse shadow-lg shadow-white/50"></div>
-          
-          <div className="absolute bottom-0 lg:bottom-3 left-0 lg:left-3 right-0 lg:right-3 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-6 lg:p-3 rounded-b-lg">
-            <div className="text-white">
-              <p className="font-bold text-2xl lg:text-lg">{getStadiumName()}</p>
-              <p className="text-white text-lg lg:text-sm">{generationStyle} · {perspective} · {atmosphere}</p>
-              <div className="flex items-center mt-2 lg:mt-1 space-x-4 lg:space-x-3">
-                <span className="text-sm lg:text-xs text-gray-300">{timeOfDay} · {weather}</span>
-                <span className="text-sm lg:text-xs text-gray-300">Quality: {quality}</span>
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/50 to-transparent z-10">
+            <div className="flex justify-between items-end">
+              <div>
+                <p className="text-xs text-white/70">Coleção: {generationStyle}</p>
+                <p className="text-lg font-bold text-white">{getStadiumName()}</p>
+              </div>
+              <div className="w-8 h-8 rounded-full bg-white/20 border border-white/30 flex-shrink-0">
+                {/* Placeholder para o logo arredondado */}
               </div>
             </div>
           </div>
-        </div>
+        </>
       )}
-      
-      {!generatedImage && !isGenerating && !error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 lg:p-4">
-          <div className="text-center">
-            <div className="w-40 lg:w-32 h-48 lg:h-40 border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center mb-6 lg:mb-4 mx-auto">
-              <div className="text-center">
-                <Building className="w-12 lg:w-8 h-12 lg:h-8 text-white/50 mx-auto mb-3 lg:mb-2" />
-                <p className="text-sm lg:text-xs text-gray-400">Stadium</p>
-              </div>
-            </div>
-            <p className="text-gray-400 text-lg lg:text-sm">Your generated stadium will appear here</p>
-            <p className="text-white/70 text-sm lg:text-xs mt-3 lg:mt-2">Perfect NFT proportions (1:1 ratio)</p>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   )
 } 

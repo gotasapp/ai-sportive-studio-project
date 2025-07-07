@@ -57,7 +57,7 @@ export default function ProfessionalStadiumActionBar({
       onClick={onGenerate}
       disabled={!canGenerate || isLoading}
       className={cn(
-        "group h-12 px-8 text-base font-semibold transition-all duration-200 mt-[3px] shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
+        "group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
         "bg-white !text-black hover:bg-[#A20131] hover:!text-white"
       )}
     >
@@ -91,7 +91,7 @@ export default function ProfessionalStadiumActionBar({
               disabled={!canMintLegacy || isMinting}
               variant="outline"
               className={cn(
-                "h-12 px-6 text-base font-medium transition-all duration-200 mt-[3px]",
+                "h-12 px-6 text-base font-medium transition-all duration-200",
                 "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
               )}
@@ -118,7 +118,7 @@ export default function ProfessionalStadiumActionBar({
                 disabled={!canMintGasless || isMinting}
                 variant="outline"
                 className={cn(
-                  "h-12 px-6 text-base font-medium transition-all duration-200 mt-[3px]",
+                  "h-12 px-6 text-base font-medium transition-all duration-200",
                   "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}

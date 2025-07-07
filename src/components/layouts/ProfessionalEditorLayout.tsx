@@ -109,16 +109,19 @@ export default function ProfessionalEditorLayout({
             </Button>
           </div>
 
-          {/* Canvas Content */}
-          <div className="px-4 py-1 overflow-auto" style={{ height: '80vh' }}>
-            {canvas}
-          </div>
+          {/* Canvas Content & Action Bar Container */}
+          <div className="flex-1 flex flex-col overflow-hidden relative p-4">
+            {/* Canvas takes most of the available space */}
+            <div className="h-[88%]">
+              {canvas}
+            </div>
 
-            {/* Action Bar */}
-            <div className="bg-transparent px-4 py-1 mt-[5px]" style={{height: '56px'}}>
+            {/* Action Bar at the bottom */}
+            <div className="pt-4">
               {actionBar}
             </div>
           </div>
+        </div>
 
         {/* Marketplace Sidebar */}
         <div className={cn(

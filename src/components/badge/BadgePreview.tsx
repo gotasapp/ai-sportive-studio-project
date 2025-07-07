@@ -22,7 +22,7 @@ export function BadgePreview({
   style
 }: BadgePreviewProps) {
   return (
-    <Card className="cyber-card">
+    <Card className="cyber-card mt-[10px]">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Award className="w-5 h-5 text-accent" />
@@ -32,7 +32,7 @@ export function BadgePreview({
       <CardContent>
         <div className="space-y-4">
           {/* Preview da Imagem */}
-          <div className="relative aspect-square w-full max-w-md mx-auto">
+          <div className="relative aspect-[3/5] w-[92%] max-w-md mx-auto">
             <div className="cyber-border rounded-lg p-4 bg-black/20">
               {isGenerating ? (
                 <div className="flex flex-col items-center justify-center h-full text-center space-y-4">

@@ -192,48 +192,6 @@ export default function ProfessionalCanvas({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => setShowGrid(!showGrid)}
-                    className={cn(
-                      "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50",
-                      showGrid && "text-[#A20131] bg-[#A20131]/10"
-                    )}
-                  >
-                    <Grid3X3 className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Toggle Grid</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {referenceImage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowReference(!showReference)}
-                      className={cn(
-                        "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50",
-                        showReference && "text-[#A20131] bg-[#A20131]/10"
-                      )}
-                    >
-                      <Layers className="h-4 w-4" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Toggle Reference</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              <div className="w-px h-4 bg-[#333333] mx-1"></div>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
                     onClick={handleZoomOut}
                     className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
@@ -262,40 +220,6 @@ export default function ProfessionalCanvas({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Zoom In</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetView}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Reset View</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <div className="w-px h-4 bg-[#333333] mx-1"></div>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Download</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -368,7 +292,7 @@ export default function ProfessionalCanvas({
   )
 
   return (
-    <Card className="h-[90%] m-[10px] mb-0 bg-[#111011] border-[#333333] shadow-xl">
+    <Card className="h-full mt-[10px] m-[10px] mb-0 bg-[#111011] border-[#333333] shadow-xl max-w-4xl mx-auto">
       <CardContent className="p-[1px] pb-0 h-full flex flex-col">
         {error ? renderError() : isLoading ? renderLoading() : generatedImage ? renderImage() : renderPlaceholder()}
       </CardContent>
