@@ -285,7 +285,7 @@ export default function ProfessionalSidebar({
                   placeholder="e.g., make it more colorful, add special patterns, vintage style..."
                   rows={3}
                   maxLength={200}
-                  className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none"
+                  className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
                 />
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-xs text-[#ADADAD]">
@@ -318,8 +318,8 @@ export default function ProfessionalSidebar({
                 onChange={(e) => setSelectedTeam(e.target.value)}
                 disabled={isVisionMode}
                 className={cn(
-                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm",
-                  "focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                  "w-full px-3 py-2 cyber-select text-sm",
+                  "transition-colors",
                   "pointer-events-auto relative", // ADICIONADO: relative para z-index
                   selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
                   isVisionMode && "opacity-50 cursor-not-allowed"
@@ -364,7 +364,7 @@ export default function ProfessionalSidebar({
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
                 className={cn(
-                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
                   selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
                 )}
                 style={{ 
@@ -412,7 +412,7 @@ export default function ProfessionalSidebar({
                     placeholder="JEFF"
                     maxLength={12}
                     className={cn(
-                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
                       playerName ? "text-[#707070]" : "text-[#FDFDFD]"
                     )}
                   />
@@ -432,7 +432,7 @@ export default function ProfessionalSidebar({
                     placeholder="10"
                     maxLength={2}
                     className={cn(
-                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
                       playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
                     )}
                   />
@@ -459,10 +459,10 @@ export default function ProfessionalSidebar({
                 <button
                   onClick={() => setQuality('standard')}
                   className={cn(
-                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
+                    "p-3 cyber-select transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'standard'
-                      ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                      : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                      ? "bg-[#A20131]/10 text-[#A20131]"
+                      : "bg-[#333333]/20 text-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
                     pointerEvents: 'auto',
@@ -476,10 +476,10 @@ export default function ProfessionalSidebar({
                 <button
                   onClick={() => setQuality('hd')}
                   className={cn(
-                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
+                    "p-3 cyber-select transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'hd'
-                      ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                      : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                      ? "bg-[#A20131]/10 text-[#A20131]"
+                      : "bg-[#333333]/20 text-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
                     pointerEvents: 'auto',
@@ -492,7 +492,7 @@ export default function ProfessionalSidebar({
                 </button>
               </div>
               {generationCost && (
-                <div className="mt-3 p-2 bg-[#111011] rounded-lg border border-[#333333]">
+                <div className="mt-3 p-2 cyber-select">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
                   <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
                 </div>

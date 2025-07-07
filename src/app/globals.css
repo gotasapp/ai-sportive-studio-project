@@ -135,7 +135,7 @@
 .cyber-card {
   position: relative;
   background: #14101e;
-  border-radius: 0.75rem;
+  border-radius: 0.5rem;
   transition: all 0.2s ease;
 }
 
@@ -249,6 +249,22 @@
 .cyber-input option {
   background: #14101e;
   color: #FDFDFD;
+}
+
+.cyber-select {
+  background: #14101e;
+  border: 0.5px solid #ADADAD;
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.cyber-select:focus {
+  border-color: #707070;
+  outline: none;
+}
+
+.cyber-select:hover {
+  border-color: #707070;
 }
 
 .gradient-border {

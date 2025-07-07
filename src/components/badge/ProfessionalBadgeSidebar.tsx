@@ -145,7 +145,7 @@ export default function ProfessionalBadgeSidebar({
         )}
 
         {/* Upload Image */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg rounded-[5px]">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Upload Image" 
@@ -262,7 +262,7 @@ export default function ProfessionalBadgeSidebar({
                   rows={3}
                   maxLength={200}
                   className={cn(
-                    "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors resize-none",
+                    "w-full px-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors resize-none",
                     customPrompt ? "text-[#707070]" : "text-[#FDFDFD]"
                   )}
                 />
@@ -305,7 +305,7 @@ export default function ProfessionalBadgeSidebar({
                     placeholder="CHAMPION"
                     maxLength={15}
                     className={cn(
-                      "w-full pl-10 pr-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm placeholder-[#ADADAD] focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
                       badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
                     )}
                   />
@@ -332,7 +332,7 @@ export default function ProfessionalBadgeSidebar({
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
                 className={cn(
-                  "w-full px-3 py-2 bg-[#14101e] border border-[#333333] rounded-lg text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative",
+                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
                   selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
                 )}
                 style={{ 
@@ -403,7 +403,7 @@ export default function ProfessionalBadgeSidebar({
                 </button>
               </div>
               {generationCost && (
-                <div className="mt-3 p-2 bg-[#14101e] rounded-lg border border-[#333333]">
+                <div className="mt-3 p-2 cyber-select">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
                   <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
                 </div>
