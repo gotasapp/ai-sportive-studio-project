@@ -108,13 +108,6 @@ export default function MarketplacePage() {
         setAllNfts(allRealNFTs);
         setFilteredNfts(allRealNFTs);
 
-        // Update counters
-        setCounters({
-          total: 3, // Jersey, Stadium, Badge collections
-          watchlist: watchlist.length,
-          owned: ownedCollections.length
-        });
-
       } catch (error: any) {
         console.error('❌ Erro ao carregar dados reais do marketplace:', error);
         setError(error.message || 'Failed to load marketplace data');
@@ -127,6 +120,16 @@ export default function MarketplacePage() {
 
     loadRealData();
   }, []);
+
+  // Update counters whenever underlying data changes
+  useEffect(() => {
+    const collections = new Set(allNfts.map(nft => nft.collection).filter(Boolean));
+    setCounters({
+      total: collections.size,
+      watchlist: watchlist.length,
+      owned: ownedCollections.length
+    });
+  }, [allNfts, watchlist.length, ownedCollections.length]);
 
   // Filter NFTs based on current filters
   useEffect(() => {

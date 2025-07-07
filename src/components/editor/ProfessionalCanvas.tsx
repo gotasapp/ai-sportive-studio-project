@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { isAdmin } from '../lib/admin-config'
+import { isAdmin } from '@/lib/admin-config'
 import Image from 'next/image';
 
 // Importando os novos componentes profissionais

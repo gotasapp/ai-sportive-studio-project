@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -68,7 +68,7 @@ export default function ModerationPage() {
   const [itemsPerPage] = useState(12); // Mostrar 12 itens por página
   const [totalItems, setTotalItems] = useState(0);
 
-  const fetchItems = async (force = false) => {
+  const fetchItems = useCallback(async (force = false) => {
     // Cache simples - evita recarregar se já tem dados e não é forçado
     if (!force && items.length > 0) {
       return;
@@ -92,10 +92,10 @@ export default function ModerationPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [items]);
 
   // Fetch Content Filters
-  const fetchContentFilters = async () => {
+  const fetchContentFilters = useCallback(async () => {
     setFiltersLoading(true);
     try {
       const response = await fetch('/api/admin/settings/negative-prompts');
@@ -108,10 +108,10 @@ export default function ModerationPage() {
     } finally {
       setFiltersLoading(false);
     }
-  };
+  }, []);
 
   // Fetch Moderation Settings
-  const fetchModerationSettings = async () => {
+  const fetchModerationSettings = useCallback(async () => {
     setModerationLoading(true);
     try {
       const response = await fetch('/api/admin/settings/moderation');
@@ -124,7 +124,7 @@ export default function ModerationPage() {
     } finally {
       setModerationLoading(false);
     }
-  };
+  }, []);
 
   // Lazy loading - só carrega quando necessário
   const [activeTab, setActiveTab] = useState('queue');
@@ -134,7 +134,7 @@ export default function ModerationPage() {
   useEffect(() => {
     // Sempre carrega os itens da queue primeiro
     fetchItems();
-  }, []);
+  }, [fetchItems]);
 
   // Lazy load das outras abas
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function ModerationPage() {
       fetchModerationSettings();
       setHasLoadedSettings(true);
     }
-  }, [activeTab, hasLoadedFilters, hasLoadedSettings]);
+  }, [activeTab, hasLoadedFilters, hasLoadedSettings, fetchContentFilters, fetchModerationSettings]);
 
   const handleDecision = async (itemId: string, decision: 'approved' | 'rejected', itemType: string) => {
     try {
@@ -355,7 +355,7 @@ export default function ModerationPage() {
                   className="rounded-t-lg aspect-square object-cover" 
                   loading="lazy"
                   placeholder="blur"
-                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxAAPwCdABmX/9k="
                 />
               </CardHeader>
               <CardContent className="p-4 space-y-2">

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -119,7 +119,7 @@ export default function AdminDashboard() {
   const [initialLoading, setInitialLoading] = useState(true);
 
   // Função para buscar dados reais (com timeout rápido)
-  const fetchOverviewData = async () => {
+  const fetchOverviewData = useCallback(async () => {
     startOverview();
     
     try {
@@ -142,9 +142,9 @@ export default function AdminDashboard() {
     } finally {
       stopOverview();
     }
-  };
+  }, [startOverview, stopOverview]);
 
-  const fetchPopularTeamsData = async () => {
+  const fetchPopularTeamsData = useCallback(async () => {
     startTeams();
     
     try {
@@ -167,9 +167,9 @@ export default function AdminDashboard() {
     } finally {
       stopTeams();
     }
-  };
+  }, [startTeams, stopTeams]);
 
-  const fetchRecentSalesData = async () => {
+  const fetchRecentSalesData = useCallback(async () => {
     startSales();
     
     try {
@@ -193,7 +193,7 @@ export default function AdminDashboard() {
     } finally {
       stopSales();
     }
-  };
+  }, [startSales, stopSales]);
 
   // Lazy loading - não bloqueia carregamento inicial
   useEffect(() => {
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [fetchOverviewData, fetchPopularTeamsData, fetchRecentSalesData]);
 
   const handleRefresh = () => {
     setRefreshTime(new Date().toLocaleTimeString());
