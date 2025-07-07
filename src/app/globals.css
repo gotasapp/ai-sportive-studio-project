@@ -129,6 +129,7 @@
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: xor;
   -webkit-mask-composite: xor;
+  pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-card {
@@ -150,10 +151,12 @@
   mask-composite: xor;
   -webkit-mask-composite: xor;
   transition: all 0.2s ease;
+  pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-card:hover::before {
   background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-button {
@@ -184,6 +187,7 @@
   mask-composite: xor;
   -webkit-mask-composite: xor;
   transition: all 0.2s ease;
+  pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-button:hover {
@@ -192,6 +196,7 @@
 
 .cyber-button:hover::before {
   background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-button:disabled {

@@ -151,7 +151,6 @@ export default function ProfessionalSidebar({
     <TooltipProvider>
       <div className="space-y-4">
 
-
         {/* Error Display */}
         {error && (
           <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
@@ -321,8 +320,14 @@ export default function ProfessionalSidebar({
                 className={cn(
                   "w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm",
                   "focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors",
+                  "pointer-events-auto relative", // ADICIONADO: relative para z-index
                   isVisionMode && "opacity-50 cursor-not-allowed"
                 )}
+                style={{ 
+                  pointerEvents: 'auto !important',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
               >
                 <option value="" className="bg-[#111011] text-[#FDFDFD]">
                   Select a team...
@@ -357,7 +362,12 @@ export default function ProfessionalSidebar({
               <select
                 value={selectedStyle}
                 onChange={(e) => setSelectedStyle(e.target.value)}
-                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors"
+                className="w-full px-3 py-2 bg-[#111011] border border-[#333333] rounded-lg text-[#FDFDFD] text-sm focus:border-[#A20131] focus:ring-1 focus:ring-[#A20131] transition-colors pointer-events-auto relative"
+                style={{ 
+                  pointerEvents: 'auto !important',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
               >
                 {STYLE_FILTERS.map((style) => (
                   <option key={style.id} value={style.id} className="bg-[#111011] text-[#FDFDFD]">
@@ -439,11 +449,16 @@ export default function ProfessionalSidebar({
                 <button
                   onClick={() => setQuality('standard')}
                   className={cn(
-                    "p-3 rounded-lg border transition-all duration-200 text-center",
+                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'standard'
                       ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
+                  style={{ 
+                    pointerEvents: 'auto !important',
+                    zIndex: 10,
+                    position: 'relative'
+                  }}
                 >
                   <div className="text-sm font-medium">Standard</div>
                   <div className="text-xs opacity-70">Fast generation</div>
@@ -451,11 +466,16 @@ export default function ProfessionalSidebar({
                 <button
                   onClick={() => setQuality('hd')}
                   className={cn(
-                    "p-3 rounded-lg border transition-all duration-200 text-center",
+                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'hd'
                       ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
+                  style={{ 
+                    pointerEvents: 'auto !important',
+                    zIndex: 10,
+                    position: 'relative'
+                  }}
                 >
                   <div className="text-sm font-medium">HD</div>
                   <div className="text-xs opacity-70">High quality</div>

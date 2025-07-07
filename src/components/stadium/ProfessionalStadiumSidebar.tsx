@@ -152,9 +152,14 @@ export default function ProfessionalStadiumSidebar({
           value={selectedStadium} 
           onChange={(e) => setSelectedStadium(e.target.value)} 
           disabled={isVisionMode}
-          className={`w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none ${
+          className={`w-full px-4 py-3 rounded-lg bg-[#111011] border border-[#333333] text-[#FDFDFD] focus:border-[#A20131] focus:outline-none pointer-events-auto relative ${
             isVisionMode ? 'opacity-50 cursor-not-allowed' : ''
           }`}
+          style={{ 
+            pointerEvents: 'auto !important',
+            zIndex: 10,
+            position: 'relative'
+          }}
         >
           <option value="custom_only">
             {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
