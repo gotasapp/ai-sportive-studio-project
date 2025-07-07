@@ -240,17 +240,6 @@ export default function ProfessionalMarketplace({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          
-          {onViewAll && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onViewAll}
-              className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
-            >
-              <ExternalLink className="h-3 w-3" />
-            </Button>
-          )}
         </div>
       </div>
 
@@ -349,13 +338,15 @@ export default function ProfessionalMarketplace({
       {onViewAll && filteredItems.length > 0 && (
         <div className="pt-3 border-t border-[#333333]">
           <Button
-            variant="outline"
             size="sm"
             onClick={onViewAll}
-            className="w-full text-xs bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40"
+            className={cn(
+              "group w-full !text-black bg-white hover:!text-white hover:bg-[#A20131]",
+              "transition-all duration-200"
+            )}
           >
             View All in Marketplace
-            <ExternalLink className="w-3 h-3 ml-2" />
+            <ExternalLink className="w-3 h-3 ml-2 fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white transition-all duration-200" />
           </Button>
         </div>
       )}

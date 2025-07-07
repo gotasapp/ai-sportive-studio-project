@@ -57,10 +57,8 @@ export default function ProfessionalStadiumActionBar({
       onClick={onGenerate}
       disabled={!canGenerate || isLoading}
       className={cn(
-        "h-12 px-8 text-base font-semibold transition-all duration-200 mt-[3px]",
-        "bg-[#A20131] hover:bg-[#A20131]/90 text-[#FDFDFD]",
-        "disabled:opacity-50 disabled:cursor-not-allowed",
-        "shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+        "group h-12 px-8 text-base font-semibold transition-all duration-200 mt-[3px] shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
+        "bg-white !text-black hover:bg-[#A20131] hover:!text-white"
       )}
     >
       {isLoading ? (
@@ -70,10 +68,10 @@ export default function ProfessionalStadiumActionBar({
         </div>
       ) : (
         <div className="flex items-center gap-3">
-          <Zap className="w-6 h-6" />
+          <Zap className="w-6 h-6 fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white" />
           <span>Generate Stadium</span>
           {generationCost && (
-            <Badge variant="secondary" className="bg-[#FDFDFD]/20 text-[#FDFDFD] border-[#FDFDFD]/30">
+            <Badge variant="secondary" className="border-none bg-black/20 text-black">
               ${generationCost.toFixed(3)}
             </Badge>
           )}
