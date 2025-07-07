@@ -173,7 +173,7 @@ export default function JerseyControls({
       <Button
         onClick={onGenerate}
         disabled={!selectedTeam || !playerName || !playerNumber || isLoading}
-        className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 text-white rounded-xl font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <div className="flex items-center space-x-2">

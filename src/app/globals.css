@@ -221,8 +221,6 @@
   line-height: 1.25rem;
   font-weight: 600;
   letter-spacing: 0.005em;
-  color: #FDFDFD;
-  background: hsl(var(--primary));
   border: none;
   border-radius: 0.75rem;
   padding: 0.5rem 1rem;
@@ -376,12 +374,21 @@
 }
 
 .style-button.active {
-  background: #A20131; 
+  background: #FFFFFF;
+  color: #000000;
+}
+
+.style-button.active svg {
+  color: #A20131;
+}
+
+.style-button.active:hover {
+  background: #A20131;
   color: #FFFFFF;
 }
 
-.style-button.active::before {
-  background: linear-gradient(45deg, #DC2626, #A20131);
+.style-button.active:hover svg {
+  color: #FFFFFF;
 }
 
 .marketplace-card {
