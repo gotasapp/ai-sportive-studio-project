@@ -217,7 +217,7 @@ export default function ProfessionalMarketplace({
         <div className="flex items-center gap-2">
           <TrendingUp className="w-4 h-4 text-[#A20131]" />
           <h3 className="text-sm font-semibold text-[#FDFDFD]">{title}</h3>
-          <Badge variant="secondary" className="text-xs bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+          <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
             {filteredItems.length}
           </Badge>
         </div>

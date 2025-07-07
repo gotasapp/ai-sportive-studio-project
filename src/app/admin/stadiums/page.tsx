@@ -152,7 +152,7 @@ export default function StadiumsPage() {
                        <div className="text-gray-400 text-xs">{stadium.creator?.wallet || 'Unknown'}</div>
                      </td>
                      <td className="p-4">
-                       <Badge className={statusColors[stadium.status]}>{stadium.status}</Badge>
+                       <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>{stadium.status}</Badge>
                      </td>
                      <td className="p-4">
                         <div className="text-white">{stadium.mintCount} / {stadium.editionSize}</div>

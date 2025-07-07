@@ -150,9 +150,9 @@ export default function ProfessionalStadiumSidebar({
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
-        {required && <span className="text-[#A20131] text-xs">*</span>}
+        {required && <span className="text-[#A20131] text-xs"></span>}
         {badge && (
-          <Badge variant="secondary" className="text-xs bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+          <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
             {badge}
           </Badge>
         )}
