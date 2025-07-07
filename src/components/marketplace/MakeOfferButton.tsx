@@ -122,24 +122,24 @@ export default function MakeOfferButton({
           offerAmount
         );
         if (!isApproved) {
-          toast.error('Token não aprovado. Aprove primeiro antes de fazer a oferta.');
+          toast.error('Token not approved. Please approve first before making the offer.');
           setNeedsApproval(true);
           return;
         }
       }
     } catch (error) {
-      toast.error('Erro ao verificar aprovação do token.');
+      toast.error('Error checking token approval.');
       return;
     }
 
     const days = parseInt(expiryDays);
     if (days < 1 || days > 30) {
-      toast.error('Duração da oferta deve ser entre 1 e 30 dias.');
+      toast.error('Offer duration must be between 1 and 30 days.');
       return;
     }
 
     setIsProcessing(true);
-    toast.info('Criando oferta... Aprove a transação na sua carteira.');
+    toast.info('Creating offer... Please approve the transaction in your wallet.');
 
     try {
       const expirationDate = new Date();
@@ -157,9 +157,9 @@ export default function MakeOfferButton({
         }
       );
 
-      toast.success('Oferta criada com sucesso! 🎉');
-      console.log('✅ Oferta criada:', result.transactionHash);
-      console.log('✅ Resultado completo da oferta:', result);
+      toast.success('Offer created successfully! 🎉');
+      console.log('✅ Offer created:', result.transactionHash);
+      console.log('✅ Complete offer result:', result);
       
       setIsOpen(false);
       setOfferAmount('');
@@ -172,14 +172,14 @@ export default function MakeOfferButton({
       // }, 2000);
 
     } catch (error: any) {
-      console.error('❌ Erro ao criar oferta:', error);
+      console.error('❌ Error creating offer:', error);
       
       if (error.message.includes('insufficient funds')) {
-        toast.error('Saldo insuficiente para fazer a oferta.');
+        toast.error('Insufficient balance to make the offer.');
       } else if (error.message.includes('offer exists')) {
-        toast.error('Você já tem uma oferta ativa para este NFT.');
+        toast.error('You already have an active offer for this NFT.');
       } else {
-        toast.error(error.message || 'Erro ao criar oferta.');
+        toast.error(error.message || 'Error creating offer.');
       }
     } finally {
       setIsProcessing(false);
@@ -200,22 +200,22 @@ export default function MakeOfferButton({
         {isProcessing ? (
           <>
             <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-            Processando...
+            Processing...
           </>
         ) : isApproving ? (
           <>
             <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-            Aprovando...
+            Approving...
           </>
         ) : !isConnected ? (
           <>
             <HandHeart className="mr-2 h-4 w-4" />
-            Conectar para Oferecer
+            Connect to Offer
           </>
         ) : (
           <>
             <HandHeart className="mr-2 h-4 w-4" />
-            Fazer Oferta
+            Make Offer
           </>
         )}
       </Button>
@@ -223,7 +223,7 @@ export default function MakeOfferButton({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px] bg-card border-secondary/20 text-white">
           <DialogHeader>
-            <DialogTitle className="text-[#FDFDFD]">Fazer Oferta</DialogTitle>
+            <DialogTitle className="text-[#FDFDFD]">Make Offer</DialogTitle>
             {nftName && (
               <p className="text-sm text-[#FDFDFD]/70">
                 {nftName} - Token #{tokenId}
@@ -234,7 +234,7 @@ export default function MakeOfferButton({
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="offerAmount" className="text-[#FDFDFD]">
-                Valor da Oferta ({currency})
+                Offer Amount ({currency})
               </Label>
               <Input
                 id="offerAmount"
@@ -248,28 +248,28 @@ export default function MakeOfferButton({
                 disabled={isProcessing || isApproving}
               />
               <p className="text-xs text-[#FDFDFD]/50">
-                O valor será bloqueado na sua carteira até a oferta ser aceita ou expirar
+                The amount will be locked in your wallet until the offer is accepted or expires
               </p>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="expiryDays" className="text-[#FDFDFD]">
-                Duração da Oferta
+                Offer Duration
               </Label>
               <Select value={expiryDays} onValueChange={setExpiryDays} disabled={isProcessing || isApproving}>
                 <SelectTrigger className="bg-[#333333]/20 border-[#FDFDFD]/20 text-[#FDFDFD]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#333333] border-[#FDFDFD]/20">
-                  <SelectItem value="1" className="text-[#FDFDFD] hover:bg-[#A20131]">1 dia</SelectItem>
-                  <SelectItem value="3" className="text-[#FDFDFD] hover:bg-[#A20131]">3 dias</SelectItem>
-                  <SelectItem value="7" className="text-[#FDFDFD] hover:bg-[#A20131]">7 dias</SelectItem>
-                  <SelectItem value="14" className="text-[#FDFDFD] hover:bg-[#A20131]">14 dias</SelectItem>
-                  <SelectItem value="30" className="text-[#FDFDFD] hover:bg-[#A20131]">30 dias</SelectItem>
+                  <SelectItem value="1" className="text-[#FDFDFD] hover:bg-[#A20131]">1 day</SelectItem>
+                  <SelectItem value="3" className="text-[#FDFDFD] hover:bg-[#A20131]">3 days</SelectItem>
+                  <SelectItem value="7" className="text-[#FDFDFD] hover:bg-[#A20131]">7 days</SelectItem>
+                  <SelectItem value="14" className="text-[#FDFDFD] hover:bg-[#A20131]">14 days</SelectItem>
+                  <SelectItem value="30" className="text-[#FDFDFD] hover:bg-[#A20131]">30 days</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-[#FDFDFD]/50">
-                Após este período, a oferta expirará automaticamente
+                After this period, the offer will automatically expire
               </p>
             </div>
           </div>
@@ -278,16 +278,16 @@ export default function MakeOfferButton({
             <div className="w-full space-y-2">
               <div className="bg-[#333333]/20 p-3 rounded-lg">
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#FDFDFD]/70">Valor da oferta:</span>
+                  <span className="text-[#FDFDFD]/70">Offer amount:</span>
                   <span className="text-[#FDFDFD]">{offerAmount || '0'} {currency}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-[#FDFDFD]/70">Expira em:</span>
-                  <span className="text-[#FDFDFD]">{expiryDays} dias</span>
+                  <span className="text-[#FDFDFD]/70">Expires in:</span>
+                  <span className="text-[#FDFDFD]">{expiryDays} days</span>
                 </div>
                 {needsApproval && (
                   <div className="flex justify-between text-sm text-yellow-400 mt-1">
-                    <span>⚠️ Aprovação necessária</span>
+                    <span>⚠️ Approval required</span>
                   </div>
                 )}
               </div>
@@ -298,7 +298,7 @@ export default function MakeOfferButton({
                   disabled={isApproving || !offerAmount || parseFloat(offerAmount) <= 0}
                   className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
                 >
-                  {isApproving ? 'Aprovando Token...' : 'Aprovar Token Primeiro'}
+                  {isApproving ? 'Approving Token...' : 'Approve Token First'}
                 </Button>
               ) : (
                 <Button
@@ -306,7 +306,7 @@ export default function MakeOfferButton({
                   disabled={isProcessing || !offerAmount || parseFloat(offerAmount) <= 0}
                   className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
                 >
-                  {isProcessing ? 'Criando Oferta...' : 'Confirmar Oferta'}
+                  {isProcessing ? 'Creating Offer...' : 'Confirm Offer'}
                 </Button>
               )}
             </div>

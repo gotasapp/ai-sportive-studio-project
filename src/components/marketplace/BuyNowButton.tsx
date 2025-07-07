@@ -34,18 +34,42 @@ export default function BuyNowButton({
 
   const handleBuy = async () => {
     if (!account || !chain) {
-      toast.error('Por favor, conecte sua carteira primeiro.');
+      toast.error('Please connect your wallet first.');
       return;
     }
 
+    console.log('🛒 STARTING PURCHASE:');
+    console.log('📋 Listing ID:', listingId);
+    console.log('📋 Displayed Price:', price);
+    console.log('📋 Quantity:', quantity);
+    console.log('📋 Buyer:', account.address);
+    console.log('📋 Network:', chain.name, '(', chain.id, ')');
+
     setIsProcessing(true);
-    toast.info('Iniciando compra... Por favor, aprove a transação na sua carteira.');
+    toast.info('Starting purchase... Please approve the transaction in your wallet.');
     
     try {
-      // Parse price para calcular o total esperado
-      const pricePerToken = parseFloat(price.replace(/[^\d.]/g, ''));
-      const totalQuantity = parseInt(quantity);
-      const expectedTotalPrice = (pricePerToken * totalQuantity).toString();
+      // 🔍 BUSCAR DADOS REAIS DA LISTAGEM DO BLOCKCHAIN
+      console.log('🔍 Fetching real listing data from blockchain...');
+      const realListing = await MarketplaceService.getListing(chain.id, listingId);
+      
+      console.log('📋 Real listing data:', {
+        listingId: realListing.listingId.toString(),
+        pricePerToken: realListing.pricePerToken.toString(),
+        currency: realListing.currency,
+        quantity: realListing.quantity.toString(),
+        status: realListing.status
+      });
+      
+      // Calcular preço total baseado nos dados reais da listagem
+      const totalQuantity = BigInt(quantity);
+      const expectedTotalPrice = realListing.pricePerToken * totalQuantity;
+      
+      console.log('💰 PURCHASE CALCULATIONS (CORRECTED):');
+      console.log('📋 Price per token (wei):', realListing.pricePerToken.toString());
+      console.log('📋 Total quantity:', totalQuantity.toString());
+      console.log('📋 Expected total price (wei):', expectedTotalPrice.toString());
+      console.log('📋 Expected total price (ether):', (Number(expectedTotalPrice) / Math.pow(10, 18)).toFixed(6));
 
       const result = await MarketplaceService.buyFromListing(
         account,
@@ -53,30 +77,33 @@ export default function BuyNowButton({
         {
           listingId,
           quantity,
-          expectedTotalPrice,
+          expectedTotalPrice: expectedTotalPrice.toString(),
         }
       );
 
-      toast.success('Compra realizada com sucesso! 🎉');
-      console.log('✅ Compra concluída:', result.transactionHash);
+      toast.success('Purchase completed successfully! 🎉');
+      console.log('✅ PURCHASE COMPLETED SUCCESSFULLY!');
+      console.log('📄 Transaction Hash:', result.transactionHash);
+      console.log('🔗 View on explorer:', `https://amoy.polygonscan.com/tx/${result.transactionHash}`);
       
-      // Opcional: Recarregar a página ou atualizar estado do marketplace
+      // Optional: Reload page or update marketplace state
       setTimeout(() => {
         window.location.reload();
       }, 2000);
 
     } catch (error: any) {
-      console.error('❌ Falha na compra:', error);
+      console.error('❌ PURCHASE FAILED:', error);
+      console.error('❌ Full error:', error.message);
       
-      // Mensagens de erro mais específicas
+      // More specific error messages
       if (error.message.includes('insufficient funds')) {
-        toast.error('Saldo insuficiente para realizar a compra.');
+        toast.error('Insufficient balance to complete the purchase.');
       } else if (error.message.includes('listing not found')) {
-        toast.error('Este NFT não está mais disponível.');
+        toast.error('This NFT is no longer available.');
       } else if (error.message.includes('already sold')) {
-        toast.error('Este NFT já foi vendido.');
+        toast.error('This NFT has already been sold.');
       } else {
-        toast.error(error.message || 'Ocorreu um erro ao tentar realizar a compra.');
+        toast.error(error.message || 'An error occurred while trying to complete the purchase.');
       }
     } finally {
       setIsProcessing(false);
@@ -102,17 +129,17 @@ export default function BuyNowButton({
       {finalIsLoading ? (
         <>
           <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-          Processando...
+          Processing...
         </>
       ) : !isConnected ? (
         <>
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Conectar Carteira
+          Connect Wallet
         </>
       ) : (
         <>
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Comprar por {price}
+          Buy for {price}
         </>
       )}
     </Button>

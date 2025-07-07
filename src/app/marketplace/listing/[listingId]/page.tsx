@@ -72,7 +72,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-white">
         <Loader2 className="h-16 w-16 animate-spin text-accent" />
-        <p className="ml-4 text-xl">Carregando detalhes...</p>
+        <p className="ml-4 text-xl">Loading details...</p>
       </div>
     );
   }
@@ -103,7 +103,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
           <p className="text-lg text-gray-300 mb-8 leading-relaxed">{nftDetails.description}</p>
           
           <div className="bg-card p-6 rounded-lg border border-secondary/20">
-             <h2 className="text-2xl font-bold mb-4">{isAuction ? 'Detalhes do Leilão' : 'Detalhes da Venda'}</h2>
+             <h2 className="text-2xl font-bold mb-4">{isAuction ? 'Auction Details' : 'Sale Details'}</h2>
              {marketplaceContract && <ListingControls listing={listing} marketplaceContract={marketplaceContract}/>}
           </div>
         </div>

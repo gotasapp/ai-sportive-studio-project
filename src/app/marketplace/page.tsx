@@ -18,24 +18,6 @@ import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
-import MarketplaceDebug from '@/components/marketplace/MarketplaceDebug';
-
-// Tipos de dados exatamente como vêm do MongoDB
-interface NFT {
-  _id: string;
-  name: string;
-  imageUrl: string;
-  description?: string;
-  price?: string;
-  category: 'jersey' | 'stadium' | 'badge';
-  collection?: string;
-  creator?: { 
-    wallet: string; 
-    name: string; 
-  };
-  createdAt: string;
-  status: 'Approved';
-}
 
 export default function MarketplacePage() {
   // Thirdweb hooks
@@ -52,11 +34,8 @@ export default function MarketplacePage() {
   const [viewType, setViewType] = useState<ViewType>('table');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Legacy data states (mantidos para compatibilidade com CollectionsTable)
-  const [allNfts, setAllNfts] = useState<NFT[]>([]);
-  const [filteredNfts, setFilteredNfts] = useState<NFT[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // Legacy data states (mantidos apenas para filtros)
+  const [filteredNfts, setFilteredNfts] = useState<any[]>([]);
   
   // Counter States
   const [counters, setCounters] = useState({
@@ -92,82 +71,25 @@ export default function MarketplacePage() {
   };
 
   useEffect(() => {
-    const loadRealData = async () => {
-      setLoading(true);
-      setError(null);
-      
-      try {
-        // Chamadas simultâneas para todas as APIs reais
-        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-          fetch('/api/jerseys'),
-          fetch('/api/stadiums'), 
-          fetch('/api/badges')
-        ]);
-
-        // Verificar se todas as respostas foram bem-sucedidas
-        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
-        }
-
-        // Processar dados reais do MongoDB
-        const realJerseys: NFT[] = await jerseysResponse.json();
-        const realStadiums: NFT[] = await stadiumsResponse.json();
-        const realBadges: NFT[] = await badgesResponse.json();
-
-        // Categorizar dados reais
-        const categorizedJerseys = realJerseys.map(jersey => ({ 
-          ...jersey, 
-          category: 'jersey' as const, 
-          price: '0.05 CHZ',
-          collection: jersey.creator?.name || 'Jersey Collection'
-        }));
-
-        const categorizedStadiums = realStadiums.map(stadium => ({ 
-          ...stadium, 
-          category: 'stadium' as const, 
-          price: '0.15 CHZ',
-          collection: stadium.creator?.name || 'Stadium Collection'
-        }));
-
-        const categorizedBadges = realBadges.map(badge => ({ 
-          ...badge, 
-          category: 'badge' as const, 
-          price: '0.03 CHZ',
-          collection: badge.creator?.name || 'Badge Collection'
-        }));
-
-        // Combinar todos os dados reais
-        const allRealNFTs = [...categorizedJerseys, ...categorizedStadiums, ...categorizedBadges];
-        
-        setAllNfts(allRealNFTs);
-        setFilteredNfts(allRealNFTs);
-
-      } catch (error: any) {
-        console.error('❌ Erro ao carregar dados reais do marketplace:', error);
-        setError(error.message || 'Failed to load marketplace data');
-        setAllNfts([]);
-        setFilteredNfts([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRealData();
+    // Dados legacy removidos - agora apenas useMarketplaceData é usado
+    // O hook useMarketplaceData já carrega todos os dados necessários
   }, []);
 
   // Update counters whenever underlying data changes
   useEffect(() => {
-    const collections = new Set(allNfts.map(nft => nft.collection).filter(Boolean));
+    // Usar dados do marketplace em vez de allNfts legacy
+    const collections = new Set(marketplaceItems.map(item => item.collection).filter(Boolean));
     setCounters({
       total: collections.size,
       watchlist: watchlist.length,
       owned: ownedCollections.length
     });
-  }, [allNfts, watchlist.length, ownedCollections.length]);
+  }, [marketplaceItems, watchlist.length, ownedCollections.length]);
 
   // Filter NFTs based on current filters
   useEffect(() => {
-    let filtered = allNfts;
+    // Filtros agora aplicados aos dados do marketplace
+    let filtered = marketplaceItems;
     
     // Aplicar filtro de categoria
     if (tokenType !== 'all') {
@@ -178,19 +100,20 @@ export default function MarketplacePage() {
       };
       
       const targetCategory = categoryMap[tokenType] || tokenType;
-      filtered = filtered.filter(nft => nft.category === targetCategory);
+      filtered = filtered.filter(item => item.category === targetCategory);
     }
     
     // Aplicar busca por nome
     if (searchTerm.trim()) {
-      filtered = filtered.filter(nft => 
-        nft.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        nft.collection?.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.collection?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
+    // Atualizar filteredNfts com dados filtrados do marketplace
     setFilteredNfts(filtered);
-  }, [tokenType, allNfts, searchTerm]);
+  }, [tokenType, marketplaceItems, searchTerm]);
 
   const handleToggleWatchlist = (collectionName: string) => {
     setWatchlist(prev => {
@@ -212,8 +135,8 @@ export default function MarketplacePage() {
   };
 
   const renderGridView = () => {
-    // Usar dados do marketplace se disponíveis, senão usar dados legacy
-    const itemsToShow = marketplaceItems.length > 0 ? marketplaceItems : filteredNfts;
+    // Sempre usar dados do marketplace (reais) em vez de dados legacy
+    const itemsToShow = marketplaceItems;
     
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
@@ -222,7 +145,7 @@ export default function MarketplacePage() {
             key={item.id || item._id}
             name={item.name}
             imageUrl={item.imageUrl}
-            price={item.price || item.price || 'Not for sale'}
+            price={item.price || 'Not for sale'}
             collection={item.collection || `By ${item.creator?.name || item.creator || 'Anonymous'}`}
             category={item.category}
             // Dados específicos do marketplace
@@ -246,25 +169,25 @@ export default function MarketplacePage() {
 
   const renderListView = () => (
     <div className="p-6 space-y-4">
-      {filteredNfts.map((nft) => (
+      {filteredNfts.map((item) => (
         <div 
-          key={nft._id}
+          key={item.id || item._id}
           className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
             <img 
-              src={nft.imageUrl} 
-              alt={nft.name}
+              src={item.imageUrl} 
+              alt={item.name}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[#FDFDFD]">{nft.name}</h3>
-            <p className="text-sm text-[#FDFDFD]/70">{nft.collection}</p>
+            <h3 className="text-lg font-semibold text-[#FDFDFD]">{item.name}</h3>
+            <p className="text-sm text-[#FDFDFD]/70">{item.collection}</p>
           </div>
           <div className="text-right">
-            <div className="text-sm font-medium text-[#FDFDFD]">{nft.price}</div>
-            <div className="text-xs text-[#FDFDFD]/70 capitalize">{nft.category}</div>
+            <div className="text-sm font-medium text-[#FDFDFD]">{item.price}</div>
+            <div className="text-xs text-[#FDFDFD]/70 capitalize">{item.category}</div>
           </div>
         </div>
       ))}
@@ -273,8 +196,8 @@ export default function MarketplacePage() {
 
   const renderContent = () => {
     // Usar loading do marketplace se disponível
-    const isLoading = marketplaceLoading || loading;
-    const currentError = marketplaceError || error;
+    const isLoading = marketplaceLoading;
+    const currentError = marketplaceError;
 
     if (currentError) {
       return (
@@ -313,8 +236,8 @@ export default function MarketplacePage() {
       );
     }
 
-    // Grid/List views for individual NFTs
-    const itemsToShow = marketplaceItems.length > 0 ? marketplaceItems : filteredNfts;
+    // Grid/List views para NFTs individuais - sempre usar dados do marketplace
+    const itemsToShow = filteredNfts; // Dados já filtrados do marketplace
     if (itemsToShow.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -389,9 +312,6 @@ export default function MarketplacePage() {
           </div>
         </div>
       </div>
-      
-      {/* Debug Component (only in development) */}
-      {process.env.NODE_ENV === 'development' && <MarketplaceDebug />}
     </main>
   );
 }

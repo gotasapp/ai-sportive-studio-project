@@ -218,6 +218,21 @@ export class MarketplaceService {
     try {
       console.log('🛒 Comprando NFT com parâmetros:', params);
       
+      // Primeiro, verificar se a listagem existe e está válida
+      console.log('🔍 Verificando se listagem existe...');
+      try {
+        const listingInfo = await MarketplaceService.getListing(chainId, params.listingId);
+        console.log('✅ Listagem encontrada:', {
+          listingId: listingInfo.listingId.toString(),
+          pricePerToken: listingInfo.pricePerToken.toString(),
+          status: listingInfo.status,
+          creator: listingInfo.listingCreator
+        });
+      } catch (error) {
+        console.error('❌ Listagem não encontrada ou inválida:', error);
+        throw new Error('Esta listagem não existe ou não está mais disponível.');
+      }
+      
       const contract = getMarketplaceContract(chainId);
       const expectedPrice = priceToWei(params.expectedTotalPrice);
       
@@ -250,6 +265,7 @@ export class MarketplaceService {
       }
       
       console.log('✅ ListingId convertido para:', numericListingId.toString());
+      console.log('💰 Valor a ser enviado (wei):', expectedPrice.toString());
       
       const transaction = prepareContractCall({
         contract,

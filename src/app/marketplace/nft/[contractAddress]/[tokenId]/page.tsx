@@ -101,8 +101,8 @@ export default function NFTDetailPage() {
 
       setNft(mockNFT);
     } catch (error: any) {
-      console.error('❌ Erro ao carregar NFT:', error);
-      setError('Erro ao carregar detalhes do NFT');
+      console.error('Error loading NFT details:', error);
+      setError('Error loading NFT details');
     } finally {
       setLoading(false);
     }
@@ -126,14 +126,14 @@ export default function NFTDetailPage() {
     } else {
       // Fallback para cópia do link
       await navigator.clipboard.writeText(window.location.href);
-      toast.success('Link copiado para a área de transferência!');
+      toast.success('Link copied to clipboard!');
     }
   };
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked);
     // TODO: Implementar API de likes
-    toast.success(isLiked ? 'Removido dos favoritos' : 'Adicionado aos favoritos');
+    toast.success(isLiked ? 'Removed from favorites' : 'Added to favorites');
   };
 
   const isOwner = account?.address?.toLowerCase() === nft?.owner?.toLowerCase();
@@ -157,11 +157,11 @@ export default function NFTDetailPage() {
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-[#FDFDFD] mb-4">NFT não encontrado</h1>
+            <h1 className="text-2xl font-bold text-[#FDFDFD] mb-4">NFT not found</h1>
             <p className="text-[#FDFDFD]/70 mb-6">{error}</p>
             <Button onClick={handleBack} variant="outline">
               <ArrowLeft className="mr-2 h-4 w-4" />
-              Voltar
+              Back
             </Button>
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function NFTDetailPage() {
               {nft.isListed && (
                 <div className="absolute top-4 right-4">
                   <Badge className="bg-green-500/20 text-green-400 border-green-500/50">
-                    À Venda
+                    For Sale
                   </Badge>
                 </div>
               )}
@@ -226,14 +226,14 @@ export default function NFTDetailPage() {
             <div className="flex items-center gap-6 text-sm text-[#FDFDFD]/70">
               <div className="flex items-center gap-2">
                 <Eye className="h-4 w-4" />
-                <span>{nft.views} visualizações</span>
+                <span>{nft.views} views</span>
               </div>
               <div className="flex items-center gap-2">
                 <Heart className="h-4 w-4" />
-                <span>{nft.likes} curtidas</span>
+                <span>{nft.likes} likes</span>
               </div>
               <div className="flex items-center gap-2">
-                <span>{nft.offers} ofertas</span>
+                <span>{nft.offers} offers</span>
               </div>
             </div>
           </div>
@@ -245,12 +245,12 @@ export default function NFTDetailPage() {
               <div className="cyber-card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <p className="text-sm text-[#FDFDFD]/70">Preço atual</p>
+                    <p className="text-sm text-[#FDFDFD]/70">Current Price</p>
                     <p className="text-3xl font-bold text-[#A20131]">{nft.price}</p>
                   </div>
                   {nft.isAuction && nft.auctionEndTime && (
                     <div className="text-right">
-                      <p className="text-sm text-[#FDFDFD]/70">Termina em</p>
+                      <p className="text-sm text-[#FDFDFD]/70">Ends in</p>
                       <div className="flex items-center gap-1 text-orange-400">
                         <Clock className="h-4 w-4" />
                         <span className="font-mono">2h 45m</span>
@@ -281,7 +281,7 @@ export default function NFTDetailPage() {
                       onClick={() => setShowCreateListing(true)}
                       className="w-full bg-[#A20131] hover:bg-[#A20131]/90"
                     >
-                      Listar para Venda
+                      List for Sale
                     </Button>
                   ) : null}
 
@@ -299,13 +299,13 @@ export default function NFTDetailPage() {
 
             {/* Descrição */}
             <div className="cyber-card p-6">
-              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-3">Descrição</h3>
+              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-3">Description</h3>
               <p className="text-[#FDFDFD]/70 leading-relaxed">{nft.description}</p>
             </div>
 
             {/* Atributos */}
             <div className="cyber-card p-6">
-              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-4">Atributos</h3>
+              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-4">Attributes</h3>
               <div className="grid grid-cols-2 gap-3">
                 {nft.attributes.map((attr, index) => (
                   <div key={index} className="bg-[#333333]/20 p-3 rounded-lg border border-[#FDFDFD]/10">
@@ -318,10 +318,10 @@ export default function NFTDetailPage() {
 
             {/* Detalhes do token */}
             <div className="cyber-card p-6">
-              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-4">Detalhes</h3>
+              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-4">Details</h3>
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-[#FDFDFD]/70">Contrato</span>
+                  <span className="text-[#FDFDFD]/70">Contract</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm text-[#FDFDFD]">
                       {nft.contractAddress.slice(0, 6)}...{nft.contractAddress.slice(-4)}
@@ -335,7 +335,7 @@ export default function NFTDetailPage() {
                 <Separator className="bg-[#FDFDFD]/10" />
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-[#FDFDFD]/70">Proprietário</span>
+                  <span className="text-[#FDFDFD]/70">Owner</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-sm text-[#FDFDFD]">
                       {nft.owner.slice(0, 6)}...{nft.owner.slice(-4)}
@@ -349,7 +349,7 @@ export default function NFTDetailPage() {
                 <Separator className="bg-[#FDFDFD]/10" />
                 
                 <div className="flex items-center justify-between">
-                  <span className="text-[#FDFDFD]/70">Criado em</span>
+                  <span className="text-[#FDFDFD]/70">Created</span>
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-[#FDFDFD]/70" />
                     <span className="text-sm text-[#FDFDFD]">

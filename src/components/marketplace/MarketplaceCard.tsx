@@ -58,11 +58,41 @@ export default function MarketplaceCard({
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
   
+  // 🔍 DEBUG: Logs detalhados para debug
+  console.log('🔍 MarketplaceCard DEBUG:', {
+    name,
+    tokenId,
+    assetContract,
+    owner,
+    accountAddress: account?.address,
+    isOwner,
+    isListed,
+    showCreateListing,
+    hasAssetContract: !!assetContract,
+    shouldShowListButton: isOwner && !isListed && !isAuction
+  });
+  
   const color = category ? categoryColors[category as keyof typeof categoryColors] || categoryColors.default : categoryColors.default;
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked);
     // TODO: Implementar funcionalidade de favoritos
+  };
+
+  const handleListButtonClick = () => {
+    console.log('🎯 BOTÃO DE LISTAR CLICADO!', {
+      assetContract,
+      tokenId,
+      name,
+      hasAssetContract: !!assetContract
+    });
+    
+    if (!assetContract) {
+      console.error('❌ AssetContract está vazio! Não é possível abrir modal.');
+      return;
+    }
+    
+    setShowCreateListing(true);
   };
 
   const renderActionButtons = () => {
@@ -91,7 +121,7 @@ export default function MarketplaceCard({
         <div className="space-y-2">
           {/* TODO: Implementar AuctionBidButton quando necessário */}
           <Button className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white">
-            {new Date() > endTime ? 'Leilão Finalizado' : 'Ver Leilão'}
+            {new Date() > endTime ? 'Auction Ended' : 'View Auction'}
           </Button>
         </div>
       );
@@ -101,11 +131,11 @@ export default function MarketplaceCard({
         <div className="space-y-2">
           {isOwner ? (
             <Button
-              onClick={() => setShowCreateListing(true)}
+              onClick={handleListButtonClick}
               className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
             >
               <Tag className="mr-2 h-4 w-4" />
-              Listar para Venda
+              List for Sale
             </Button>
           ) : (
             <MakeOfferButton
@@ -156,14 +186,14 @@ export default function MarketplaceCard({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="bg-[#333333] border-[#FDFDFD]/20">
                   <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                    Ver Detalhes
+                    View Details
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                    Compartilhar
+                    Share
                   </DropdownMenuItem>
                   {isOwner && (
                     <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                      Editar Listagem
+                      Edit Listing
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -175,12 +205,12 @@ export default function MarketplaceCard({
           <div className="absolute bottom-3 left-3">
             {isListed && (
               <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/50">
-                À Venda
+                For Sale
               </span>
             )}
             {isAuction && endTime && (
               <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full border border-orange-500/50">
-                {new Date() > endTime ? 'Finalizado' : 'Leilão'}
+                {new Date() > endTime ? 'Ended' : 'Auction'}
               </span>
             )}
           </div>
@@ -190,16 +220,16 @@ export default function MarketplaceCard({
           <p className="text-sm text-[#FDFDFD]/70 truncate">{collection}</p>
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate my-1">{name}</h3>
           
-          {/* Informações de preço */}
+          {/* Price information */}
           <div className="mb-3">
             {isAuction && currentBid ? (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">Lance Atual</p>
+                <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
                 <p className="text-sm font-medium text-[#A20131]">{currentBid}</p>
               </div>
             ) : (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">{isListed ? 'Preço' : 'Último Preço'}</p>
+                <p className="text-xs text-[#FDFDFD]/70">{isListed ? 'Price' : 'Last Price'}</p>
                 <p className="text-sm font-medium text-[#A20131]">{price}</p>
               </div>
             )}

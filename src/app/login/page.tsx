@@ -31,7 +31,7 @@ export default function LoginPage() {
               Fan Token Studio
             </h1>
             <p className="text-gray-400 text-lg">
-              Conecte sua carteira para começar a criar e negociar NFTs de clubes de futebol
+              Connect your wallet to start creating and trading football club NFTs
             </p>
             
             <div className="flex justify-center">

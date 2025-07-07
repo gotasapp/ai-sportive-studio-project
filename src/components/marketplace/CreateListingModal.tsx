@@ -38,13 +38,19 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
     chainId: chain?.id,
     chainName: chain?.name,
     isPolygonAmoy: chain?.id === 80002,
-    needsNetworkSwitch: chain?.id !== 80002
+    isPolygonMainnet: chain?.id === 137,
+    needsNetworkSwitch: chain?.id !== 80002,
+    marketplaceNetwork: 'Polygon Amoy (80002)',
+    currentNetwork: `${chain?.name} (${chain?.id})`
   });
 
   const handleSubmit = async () => {
-    // Verificar se está na rede correta
+    // Verificar se está numa rede Polygon suportada (Mainnet ou Amoy)
+    const supportedPolygonChains = [137, 80002]; // Polygon Mainnet e Amoy Testnet
+    
+    // Por enquanto, forçar uso do Polygon Amoy onde o marketplace está deployado
     if (chain?.id !== 80002) {
-      toast.error('Por favor, troque para a rede Polygon Amoy (testnet) para listar NFTs.');
+      toast.error(`Você está na ${chain?.name || 'rede desconhecida'}. O marketplace está deployado apenas no Polygon Amoy Testnet. Por favor, troque para Polygon Amoy (Chain ID: 80002) na sua carteira.`);
       return;
     }
 
@@ -61,13 +67,13 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
   };
 
   const handleCreateDirectListing = async () => {
-    if (!price || isNaN(Number(price)) || Number(price) <= 0) {
-      toast.error('Por favor, insira um preço válido.');
+    if (!price || isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+      toast.error('Please enter a valid price.');
       return;
     }
 
     setIsLoading(true);
-    toast.info('Criando listagem direta... Aprove a transação na sua carteira.');
+    toast.info('Creating direct listing... Approve the transaction in your wallet.');
     
     try {
       // 🔍 DEBUG: Logs detalhados antes da criação
@@ -90,9 +96,9 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         }
       );
 
-      toast.success('NFT listado com sucesso! 🎉');
-      console.log('✅ Listagem criada:', result.transactionHash);
-      console.log('✅ Resultado completo da listagem:', result);
+      toast.success('NFT listed successfully! 🎉');
+      console.log('✅ Listing created:', result.transactionHash);
+      console.log('✅ Complete listing result:', result);
       onOpenChange(false);
       
       // Reset form
@@ -101,8 +107,8 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
       // NOTA: Não recarregar automaticamente para ver logs
       
     } catch (error: any) {
-      console.error('❌ Erro ao criar listagem:', error);
-      toast.error(error.message || 'Erro ao criar listagem direta.');
+      console.error('❌ Error creating listing:', error);
+      toast.error(error.message || 'Error creating direct listing.');
     } finally {
       setIsLoading(false);
     }
@@ -110,17 +116,17 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
 
   const handleCreateAuctionListing = async () => {
     if (!minBid || isNaN(Number(minBid)) || Number(minBid) <= 0) {
-      toast.error('Insira um lance mínimo válido.');
+      toast.error('Please enter a valid minimum bid.');
       return;
     }
 
-    if (buyoutPrice && (isNaN(Number(buyoutPrice)) || Number(buyoutPrice) <= Number(minBid))) {
-      toast.error('Preço de compra imediata deve ser maior que o lance mínimo.');
+    if (buyoutPrice && parseFloat(buyoutPrice) <= parseFloat(minBid)) {
+      toast.error('Buyout price must be higher than minimum bid.');
       return;
     }
 
     setIsLoading(true);
-    toast.info('Criando leilão... Aprove a transação na sua carteira.');
+    toast.info('Creating auction... Approve the transaction in your wallet.');
     
     try {
       const result = await MarketplaceService.createAuction(
@@ -131,23 +137,22 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
           tokenId: nft.tokenId,
           minimumBidAmount: minBid,
           buyoutBidAmount: buyoutPrice || undefined,
-          quantity: '1',
-          timeBufferInSeconds: 300, // 5 minutos
-          bidBufferBps: 500, // 5%
+          startTimestamp: new Date(),
+          endTimestamp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
         }
       );
 
-      toast.success('Leilão criado com sucesso!');
-      console.log('✅ Leilão criado:', result.transactionHash);
+      toast.success('Auction created successfully!');
+      console.log('✅ Auction created:', result.transactionHash);
       onOpenChange(false);
       
-      // Reset form
-      setMinBid('');
-      setBuyoutPrice('');
-      
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
     } catch (error: any) {
-      console.error('❌ Erro ao criar leilão:', error);
-      toast.error(error.message || 'Erro ao criar leilão.');
+      console.error('❌ Error creating auction:', error);
+      toast.error(error.message || 'Error creating auction.');
     } finally {
       setIsLoading(false);
     }
@@ -167,7 +172,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-card border-secondary/20 text-white">
         <DialogHeader>
-          <DialogTitle className="text-[#FDFDFD]">Listar seu NFT</DialogTitle>
+          <DialogTitle className="text-[#FDFDFD]">List your NFT</DialogTitle>
           {nft.name && (
             <p className="text-sm text-[#FDFDFD]/70">
               {nft.name} - Token #{nft.tokenId}
@@ -177,41 +182,32 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         
         <Tabs value={listingType} onValueChange={(value) => setListingType(value as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-[#333333]/20">
-            <TabsTrigger 
-              value="direct" 
-              className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white text-[#FDFDFD]/70"
-            >
-              Venda Direta
+            <TabsTrigger value="direct" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+              Direct Sale
             </TabsTrigger>
-            <TabsTrigger 
-              value="auction"
-              className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white text-[#FDFDFD]/70"
-            >
-              Leilão
+            <TabsTrigger value="auction" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+              Auction
             </TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="direct" className="space-y-4">
-            <div className="grid gap-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="price" className="text-[#FDFDFD]">
-                  Preço por NFT ({chain?.nativeCurrency?.symbol || 'CHZ'})
-                </Label>
-                <Input 
-                  id="price" 
-                  value={price} 
-                  onChange={(e) => setPrice(e.target.value)} 
-                  className="bg-[#333333]/20 border-[#FDFDFD]/20 text-[#FDFDFD] placeholder:text-[#FDFDFD]/50" 
-                  placeholder="0.05" 
-                  disabled={isLoading}
-                  type="number"
-                  step="0.001"
-                  min="0"
-                />
-                <p className="text-xs text-[#FDFDFD]/50">
-                  Defina o preço fixo para venda direta do seu NFT
-                </p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="price" className="text-[#FDFDFD]">
+                Price per NFT ({chain?.nativeCurrency?.symbol || 'CHZ'})
+              </Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.001"
+                min="0"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.1"
+                className="cyber-input"
+              />
+              <p className="text-xs text-[#FDFDFD]/50">
+                Set the fixed price for direct sale of your NFT
+              </p>
             </div>
           </TabsContent>
           
@@ -219,7 +215,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
             <div className="grid gap-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="minBid" className="text-[#FDFDFD]">
-                  Lance Mínimo ({chain?.nativeCurrency?.symbol || 'CHZ'})
+                  Minimum Bid ({chain?.nativeCurrency?.symbol || 'CHZ'})
                 </Label>
                 <Input 
                   id="minBid" 
@@ -235,7 +231,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
               </div>
               <div className="space-y-2">
                 <Label htmlFor="buyout" className="text-[#FDFDFD]">
-                  Compra Imediata (Opcional)
+                  Buyout Price (Optional)
                 </Label>
                 <Input 
                   id="buyout" 
@@ -249,22 +245,20 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
                   min="0"
                 />
                 <p className="text-xs text-[#FDFDFD]/50">
-                  Preço pelo qual compradores podem adquirir imediatamente (deve ser maior que o lance mínimo)
+                  Price at which buyers can purchase immediately (must be higher than minimum bid)
                 </p>
               </div>
             </div>
           </TabsContent>
         </Tabs>
-        
-        <DialogFooter>
-          <Button 
-            onClick={handleSubmit} 
-            className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white" 
-            disabled={isLoading || !isFormValid()}
-          >
-            {isLoading ? 'Processando...' : `Criar ${listingType === 'direct' ? 'Listagem' : 'Leilão'}`}
-          </Button>
-        </DialogFooter>
+
+        <Button
+          onClick={listingType === 'direct' ? handleCreateDirectListing : handleCreateAuctionListing}
+          disabled={isLoading}
+          className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+        >
+          {isLoading ? 'Processing...' : `Create ${listingType === 'direct' ? 'Listing' : 'Auction'}`}
+        </Button>
       </DialogContent>
     </Dialog>
   );

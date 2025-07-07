@@ -51,108 +51,163 @@ export function useMarketplaceData() {
     setError(null);
 
     try {
-      // TODO: Implementar chamadas reais para APIs de marketplace
-      // Por enquanto, usar dados das APIs existentes + mock de dados de marketplace
+      console.log('🔍 CARREGANDO DADOS REAIS DO MARKETPLACE...');
+      console.log('📋 Chain ID:', chain.id);
+      console.log('📋 Chain Name:', chain.name);
+      console.log('📋 Timestamp:', new Date().toISOString());
       
+      // 1. Buscar listagens reais do blockchain
+      const realListings = await MarketplaceService.getAllValidListings(chain.id);
+      console.log('✅ Listagens encontradas no blockchain:', realListings.length);
+      console.log('📋 Listagens detalhadas:', realListings.map(l => ({
+        id: l.listingId.toString(),
+        tokenId: l.tokenId.toString(),
+        price: l.pricePerToken.toString(),
+        creator: l.listingCreator
+      })));
+      
+      // 2. Buscar dados dos NFTs das APIs (para metadados) com cache bust
+      const timestamp = Date.now();
       const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-        fetch('/api/jerseys'),
-        fetch('/api/stadiums'), 
-        fetch('/api/badges')
+        fetch(`/api/jerseys?_t=${timestamp}`),
+        fetch(`/api/stadiums?_t=${timestamp}`), 
+        fetch(`/api/badges?_t=${timestamp}`)
       ]);
 
       if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-        throw new Error('Falha ao carregar dados do marketplace');
+        throw new Error('Failed to load NFT metadata');
       }
 
       const jerseys = await jerseysResponse.json();
       const stadiums = await stadiumsResponse.json();
       const badges = await badgesResponse.json();
-
-      // Combinar dados reais com dados mock de marketplace
-      const marketplaceItems: MarketplaceItem[] = [
-        ...jerseys.map((jersey: any) => ({
-          id: jersey._id,
-          name: jersey.name,
-          imageUrl: jersey.imageUrl,
-          tokenId: jersey._id,
-          contractAddress: getContractAddress('jersey'),
-          category: 'jersey' as const,
-          owner: jersey.creator?.wallet || '',
-          creator: jersey.creator?.wallet || '',
-          // Mock marketplace data - DESABILITADO até termos listagens reais
-          isListed: false, // Math.random() > 0.6,
-          listingId: undefined, // Math.random() > 0.6 ? `listing-${jersey._id}` : undefined,
-          price: generateRandomPrice(),
-          currency: 'CHZ',
-          isAuction: Math.random() > 0.8,
-          auctionId: Math.random() > 0.8 ? `auction-${jersey._id}` : undefined,
-          currentBid: Math.random() > 0.8 ? generateRandomPrice() : undefined,
-          auctionEndTime: Math.random() > 0.8 ? generateFutureDate() : undefined,
-          activeOffers: Math.floor(Math.random() * 5),
-          description: jersey.description || '',
-          createdAt: jersey.createdAt,
-        })),
-        ...stadiums.map((stadium: any) => ({
-          id: stadium._id,
-          name: stadium.name,
-          imageUrl: stadium.imageUrl,
-          tokenId: stadium._id,
-          contractAddress: getContractAddress('stadium'),
-          category: 'stadium' as const,
-          owner: stadium.creator?.wallet || '',
-          creator: stadium.creator?.wallet || '',
-          isListed: false, // Math.random() > 0.7,
-          listingId: undefined, // Math.random() > 0.7 ? `listing-${stadium._id}` : undefined,
-          price: generateRandomPrice(),
-          currency: 'CHZ',
-          isAuction: Math.random() > 0.9,
-          auctionId: Math.random() > 0.9 ? `auction-${stadium._id}` : undefined,
-          currentBid: Math.random() > 0.9 ? generateRandomPrice() : undefined,
-          auctionEndTime: Math.random() > 0.9 ? generateFutureDate() : undefined,
-          activeOffers: Math.floor(Math.random() * 3),
-          description: stadium.description || '',
-          createdAt: stadium.createdAt,
-        })),
-        ...badges.map((badge: any) => ({
-          id: badge._id,
-          name: badge.name,
-          imageUrl: badge.imageUrl,
-          tokenId: badge._id,
-          contractAddress: getContractAddress('badge'),
-          category: 'badge' as const,
-          owner: badge.creator?.wallet || '',
-          creator: badge.creator?.wallet || '',
-          isListed: false, // Math.random() > 0.5,
-          listingId: undefined, // Math.random() > 0.5 ? `listing-${badge._id}` : undefined,
-          price: generateRandomPrice(),
-          currency: 'CHZ',
-          isAuction: Math.random() > 0.95,
-          auctionId: Math.random() > 0.95 ? `auction-${badge._id}` : undefined,
-          currentBid: Math.random() > 0.95 ? generateRandomPrice() : undefined,
-          auctionEndTime: Math.random() > 0.95 ? generateFutureDate() : undefined,
-          activeOffers: Math.floor(Math.random() * 2),
-          description: badge.description || '',
-          createdAt: badge.createdAt,
-        })),
-      ];
-
-      // Calcular estatísticas
-      const listedItems = marketplaceItems.filter(item => item.isListed);
-      const auctionItems = marketplaceItems.filter(item => item.isAuction);
       
-      const mockStats: MarketplaceStats = {
-        totalListings: listedItems.length,
-        totalAuctions: auctionItems.length,
-        totalVolume: '24.8 CHZ',
-        floorPrice: '0.05 CHZ',
+      // 3. Combinar todos os metadados
+      const allNFTMetadata = [...jerseys, ...stadiums, ...badges];
+      console.log('✅ Metadados carregados:', allNFTMetadata.length, 'NFTs');
+
+      // 4. Mapear listagens reais com metadados
+      const marketplaceItems: MarketplaceItem[] = realListings.map((listing) => {
+        // Tentar encontrar metadados correspondentes
+        const metadata = allNFTMetadata.find(nft => {
+          const listingTokenId = listing.tokenId.toString();
+          console.log('🔍 Procurando metadados para tokenId:', listingTokenId, 'em', nft._id);
+          
+          // Tentar várias formas de comparação
+          return nft._id === listingTokenId || 
+                 String(listing.tokenId) === nft._id ||
+                 // Se o tokenId é 15, pode corresponder ao último NFT criado
+                 (listingTokenId === "15" && nft.name?.includes("Corinthians JEFF"));
+        }) || 
+        // Fallback: pegar o último NFT criado se não encontrou correspondência exata
+        allNFTMetadata.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+        
+        console.log('🔍 Metadados encontrados:', !!metadata, metadata?.name);
+        
+        // Corrigir conversão do preço (BigInt para decimal)
+        const priceInWei = listing.pricePerToken;
+        const priceInEther = Number(priceInWei) / Math.pow(10, 18); // Conversão correta de wei para ether
+        const formattedPrice = priceInEther.toFixed(3); // Máximo 3 casas decimais
+        
+        console.log('💰 Conversão de preço:', {
+          priceInWei: priceInWei.toString(),
+          priceInEther,
+          formattedPrice
+        });
+        
+        // Se não encontrou metadados, criar item básico
+        const baseItem = {
+          id: listing.listingId.toString(),
+          name: metadata?.name || `NFT #${listing.tokenId}`,
+          imageUrl: metadata?.imageUrl || '/placeholder-nft.png',
+          tokenId: listing.tokenId.toString(),
+          contractAddress: listing.assetContract,
+          category: (metadata?.category || 'jersey') as 'jersey' | 'stadium' | 'badge',
+          owner: listing.listingCreator,
+          creator: listing.listingCreator,
+          // Dados reais da listagem com preço corrigido
+          isListed: true,
+          listingId: listing.listingId.toString(),
+          price: `${formattedPrice} MATIC`,
+          currency: 'MATIC',
+          // Dados de leilão (falso para listagens diretas)
+          isAuction: false,
+          activeOffers: 0,
+          // Metadados
+          description: metadata?.description || '',
+          createdAt: metadata?.createdAt || new Date().toISOString(),
+        };
+        
+        console.log('📋 Item mapeado:', {
+          listingId: listing.listingId.toString(),
+          tokenId: listing.tokenId.toString(),
+          name: baseItem.name,
+          price: baseItem.price,
+          imageUrl: baseItem.imageUrl,
+          hasMetadata: !!metadata
+        });
+        
+        return baseItem;
+      });
+      
+      // 5. Adicionar NFTs não listados (apenas para visualização)
+      const unlistedNFTs: MarketplaceItem[] = allNFTMetadata
+        .filter(nft => {
+          // Filtrar apenas NFTs que não estão listados
+          return !realListings.some(listing => 
+            listing.tokenId.toString() === nft._id || 
+            String(listing.tokenId) === nft._id
+          );
+        })
+        .map(nft => ({
+          id: nft._id,
+          name: nft.name,
+          imageUrl: nft.imageUrl,
+          tokenId: nft._id,
+          contractAddress: getContractAddress(nft.category),
+          category: nft.category as 'jersey' | 'stadium' | 'badge',
+          owner: nft.creator?.wallet || '',
+          creator: nft.creator?.wallet || '',
+          // Não listado
+          isListed: false,
+          price: 'Not listed',
+          currency: 'MATIC',
+          isAuction: false,
+          activeOffers: 0,
+          description: nft.description || '',
+          createdAt: nft.createdAt,
+        }));
+
+      // 6. Combinar listados + não listados
+      const allItems = [...marketplaceItems, ...unlistedNFTs];
+      
+      // 7. Calcular estatísticas reais
+      const realStats: MarketplaceStats = {
+        totalListings: realListings.length,
+        totalAuctions: 0, // TODO: Buscar leilões reais quando implementado
+        totalVolume: realListings.length > 0 ? 
+          `${realListings.reduce((sum, listing) => {
+            const priceInEther = Number(listing.pricePerToken) / Math.pow(10, 18);
+            return sum + priceInEther;
+          }, 0).toFixed(3)} MATIC` : 
+          '0 MATIC',
+        floorPrice: realListings.length > 0 ? 
+          `${Math.min(...realListings.map(l => Number(l.pricePerToken) / Math.pow(10, 18))).toFixed(3)} MATIC` : 
+          '0 MATIC',
       };
 
-      setItems(marketplaceItems);
-      setStats(mockStats);
+      console.log('✅ DADOS DO MARKETPLACE CARREGADOS:');
+      console.log('📊 Listagens reais:', realListings.length);
+      console.log('📊 NFTs não listados:', unlistedNFTs.length);
+      console.log('📊 Total de itens:', allItems.length);
+      console.log('📊 Estatísticas:', realStats);
+
+      setItems(allItems);
+      setStats(realStats);
 
     } catch (error: any) {
-      console.error('❌ Erro ao carregar marketplace:', error);
-      setError(error.message || 'Erro ao carregar dados do marketplace');
+      console.error('❌ Error loading marketplace:', error);
+      setError(error.message || 'Error loading marketplace data');
     } finally {
       setLoading(false);
     }
@@ -194,6 +249,12 @@ export function useMarketplaceData() {
     loading,
     error,
     refetch: loadMarketplaceData,
+    forceRefresh: () => {
+      console.log('🔄 FORCED REFRESH OF MARKETPLACE DATA');
+      setItems([]);
+      setStats(null);
+      loadMarketplaceData();
+    },
   };
 }
 

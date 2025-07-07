@@ -31,17 +31,17 @@ export default function ListingControls({ listing, marketplaceContract }: Listin
   
   const handleBuyNow = async () => {
     setIsSubmitting(true);
-    toast.info('Processando compra... aprove a transação.');
+    toast.info('Processing purchase... approve the transaction.');
     try {
       await buyNow({
         id: listing.id,
         buyAmount: 1,
         type: isAuction ? 'auction' : 'direct',
       });
-      toast.success('Compra realizada com sucesso!');
+      toast.success('Purchase completed successfully!');
     } catch (e) {
       console.error(e);
-      toast.error('Falha ao processar a compra.');
+      toast.error('Failed to process purchase.');
     } finally {
       setIsSubmitting(false);
     }
@@ -51,16 +51,16 @@ export default function ListingControls({ listing, marketplaceContract }: Listin
     if (!isAuction) return;
 
     setIsSubmitting(true);
-    toast.info('Enviando seu lance... aprove a transação.');
+    toast.info('Submitting your bid... approve the transaction.');
     try {
       await makeBid({
         listingId: listing.id,
         bid: data.bidAmount,
       });
-      toast.success('Lance realizado com sucesso!');
+      toast.success('Bid placed successfully!');
     } catch (e: any) {
       console.error(e);
-      toast.error(e.message || 'Falha ao realizar o lance.');
+      toast.error(e.message || 'Failed to place bid.');
     } finally {
       setIsSubmitting(false);
     }
@@ -71,22 +71,22 @@ export default function ListingControls({ listing, marketplaceContract }: Listin
     return (
       <div>
         <div className="mb-4">
-          <p className="text-secondary">Lance mais alto:</p>
+          <p className="text-secondary">Highest Bid:</p>
           <p className="text-2xl font-bold">
-             {isLoadingWinningBid ? 'Carregando...' : `${winningBid?.bidAmount ?? 'Nenhum lance'} ${winningBid?.currencyValue.symbol ?? ''}`}
+             {isLoadingWinningBid ? 'Loading...' : `${winningBid?.bidAmount ?? 'No bids'} ${winningBid?.currencyValue.symbol ?? ''}`}
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onBidSubmit)} className="space-y-4">
           <Input 
-            {...register('bidAmount', { required: 'O valor do lance é obrigatório' })}
-            placeholder={`Lance mínimo de ${auction.minimumBidValue.displayValue} ${auction.minimumBidValue.symbol}`}
+            {...register('bidAmount', { required: 'Bid amount is required' })}
+            placeholder={`Minimum bid of ${auction.minimumBidValue.displayValue} ${auction.minimumBidValue.symbol}`}
             disabled={isSubmitting}
           />
           {errors.bidAmount && <p className="text-red-500 text-sm">{errors.bidAmount.message}</p>}
 
           <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isSubmitting}>
-            {isSubmitting ? 'Enviando...' : 'Dar Lance'}
+            {isSubmitting ? 'Submitting...' : 'Place Bid'}
           </Button>
         </form>
 
@@ -94,11 +94,11 @@ export default function ListingControls({ listing, marketplaceContract }: Listin
           <>
             <div className="my-4 flex items-center">
                 <div className="flex-grow border-t border-gray-600"></div>
-                <span className="flex-shrink mx-4 text-gray-400">OU</span>
+                <span className="flex-shrink mx-4 text-gray-400">OR</span>
                 <div className="flex-grow border-t border-gray-600"></div>
             </div>
             <Button onClick={handleBuyNow} className="w-full bg-accent hover:bg-accent/80" disabled={isSubmitting}>
-              Comprar Agora por {auction.buyoutCurrencyValue.displayValue} {auction.buyoutCurrencyValue.symbol}
+              Buy Now for {auction.buyoutCurrencyValue.displayValue} {auction.buyoutCurrencyValue.symbol}
             </Button>
           </>
         )}
@@ -106,13 +106,13 @@ export default function ListingControls({ listing, marketplaceContract }: Listin
     );
   }
 
-  // Venda Direta
+  // Direct Sale
   return (
     <div>
-        <p className="text-secondary">Preço</p>
+        <p className="text-secondary">Price</p>
         <p className="text-3xl font-bold mb-6">{listing.pricePerToken.toString()} {listing.currencyValuePerToken.symbol}</p>
         <Button onClick={handleBuyNow} className="w-full bg-accent hover:bg-accent/80" disabled={isSubmitting}>
-          {isSubmitting ? 'Processando...' : 'Comprar Agora'}
+          {isSubmitting ? 'Processing...' : 'Buy Now'}
         </Button>
     </div>
   );

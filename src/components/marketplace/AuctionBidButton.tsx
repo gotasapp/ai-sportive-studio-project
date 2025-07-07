@@ -49,12 +49,12 @@ export default function AuctionBidButton({
 
   const handleBid = async () => {
     if (!account || !chain) {
-      toast.error('Por favor, conecte sua carteira primeiro.');
+      toast.error('Please connect your wallet first.');
       return;
     }
 
     if (!bidAmount || isNaN(Number(bidAmount))) {
-      toast.error('Por favor, insira um valor válido para o lance.');
+      toast.error('Please enter a valid bid amount.');
       return;
     }
 
@@ -62,14 +62,28 @@ export default function AuctionBidButton({
     const minRequired = parseFloat(nextMinBid);
 
     if (bidValue < minRequired) {
-      toast.error(`Lance deve ser pelo menos ${nextMinBid} ${currency}`);
+      toast.error(`Bid must be at least ${nextMinBid} ${currency}`);
       return;
     }
 
     setIsProcessing(true);
-    toast.info('Enviando lance... Aprove a transação na sua carteira.');
+    toast.info('Sending bid... Approve the transaction in your wallet.');
 
     try {
+      // Check if auction has expired
+      const isExpired = await MarketplaceService.isAuctionExpired(chain.id, auctionId);
+      
+      if (isExpired) {
+        toast.error('This auction has already ended.');
+        return;
+      }
+
+      // Validate bid amount
+      if (!bidAmount || parseFloat(bidAmount) <= parseFloat(currentBid || '0')) {
+        toast.error('Bid too low. Must be higher than current bid.');
+        return;
+      }
+
       const result = await MarketplaceService.bidInAuction(
         account,
         chain.id,
@@ -79,8 +93,8 @@ export default function AuctionBidButton({
         }
       );
 
-      toast.success('Lance enviado com sucesso! 🎉');
-      console.log('✅ Lance enviado:', result.transactionHash);
+      toast.success('Bid sent successfully! 🎉');
+      console.log('✅ Bid sent:', result.transactionHash);
       
       setIsOpen(false);
       setBidAmount('');
@@ -91,16 +105,16 @@ export default function AuctionBidButton({
       }, 2000);
 
     } catch (error: any) {
-      console.error('❌ Erro ao enviar lance:', error);
+      console.error('❌ Error sending bid:', error);
       
       if (error.message.includes('insufficient funds')) {
-        toast.error('Saldo insuficiente para o lance.');
+        toast.error('Insufficient funds for the bid.');
       } else if (error.message.includes('auction ended')) {
-        toast.error('Este leilão já terminou.');
+        toast.error('This auction has already ended.');
       } else if (error.message.includes('bid too low')) {
-        toast.error('Lance muito baixo. Deve ser maior que o lance atual.');
+        toast.error('Bid too low. Must be higher than current bid.');
       } else {
-        toast.error(error.message || 'Erro ao enviar lance.');
+        toast.error(error.message || 'Error sending bid.');
       }
     } finally {
       setIsProcessing(false);
@@ -111,7 +125,7 @@ export default function AuctionBidButton({
     if (!buyoutPrice || !account || !chain) return;
 
     setIsProcessing(true);
-    toast.info('Comprando imediatamente... Aprove a transação.');
+    toast.info('Buying immediately... Approve the transaction.');
 
     try {
       const result = await MarketplaceService.bidInAuction(
@@ -123,16 +137,16 @@ export default function AuctionBidButton({
         }
       );
 
-      toast.success('Compra imediata realizada! 🎉');
-      console.log('✅ Buyout realizado:', result.transactionHash);
+      toast.success('Immediate purchase completed! 🎉');
+      console.log('✅ Buyout completed:', result.transactionHash);
       
       setTimeout(() => {
         window.location.reload();
       }, 2000);
 
     } catch (error: any) {
-      console.error('❌ Erro no buyout:', error);
-      toast.error(error.message || 'Erro na compra imediata.');
+      console.error('❌ Error in buyout:', error);
+      toast.error(error.message || 'Error in immediate purchase.');
     } finally {
       setIsProcessing(false);
     }
@@ -153,22 +167,22 @@ export default function AuctionBidButton({
           {isProcessing ? (
             <>
               <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-              Processando...
+              Processing...
             </>
           ) : isExpired ? (
             <>
               <Clock className="mr-2 h-4 w-4" />
-              Leilão Finalizado
+              Auction Ended
             </>
           ) : !isConnected ? (
             <>
               <Gavel className="mr-2 h-4 w-4" />
-              Conectar para Dar Lance
+              Connect to Bid
             </>
           ) : (
             <>
               <Gavel className="mr-2 h-4 w-4" />
-              Dar Lance
+              Bid
             </>
           )}
         </Button>
@@ -181,7 +195,7 @@ export default function AuctionBidButton({
             variant="outline"
             className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
           >
-            Comprar Agora por {buyoutPrice}
+            Buy Now for {buyoutPrice}
           </Button>
         )}
       </div>
@@ -190,18 +204,18 @@ export default function AuctionBidButton({
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[425px] bg-card border-secondary/20 text-white">
           <DialogHeader>
-            <DialogTitle className="text-[#FDFDFD]">Fazer Lance</DialogTitle>
+            <DialogTitle className="text-[#FDFDFD]">Make Bid</DialogTitle>
             <div className="text-sm text-[#FDFDFD]/70 space-y-1">
-              {currentBid && <p>Lance atual: {currentBid}</p>}
-              <p>Lance mínimo: {nextMinBid} {currency}</p>
-              {buyoutPrice && <p>Compra imediata: {buyoutPrice}</p>}
+              {currentBid && <p>Current Bid: {currentBid}</p>}
+              <p>Minimum Bid: {nextMinBid} {currency}</p>
+              {buyoutPrice && <p>Buy Now: {buyoutPrice}</p>}
             </div>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="bidAmount" className="text-[#FDFDFD]">
-                Seu Lance ({currency})
+                Your Bid ({currency})
               </Label>
               <Input
                 id="bidAmount"
@@ -215,7 +229,7 @@ export default function AuctionBidButton({
                 disabled={isProcessing}
               />
               <p className="text-xs text-[#FDFDFD]/50">
-                Deve ser pelo menos {nextMinBid} {currency}
+                Must be at least {nextMinBid} {currency}
               </p>
             </div>
           </div>
@@ -226,7 +240,7 @@ export default function AuctionBidButton({
               disabled={isProcessing || !bidAmount || parseFloat(bidAmount) < parseFloat(nextMinBid)}
               className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
             >
-              {isProcessing ? 'Enviando Lance...' : 'Confirmar Lance'}
+              {isProcessing ? 'Sending Bid...' : 'Confirm Bid'}
             </Button>
           </DialogFooter>
         </DialogContent>
