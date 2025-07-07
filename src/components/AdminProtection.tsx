@@ -11,7 +11,7 @@ interface AdminProtectionProps {
 }
 
 const LoadingComponent = () => (
-  <div className="flex items-center justify-center h-screen bg-black">
+  <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#030303] to-[#0b0518]">
     <div className="flex flex-col items-center space-y-4">
       <Loader2 className="w-12 h-12 text-accent animate-spin" />
       <p className="text-secondary">Verifying admin access...</p>
@@ -20,8 +20,8 @@ const LoadingComponent = () => (
 );
 
 const FallbackComponent = ({ address }: { address?: string }) => (
-  <div className="flex items-center justify-center h-screen bg-black text-secondary">
-    <div className="w-full max-w-md p-8 m-4 text-center border rounded-lg shadow-xl bg-black/50 border-secondary/20 backdrop-blur-sm">
+  <div className="flex items-center justify-center h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] text-secondary">
+    <div className="w-full max-w-md p-8 m-4 text-center border rounded-lg shadow-xl bg-gradient-to-b from-[#030303]/50 to-[#0b0518]/50 border-secondary/20 backdrop-blur-sm">
       <div className="mx-auto mb-6 bg-accent/20 rounded-full w-20 h-20 flex items-center justify-center">
         <Lock className="w-10 h-10 text-accent" />
       </div>

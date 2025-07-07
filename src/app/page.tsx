@@ -28,7 +28,7 @@ export default function Home() {
   // Enquanto a verificação não estiver completa, mostramos um loader.
   if (!isAuthCheckComplete) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-black">
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518]">
         <div className="w-16 h-16 border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
@@ -36,7 +36,7 @@ export default function Home() {
 
   // Se a verificação estiver completa e a conta existir, renderiza a página.
   return (
-    <div className="w-full min-h-screen bg-[#111011] flex flex-col">
+    <div className="w-full min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] flex flex-col">
       <Header />
       <div className="flex-1 w-full">
         <JerseyEditor />

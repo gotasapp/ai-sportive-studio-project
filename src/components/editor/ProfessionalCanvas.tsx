@@ -357,7 +357,7 @@ export default function ProfessionalCanvas({
         </div>
 
         {/* Pan/Zoom Instructions */}
-        <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg p-2">
+                    <div className="absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg p-2">
           <div className="flex items-center gap-2 text-xs text-[#ADADAD]">
             <Move className="w-3 h-3" />
             <span>Drag to pan • Scroll to zoom</span>

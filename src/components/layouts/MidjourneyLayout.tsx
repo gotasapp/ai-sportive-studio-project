@@ -18,10 +18,10 @@ export default function MidjourneyLayout({
   className = '' 
 }: MidjourneyLayoutProps) {
   return (
-    <div className={`flex h-screen bg-black text-white overflow-hidden ${className}`}>
+    <div className={`flex h-screen bg-transparent text-white overflow-hidden ${className}`}>
       
       {/* SIDEBAR - Estilo Midjourney */}
-      <div className="w-80 bg-black border-r border-gray-medium/20 flex flex-col overflow-y-auto">
+      <div className="w-80 bg-transparent border-r border-gray-medium/20 flex flex-col overflow-y-auto">
         <div className="p-4 space-y-3">
           {sidebar}
         </div>
@@ -31,7 +31,7 @@ export default function MidjourneyLayout({
       <div className="flex-1 flex flex-col overflow-hidden">
         
         {/* CANVAS PRINCIPAL */}
-        <div className="flex-1 p-6 flex flex-col items-center justify-center bg-gradient-to-br from-black via-gray-dark/5 to-black">
+        <div className="flex-1 p-6 flex flex-col items-center justify-center bg-transparent">
           {canvas}
         </div>
 

@@ -272,7 +272,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-6 lg:p-8">
+    <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] text-white p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header responsivo */}

@@ -179,7 +179,7 @@ export default function Header() {
 
 
   return (
-    <header className="w-full border-b border-[#333333] bg-black relative z-50">
+    <header className="w-full border-b border-[#333333] bg-transparent relative z-50">
       <div className="w-full px-6 py-4 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <img 

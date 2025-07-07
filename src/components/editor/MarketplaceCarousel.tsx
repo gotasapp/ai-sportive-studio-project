@@ -68,7 +68,7 @@ export default function MarketplaceCarousel({ items, isLoading }: MarketplaceCar
   
   return (
     <div className="border border-neutral-800 rounded-lg mt-4">
-      <div className="bg-black p-3 md:p-4">
+              <div className="bg-transparent p-3 md:p-4">
         <div className="flex items-center justify-between mb-3">
           <h2 className="heading-style text-sm">Marketplace</h2>
           <div className="text-xs text-gray-400">

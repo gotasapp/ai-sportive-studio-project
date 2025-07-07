@@ -194,7 +194,7 @@ export default function MarketplacePage() {
       {filteredNfts.map((nft) => (
         <div 
           key={nft._id}
-          className="flex items-center gap-4 p-4 bg-[#000000] border border-[#FDFDFD]/10 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
+          className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
             <img 
@@ -285,7 +285,7 @@ export default function MarketplacePage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col text-[#FDFDFD] bg-[#000000]">
+    <main className="flex min-h-screen flex-col text-[#FDFDFD] bg-gradient-to-b from-[#030303] to-[#0b0518]">
       <Header />
       
       <div className="flex-1">

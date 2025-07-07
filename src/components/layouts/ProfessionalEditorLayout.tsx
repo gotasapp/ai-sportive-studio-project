@@ -24,12 +24,12 @@ export default function ProfessionalEditorLayout({
   const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(true)
 
   return (
-    <div className={cn("w-full h-[calc(100vh-4rem)] bg-black text-[#FDFDFD] flex flex-col overflow-hidden", className)}>
+    <div className={cn("w-full h-[calc(100vh-4rem)] bg-transparent text-[#FDFDFD] flex flex-col overflow-hidden", className)}>
       {/* Main Content Area */}
       <div className="flex-1 flex overflow-hidden w-full">
         {/* Sidebar */}
         <div className={cn(
-          "relative bg-black border-r border-[#333333] transition-all duration-300 ease-in-out",
+          "relative bg-transparent border-r border-[#333333] transition-all duration-300 ease-in-out",
           isSidebarOpen ? "w-80" : "w-0",
           "md:w-80 md:block"
         )}>
@@ -107,14 +107,14 @@ export default function ProfessionalEditorLayout({
           </div>
 
             {/* Action Bar */}
-            <div className="bg-black border-t border-[#333333] px-4 py-1 mt-[5px]" style={{height: '56px'}}>
+            <div className="bg-transparent border-t border-[#333333] px-4 py-1 mt-[5px]" style={{height: '56px'}}>
               {actionBar}
             </div>
           </div>
 
         {/* Marketplace Sidebar */}
         <div className={cn(
-          "relative bg-black border-l border-[#333333] transition-all duration-300 ease-in-out",
+          "relative bg-transparent border-l border-[#333333] transition-all duration-300 ease-in-out",
           isMarketplaceOpen ? "w-80" : "w-12",
           "hidden lg:block"
         )}>
@@ -159,7 +159,7 @@ export default function ProfessionalEditorLayout({
 
       {/* Mobile Marketplace */}
       <div className={cn(
-        "lg:hidden bg-black border-t border-[#333333] transition-all duration-300 ease-in-out",
+        "lg:hidden bg-transparent border-t border-[#333333] transition-all duration-300 ease-in-out",
         isMarketplaceOpen ? "h-48" : "h-0"
       )}>
         <div className={cn(
