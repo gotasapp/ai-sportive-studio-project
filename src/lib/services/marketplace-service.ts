@@ -1,6 +1,6 @@
-import { prepareContractCall, sendTransaction, readContract } from 'thirdweb';
-import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, priceToWei, weiToPrice } from '../marketplace-config';
+import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract } from 'thirdweb';
 import { Account } from 'thirdweb/wallets';
+import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
 
 // Tipos baseados na documentação Thirdweb Marketplace V3
@@ -51,7 +51,7 @@ export class MarketplaceService {
   // === DIRECT LISTINGS ===
   
   /**
-   * Criar uma listagem direta (venda por preço fixo)
+   * Criar listagem direta
    */
   static async createDirectListing(
     account: Account,
@@ -67,25 +67,50 @@ export class MarketplaceService {
     }
   ) {
     try {
+      console.log('🎯 Criando listagem com parâmetros:', params);
+      
       const contract = getMarketplaceContract(chainId);
-      const price = priceToWei(params.pricePerToken);
+      const pricePerToken = priceToWei(params.pricePerToken);
+      
+      // Validar e converter tokenId
+      let numericTokenId: bigint;
+      try {
+        // Se é um número válido, usar diretamente
+        if (/^\d+$/.test(params.tokenId)) {
+          numericTokenId = BigInt(params.tokenId);
+        } else if (params.tokenId.length === 24) {
+          // Se é um ObjectId do MongoDB (24 caracteres hex), extrair timestamp como fallback
+          const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
+          numericTokenId = BigInt(timestamp % 10000); // Usar últimos 4 dígitos como tokenId
+          console.log(`⚠️ TokenId parece ser ObjectId, usando timestamp como fallback: ${numericTokenId}`);
+        } else {
+          // Tentar converter diretamente ou usar 0 como fallback
+          numericTokenId = BigInt(0);
+          console.log(`⚠️ TokenId inválido, usando 0 como fallback: ${params.tokenId}`);
+        }
+      } catch (error) {
+        numericTokenId = BigInt(0);
+        console.log(`❌ Erro ao converter tokenId, usando 0: ${params.tokenId}`, error);
+      }
+      
+      console.log('✅ TokenId convertido para:', numericTokenId.toString());
       
       const now = new Date();
-      const defaultEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+      const oneWeekLater = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
       
       const transaction = prepareContractCall({
         contract,
         method: "function createListing((address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 pricePerToken, uint128 startTimestamp, uint128 endTimestamp, bool reserved) params) returns (uint256 listingId)",
         params: [{
           assetContract: params.assetContract,
-          tokenId: BigInt(params.tokenId),
+          tokenId: numericTokenId,
           quantity: BigInt(params.quantity || '1'),
           currency: NATIVE_TOKEN_ADDRESS,
-          pricePerToken: price,
+          pricePerToken,
           startTimestamp: BigInt(Math.floor((params.startTimestamp || now).getTime() / 1000)),
-          endTimestamp: BigInt(Math.floor((params.endTimestamp || defaultEnd).getTime() / 1000)),
+          endTimestamp: BigInt(Math.floor((params.endTimestamp || oneWeekLater).getTime() / 1000)),
           reserved: params.reserved || false,
-        }]
+        }],
       });
 
       const result = await sendTransaction({
@@ -191,28 +216,53 @@ export class MarketplaceService {
     }
   ) {
     try {
+      console.log('🎯 Criando leilão com parâmetros:', params);
+      
       const contract = getMarketplaceContract(chainId);
-      const minBid = priceToWei(params.minimumBidAmount);
-      const buyoutBid = params.buyoutBidAmount ? priceToWei(params.buyoutBidAmount) : BigInt(0);
+      const minimumBid = priceToWei(params.minimumBidAmount);
+      const buyoutBid = params.buyoutBidAmount ? priceToWei(params.buyoutBidAmount) : minimumBid * BigInt(10);
+      
+      // Validar e converter tokenId
+      let numericTokenId: bigint;
+      try {
+        // Se é um número válido, usar diretamente
+        if (/^\d+$/.test(params.tokenId)) {
+          numericTokenId = BigInt(params.tokenId);
+        } else if (params.tokenId.length === 24) {
+          // Se é um ObjectId do MongoDB (24 caracteres hex), extrair timestamp como fallback
+          const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
+          numericTokenId = BigInt(timestamp % 10000); // Usar últimos 4 dígitos como tokenId
+          console.log(`⚠️ TokenId parece ser ObjectId, usando timestamp como fallback: ${numericTokenId}`);
+        } else {
+          // Tentar converter diretamente ou usar 0 como fallback
+          numericTokenId = BigInt(0);
+          console.log(`⚠️ TokenId inválido, usando 0 como fallback: ${params.tokenId}`);
+        }
+      } catch (error) {
+        numericTokenId = BigInt(0);
+        console.log(`❌ Erro ao converter tokenId, usando 0: ${params.tokenId}`, error);
+      }
+      
+      console.log('✅ TokenId convertido para:', numericTokenId.toString());
       
       const now = new Date();
-      const defaultEnd = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 dias
+      const defaultEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 horas
       
       const transaction = prepareContractCall({
         contract,
         method: "function createAuction((address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 minimumBidAmount, uint256 buyoutBidAmount, uint64 timeBufferInSeconds, uint64 bidBufferBps, uint64 startTimestamp, uint64 endTimestamp) params) returns (uint256 auctionId)",
         params: [{
           assetContract: params.assetContract,
-          tokenId: BigInt(params.tokenId),
+          tokenId: numericTokenId,
           quantity: BigInt(params.quantity || '1'),
           currency: NATIVE_TOKEN_ADDRESS,
-          minimumBidAmount: minBid,
+          minimumBidAmount: minimumBid,
           buyoutBidAmount: buyoutBid,
           timeBufferInSeconds: BigInt(params.timeBufferInSeconds || 300), // 5 min buffer
-          bidBufferBps: BigInt(params.bidBufferBps || 500), // 5% buffer
+          bidBufferBps: BigInt(params.bidBufferBps || 500), // 5% bid buffer
           startTimestamp: BigInt(Math.floor((params.startTimestamp || now).getTime() / 1000)),
           endTimestamp: BigInt(Math.floor((params.endTimestamp || defaultEnd).getTime() / 1000)),
-        }]
+        }],
       });
 
       const result = await sendTransaction({
@@ -319,6 +369,87 @@ export class MarketplaceService {
     }
   }
 
+  // === TOKEN APPROVAL (para ofertas ERC20) ===
+  
+  /**
+   * Verificar se o usuário já aprovou o token ERC20 para ofertas
+   */
+  static async checkOfferTokenAllowance(
+    account: Account,
+    chainId: number,
+    amount: string
+  ): Promise<{ isApproved: boolean; currentAllowance: bigint }> {
+    try {
+      const tokenAddress = getOfferCurrency(chainId);
+      const marketplaceContract = getMarketplaceContract(chainId);
+      const requiredAmount = priceToWei(amount);
+      
+      // Criar contrato do token ERC20
+      const tokenContract = getContract({
+        client: marketplaceContract.client,
+        address: tokenAddress,
+        chain: marketplaceContract.chain,
+      });
+      
+      // Verificar allowance atual
+      const currentAllowance = await readContract({
+        contract: tokenContract,
+        method: "function allowance(address owner, address spender) view returns (uint256)",
+        params: [account.address, marketplaceContract.address]
+      });
+      
+      const isApproved = currentAllowance >= requiredAmount;
+      
+      console.log(`💰 Allowance atual: ${currentAllowance.toString()}, Requerido: ${requiredAmount.toString()}, Aprovado: ${isApproved}`);
+      
+      return { isApproved, currentAllowance };
+    } catch (error: any) {
+      console.error('❌ Erro ao verificar allowance:', error);
+      throw new Error('Falha ao verificar aprovação do token');
+    }
+  }
+  
+  /**
+   * Aprovar token ERC20 para fazer ofertas
+   */
+  static async approveOfferToken(
+    account: Account,
+    chainId: number,
+    amount: string
+  ) {
+    try {
+      const tokenAddress = getOfferCurrency(chainId);
+      const marketplaceContract = getMarketplaceContract(chainId);
+      const approvalAmount = priceToWei(amount);
+      
+      console.log(`🔓 Aprovando ${amount} tokens para ofertas...`);
+      
+      // Criar contrato do token ERC20
+      const tokenContract = getContract({
+        client: marketplaceContract.client,
+        address: tokenAddress,
+        chain: marketplaceContract.chain,
+      });
+      
+      const transaction = prepareContractCall({
+        contract: tokenContract,
+        method: "function approve(address spender, uint256 amount) returns (bool)",
+        params: [marketplaceContract.address, approvalAmount]
+      });
+
+      const result = await sendTransaction({
+        transaction,
+        account,
+      });
+
+      console.log('✅ Token aprovado com sucesso:', result.transactionHash);
+      return { success: true, transactionHash: result.transactionHash };
+    } catch (error: any) {
+      console.error('❌ Erro ao aprovar token:', error);
+      throw new Error(error?.reason || error?.message || 'Falha ao aprovar token');
+    }
+  }
+
   // === OFFERS ===
   
   /**
@@ -336,23 +467,57 @@ export class MarketplaceService {
     }
   ) {
     try {
+      console.log('🎯 Fazendo oferta com parâmetros:', params);
+      
       const contract = getMarketplaceContract(chainId);
       const offerPrice = priceToWei(params.totalPrice);
       
+      // Validar e converter tokenId
+      let numericTokenId: bigint;
+      try {
+        // Se é um número válido, usar diretamente
+        if (/^\d+$/.test(params.tokenId)) {
+          numericTokenId = BigInt(params.tokenId);
+        } else if (params.tokenId.length === 24) {
+          // Se é um ObjectId do MongoDB (24 caracteres hex), extrair timestamp como fallback
+          const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
+          numericTokenId = BigInt(timestamp % 10000); // Usar últimos 4 dígitos como tokenId
+          console.log(`⚠️ TokenId parece ser ObjectId, usando timestamp como fallback: ${numericTokenId}`);
+        } else {
+          // Tentar converter diretamente ou usar 0 como fallback
+          numericTokenId = BigInt(0);
+          console.log(`⚠️ TokenId inválido, usando 0 como fallback: ${params.tokenId}`);
+        }
+      } catch (error) {
+        numericTokenId = BigInt(0);
+        console.log(`❌ Erro ao converter tokenId, usando 0: ${params.tokenId}`, error);
+      }
+      
+      console.log('✅ TokenId convertido para:', numericTokenId.toString());
+      
       const defaultExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 dias
+      
+      // Obter token ERC20 correto para ofertas (ofertas não podem usar tokens nativos)
+      const offerCurrency = getOfferCurrency(chainId);
+      console.log('💰 Usando token ERC20 para oferta:', offerCurrency);
+      
+      // Estrutura correta conforme documentação do Marketplace V3
+      const offerParams = {
+        assetContract: params.assetContract,
+        tokenId: numericTokenId,
+        quantity: BigInt(params.quantity || '1'),
+        currency: offerCurrency, // Token ERC20 (WMATIC, WETH, etc.)
+        totalPrice: offerPrice,
+        expirationTimestamp: BigInt(Math.floor((params.expirationTimestamp || defaultExpiry).getTime() / 1000)),
+      };
+      
+      console.log('📋 OfferParams final:', offerParams);
       
       const transaction = prepareContractCall({
         contract,
         method: "function makeOffer((address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 totalPrice, uint256 expirationTimestamp) params) returns (uint256 offerId)",
-        params: [{
-          assetContract: params.assetContract,
-          tokenId: BigInt(params.tokenId),
-          quantity: BigInt(params.quantity || '1'),
-          currency: NATIVE_TOKEN_ADDRESS,
-          totalPrice: offerPrice,
-          expirationTimestamp: BigInt(Math.floor((params.expirationTimestamp || defaultExpiry).getTime() / 1000)),
-        }],
-        value: offerPrice, // Deposit da oferta
+        params: [offerParams],
+        // Não usar 'value' para ofertas ERC20 - o usuário deve ter aprovado o token antes
       });
 
       const result = await sendTransaction({

@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
+import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
+import { polygonAmoy } from 'thirdweb/chains';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -20,10 +21,19 @@ import {
 
 export default function MarketplaceDebug() {
   const account = useActiveAccount();
-  const chain = useActiveWalletChain();
-  const [showDebug, setShowDebug] = useState(false);
+  const activeChain = useActiveWalletChain();
+  const switchChain = useSwitchActiveWalletChain();
 
-  const chainId = chain?.id || 0;
+  const handleSwitchToAmoy = async () => {
+    try {
+      await switchChain(polygonAmoy);
+      console.log('✅ Rede trocada para Polygon Amoy');
+    } catch (error) {
+      console.error('❌ Erro ao trocar rede:', error);
+    }
+  };
+
+  const chainId = activeChain?.id || 0;
   const marketplaceContract = MARKETPLACE_CONTRACTS[chainId];
   const nftContract = NFT_CONTRACTS[chainId];
 
@@ -54,6 +64,8 @@ export default function MarketplaceDebug() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
   };
+
+  const [showDebug, setShowDebug] = useState(false);
 
   if (!showDebug) {
     return (
@@ -333,6 +345,17 @@ export default function MarketplaceDebug() {
               >
                 MATIC Faucet
               </Button>
+
+              {activeChain?.id !== polygonAmoy.id && account && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/5"
+                  onClick={handleSwitchToAmoy}
+                >
+                  Trocar para Amoy
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>

@@ -2,102 +2,17 @@
 
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { createThirdwebClient } from "thirdweb";
-import { defineChain } from "thirdweb/chains";
-import { polygon, mainnet } from "thirdweb/chains";
 import { Shield } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import NavLink from './ui/NavLink';
-
-
-
-
-// Cliente Thirdweb simples
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
-});
-
-// Define custom CHZ chains
-const chzMainnet = defineChain({
-  id: 88888,
-  name: 'Chiliz Chain',
-  nativeCurrency: {
-    name: 'Chiliz',
-    symbol: 'CHZ',
-    decimals: 18,
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc.ankr.com/chiliz'],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: 'ChilizScan',
-      url: 'https://scan.chiliz.com',
-    },
-  },
-});
-
-const chzTestnet = defineChain({
-  id: 88882,
-  name: 'CHZ Spicy Testnet',
-  nativeCurrency: {
-    name: 'Chiliz',
-    symbol: 'CHZ',
-    decimals: 18,
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://spicy-rpc.chiliz.com'],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: 'CHZ Spicy Explorer',
-      url: 'https://spicy.chzscan.com',
-    },
-  },
-});
-
-const polygonAmoy = defineChain({
-  id: 80002,
-  name: 'Polygon Amoy Testnet',
-  nativeCurrency: {
-    name: 'MATIC',
-    symbol: 'MATIC',
-    decimals: 18,
-  },
-  rpcUrls: {
-    default: {
-      http: ['https://rpc-amoy.polygon.technology'],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: 'Polygon Amoy Explorer',
-      url: 'https://amoy.polygonscan.com',
-    },
-  },
-});
-
-// All supported chains
-const supportedChains = [
-  mainnet,
-  polygon,
-  chzMainnet,
-  chzTestnet,
-  polygonAmoy
-];
+import { client, supportedChains, wallets, chzMainnet } from '@/lib/ThirdwebProvider';
 
 export default function Header() {
   const account = useActiveAccount();
   const wallet = useActiveWallet();
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [adminCheckLoading, setAdminCheckLoading] = useState(false);
-
-
 
   // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
   useEffect(() => {
@@ -176,8 +91,6 @@ export default function Header() {
     checkAdminStatus();
   }, [account, wallet]);
 
-
-
   return (
     <header className="w-full border-b border-[#333333] bg-transparent relative z-50">
       <div className="w-full px-6 py-3 flex justify-between items-center">
@@ -220,10 +133,10 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <ConnectButton
+          <ConnectButton 
             client={client}
+            wallets={wallets}
             chains={supportedChains}
-            chain={chzMainnet}
             theme="dark"
           />
         </div>
