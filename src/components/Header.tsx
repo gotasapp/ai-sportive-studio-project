@@ -183,13 +183,10 @@ export default function Header() {
       <div className="w-full px-6 py-3 flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <img 
-            src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1750634725/th_24_vaq5es.jpg" 
-            alt="Chiliz Fan NFT Logo" 
-            className="w-8 h-8 rounded-lg object-cover"
+            src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png" 
+            alt="Chiliz Logo" 
+            className="w-auto h-12 object-contain ml-6"
           />
-          <h1 className="text-sm md:text-xl font-system font-medium" style={{ fontWeight: 500, color: '#ffffff' }}>
-            chiliz fan nft
-          </h1>
         </div>
 
         <nav className="hidden lg:flex items-center space-x-6">

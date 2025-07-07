@@ -11,6 +11,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import Image from 'next/image';
 
 interface ProfessionalBadgeCanvasProps {
   generatedImage: string | null
@@ -99,46 +100,13 @@ export default function ProfessionalBadgeCanvas({
   }
 
   const renderPlaceholder = () => (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="text-center max-w-md">
-        <div className="w-24 h-24 mx-auto mb-6 bg-[#333333]/30 rounded-2xl flex items-center justify-center">
-          <Shield className="w-12 h-12 text-[#ADADAD]" />
-        </div>
-        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
-          Ready to Generate
-        </h3>
-        <p className="text-sm text-[#ADADAD] mb-4">
-          {isVisionMode 
-            ? 'Upload a reference image and generate a badge based on your vision'
-            : 'Configure your badge settings and click Generate to create your custom design'
-          }
+    <div className="flex-1 flex items-center justify-center bg-[#14101e]">
+      <div className="text-center text-[#444444]">
+        <Shield className="w-24 h-24 mx-auto" />
+        <h3 className="mt-4 text-lg font-semibold text-[#FDFDFD]">Badge Preview</h3>
+        <p className="mt-1 text-sm text-[#ADADAD]">
+          Your generated badge will appear here once created.
         </p>
-        {badgeName && selectedStyle && (
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Badge variant="outline" className="bg-[#A20131]/10 text-[#A20131] border-[#A20131]/30">
-              {badgeName}
-            </Badge>
-            <Badge variant="outline" className="bg-[#333333]/30 text-[#FDFDFD] border-[#333333]">
-              {selectedStyle} • {quality.toUpperCase()}
-            </Badge>
-          </div>
-        )}
-        <div className="flex items-center justify-center gap-2 text-xs text-[#ADADAD]">
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-[#A20131] rounded-full"></div>
-            <span>Professional design</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-1.5 h-1.5 bg-[#ADADAD] rounded-full"></div>
-            <span>Multiple styles</span>
-          </div>
-          {isVisionMode && (
-            <div className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-[#A20131] rounded-full"></div>
-              <span>Vision enhanced</span>
-            </div>
-          )}
-        </div>
       </div>
     </div>
   )
@@ -195,10 +163,10 @@ export default function ProfessionalBadgeCanvas({
   const renderImage = () => (
     <div className="flex-1 flex flex-col">
       {/* Canvas Toolbar */}
-      <div className="flex items-center justify-between p-4 bg-[#333333]/20 border-b border-[#333333]">
+      <div className="flex items-center justify-between px-4 py-2 bg-[#333333]/20 border-b border-[#333333]">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
-            <CheckCircle className="w-3 h-3 mr-1" />
+            <CheckCircle className="w-2.5 h-2.5 mr-1" />
             Generated
           </Badge>
           <span className="text-xs text-[#ADADAD]">
@@ -222,7 +190,7 @@ export default function ProfessionalBadgeCanvas({
                     onClick={handleZoomOut}
                     className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
-                    <ZoomOut className="h-4 w-4" />
+                    <ZoomOut className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -242,7 +210,7 @@ export default function ProfessionalBadgeCanvas({
                     onClick={handleZoomIn}
                     className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
-                    <ZoomIn className="h-4 w-4" />
+                    <ZoomIn className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -257,7 +225,7 @@ export default function ProfessionalBadgeCanvas({
       {/* Canvas Area */}
       <div 
         ref={canvasRef}
-        className="flex-1 relative overflow-hidden bg-[#111011] cursor-move"
+        className="flex-1 relative overflow-hidden bg-[#14101e] cursor-move"
         onMouseDown={handleMouseDown}
         style={{ cursor: isDragging ? 'grabbing' : generatedImage ? 'grab' : 'default' }}
       >
