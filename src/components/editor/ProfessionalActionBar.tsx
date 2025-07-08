@@ -71,25 +71,23 @@ export default function ProfessionalActionBar({
       onClick={onGenerate}
       disabled={!canGenerate || isLoading}
       className={cn(
-        "group transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
+        "group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
         "bg-white !text-black hover:bg-[#A20131] hover:!text-white",
-        isMobile ? "h-10 px-4 text-sm font-semibold w-full" : "h-12 px-8 text-base font-semibold"
+        // Mobile adjustments
+        "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
       )}
     >
       {isLoading ? (
-        <div className="flex items-center gap-2">
-          <Loader2 className={cn("animate-spin", isMobile ? "w-4 h-4" : "w-6 h-6")} />
-          <span>{isMobile ? "Generating..." : "Generating..."}</span>
+        <div className="flex items-center gap-3 max-lg:gap-2">
+          <Loader2 className="w-6 h-6 animate-spin max-lg:w-4 max-lg:h-4" />
+          <span>Generating...</span>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
-          <Zap className={cn(
-            "fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white",
-            isMobile ? "w-4 h-4" : "w-6 h-6"
-          )} />
-          <span>{isMobile ? "Generate" : "Generate Jersey"}</span>
-          {generationCost && !isMobile && (
-            <Badge variant="secondary" className="border-none bg-black/20 text-black">
+        <div className="flex items-center gap-3 max-lg:gap-2">
+          <Zap className="w-6 h-6 fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white max-lg:w-4 max-lg:h-4" />
+          <span>Generate Jersey</span>
+          {generationCost && (
+            <Badge variant="secondary" className="border-none bg-black/20 text-black max-lg:text-xs max-lg:px-1.5 max-lg:py-0.5">
               ${generationCost.toFixed(3)}
             </Badge>
           )}
@@ -98,42 +96,27 @@ export default function ProfessionalActionBar({
     </Button>
   )
 
-  const renderMintButtons = () => {
-    if (isMobile) {
-      return (
-        <div className="flex flex-col gap-2 w-full">
-          {/* Legacy Mint */}
-          <Button
-            onClick={onMintLegacy}
-            disabled={!canMintLegacy || isMinting}
-            variant="outline"
-            className={cn(
-              "h-9 px-4 text-sm font-medium transition-all duration-200 w-full",
-              "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
-              "disabled:opacity-50 disabled:cursor-not-allowed"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Wallet className="w-4 h-4" />
-              <span>Mint (Legacy)</span>
-            </div>
-          </Button>
-
-          {/* Gasless Mint - Admin Only */}
-          {isUserAdmin && (
+  const renderMintButtons = () => (
+    <div className="flex items-center gap-3 max-lg:gap-2 max-lg:flex-col max-lg:w-full">
+      {/* Legacy Mint */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
-              onClick={onMintGasless}
-              disabled={!canMintGasless || isMinting}
+              onClick={onMintLegacy}
+              disabled={!canMintLegacy || isMinting}
               variant="outline"
               className={cn(
-                "h-9 px-4 text-sm font-medium transition-all duration-200 w-full",
-                "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                "h-12 px-6 text-base font-medium transition-all duration-200",
+                "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                // Mobile adjustments
+                "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
               )}
             >
-              <div className="flex items-center gap-2">
-                <Rocket className="w-4 h-4" />
-                <span>Mint (Gasless)</span>
+              <div className="flex items-center gap-2 max-lg:gap-1.5">
+                <Wallet className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                <span>Mint (Legacy)</span>
               </div>
             </Button>
           )}
@@ -153,6 +136,7 @@ export default function ProfessionalActionBar({
                 variant="outline"
                 className={cn(
                   "h-12 px-6 text-base font-medium transition-all duration-200",
+<<<<<<< HEAD
                   "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
                   "disabled:opacity-50 disabled:cursor-not-allowed"
                 )}
@@ -160,6 +144,17 @@ export default function ProfessionalActionBar({
                 <div className="flex items-center gap-2">
                   <Wallet className="w-5 h-5" />
                   <span>Mint (Legacy)</span>
+=======
+                  "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  // Mobile adjustments
+                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
+                )}
+              >
+                <div className="flex items-center gap-2 max-lg:gap-1.5">
+                  <Rocket className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                  <span>Mint (Gasless)</span>
+>>>>>>> 77aedeb ( segunda tentativa resposividade)
                 </div>
               </Button>
             </TooltipTrigger>
@@ -209,19 +204,30 @@ export default function ProfessionalActionBar({
         isMobile ? "px-3 py-2 flex-col gap-2" : "px-4 py-3",
         mintStatus === 'success' && "bg-green-500/10 border-green-500/30",
         mintStatus === 'error' && "bg-red-500/10 border-red-500/30",
-        mintStatus === 'pending' && "bg-yellow-500/10 border-yellow-500/30"
+        mintStatus === 'pending' && "bg-yellow-500/10 border-yellow-500/30",
+        // Mobile adjustments
+        "max-lg:flex-col max-lg:gap-2 max-lg:px-3 max-lg:py-2"
       )}>
+<<<<<<< HEAD
         <div className="flex items-center gap-2">
           {mintStatus === 'pending' && <Clock className={cn("text-yellow-400 animate-pulse", isMobile ? "w-4 h-4" : "w-5 h-5")} />}
           {mintStatus === 'success' && <CheckCircle className={cn("text-green-400", isMobile ? "w-4 h-4" : "w-5 h-5")} />}
           {mintStatus === 'error' && <AlertCircle className={cn("text-red-400", isMobile ? "w-4 h-4" : "w-5 h-5")} />}
+=======
+        <div className="flex items-center gap-2 max-lg:gap-1.5">
+          {mintStatus === 'pending' && <Clock className="w-5 h-5 text-yellow-400 animate-pulse max-lg:w-4 max-lg:h-4" />}
+          {mintStatus === 'success' && <CheckCircle className="w-5 h-5 text-green-400 max-lg:w-4 max-lg:h-4" />}
+          {mintStatus === 'error' && <AlertCircle className="w-5 h-5 text-red-400 max-lg:w-4 max-lg:h-4" />}
+>>>>>>> 77aedeb ( segunda tentativa resposividade)
           
           <span className={cn(
             "font-medium",
             isMobile ? "text-sm text-center" : "text-base",
             mintStatus === 'success' && "text-green-400",
             mintStatus === 'error' && "text-red-400",
-            mintStatus === 'pending' && "text-yellow-400"
+            mintStatus === 'pending' && "text-yellow-400",
+            // Mobile adjustments
+            "max-lg:text-sm max-lg:text-center"
           )}>
             {mintStatus === 'pending' && (isMobile ? 'Minting...' : 'Minting in progress...')}
             {mintStatus === 'success' && (isMobile ? 'Success!' : mintSuccess)}
@@ -234,6 +240,7 @@ export default function ProfessionalActionBar({
             variant="ghost"
             size="sm"
             onClick={() => window.open(getTransactionUrl(transactionHash), '_blank')}
+<<<<<<< HEAD
             className={cn(
               "text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10",
               isMobile && "w-full"
@@ -241,6 +248,12 @@ export default function ProfessionalActionBar({
           >
             <ExternalLink className="w-4 h-4 mr-1" />
             {isMobile ? "View" : "View Transaction"}
+=======
+            className="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 max-lg:text-xs max-lg:px-2 max-lg:py-1"
+          >
+            <ExternalLink className="w-4 h-4 mr-1 max-lg:w-3 max-lg:h-3" />
+            View Transaction
+>>>>>>> 77aedeb ( segunda tentativa resposividade)
           </Button>
         )}
       </div>
@@ -251,6 +264,7 @@ export default function ProfessionalActionBar({
     if (!progress && !progressText) return null
 
     return (
+<<<<<<< HEAD
       <div className={cn(
         "flex items-center gap-3",
         isMobile ? "flex-col gap-2" : "justify-center"
@@ -324,11 +338,28 @@ export default function ProfessionalActionBar({
         
         {/* Status */}
         {renderStatus()}
+=======
+      <div className="flex items-center justify-center gap-3 max-lg:flex-col max-lg:gap-2">
+        <div className="flex-1 max-w-md max-lg:w-full">
+          {progress && (
+            <Progress 
+              value={progress} 
+              className="h-2 bg-[#333333]/20 max-lg:h-1.5"
+            />
+          )}
+        </div>
+        {progressText && (
+          <span className="text-sm text-[#ADADAD] max-lg:text-xs max-lg:text-center">
+            {progressText}
+          </span>
+        )}
+>>>>>>> 77aedeb ( segunda tentativa resposividade)
       </div>
     )
   }
 
   return (
+<<<<<<< HEAD
     <div className="w-full p-4 bg-[#333333]/10 border-t border-[#333333] rounded-lg">
       <div className="flex items-center justify-between gap-4">
         {/* Left: Warnings */}
@@ -354,6 +385,60 @@ export default function ProfessionalActionBar({
           {renderStatus()}
         </div>
       )}
+=======
+    <div className="action-bar bg-transparent border-t border-[#333333] p-4 max-lg:p-2">
+      <div className="max-w-7xl mx-auto">
+        {/* Progress Bar */}
+        {renderProgress()}
+
+        {/* Main Actions */}
+        <div className={cn(
+          "flex items-center justify-between gap-4",
+          // Mobile: stack vertically
+          "max-lg:flex-col max-lg:gap-3 max-lg:items-stretch"
+        )}>
+          {/* Left Side - Connection Status */}
+          <div className="flex items-center gap-3 max-lg:justify-center max-lg:order-2">
+            <div className="flex items-center gap-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                isConnected ? "bg-green-400" : "bg-red-400"
+              )} />
+              <span className="text-sm text-[#ADADAD] max-lg:text-xs">
+                {isConnected ? 'Wallet Connected' : 'Wallet Disconnected'}
+              </span>
+            </div>
+            
+            {isConnected && (
+              <div className="flex items-center gap-2">
+                <div className={cn(
+                  "w-2 h-2 rounded-full",
+                  isOnSupportedChain ? "bg-green-400" : "bg-yellow-400"
+                )} />
+                <span className="text-sm text-[#ADADAD] max-lg:text-xs">
+                  {isOnSupportedChain ? 'Supported Network' : 'Switch Network'}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Center - Generate Button */}
+          <div className="flex-1 flex justify-center max-lg:order-1 max-lg:w-full">
+            {renderGenerateButton()}
+          </div>
+
+          {/* Right Side - Mint Actions */}
+          <div className="max-lg:order-3 max-lg:w-full max-lg:flex max-lg:justify-center">
+            {renderMintButtons()}
+          </div>
+        </div>
+
+        {/* Status Messages */}
+        <div className="mt-4 max-lg:mt-2">
+          {renderStatus()}
+        </div>
+      </div>
+>>>>>>> 77aedeb ( segunda tentativa resposividade)
     </div>
   )
 } 
