@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { MARKETPLACE_CONTRACTS, NFT_CONTRACTS } from '@/lib/marketplace-config';
+import { MARKETPLACE_CONTRACTS, NFT_CONTRACTS, isValidPrice } from '@/lib/marketplace-config';
 import { 
   Bug, 
   CheckCircle, 
