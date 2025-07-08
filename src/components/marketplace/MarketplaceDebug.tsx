@@ -533,14 +533,12 @@ export default function MarketplaceDebug() {
                     console.log('💰 CHECKING WALLET BALANCE...');
                     
                     // Fetch native balance using thirdweb v5 RPC method
-                    const { eth_getBalance } = await import('thirdweb/rpc');
+                    const { eth_getBalance, getRpcClient } = await import('thirdweb/rpc');
                     const { client } = await import('@/lib/thirdweb');
                     
-                    const balance = await eth_getBalance({
-                      client,
-                      chain: activeChain,
-                      address: account.address,
-                      blockTag: 'latest'
+                    const rpcRequest = getRpcClient({ client, chain: activeChain });
+                    const balance = await eth_getBalance(rpcRequest, {
+                      address: account.address
                     });
                     
                     const balanceInEther = Number(balance) / Math.pow(10, 18);
