@@ -137,12 +137,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: true,
         analysis: result.analysis,
-        model_used: result.model_used || model,
+        model_used: model,
       detail_level: detail,
       detail_config: selectedDetail,
-      cost_estimate: (result.cost_estimate || 0) * selectedDetail.cost_multiplier,
-      enhancement_level: 'MAXIMUM_FIDELITY',
-      processing_time: result.processing_time || 'unknown'
+      cost_estimate: 0 * selectedDetail.cost_multiplier,
+              enhancement_level: 'MAXIMUM_FIDELITY',
+        processing_time: 'unknown'
     });
 
   } catch (error: any) {
