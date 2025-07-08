@@ -127,9 +127,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ [VISION-TEST] Enhanced analysis completed:', {
-      model: result.model_used || model,
+      model: model,
       detailLevel: detail,
-      costEstimate: result.cost_estimate || 0,
+      costEstimate: 0,
       analysisLength: result.analysis?.length || 0,
       enhancementLevel: 'MAXIMUM_FIDELITY'
     });
