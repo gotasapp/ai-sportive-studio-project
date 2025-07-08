@@ -78,23 +78,17 @@ export async function PUT(
   { params }: { params: { address: string } }
 ) {
   try {
-    console.log('🔄 PUT API called for address:', params.address)
-    
     const { address } = params
     const body = await request.json()
-    console.log('📥 Request body:', body)
-    
     const { username, bio, avatar } = body
 
     if (!address) {
-      console.log('❌ No address provided')
       return NextResponse.json(
         { error: 'Wallet address is required' },
         { status: 400 }
       )
     }
 
-    console.log('🔗 Connecting to database...')
     const client = await connectToDatabase()
     const db = client.db(DB_NAME)
     const usersCollection = db.collection('users')
@@ -107,17 +101,12 @@ export async function PUT(
     if (bio) updateData.bio = bio
     if (avatar) updateData.avatar = avatar
 
-    console.log('📝 Update data:', updateData)
-
-    console.log('🔄 Executing findOneAndUpdate...')
-    
     // Check if user exists first
     const existingUser = await usersCollection.findOne({ walletAddress: address })
     
     let result
     if (existingUser) {
       // User exists - just update
-      console.log('👤 User exists, updating...')
       result = await usersCollection.findOneAndUpdate(
         { walletAddress: address },
         { $set: updateData },
@@ -125,7 +114,6 @@ export async function PUT(
       )
     } else {
       // User doesn't exist - create new
-      console.log('➕ User doesn\'t exist, creating...')
       const newUserData = {
         walletAddress: address,
         createdAt: new Date(),
@@ -141,9 +129,6 @@ export async function PUT(
       result = await usersCollection.findOne({ walletAddress: address })
     }
 
-    console.log('✅ Database operation completed')
-    console.log('📄 Result:', result)
-
     // Extract the user data properly
     const userData = result?.value || result
     
@@ -153,8 +138,8 @@ export async function PUT(
       message: 'Profile updated successfully'
     })
   } catch (error) {
-    console.error('❌ Error updating user:', error)
-    console.error('❌ Error stack:', error.stack)
+    console.error('Error updating user:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace available')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

@@ -164,18 +164,9 @@ export default function ProfilePage() {
   }, [account?.address])
 
   const handleSaveProfile = async () => {
-    console.log('🔄 handleSaveProfile called')
-    console.log('Account address:', account?.address)
-    console.log('Current username:', userProfile?.username)
-    console.log('New username:', editedUsername)
-    
-    if (!account?.address || !userProfile) {
-      console.log('❌ Missing account or userProfile')
-      return
-    }
+    if (!account?.address || !userProfile) return
 
     try {
-      console.log('📤 Sending PUT request to API...')
       const response = await fetch(`/api/users/${account.address}`, {
         method: 'PUT',
         headers: {
@@ -187,12 +178,8 @@ export default function ProfilePage() {
         })
       })
 
-      console.log('📥 Response status:', response.status)
-      console.log('📥 Response ok:', response.ok)
-
       if (response.ok) {
         const updatedProfile = await response.json()
-        console.log('✅ Updated profile received:', updatedProfile)
         
         // Update with the user data from the response
         if (updatedProfile.user) {
@@ -201,55 +188,38 @@ export default function ProfilePage() {
           setUserProfile(prev => prev ? { ...prev, username: editedUsername } : null)
         }
         setIsEditing(false)
-        console.log('✅ Profile updated successfully')
       } else {
         const errorData = await response.text()
-        console.error('❌ API Error:', response.status, errorData)
+        console.error('Error updating profile:', response.status, errorData)
       }
     } catch (error) {
-      console.error('❌ Error saving profile:', error)
+      console.error('Error saving profile:', error)
     }
   }
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('🖼️ handleAvatarUpload called')
-    
     const file = event.target.files?.[0]
-    console.log('📁 Selected file:', file?.name, file?.size, file?.type)
-    console.log('🔑 Account address:', account?.address)
-    
-    if (!file || !account?.address) {
-      console.log('❌ Missing file or account address')
-      return
-    }
+    if (!file || !account?.address) return
 
     try {
-      console.log('📦 Creating FormData...')
       const formData = new FormData()
       formData.append('avatar', file)
       formData.append('walletAddress', account.address)
       
-      console.log('📤 Sending POST request to /api/users/avatar...')
       const response = await fetch('/api/users/avatar', {
         method: 'POST',
         body: formData
       })
 
-      console.log('📥 Response status:', response.status)
-      console.log('📥 Response ok:', response.ok)
-
       if (response.ok) {
         const result = await response.json()
-        console.log('✅ Avatar upload result:', result)
-        
         setUserProfile(prev => prev ? { ...prev, avatar: result.avatarUrl } : null)
-        console.log('✅ Profile state updated with new avatar')
       } else {
         const errorData = await response.text()
-        console.error('❌ Avatar upload failed:', response.status, errorData)
+        console.error('Avatar upload failed:', response.status, errorData)
       }
     } catch (error) {
-      console.error('❌ Error uploading avatar:', error)
+      console.error('Error uploading avatar:', error)
     }
   }
 
@@ -379,15 +349,7 @@ export default function ProfilePage() {
                     onChange={(e) => setEditedUsername(e.target.value)}
                     className="bg-[#14101e] border-gray-600 text-white"
                   />
-                  <Button 
-                    onClick={() => {
-                      console.log('💾 Save button clicked!')
-                      handleSaveProfile()
-                    }} 
-                    size="sm"
-                  >
-                    Save
-                  </Button>
+                  <Button onClick={handleSaveProfile} size="sm">Save</Button>
                   <Button onClick={() => setIsEditing(false)} variant="outline" size="sm">Cancel</Button>
                 </div>
               ) : (

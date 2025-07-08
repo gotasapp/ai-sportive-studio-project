@@ -27,18 +27,11 @@ async function connectToDatabase() {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🖼️ Avatar upload API called')
-    
     const formData = await request.formData()
     const avatar = formData.get('avatar') as File
     const walletAddress = formData.get('walletAddress') as string
 
-    console.log('📥 FormData received:')
-    console.log('- Avatar file:', avatar?.name, avatar?.size, avatar?.type)
-    console.log('- Wallet address:', walletAddress)
-
     if (!avatar || !walletAddress) {
-      console.log('❌ Missing avatar or wallet address')
       return NextResponse.json(
         { error: 'Avatar file and wallet address are required' },
         { status: 400 }
@@ -47,7 +40,6 @@ export async function POST(request: NextRequest) {
 
     // Validate file type
     if (!avatar.type.startsWith('image/')) {
-      console.log('❌ Invalid file type:', avatar.type)
       return NextResponse.json(
         { error: 'File must be an image' },
         { status: 400 }
@@ -56,37 +48,26 @@ export async function POST(request: NextRequest) {
 
     // Validate file size (max 5MB)
     if (avatar.size > 5 * 1024 * 1024) {
-      console.log('❌ File too large:', avatar.size, 'bytes')
       return NextResponse.json(
         { error: 'File size must be less than 5MB' },
         { status: 400 }
       )
     }
 
-    console.log('✅ File validation passed')
-
     // Convert file to buffer
-    console.log('🔄 Converting file to buffer...')
     const bytes = await avatar.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    console.log('✅ Buffer created, size:', buffer.length)
 
     // Check Cloudinary config
-    console.log('☁️ Cloudinary config:')
     const hasCloudName = !!(process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME)
     const hasApiKey = !!process.env.CLOUDINARY_API_KEY
     const hasApiSecret = !!(process.env.CLOUDINARY_API_SECRECT || process.env.CLOUDINARY_API_SECRET)
-    
-    console.log('- Cloud name:', hasCloudName ? '✓' : '❌', hasCloudName ? (process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME) : 'NOT_SET')
-    console.log('- API key:', hasApiKey ? '✓' : '❌')
-    console.log('- API secret:', hasApiSecret ? '✓' : '❌')
 
     let avatarUrl: string
     let publicId: string | undefined
 
     if (hasCloudName && hasApiKey && hasApiSecret) {
       // Upload to Cloudinary
-      console.log('☁️ Uploading to Cloudinary...')
       const uploadResult = await new Promise((resolve, reject) => {
         cloudinary.uploader.upload_stream(
           {
@@ -100,10 +81,9 @@ export async function POST(request: NextRequest) {
           },
           (error, result) => {
             if (error) {
-              console.error('❌ Cloudinary upload error:', error)
+              console.error('Cloudinary upload error:', error)
               reject(error)
             } else {
-              console.log('✅ Cloudinary upload success:', result?.secure_url)
               resolve(result)
             }
           }
@@ -113,26 +93,18 @@ export async function POST(request: NextRequest) {
       const result = uploadResult as any
       avatarUrl = result.secure_url
       publicId = result.public_id
-      console.log('📄 Cloudinary upload result:', { url: avatarUrl, publicId })
     } else {
       // Fallback: Save as base64 data URL
-      console.log('⚠️ Cloudinary not configured, using base64 fallback...')
-      
-      // Resize image using canvas-like approach (simple resize)
       const mimeType = avatar.type
       avatarUrl = `data:${mimeType};base64,${buffer.toString('base64')}`
       publicId = undefined
-      
-      console.log('✅ Base64 avatar created, size:', avatarUrl.length, 'characters')
     }
 
     // Update user profile with new avatar URL
-    console.log('🔗 Connecting to database...')
     const client = await connectToDatabase()
     const db = client.db(DB_NAME)
     const usersCollection = db.collection('users')
 
-    console.log('💾 Updating user avatar in database...')
     const dbResult = await usersCollection.findOneAndUpdate(
       { walletAddress },
       { 
@@ -145,9 +117,6 @@ export async function POST(request: NextRequest) {
       { upsert: true, returnDocument: 'after' }
     )
 
-    console.log('✅ Database updated successfully')
-    console.log('📄 DB Result:', dbResult?.value?.avatar ? 'Avatar URL saved' : 'No avatar in result')
-
     return NextResponse.json({
       success: true,
       avatarUrl: avatarUrl,
@@ -156,8 +125,8 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('❌ Error uploading avatar:', error)
-    console.error('❌ Error stack:', error.stack)
+    console.error('Error uploading avatar:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace available')
     return NextResponse.json(
       { error: 'Failed to upload avatar' },
       { status: 500 }
