@@ -63,7 +63,7 @@ export default function ProfessionalMarketplace({
   }).slice(0, maxItems)
 
   // Get unique categories
-  const categories = Array.from(new Set(items.map(item => item.category).filter(Boolean)))
+  const categories = Array.from(new Set(items.map(item => item.category).filter(Boolean))) as string[]
 
   const handleScroll = (direction: 'up' | 'down') => {
     if (!scrollContainerRef.current) return
