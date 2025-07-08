@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     };
       
       if (!result.success) {
-      throw new Error(result.error || 'Vision analysis failed');
+      throw new Error('Vision analysis failed');
     }
 
     console.log('✅ [VISION-TEST] Enhanced analysis completed:', {
