@@ -45,6 +45,22 @@ export default function BuyNowButton({
     console.log('📋 Buyer:', account.address);
     console.log('📋 Network:', chain.name, '(', chain.id, ')');
 
+    // 🚨 CRITICAL VALIDATION: Check if price is reasonable
+    const displayedPriceNum = parseFloat(price.replace(/[^0-9.]/g, ''));
+    console.log('🔍 Parsed displayed price:', displayedPriceNum);
+    
+    if (isNaN(displayedPriceNum) || displayedPriceNum <= 0) {
+      toast.error('Invalid price detected. Cannot proceed with purchase.');
+      console.error('❌ INVALID PRICE:', price);
+      return;
+    }
+    
+    if (displayedPriceNum > 1000) {
+      toast.error(`Suspicious price detected: ${displayedPriceNum} MATIC. Canceling purchase for safety.`);
+      console.error('❌ ASTRONOMICAL PRICE DETECTED:', displayedPriceNum);
+      return;
+    }
+
     setIsProcessing(true);
     toast.info('Starting purchase... Please approve the transaction in your wallet.');
     
@@ -61,15 +77,46 @@ export default function BuyNowButton({
         status: realListing.status
       });
       
+             // 🚨 CRITICAL VALIDATION: Check if blockchain data is valid
+       const pricePerTokenWei = realListing.pricePerToken;
+       const pricePerTokenEther = Number(pricePerTokenWei) / Math.pow(10, 18);
+       
+       console.log('🔍 BLOCKCHAIN PRICE VALIDATION:');
+       console.log('📋 Price per token (wei):', pricePerTokenWei.toString());
+       console.log('📋 Price per token (ether):', pricePerTokenEther);
+       
+       // Check if blockchain price is reasonable (maximum 100 MATIC)
+       if (pricePerTokenEther > 100) {
+         toast.error(`Suspicious blockchain price: ${pricePerTokenEther.toFixed(6)} MATIC. Canceling for safety.`);
+         console.error('❌ ASTRONOMICAL BLOCKCHAIN PRICE:', pricePerTokenEther);
+         return;
+       }
+       
+       // Check if listing status is valid
+       if (realListing.status !== 'CREATED' && realListing.status !== 1) {
+         toast.error('This listing is no longer available.');
+         console.error('❌ LISTING WITH INVALID STATUS:', realListing.status);
+         return;
+       }
+      
       // Calcular preço total baseado nos dados reais da listagem
       const totalQuantity = BigInt(quantity);
       const expectedTotalPrice = realListing.pricePerToken * totalQuantity;
+      const expectedTotalPriceEther = Number(expectedTotalPrice) / Math.pow(10, 18);
       
-      console.log('💰 PURCHASE CALCULATIONS (CORRECTED):');
+      console.log('💰 PURCHASE CALCULATIONS (VALIDATED):');
       console.log('📋 Price per token (wei):', realListing.pricePerToken.toString());
+      console.log('📋 Price per token (ether):', pricePerTokenEther.toFixed(6));
       console.log('📋 Total quantity:', totalQuantity.toString());
       console.log('📋 Expected total price (wei):', expectedTotalPrice.toString());
-      console.log('📋 Expected total price (ether):', (Number(expectedTotalPrice) / Math.pow(10, 18)).toFixed(6));
+      console.log('📋 Expected total price (ether):', expectedTotalPriceEther.toFixed(6));
+      
+             // Final validation before transaction
+       if (expectedTotalPriceEther > 100) {
+         toast.error(`Total price too high: ${expectedTotalPriceEther.toFixed(6)} MATIC. Canceling for safety.`);
+         console.error('❌ TOTAL PRICE TOO HIGH:', expectedTotalPriceEther);
+         return;
+       }
 
       const result = await MarketplaceService.buyFromListing(
         account,
@@ -102,6 +149,8 @@ export default function BuyNowButton({
         toast.error('This NFT is no longer available.');
       } else if (error.message.includes('already sold')) {
         toast.error('This NFT has already been sold.');
+      } else if (error.message.includes('price') || error.message.includes('Price')) {
+        toast.error(error.message); // Invalid price messages
       } else {
         toast.error(error.message || 'An error occurred while trying to complete the purchase.');
       }

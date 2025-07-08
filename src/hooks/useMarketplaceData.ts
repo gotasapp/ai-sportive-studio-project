@@ -108,11 +108,14 @@ export function useMarketplaceData() {
         const priceInWei = listing.pricePerToken;
         const priceInEther = Number(priceInWei) / Math.pow(10, 18); // Conversão correta de wei para ether
         const formattedPrice = priceInEther.toFixed(3); // Máximo 3 casas decimais
+        const finalPriceString = `${formattedPrice} MATIC`;
         
         console.log('💰 Conversão de preço:', {
           priceInWei: priceInWei.toString(),
           priceInEther,
-          formattedPrice
+          formattedPrice,
+          finalPriceString,
+          isReasonable: priceInEther > 0 && priceInEther < 1000
         });
         
         // Se não encontrou metadados, criar item básico
@@ -128,7 +131,7 @@ export function useMarketplaceData() {
           // Dados reais da listagem com preço corrigido
           isListed: true,
           listingId: listing.listingId.toString(),
-          price: `${formattedPrice} MATIC`,
+          price: finalPriceString,
           currency: 'MATIC',
           // Dados de leilão (falso para listagens diretas)
           isAuction: false,

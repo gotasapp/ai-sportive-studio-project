@@ -112,12 +112,184 @@ export function formatPrice(price: string | number, currency: string = 'CHZ'): s
   return `${numPrice.toFixed(3)} ${currency}`;
 }
 
-// Helper para converter preço para wei
+// Helper para converter preço para wei com validação
 export function priceToWei(price: string): bigint {
-  return BigInt(Math.floor(parseFloat(price) * 1e18));
+  const numPrice = parseFloat(price);
+  
+  // Validações críticas
+  if (isNaN(numPrice)) {
+    throw new Error(`Invalid price format: "${price}". Must be a valid number.`);
+  }
+  
+  if (numPrice < 0) {
+    throw new Error(`Price cannot be negative: ${numPrice}`);
+  }
+  
+  if (numPrice > 1000) {
+    throw new Error(`Price too high: ${numPrice} MATIC. Maximum allowed is 1000 MATIC for safety.`);
+  }
+  
+  if (numPrice > 0 && numPrice < 0.000001) {
+    console.warn(`⚠️ Very small price detected: ${numPrice} MATIC. Consider using at least 0.000001 MATIC.`);
+  }
+  
+  const weiValue = BigInt(Math.floor(numPrice * 1e18));
+  
+  // Validação adicional do resultado
+  const backToEther = Number(weiValue) / 1e18;
+  const difference = Math.abs(backToEther - numPrice);
+  
+  if (difference > 0.000001) {
+    console.warn(`⚠️ Precision loss in price conversion:`, {
+      original: numPrice,
+      converted: backToEther,
+      difference,
+      wei: weiValue.toString()
+    });
+  }
+  
+  console.log(`💰 Price conversion validated:`, {
+    input: price,
+    parsed: numPrice,
+    wei: weiValue.toString(),
+    backToEther: backToEther.toFixed(6)
+  });
+  
+  return weiValue;
 }
 
 // Helper para converter wei para preço legível
 export function weiToPrice(wei: bigint): string {
   return (Number(wei) / 1e18).toString();
+}
+
+// 🚨 NOVAS FUNÇÕES DE VALIDAÇÃO E CORREÇÃO
+
+/**
+ * Validate if a price is reasonable (not astronomical)
+ */
+export function isValidPrice(priceInput: bigint | string | number): boolean {
+  try {
+    let ether: number;
+    
+    if (typeof priceInput === 'string') {
+      // Handle special cases first - these are valid display states
+      const validDisplayStates = ['Not for sale', 'N/A', 'Not listed', 'Free', '0 MATIC', '0.000 MATIC'];
+      if (validDisplayStates.includes(priceInput)) {
+        return true;
+      }
+      
+      // Extract numeric value from formatted strings like "1.234 MATIC"
+      const cleanPrice = priceInput.replace(/[^0-9.]/g, '');
+      
+      if (cleanPrice && !isNaN(parseFloat(cleanPrice))) {
+        ether = parseFloat(cleanPrice);
+      } else {
+        // If no valid number found, it's invalid
+        return false;
+      }
+    } else if (typeof priceInput === 'number') {
+      ether = priceInput;
+    } else {
+      // BigInt wei value
+      ether = Number(priceInput) / 1e18;
+    }
+    
+    // Price should be between 0.000001 and 1,000 ETH/MATIC
+    // Allow 0 for "free" NFTs
+    return ether >= 0 && ether < 1000;
+  } catch (error) {
+    console.warn('⚠️ Error validating price:', priceInput, error);
+    return false;
+  }
+}
+
+/**
+ * Validate and fix corrupted price
+ */
+export function validateAndFixPrice(priceWei: bigint | string, fallbackPrice: string = '0.001'): {
+  isValid: boolean;
+  correctedPrice: bigint;
+  originalEther: number;
+  correctedEther: number;
+} {
+  try {
+    const wei = typeof priceWei === 'string' ? BigInt(priceWei) : priceWei;
+    const ether = Number(wei) / 1e18;
+    
+    const isValid = isValidPrice(wei);
+    
+    if (isValid) {
+      return {
+        isValid: true,
+        correctedPrice: wei,
+        originalEther: ether,
+        correctedEther: ether
+      };
+    } else {
+      // Use fallback price
+      const correctedPrice = priceToWei(fallbackPrice);
+      const correctedEther = parseFloat(fallbackPrice);
+      
+      console.warn('⚠️ CORRUPTED PRICE DETECTED AND FIXED:', {
+        original: { wei: wei.toString(), ether },
+        corrected: { wei: correctedPrice.toString(), ether: correctedEther }
+      });
+      
+      return {
+        isValid: false,
+        correctedPrice,
+        originalEther: ether,
+        correctedEther
+      };
+    }
+  } catch (error) {
+    // In case of error, use fallback
+    const correctedPrice = priceToWei(fallbackPrice);
+    const correctedEther = parseFloat(fallbackPrice);
+    
+    console.error('❌ ERROR VALIDATING PRICE, USING FALLBACK:', error);
+    
+    return {
+      isValid: false,
+      correctedPrice,
+      originalEther: 0,
+      correctedEther
+    };
+  }
+}
+
+/**
+ * Format price for safe display
+ */
+export function formatPriceSafe(priceWei: bigint | string, currency: string = 'MATIC'): string {
+  const validation = validateAndFixPrice(priceWei);
+  
+  if (validation.isValid) {
+    return `${validation.originalEther.toFixed(6)} ${currency}`;
+  } else {
+    return `${validation.correctedEther.toFixed(6)} ${currency} (fixed)`;
+  }
+}
+
+/**
+ * Price debugging - for detailed logs
+ */
+export function debugPrice(priceWei: bigint | string, label: string = 'Price'): void {
+  try {
+    const wei = typeof priceWei === 'string' ? BigInt(priceWei) : priceWei;
+    const ether = Number(wei) / 1e18;
+    const isValid = isValidPrice(wei);
+    
+    console.log(`🔍 ${label} Debug:`, {
+      wei: wei.toString(),
+      ether: ether,
+      formatted: `${ether.toFixed(6)} MATIC`,
+      isValid,
+      isAstronomical: ether > 1000000,
+      isTooSmall: ether < 0.000001
+    });
+  } catch (error) {
+    console.error(`❌ Error debugging ${label}:`, error);
+  }
 } 

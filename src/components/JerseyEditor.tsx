@@ -539,8 +539,18 @@ export default function JerseyEditor() {
               throw new Error(analysisPromptData.error || 'Failed to get analysis prompt')
             }
 
-            const structuredPrompt = analysisPromptData.prompt
+            const structuredPrompt = analysisPromptData.prompt || analysisPromptData.analysis_prompt
             console.log('✅ [VISION ANALYSIS] Got structured analysis prompt')
+            console.log('🔍 [DEBUG] Analysis prompt data:', {
+              hasPrompt: !!analysisPromptData.prompt,
+              hasAnalysisPrompt: !!analysisPromptData.analysis_prompt,
+              promptLength: structuredPrompt?.length || 0,
+              allKeys: Object.keys(analysisPromptData)
+            })
+
+            if (!structuredPrompt) {
+              throw new Error('No analysis prompt received from API')
+            }
 
             // Send to Vision API (agora unificada)
             const visionResponse = await fetch('/api/vision-test', {
@@ -625,20 +635,96 @@ export default function JerseyEditor() {
           ? JSON.stringify(analysisResult, null, 2)
           : analysisResult
         
+        // ===== ENHANCED COLOR AND PATTERN PRESERVATION =====
+        let colorPreservationPrompt = ""
+        let patternPreservationPrompt = ""
+        
+        // Extract color information from analysis if available
+        if (analysisResult && typeof analysisResult === 'object') {
+          // Enhanced color preservation based on analysis
+          const colors = analysisResult.dominantColors || analysisResult.dominant_colors || {}
+          if (colors.primary || colors.primaryColor) {
+            colorPreservationPrompt = `
+CRITICAL COLOR FIDELITY REQUIREMENTS:
+- Primary color MUST BE: ${colors.primary || colors.primaryColor || 'as analyzed'}
+- Secondary color MUST BE: ${colors.secondary || colors.secondaryColor || 'as analyzed'}  
+- Accent color MUST BE: ${colors.accent || colors.accentColor || 'as analyzed'}
+- Color description: ${colors.colorDescription || 'maintain exact color saturation and tone'}
+- NO COLOR SHIFTING OR ALTERATIONS ALLOWED
+- Colors must match the reference image EXACTLY`
+          }
+
+          // Enhanced pattern preservation
+          const pattern = analysisResult.visualPattern || analysisResult.pattern || {}
+          if (pattern.type || pattern.description) {
+            patternPreservationPrompt = `
+CRITICAL PATTERN FIDELITY REQUIREMENTS:
+- Pattern type MUST BE: ${pattern.type || 'as analyzed'}
+- Pattern description: ${pattern.description || 'maintain exact pattern characteristics'}
+- Pattern colors: ${JSON.stringify(pattern.patternColors || pattern.colors || [])}
+- Pattern width/scale: ${pattern.patternWidth || pattern.width || 'as in reference'}
+- NO PATTERN ALTERATIONS OR MODIFICATIONS ALLOWED
+- Pattern must match the reference image EXACTLY`
+          }
+
+          // Team elements preservation
+          const teamElements = analysisResult.teamElements || {}
+          if (teamElements.teamBadge || teamElements.sponsor) {
+            colorPreservationPrompt += `
+TEAM ELEMENTS PRESERVATION:
+- Team badge: ${teamElements.teamBadge || 'maintain exact badge characteristics'}
+- Sponsor elements: ${teamElements.sponsor || 'preserve sponsor positioning and style'}
+- Logo placement: ${teamElements.logoPlacement || 'exact positioning as reference'}`
+          }
+        }
+
         const finalCombinedPrompt = `${basePrompt}
 
-ORIGINAL DESIGN ANALYSIS: ${analysisText}
+REFERENCE IMAGE ANALYSIS FOR FAITHFUL REPRODUCTION:
+${analysisText}
 
-${customPrompt ? `CUSTOM INSTRUCTIONS: ${customPrompt}` : ''}
+${colorPreservationPrompt}
 
-NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, watermark, text overlay, logo overlay, multiple jerseys, person wearing, mannequin, human model, body, arms, torso.`.trim()
+${patternPreservationPrompt}
 
-        console.log('🎨 [VISION GENERATION] Step 2: Combined prompt ready:', {
+${customPrompt ? `ADDITIONAL CUSTOM INSTRUCTIONS: ${customPrompt}` : ''}
+
+ENHANCED NEGATIVE PROMPTS FOR JERSEY FIDELITY:
+ABSOLUTELY FORBIDDEN - NEVER INCLUDE:
+- No shorts, pants, or lower body clothing of any kind
+- No shoes, socks, or footwear visible
+- No multiple jerseys in the same image
+- No people wearing the jersey or human models
+- No arms, hands, torso, or body parts
+- No hangers, mannequins, or clothing displays
+- No backgrounds with fields, courts, or sports venues
+- No sports equipment (balls, goals, etc.)
+- No text overlays, watermarks, or logos unrelated to the team
+- No blurry, pixelated, or low-quality rendering
+- No color alterations from the reference image
+- No pattern modifications from the reference design
+- No cartoon or non-photorealistic styles
+
+JERSEY COMPOSITION REQUIREMENTS:
+- Single ${selectedSport} jersey only
+- ${selectedView} view, perfectly centered
+- Professional product photography style
+- Clean background (white or transparent)
+- High-resolution, studio-quality lighting
+- Exact color matching to reference image
+- Perfect pattern reproduction
+- Professional ${selectedSport}-specific proportions`.trim()
+
+        console.log('🎨 [ENHANCED VISION GENERATION] Step 2: Enhanced combined prompt ready:', {
           baseLength: basePrompt.length,
           analysisLength: analysisText.length,
+          colorPreservationLength: colorPreservationPrompt.length,
+          patternPreservationLength: patternPreservationPrompt.length,
           customLength: customPrompt?.length || 0,
           finalLength: finalCombinedPrompt.length,
-          preview: finalCombinedPrompt.substring(0, 200) + '...'
+          hasColorAnalysis: !!colorPreservationPrompt,
+          hasPatternAnalysis: !!patternPreservationPrompt,
+          enhancementLevel: 'MAXIMUM_FIDELITY'
         })
 
         // STEP 3: Generate image using vision-generate API (same as vision-test)
@@ -666,20 +752,54 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
 
         console.log('✅ [VISION GENERATION] Image generated successfully:', {
           cost: visionResult.cost_usd,
-          imageSize: visionResult.image_base64?.length || 0
+          hasImageUrl: !!visionResult.image_url,
+          hasImageBase64: !!visionResult.image_base64
         })
 
-        setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`);
-        
-        const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
-        const blob = await response.blob()
-        setGeneratedImageBlob(blob);
+        // Handle base64 response from vision-generate API (CORS-safe)
+        if (visionResult.image_base64) {
+          console.log('✅ [VISION GENERATION] Using base64 image from API')
+          
+          setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`)
+          
+          // Convert base64 to blob for saving
+          const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
+          const blob = await response.blob()
+          setGeneratedImageBlob(blob)
+          
+        } else if (visionResult.image_url) {
+          // Fallback: try direct URL (may have CORS issues)
+          console.log('⚠️ [VISION GENERATION] Fallback to direct URL download...')
+          
+          try {
+            const imageResponse = await fetch(visionResult.image_url)
+            if (!imageResponse.ok) {
+              throw new Error(`Failed to download image: ${imageResponse.status}`)
+            }
+            
+            const blob = await imageResponse.blob()
+            setGeneratedImageBlob(blob)
+            
+            const base64 = await new Promise<string>((resolve) => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.readAsDataURL(blob)
+            })
+            
+            setGeneratedImage(base64)
+          } catch (urlError: any) {
+            throw new Error(`CORS error downloading image: ${urlError.message}`)
+          }
+          
+        } else {
+          throw new Error('No image data received from vision generation API')
+        }
 
         // Save to DB with complete vision metadata
         await saveJerseyToDB({
           name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
           prompt: finalCombinedPrompt,
-          imageUrl: `data:image/png;base64,${visionResult.image_base64}`,
+          imageUrl: generatedImage, // Use the converted base64 or original URL
           creatorWallet: address || "N/A",
           tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
           metadata: {
@@ -690,9 +810,10 @@ NEGATIVE PROMPTS: Avoid blurry, low quality, distorted, amateur, pixelated, wate
             view: selectedView,
             visionModel: selectedVisionModel,
             qualityLevel: 'advanced',
-            costUsd: visionResult.cost_usd
+            costUsd: visionResult.cost_usd,
+            dalleImageUrl: visionResult.image_url // Keep original URL for reference
           }
-        }, blob);
+        }, generatedImageBlob!);
 
         console.log('🎉 [VISION GENERATION] Complete vision-test flow completed successfully!')
         

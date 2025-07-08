@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Heart, MoreVertical, Tag } from 'lucide-react';
+import { Heart, MoreVertical, Tag, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
@@ -9,6 +9,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import BuyNowButton from './BuyNowButton';
 import MakeOfferButton from './MakeOfferButton';
 import { CreateListingModal } from './CreateListingModal';
+import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 
 interface MarketplaceCardProps {
   name: string;
@@ -58,6 +59,10 @@ export default function MarketplaceCard({
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
   
+  // 🚨 SAFE PRICE VALIDATION
+  const isPriceValid = price !== 'Not for sale' && price !== 'N/A' ? isValidPrice(price) : true;
+  const safePrice = price !== 'Not for sale' && price !== 'N/A' && !isPriceValid ? 'Invalid price' : price;
+  
   // 🔍 DEBUG: Logs detalhados para debug
   console.log('🔍 MarketplaceCard DEBUG:', {
     name,
@@ -69,8 +74,30 @@ export default function MarketplaceCard({
     isListed,
     showCreateListing,
     hasAssetContract: !!assetContract,
-    shouldShowListButton: isOwner && !isListed && !isAuction
+    shouldShowListButton: isOwner && !isListed && !isAuction,
+    priceValidation: {
+      originalPrice: price,
+      safePrice,
+      isPriceValid,
+      shouldWarnUser: !isPriceValid && price !== 'Not for sale' && price !== 'N/A'
+    }
   });
+  
+  // Debug price validation (only for invalid prices)
+  if (!isPriceValid && price !== 'Not for sale' && price !== 'N/A') {
+    console.log(`🔍 CARD DEBUG - INVALID PRICE - ${name}:`, {
+      originalPrice: price,
+      isPriceValid,
+      safePrice,
+      isListed,
+      listingId
+    });
+  }
+  
+  // Debug price if necessary
+  if (price !== 'Not for sale' && price !== 'N/A') {
+    debugPrice(price, `${name} Price`);
+  }
   
   const color = category ? categoryColors[category as keyof typeof categoryColors] || categoryColors.default : categoryColors.default;
 
@@ -100,11 +127,22 @@ export default function MarketplaceCard({
       // NFT está listado para venda direta
       return (
         <div className="space-y-2">
-          <BuyNowButton
-            listingId={listingId}
-            price={price}
-            className="w-full"
-          />
+          {isPriceValid ? (
+            <BuyNowButton
+              listingId={listingId}
+              price={price}
+              className="w-full"
+            />
+          ) : (
+            <Button
+              disabled
+              className="w-full bg-red-500/20 text-red-400 cursor-not-allowed"
+              title="Cannot purchase due to invalid price"
+            >
+              <AlertTriangle className="mr-2 h-4 w-4" />
+              Invalid Price
+            </Button>
+          )}
           {!isOwner && assetContract && (
             <MakeOfferButton
               assetContract={assetContract}
@@ -230,7 +268,14 @@ export default function MarketplaceCard({
             ) : (
               <div>
                 <p className="text-xs text-[#FDFDFD]/70">{isListed ? 'Price' : 'Last Price'}</p>
-                <p className="text-sm font-medium text-[#A20131]">{price}</p>
+                <div className="flex items-center gap-2">
+                  <p className={`text-sm font-medium ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>
+                    {safePrice}
+                  </p>
+                  {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
+                    <AlertTriangle className="h-4 w-4 text-red-400" title="Invalid price detected" />
+                  )}
+                </div>
               </div>
             )}
           </div>

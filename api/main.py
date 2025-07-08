@@ -473,19 +473,28 @@ class VisionAnalysisSystem:
     def analyze_image_with_vision(self, image_base64: str, prompt: str, model: str = "openai/gpt-4o-mini") -> Dict[str, Any]:
         """Analisa imagem usando vision models com fallback para OpenAI"""
         try:
-            # Se temos OpenRouter, usar vision model
+            # Se temos OpenRouter, tentar usar vision model
             if self.openrouter_key and model.startswith("openai/"):
-                return self._analyze_with_openrouter(image_base64, prompt, model)
+                try:
+                    return self._analyze_with_openrouter(image_base64, prompt, model)
+                except Exception as openrouter_error:
+                    print(f"⚠️ OpenRouter failed, using intelligent fallback: {openrouter_error}")
+                    # Se OpenRouter falhar, usar fallback inteligente
+                    return self._analyze_with_fallback(prompt, model)
             
             # Fallback: análise textual baseada na imagem
             return self._analyze_with_fallback(prompt, model)
             
         except Exception as e:
             print(f"❌ Vision analysis error: {e}")
-            return {
-                "success": False,
-                "error": str(e)
-            }
+            # Mesmo em caso de erro geral, tentar fallback
+            try:
+                return self._analyze_with_fallback(prompt, model)
+            except:
+                return {
+                    "success": False,
+                    "error": str(e)
+                }
     
     def _analyze_with_openrouter(self, image_base64: str, prompt: str, model: str) -> Dict[str, Any]:
         """Análise via OpenRouter vision model"""

@@ -69,11 +69,48 @@ export class MarketplaceService {
     try {
       console.log('🎯 Criando listagem com parâmetros:', params);
       
+      // 🚨 VALIDAÇÃO CRÍTICA DO PREÇO ANTES DE CONTINUAR
+      console.log('🔍 VALIDANDO PREÇO ANTES DA LISTAGEM:', params.pricePerToken);
+      
+      const numPrice = parseFloat(params.pricePerToken);
+      if (isNaN(numPrice) || numPrice <= 0) {
+        throw new Error(`Preço inválido: "${params.pricePerToken}". Deve ser um número positivo.`);
+      }
+      
+      if (numPrice > 1000) {
+        throw new Error(`Preço muito alto: ${numPrice} MATIC. Máximo permitido é 1000 MATIC por segurança.`);
+      }
+      
+      if (numPrice < 0.000001) {
+        throw new Error(`Preço muito baixo: ${numPrice} MATIC. Mínimo recomendado é 0.000001 MATIC.`);
+      }
+      
       // Verificar se o marketplace está aprovado para transferir o NFT
       await MarketplaceService.checkAndApproveNFT(account, chainId, params.assetContract, params.tokenId);
       
       const contract = getMarketplaceContract(chainId);
-      const pricePerToken = priceToWei(params.pricePerToken);
+      
+      // Conversão segura do preço com validação adicional
+      let pricePerToken: bigint;
+      try {
+        pricePerToken = priceToWei(params.pricePerToken);
+        
+        // Validação dupla do resultado
+        const backToEther = Number(pricePerToken) / Math.pow(10, 18);
+        if (Math.abs(backToEther - numPrice) > 0.000001) {
+          throw new Error(`Erro na conversão do preço. Original: ${numPrice}, Convertido: ${backToEther}`);
+        }
+        
+        console.log('✅ PREÇO VALIDADO E CONVERTIDO:', {
+          original: params.pricePerToken,
+          parsed: numPrice,
+          wei: pricePerToken.toString(),
+          backToEther: backToEther.toFixed(6)
+        });
+        
+      } catch (conversionError: any) {
+        throw new Error(`Falha na conversão do preço: ${conversionError.message}`);
+      }
       
       // 🔍 DESCOBRIR O TOKEN ID REAL
       let numericTokenId: bigint;
@@ -880,15 +917,83 @@ export class MarketplaceService {
    * Obter informações de uma listagem
    */
   static async getListing(chainId: number, listingId: string): Promise<DirectListing> {
-    const contract = getMarketplaceContract(chainId);
-    
-    const result = await readContract({
-      contract,
-      method: "function getListing(uint256 listingId) view returns ((uint256 listingId, address listingCreator, address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 pricePerToken, uint128 startTimestamp, uint128 endTimestamp, bool reserved, uint8 tokenType, uint8 status) listing)",
-      params: [BigInt(listingId)]
-    });
+    try {
+      console.log('🔍 BUSCANDO LISTAGEM NO BLOCKCHAIN:');
+      console.log('📋 Chain ID:', chainId);
+      console.log('📋 Listing ID:', listingId);
+      
+      const contract = getMarketplaceContract(chainId);
+      console.log('📋 Marketplace Contract:', contract.address);
+      
+      const numericListingId = BigInt(listingId);
+      console.log('📋 Numeric Listing ID:', numericListingId.toString());
+      
+      const result = await readContract({
+        contract,
+        method: "function getListing(uint256 listingId) view returns ((uint256 listingId, address listingCreator, address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 pricePerToken, uint128 startTimestamp, uint128 endTimestamp, bool reserved, uint8 tokenType, uint8 status) listing)",
+        params: [numericListingId]
+      });
 
-    return result as DirectListing;
+      const listing = result as DirectListing;
+      
+      // 🚨 VALIDAÇÕES CRÍTICAS DOS DADOS DO BLOCKCHAIN
+      console.log('🔍 VALIDANDO DADOS DA LISTAGEM:');
+      console.log('📋 Raw listing data:', listing);
+      
+      // Validar se a listagem existe (creator não pode ser zero address)
+      if (!listing.listingCreator || listing.listingCreator === '0x0000000000000000000000000000000000000000') {
+        throw new Error(`Listagem ${listingId} não existe ou foi removida`);
+      }
+      
+      // Validar preço (não pode ser zero ou astronômico)
+      const priceInEther = Number(listing.pricePerToken) / Math.pow(10, 18);
+      console.log('📋 Price validation:', {
+        pricePerTokenWei: listing.pricePerToken.toString(),
+        priceInEther: priceInEther,
+        isReasonable: priceInEther > 0 && priceInEther < 1000000
+      });
+      
+      if (priceInEther <= 0) {
+        throw new Error(`Listagem ${listingId} tem preço inválido (zero)`);
+      }
+      
+      if (priceInEther > 1000000) {
+        throw new Error(`Listagem ${listingId} tem preço astronômico: ${priceInEther.toFixed(6)} MATIC`);
+      }
+      
+      // Validar status da listagem
+      const validStatuses = [1, 'CREATED']; // Status 1 = CREATED
+      if (!validStatuses.includes(listing.status)) {
+        throw new Error(`Listagem ${listingId} não está disponível (status: ${listing.status})`);
+      }
+      
+      // Validar timestamps
+      const now = Math.floor(Date.now() / 1000);
+      const startTime = Number(listing.startTimestamp);
+      const endTime = Number(listing.endTimestamp);
+      
+      if (startTime > now) {
+        throw new Error(`Listagem ${listingId} ainda não iniciou`);
+      }
+      
+      if (endTime < now) {
+        throw new Error(`Listagem ${listingId} já expirou`);
+      }
+      
+      console.log('✅ LISTAGEM VALIDADA COM SUCESSO:', {
+        listingId: listing.listingId.toString(),
+        creator: listing.listingCreator,
+        priceInEther: priceInEther.toFixed(6),
+        status: listing.status,
+        isActive: true
+      });
+
+      return listing;
+      
+    } catch (error: any) {
+      console.error('❌ ERRO AO BUSCAR/VALIDAR LISTAGEM:', error);
+      throw new Error(`Falha ao buscar listagem ${listingId}: ${error.message}`);
+    }
   }
 
   /**
