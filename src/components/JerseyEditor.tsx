@@ -965,7 +965,7 @@ Design based on analysis: ${analysisText}`
           console.log('✅ [SAVE] Proceeding with database save using local blob...')
         await saveJerseyToDB({
           name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
-          prompt: finalCombinedPrompt,
+          prompt: simplePrompt,
             imageUrl: generatedImage, // Use the converted base64 or original URL
           creatorWallet: address || "N/A",
           tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
