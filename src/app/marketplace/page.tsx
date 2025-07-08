@@ -147,7 +147,7 @@ export default function MarketplacePage() {
             name={item.name}
             imageUrl={item.imageUrl}
             price={item.price || 'Not for sale'}
-            collection={item.category || `By ${item.creator?.name || item.creator || 'Anonymous'}`}
+            collection={item.category || `By ${item.creator || 'Anonymous'}`}
             category={item.category}
             // Dados específicos do marketplace
             tokenId={item.tokenId}
