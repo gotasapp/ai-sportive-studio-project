@@ -408,7 +408,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get enhanced analysis prompt
-    const analysisPrompt = ENHANCED_ANALYSIS_PROMPTS[sport]?.[view];
+    const analysisPrompt = ENHANCED_ANALYSIS_PROMPTS[sport as keyof typeof ENHANCED_ANALYSIS_PROMPTS]?.[view as keyof typeof ENHANCED_ANALYSIS_PROMPTS['soccer']];
     if (!analysisPrompt) {
       return NextResponse.json({
         success: false,
@@ -417,7 +417,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get enhanced metadata
-    const metadata = ENHANCED_FOCUS_METADATA[sport]?.[view] || {};
+    const metadata = ENHANCED_FOCUS_METADATA[sport as keyof typeof ENHANCED_FOCUS_METADATA]?.[view as keyof typeof ENHANCED_FOCUS_METADATA['soccer']] || {};
 
     console.log('✅ [ENHANCED ANALYSIS] Prompt generated:', {
       sport,
