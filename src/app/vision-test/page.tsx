@@ -772,7 +772,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 italic">Upload image and click "Analyze with Enhanced Technical Prompts"</p>
+                  <p className="text-gray-500 italic">Upload image and click &ldquo;Analyze with Enhanced Technical Prompts&rdquo;</p>
                   <p className="text-xs text-blue-400 mt-2">🎯 Technical analysis extracts colors, patterns, logos, and production details</p>
                 </div>
               )}
