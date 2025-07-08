@@ -264,7 +264,7 @@ export default function NFTDetailPage() {
                   {nft.isListed && nft.listingId ? (
                     <BuyNowButton
                       listingId={nft.listingId}
-                      price={nft.price}
+                      price={nft.price || '0 CHZ'}
                       className="w-full"
                     />
                   ) : nft.isAuction && nft.auctionId && nft.auctionEndTime ? (
