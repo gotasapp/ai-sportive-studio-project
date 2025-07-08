@@ -276,7 +276,9 @@ export default function MarketplaceCard({
                     {safePrice}
                   </p>
                   {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
-                    <AlertTriangle className="h-4 w-4 text-red-400" title="Invalid price detected" />
+                    <div title="Invalid price detected">
+                      <AlertTriangle className="h-4 w-4 text-red-400" />
+                    </div>
                   )}
                 </div>
               </div>
