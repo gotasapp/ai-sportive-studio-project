@@ -23,6 +23,9 @@ from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE
 # Importar router de geração de imagens
 from generate_image import router as generate_image_router
 
+# Importar nova função de composição vision-enhanced
+from vision_prompts.base_prompts import compose_vision_enhanced_prompt
+
 load_dotenv()
 
 # --- FUNÇÃO PARA GERAR PROMPTS DALLE-3 OTIMIZADOS ---
@@ -1276,8 +1279,8 @@ A resposta deve ser clara e separada por tópicos, sem formato de JSON.
             print(f"⚠️ [COMPLETE FLOW] Analysis too short, using fallback")
             analysis_text = f"Professional {request.sport} jersey with modern design, featuring team colors and standard athletic fit. Clean back view with space for player name and number placement."
         
-        # ETAPA 2: Geração de Prompt Otimizado
-        print(f"🎨 [COMPLETE FLOW] Step 2: Generate optimized prompt from descriptive analysis")
+        # ETAPA 2: Geração de Prompt Otimizado usando NOVA COMPOSIÇÃO
+        print(f"🎨 [COMPLETE FLOW] Step 2: Generate optimized prompt using NEW COMPOSITION with sport-specific base prompts")
         
         # Validar e limpar dados do jogador
         player_name_clean = (request.player_name or "").strip()
@@ -1290,13 +1293,16 @@ A resposta deve ser clara e separada por tópicos, sem formato de JSON.
             player_number_clean = "00"
             
         print(f"👤 [COMPLETE FLOW] Player data: name='{player_name_clean}', number='{player_number_clean}'")
+        print(f"🏃‍♂️ [COMPLETE FLOW] Using NEW COMPOSITION: sport={request.sport}, view={request.view}")
         
-        optimized_prompt = generate_dalle_prompt_from_text_analysis(
-            analysis_text,
-            player_name_clean,
-            player_number_clean,
-            request.sport,
-            request.view
+        # USAR NOVA FUNÇÃO DE COMPOSIÇÃO COM PROMPTS BASE ESPECÍFICOS
+        optimized_prompt = compose_vision_enhanced_prompt(
+            sport=request.sport,
+            view=request.view,
+            player_name=player_name_clean,
+            player_number=player_number_clean,
+            analysis_text=analysis_text,
+            style="classic"
         )
         
         print(f"✅ [COMPLETE FLOW] Prompt generated: {len(optimized_prompt)} chars")

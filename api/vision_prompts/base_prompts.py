@@ -107,6 +107,64 @@ STYLE_THEMES = {
 }
 
 # ============================================================================
+# NOVA FUNÇÃO DE COMPOSIÇÃO COM ANÁLISE VISION
+# ============================================================================
+
+def compose_vision_enhanced_prompt(sport: str, view: str, player_name: str, player_number: str, 
+                                 analysis_text: str, style: str = "classic") -> str:
+    """
+    NOVA FÓRMULA DE COMPOSIÇÃO - Usa prompt base do esporte + análise vision
+    
+    Fórmula:
+    prompt_final = ESPORTIVO_PROMPT_BASE + ANALYSIS_REFERENCE + CUSTOMIZATION + RENDERING_INSTRUCTIONS
+    
+    Args:
+        sport: "soccer", "basketball", "nfl"
+        view: "front", "back"
+        player_name: Nome do jogador
+        player_number: Número do jogador  
+        analysis_text: Texto da análise vision (formato bullet-point)
+        style: Tema de estilo
+    
+    Returns:
+        Prompt final composto seguindo a nova fórmula
+    """
+    # 1. Obter prompt base específico do esporte (sem formatação de placeholders)
+    if sport not in VISION_PROMPTS:
+        raise ValueError(f"Sport '{sport}' not supported. Available: {list(VISION_PROMPTS.keys())}")
+    
+    if view not in VISION_PROMPTS[sport]:
+        raise ValueError(f"View '{view}' not available for {sport}. Available: {list(VISION_PROMPTS[sport].keys())}")
+    
+    # Obter prompt base RAW (sem substituir placeholders ainda)
+    base_prompt_template = VISION_PROMPTS[sport][view]
+    style_description = STYLE_THEMES.get(style, style)
+    
+    # Formatar o prompt base com os valores atuais
+    formatted_base_prompt = base_prompt_template.format(
+        PLAYER_NAME=player_name.upper(),
+        PLAYER_NUMBER=player_number,
+        STYLE=style_description
+    ).strip()
+    
+    # 2. Compor prompt final seguindo a fórmula definida
+    prompt_final = f"""{formatted_base_prompt}
+
+ANALYSIS REFERENCE:
+{analysis_text}
+
+CUSTOMIZATION:
+- Player name: "{player_name.upper()}" (override any previous name)
+- Player number: "{player_number}" (override any previous number)
+
+RENDERING INSTRUCTIONS:
+- Keep jersey centered, floating, clean white background
+- No humans, mannequins, shadows, or brand logos
+- 4K photorealistic quality, realistic fabric texture and light"""
+    
+    return prompt_final
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 
@@ -192,6 +250,30 @@ def test_prompts():
                 print(f"✅ {sport.upper()} {view}: {len(prompt)} chars")
             except Exception as e:
                 print(f"❌ {sport.upper()} {view}: {e}")
+    
+    print("\n🧪 Testando nova composição vision-enhanced...")
+    
+    # Teste da nova função de composição
+    sample_analysis = """
+    • Jersey shows distinctive stripe pattern in blue and white
+    • Traditional collar style with ribbed texture
+    • Professional fabric quality with subtle sheen
+    • Classic soccer jersey proportions and fit
+    """
+    
+    try:
+        enhanced_prompt = compose_vision_enhanced_prompt(
+            sport="soccer", 
+            view="back", 
+            player_name="MESSI", 
+            player_number="10",
+            analysis_text=sample_analysis,
+            style="classic"
+        )
+        print(f"✅ NOVA COMPOSIÇÃO: {len(enhanced_prompt)} chars")
+        print(f"📝 Amostra: {enhanced_prompt[:200]}...")
+    except Exception as e:
+        print(f"❌ NOVA COMPOSIÇÃO: {e}")
     
     print("\n✅ Teste concluído!")
 
