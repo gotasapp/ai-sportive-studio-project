@@ -27,7 +27,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
     'marketplace-v3'
   );
 
-  const { data: listing, isLoading: isLoadingListing, error } = useListing(marketplaceContract!, listingId);
+  const { data: listing, isLoading: isLoadingListing, error } = useListing(marketplaceContract as any, listingId);
   const [nftDetails, setNftDetails] = useState<NftDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
 
