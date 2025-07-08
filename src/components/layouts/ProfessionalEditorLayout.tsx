@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Menu, X, ChevronLeft, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -24,8 +24,27 @@ export default function ProfessionalEditorLayout({
   title = "Jersey Fan NFT",
   showTitle = true
 }: ProfessionalEditorLayoutProps) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [isMarketplaceOpen, setIsMarketplaceOpen] = useState(true)
+
+  // Initialize sidebar state based on screen size
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsSidebarOpen(true)
+      } else {
+        setIsSidebarOpen(false)
+      }
+    }
+
+    // Set initial state
+    handleResize()
+    
+    // Add resize listener
+    window.addEventListener('resize', handleResize)
+    
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   return (
     <div className={cn("w-full h-[calc(100vh-4rem)] bg-transparent text-[#FDFDFD] flex flex-col overflow-hidden", className)}>
@@ -35,11 +54,11 @@ export default function ProfessionalEditorLayout({
         <div className={cn(
           "relative bg-transparent border-r border-[#333333] transition-all duration-300 ease-in-out",
           isSidebarOpen ? "w-80" : "w-0",
-          "md:w-80 md:block"
+          "hidden lg:block"
         )}>
           <div className={cn(
             "h-full overflow-y-auto overflow-x-hidden",
-            !isSidebarOpen && "md:block hidden"
+            !isSidebarOpen && "lg:hidden"
           )}>
             {/* Sidebar Header */}
             {showTitle && (
@@ -50,14 +69,7 @@ export default function ProfessionalEditorLayout({
                       {title}
                     </h2>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsSidebarOpen(false)}
-                    className="md:hidden text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
-                  >
-                    <X className="h-4 w-4 text-[#ADADAD]" />
-                  </Button>
+
                 </div>
               </div>
             )}
@@ -74,7 +86,7 @@ export default function ProfessionalEditorLayout({
             size="sm"
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
-              "absolute -right-3 top-1/2 -translate-y-1/2 z-20 hidden md:flex",
+              "absolute -right-3 top-1/2 -translate-y-1/2 z-20 hidden lg:flex",
               "w-6 h-8 bg-[#333333] hover:bg-[#A20131] border border-[#333333]",
               "text-[#ADADAD] hover:text-[#FDFDFD] rounded-r-md rounded-l-none"
             )}
@@ -95,7 +107,7 @@ export default function ProfessionalEditorLayout({
               variant="ghost"
               size="sm"
               onClick={() => setIsSidebarOpen(true)}
-              className="md:hidden text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
+              className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
             >
               <Menu className="h-4 w-4 text-[#ADADAD]" />
             </Button>
@@ -184,6 +196,46 @@ export default function ProfessionalEditorLayout({
           </div>
         </div>
       </div>
+
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div className="mobile-sidebar-overlay lg:hidden fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+          
+          {/* Sidebar Content */}
+          <div className="mobile-sidebar-content absolute left-0 top-0 h-full w-80 max-w-[85vw] bg-[#111011] border-r border-[#333333] shadow-2xl">
+            <div className="h-full overflow-y-auto overflow-x-hidden">
+              {/* Mobile Sidebar Header */}
+              {showTitle && (
+                <div className="sticky top-0 z-10 bg-[#111011] border-b border-[#333333] p-4">
+                  <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-system font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                      {title}
+                    </h2>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsSidebarOpen(false)}
+                      className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Mobile Sidebar Content */}
+              <div className="p-4">
+                {sidebar}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

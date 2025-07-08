@@ -112,214 +112,158 @@
   box-shadow: 0 0 8px rgba(253, 253, 253, 0.08), 0 0 16px rgba(253, 253, 253, 0.03);
 }
 
-/* ProfessionalSidebar Responsive Styles */
-@media (max-width: 767px) {
+/* Mobile Sidebar Overlay Styles */
+@media (max-width: 1023px) {
   .ProfessionalSidebar {
-    padding: 8px;
-  }
-  
-  .ProfessionalSidebar .space-y-4 {
-    gap: 8px;
-  }
-  
-  .ProfessionalSidebar .SectionHeader {
-    padding: 8px 12px;
-  }
-  
-  .ProfessionalSidebar .SectionHeader .text-sm {
-    font-size: 12px;
-  }
-  
-  .ProfessionalSidebar .SectionHeader .h-4 {
-    width: 14px;
-    height: 14px;
-  }
-  
-  .ProfessionalSidebar .CardContent {
-    padding: 8px;
-  }
-  
-  .ProfessionalSidebar .cyber-select {
-    padding: 6px 8px;
-    font-size: 12px;
-  }
-  
-  .ProfessionalSidebar .text-xs {
-    font-size: 10px;
-  }
-  
-  .ProfessionalSidebar input {
-    padding: 6px 32px 6px 8px;
-    font-size: 12px;
-  }
-  
-  .ProfessionalSidebar textarea {
-    padding: 8px;
-    font-size: 12px;
-  }
-  
-  .ProfessionalSidebar .upload-area {
+    /* Mobile sidebar será um overlay - mantém dimensões normais */
     padding: 12px;
   }
   
-  .ProfessionalSidebar .upload-area .w-6 {
-    width: 20px;
-    height: 20px;
+  .ProfessionalSidebar .space-y-4 {
+    gap: 12px;
   }
   
-  .ProfessionalSidebar .sport-view-buttons {
-    grid-template-columns: 1fr;
-    gap: 4px;
+  .ProfessionalSidebar .SectionHeader {
+    padding: 12px 16px;
+    border-radius: 8px;
+    background: rgba(51, 51, 51, 0.3);
+  }
+  
+  .ProfessionalSidebar .CardContent {
+    padding: 16px 12px 12px 12px;
+  }
+  
+  .ProfessionalSidebar .upload-area {
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .ProfessionalSidebar .cyber-select,
+  .ProfessionalSidebar input,
+  .ProfessionalSidebar textarea {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 6px;
   }
   
   .ProfessionalSidebar .sport-view-buttons button {
-    padding: 8px;
-    font-size: 11px;
-  }
-  
-  .ProfessionalSidebar .quality-buttons {
-    gap: 8px;
+    padding: 12px;
+    font-size: 13px;
+    border-radius: 6px;
   }
   
   .ProfessionalSidebar .quality-buttons button {
-    padding: 8px;
-    font-size: 11px;
+    padding: 12px;
+    font-size: 13px;
+    border-radius: 6px;
   }
 }
 
-/* ProfessionalCanvas Responsive Styles */
+@media (max-width: 767px) {
+  .ProfessionalSidebar .SectionHeader {
+    padding: 10px 14px;
+  }
+  
+  .ProfessionalSidebar .CardContent {
+    padding: 14px 10px 10px 10px;
+  }
+  
+  .ProfessionalSidebar .upload-area {
+    padding: 16px;
+  }
+  
+  .ProfessionalSidebar .cyber-select,
+  .ProfessionalSidebar input,
+  .ProfessionalSidebar textarea {
+    padding: 10px;
+    font-size: 13px;
+  }
+  
+  .ProfessionalSidebar .sport-view-buttons button {
+    padding: 10px;
+    font-size: 12px;
+  }
+  
+  .ProfessionalSidebar .quality-buttons button {
+    padding: 10px;
+    font-size: 12px;
+  }
+}
+
+/* ProfessionalCanvas Mobile Responsive */
+@media (max-width: 1023px) {
+  .ProfessionalCanvas {
+    margin: 8px;
+    margin-top: 12px;
+    max-width: none;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar {
+    padding: 12px 16px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .ProfessionalCanvas .canvas-area {
+    min-height: 400px;
+  }
+  
+  .ProfessionalCanvas .zoom-controls {
+    gap: 8px;
+  }
+  
+  .ProfessionalCanvas .zoom-controls button {
+    padding: 8px;
+  }
+  
+  .ProfessionalCanvas .pan-zoom-instructions {
+    bottom: 12px;
+    left: 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
 @media (max-width: 767px) {
   .ProfessionalCanvas {
     margin: 4px;
     margin-top: 8px;
   }
   
-  .ProfessionalCanvas .CardContent {
-    padding: 0;
-  }
-  
   .ProfessionalCanvas .canvas-toolbar {
-    padding: 8px 12px;
+    padding: 10px 12px;
   }
   
   .ProfessionalCanvas .canvas-toolbar .text-xs {
-    font-size: 10px;
-  }
-  
-  .ProfessionalCanvas .canvas-toolbar .Badge {
-    font-size: 10px;
-    padding: 2px 6px;
-  }
-  
-  .ProfessionalCanvas .canvas-toolbar .w-2\.5 {
-    width: 8px;
-    height: 8px;
-  }
-  
-  .ProfessionalCanvas .zoom-controls {
-    gap: 4px;
-  }
-  
-  .ProfessionalCanvas .zoom-controls button {
-    padding: 4px;
-  }
-  
-  .ProfessionalCanvas .zoom-controls .h-3\.5 {
-    width: 12px;
-    height: 12px;
-  }
-  
-  .ProfessionalCanvas .zoom-percentage {
-    font-size: 10px;
-    min-width: 2rem;
+    font-size: 11px;
   }
   
   .ProfessionalCanvas .canvas-area {
-    min-height: 300px;
+    min-height: 320px;
   }
   
-  .ProfessionalCanvas .placeholder-content .w-24 {
-    width: 64px;
-    height: 64px;
+  .ProfessionalCanvas .zoom-controls {
+    gap: 6px;
   }
   
-  .ProfessionalCanvas .placeholder-content .text-lg {
-    font-size: 16px;
+  .ProfessionalCanvas .zoom-controls button {
+    padding: 6px;
   }
   
-  .ProfessionalCanvas .placeholder-content .text-sm {
-    font-size: 12px;
-  }
-  
-  .ProfessionalCanvas .loading-content .w-16 {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .ProfessionalCanvas .loading-content .text-lg {
-    font-size: 16px;
-  }
-  
-  .ProfessionalCanvas .loading-content .text-sm {
-    font-size: 12px;
-  }
-  
-  .ProfessionalCanvas .error-content .w-16 {
-    width: 48px;
-    height: 48px;
-  }
-  
-  .ProfessionalCanvas .error-content .w-8 {
-    width: 24px;
-    height: 24px;
-  }
-  
-  .ProfessionalCanvas .error-content .text-lg {
-    font-size: 16px;
-  }
-  
-  .ProfessionalCanvas .error-content .text-sm {
-    font-size: 12px;
+  .ProfessionalCanvas .zoom-percentage {
+    font-size: 11px;
+    min-width: 2.5rem;
   }
   
   .ProfessionalCanvas .pan-zoom-instructions {
     bottom: 8px;
     left: 8px;
-    padding: 6px 8px;
-  }
-  
-  .ProfessionalCanvas .pan-zoom-instructions .w-3 {
-    width: 10px;
-    height: 10px;
-  }
-  
-  .ProfessionalCanvas .pan-zoom-instructions .text-xs {
-    font-size: 10px;
+    padding: 6px 10px;
+    font-size: 11px;
   }
 }
 
-@media (min-width: 768px) and (max-width: 1023px) {
-  .ProfessionalSidebar .space-y-4 {
-    gap: 12px;
-  }
-  
-  .ProfessionalSidebar .SectionHeader {
-    padding: 10px 12px;
-  }
-  
-  .ProfessionalSidebar .CardContent {
-    padding: 10px;
-  }
-  
-  .ProfessionalCanvas {
-    margin: 6px;
-    margin-top: 8px;
-  }
-  
-  .ProfessionalCanvas .canvas-toolbar {
-    padding: 10px 16px;
-  }
-}
+
 
 .cyber-border {
   position: relative;
@@ -960,6 +904,34 @@
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Mobile Sidebar Overlay Animations */
+@keyframes slideInLeft {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInBackdrop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Mobile sidebar overlay styles */
+.mobile-sidebar-overlay {
+  animation: fadeInBackdrop 0.3s ease-out;
+}
+
+.mobile-sidebar-content {
+  animation: slideInLeft 0.3s ease-out;
 }
 
 /* Utilities para aplicar responsividade */
