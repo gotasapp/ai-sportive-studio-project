@@ -57,64 +57,34 @@ FOCUS AREAS:
 
 Remember: This analysis will be used to generate an IDENTICAL jersey. Be as specific as possible about colors and visual elements.`,
 
-    "back": `You are an expert image analyst specializing in soccer jersey back view analysis. Analyze this soccer jersey back view image with EXTREME precision for faithful reproduction.
+    "back": `You are a professional uniform designer specializing in sportswear. Analyze the image of a soccer jersey from the back. Describe in **precise visual and technical detail** everything that is visible.
 
-CRITICAL INSTRUCTIONS:
-1. Extract EXACT colors and their relationships
-2. Analyze name/number area positioning and styling
-3. Identify all patterns and design elements
-4. Note specific details needed for identical reproduction
+Instructions:
+- Be highly observant.
+- Do not assume or generalize.
+- Focus on design-specific details that a production team would need.
 
-Return ONLY a valid JSON object with this EXACT structure:
+Respond in clear **bullet-point text**, structured like this:
 
-{
-  "dominantColors": {
-    "primary": "exact primary jersey color with specific name/hex",
-    "secondary": "exact secondary color with specific name/hex",
-    "accent": "exact accent/trim color with specific name/hex", 
-    "colorDescription": "comprehensive color analysis of the jersey"
-  },
-  "visualPattern": {
-    "type": "solid|horizontal_stripes|vertical_stripes|diagonal_stripes|geometric|gradient|mixed",
-    "description": "detailed pattern description including measurements",
-    "patternColors": ["color1", "color2", "color3"],
-    "patternWidth": "specific stripe width or pattern scale"
-  },
-  "playerArea": {
-    "namePosition": "exact name area position (top-center, upper-back, etc.)",
-    "nameFont": "font style description (bold, condensed, serif, sans-serif)",
-    "nameColor": "exact color of player name text",
-    "numberPosition": "exact number position (center-back, below-name, etc.)",
-    "numberFont": "number font style, weight, and relative size",
-    "numberColor": "exact color of player number",
-    "nameNumberSpacing": "spacing between name and number areas",
-    "textStyling": "any outlines, shadows, or special text effects"
-  },
-  "fabricAndTexture": {
-    "material": "visible fabric type from back view",
-    "finish": "surface finish visible",
-    "quality": "professional, replica, vintage assessment"
-  },
-  "designElements": {
-    "backDesign": "unique back design elements beyond name/number",
-    "shoulderDetails": "shoulder and upper back design details",
-    "sponsorBack": "any sponsor elements visible on back",
-    "trimDetails": "collar, sleeve, and hem trim details from back view",
-    "stitchingDetails": "visible stitching patterns or seam details"
-  },
-  "styleCategory": "modern|classic|retro|vintage|urban|premium",
-  "keyVisualFeatures": "most distinctive back view elements for reproduction",
-  "reproductionNotes": "critical specific details for faithful back view reproduction"
-}
+1. **Primary and secondary colors**: name and hex if possible
+2. **Pattern or fabric texture**: describe any subtle design, weaves, mesh or print pattern visible
+3. **Logos and text**:
+   - Sponsor text (ex: "Crefisa") → position, color, font type (e.g., custom sans-serif), case, size relative to shirt
+   - Any manufacturer logos (e.g. Puma) → position, quantity, size
+   - Any symbols above the collar or near shoulders
+4. **Collar and sleeve details**:
+   - Collar type, color, and trim details
+   - Sleeve endings: any contrasting bands or colored cuffs
+5. **Stitching and structure**:
+   - Any visible seams (e.g. central vertical line down the back)
+   - Stitch lines around shoulders or sides
+6. **Presence of player name or number**: is there any? If not, state clearly: "No number or name visible"
+7. **Back layout**:
+   - Empty space for name/number?
+   - Design symmetry or asymmetry
+8. **Style category**: modern, classic, retro, minimalistic, sponsor-heavy
 
-FOCUS AREAS:
-- Exact color matching for all elements
-- Name/number area precise positioning and styling
-- Pattern consistency with front (if striped/patterned)
-- Trim and accent color details
-- Any unique back design elements
-
-This analysis enables IDENTICAL reproduction. Be extremely specific about colors, positioning, and styling details.`
+Avoid unnecessary summaries. Focus on details that matter visually and structurally.`
   },
   
   "basketball": {
@@ -170,42 +140,33 @@ BASKETBALL SPECIFIC FOCUS:
 - Team logo prominence and positioning
 - Number placement and sizing standards`,
 
-    "back": `You are an expert basketball jersey analyst. Analyze this basketball jersey back view with EXTREME precision.
+    "back": `You are a professional sports uniform designer specializing in basketball jerseys. Analyze the image of a basketball jersey from the back. Describe in **precise visual and technical detail** everything that is visible.
 
-Return ONLY a valid JSON object:
+Instructions:
+- Be highly observant.
+- Do not assume or generalize.
+- Focus on design-specific elements that affect reproduction.
 
-{
-  "dominantColors": {
-    "primary": "exact primary color",
-    "secondary": "exact secondary color",
-    "accent": "exact accent color",
-    "colorDescription": "detailed basketball jersey color analysis"
-  },
-  "visualPattern": {
-    "type": "solid|side_panels|geometric|mixed",
-    "description": "back view pattern details",
-    "patternColors": ["color1", "color2"],
-    "sidePanelContinuation": "how side panels continue on back"
-  },
-  "playerArea": {
-    "namePosition": "name placement on basketball jersey back",
-    "nameFont": "basketball name font style",
-    "nameColor": "name text exact color",
-    "numberPosition": "number placement and sizing",
-    "numberFont": "basketball number font and proportions",
-    "numberColor": "number exact color",
-    "nameNumberLayout": "layout relationship for basketball standard"
-  },
-  "designElements": {
-    "armholes": "armhole design from back view",
-    "backCut": "basketball jersey back cut and fit",
-    "sidePanels": "side panel design continuation",
-    "backDesign": "unique back elements beyond name/number"
-  },
-  "styleCategory": "modern|classic|retro|throwback|statement",
-  "keyVisualFeatures": "distinctive basketball back elements",
-  "reproductionNotes": "critical basketball jersey reproduction details"
-}`
+Respond in clear **bullet-point text**, structured like this:
+
+1. **Primary and secondary colors**: name and hex if possible
+2. **Visual pattern or texture**: describe any stripes, gradients, mesh zones, or print elements
+3. **Name and number**:
+   - Player name → placement (curved or straight), font type, color, uppercase/lowercase, size relative to jersey
+   - Number → position, size, font style, color, outlines or shadows
+4. **Logos and text**:
+   - Team or league logos → placement, size, color
+   - Manufacturer logo (e.g., Nike) → location and style
+   - Sponsor (if visible) → text, position, color
+5. **Collar and armhole details**:
+   - Collar type (round, V, elastic), color and trim
+   - Armhole finish → color contrast or design details
+6. **Stitching and jersey cut**:
+   - Visible seams, panel lines, or special tailoring
+   - Shoulder/side cuts or mesh areas
+7. **Style category**: modern, throwback, city edition, minimalistic, vibrant
+
+Be factual and technical. Only describe what is visually present in the image.`
   },
   
   "nfl": {
@@ -248,42 +209,35 @@ Return ONLY a valid JSON object:
   "reproductionNotes": "critical NFL jersey reproduction details"
 }`,
 
-    "back": `You are an expert NFL jersey analyst. Analyze this NFL jersey back view with EXTREME precision.
+    "back": `You are a professional sportswear designer specialized in American football uniforms. Analyze the back view of the jersey image and describe in **precise visual and structural detail** all visible elements.
 
-Return ONLY a valid JSON object:
+Instructions:
+- Focus on design features used in NFL-style jerseys
+- Don't invent or generalize — describe what's observable
 
-{
-  "dominantColors": {
-    "primary": "exact primary color",
-    "secondary": "exact secondary color",
-    "accent": "exact accent color",
-    "colorDescription": "NFL jersey color scheme analysis"
-  },
-  "visualPattern": {
-    "type": "solid|shoulder_stripes|side_panels|mixed",
-    "description": "back view pattern details",
-    "patternColors": ["color1", "color2", "color3"],
-    "shoulderContinuation": "how shoulder design continues on back"
-  },
-  "playerArea": {
-    "namePosition": "NFL name placement standards",
-    "nameFont": "NFL name font specifications",
-    "nameColor": "name text color",
-    "numberPosition": "NFL number placement",
-    "numberFont": "NFL number font and proportions",
-    "numberColor": "number color",
-    "nameNumberSpacing": "NFL standard spacing"
-  },
-  "designElements": {
-    "shoulderPads": "back shoulder design for equipment",
-    "backCut": "NFL jersey back construction",
-    "shoulderStripes": "shoulder stripe continuation",
-    "backDesign": "unique NFL back elements"
-  },
-  "styleCategory": "modern|classic|throwback|alternate",
-  "keyVisualFeatures": "distinctive NFL back elements",
-  "reproductionNotes": "critical NFL reproduction specifications"
-}`
+Respond in structured **bullet-point form** as follows:
+
+1. **Main and secondary colors**: name + hex if possible
+2. **Shoulder and sleeve design**:
+   - Stripes, blocks, logos, patch shapes
+   - Color contrast between shoulder pad area and sleeves
+3. **Player number**:
+   - Size, color, font style, placement (high/mid-back)
+   - Presence of outlines, shadows, texture inside digits
+4. **Player name**:
+   - Placement (above number), font style, case, spacing
+5. **Team or manufacturer logos**:
+   - Nike, NFL shield, team logo → position, style, size
+6. **Collar and neckline**:
+   - Type (V, elastic, padded), color and trim
+7. **Fabric and texture**:
+   - Mesh panels, ribbed zones, vent sections, gloss/matte finish
+8. **Back layout**:
+   - Symmetry, space for customization
+   - Visual weight or balance across shoulder pad area
+9. **Style category**: classic, aggressive, clean, urban, retro
+
+Focus only on what is visible and relevant to recreate the uniform accurately.`
   }
 };
 

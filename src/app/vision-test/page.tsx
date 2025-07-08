@@ -11,34 +11,20 @@ export default function VisionTestPage() {
   // PROMPTS JSON ESTRUTURADOS ORIGINAIS QUE FUNCIONAVAM PERFEITAMENTE
   const ORIGINAL_JSON_PROMPTS = {
     "soccer": {
-      "back": `You are a professional uniform designer specializing in sportswear. Analyze the image of a soccer jersey from the back. Describe in **precise visual and technical detail** everything that is visible.
+      "back": `You are a specialist in technical design of sports uniforms. Analyze the image of a soccer jersey (back view). Describe with maximum precision all visual elements present.
 
-Instructions:
-- Be highly observant.
-- Do not assume or generalize.
-- Focus on design-specific details that a production team would need.
+Include:
 
-Respond in clear **bullet-point text**, structured like this:
+1. Main, secondary and detail colors (with names and hex codes if possible)
+2. Visual pattern: stripes (diagonal, horizontal, vertical), bands, crosses, gradients, symbols
+3. Name and number (if present): position, font, color, outline, embedded symbols
+4. Collar: shape (round, V-neck, polo), color, finish
+5. Sleeves: main color, presence of contrasting cuffs or bands
+6. Logos, texts or badges: location, relative size, style
+7. Fabric and texture: mesh, shine, apparent stitching
+8. Any other important visual detail that influences the design
 
-1. **Primary and secondary colors**: name and hex if possible
-2. **Pattern or fabric texture**: describe any subtle design, weaves, mesh or print pattern visible
-3. **Logos and text**:
-   - Sponsor text (ex: "Crefisa") → position, color, font type (e.g., custom sans-serif), case, size relative to shirt
-   - Any manufacturer logos (e.g. Puma) → position, quantity, size
-   - Any symbols above the collar or near shoulders
-4. **Collar and sleeve details**:
-   - Collar type, color, and trim details
-   - Sleeve endings: any contrasting bands or colored cuffs
-5. **Stitching and structure**:
-   - Any visible seams (e.g. central vertical line down the back)
-   - Stitch lines around shoulders or sides
-6. **Presence of player name or number**: is there any? If not, state clearly: "No number or name visible"
-7. **Back layout**:
-   - Empty space for name/number?
-   - Design symmetry or asymmetry
-8. **Style category**: modern, classic, retro, minimalistic, sponsor-heavy
-
-Avoid unnecessary summaries. Focus on details that matter visually and structurally.`,
+Be direct, technical and based only on what is visibly present. Do not invent. Use bullet point structure.`,
 
       "front": `You are an expert image analyst specializing in soccer jersey color and pattern analysis. Analyze this soccer jersey front view image with EXTREME precision.
 
