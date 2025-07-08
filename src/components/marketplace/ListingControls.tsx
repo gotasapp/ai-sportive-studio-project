@@ -45,7 +45,7 @@ export default function ListingControls({ listing }: ListingControlsProps) {
   return (
     <div>
         <p className="text-secondary">Price</p>
-        <p className="text-3xl font-bold mb-6">{listing.pricePerCurrencyToken.displayValue} {listing.currencyContractAddress === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? 'ETH' : listing.currencyContractAddress}</p>
+        <p className="text-3xl font-bold mb-6">{Number(listing.pricePerToken) / Math.pow(10, 18)} {listing.currency === '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE' ? 'ETH' : 'MATIC'}</p>
         <Button onClick={handleBuyNow} className="w-full bg-accent hover:bg-accent/80" disabled={isSubmitting}>
           {isSubmitting ? 'Processing...' : 'Buy Now'}
         </Button>
