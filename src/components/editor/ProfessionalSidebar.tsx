@@ -9,8 +9,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap, color: 'bg-blue-500/20 text-blue-400' },
@@ -95,6 +96,7 @@ export default function ProfessionalSidebar({
   error,
   onResetError
 }: ProfessionalSidebarProps) {
+  const isMobile = useIsMobile()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [expandedSections, setExpandedSections] = React.useState({
     vision: false,
@@ -127,42 +129,71 @@ export default function ProfessionalSidebar({
   }) => (
     <button
       onClick={() => toggleSection(section)}
-      className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-[2px] transition-colors group"
+      className={cn(
+        "w-full flex items-center justify-between hover:bg-[#333333]/30 rounded-[2px] transition-colors group",
+        isMobile ? "p-2" : "p-3"
+      )}
     >
-      <div className="flex items-center gap-3">
-        <Icon className="h-4 w-4 text-[#ADADAD]" />
-        <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
+      <div className="flex items-center gap-2">
+        <Icon className={cn("text-[#ADADAD]", isMobile ? "h-3.5 w-3.5" : "h-4 w-4")} />
+        <span className={cn(
+          "font-medium text-[#FDFDFD]",
+          isMobile ? "text-xs" : "text-sm"
+        )}>
+          {title}
+        </span>
         {required && <span className="text-[#A20131] text-xs"></span>}
         {badge && (
-          <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
+          <Badge 
+            variant="secondary" 
+            className={cn(
+              "bg-transparent text-[#ADADAD] border-[#333333]",
+              isMobile ? "text-xs px-1 py-0 h-4" : "text-xs"
+            )}
+            style={{ borderWidth: '0.5px', borderColor: '#333333' }}
+          >
             {badge}
           </Badge>
         )}
       </div>
       {expandedSections[section] ? (
-        <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
+        <ChevronUp className={cn(
+          "text-[#ADADAD] group-hover:text-[#FDFDFD]",
+          isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+        )} />
       ) : (
-        <ChevronDown className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
+        <ChevronDown className={cn(
+          "text-[#ADADAD] group-hover:text-[#FDFDFD]",
+          isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+        )} />
       )}
     </button>
   )
 
   return (
     <TooltipProvider>
-      <div className="space-y-4">
+      <div className={cn("space-y-3", isMobile && "space-y-2")}>
 
         {/* Error Display */}
         {error && (
-          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-[2px]">
+          <div className={cn(
+            "bg-red-500/10 border border-red-500/30 rounded-[2px]",
+            isMobile ? "p-2" : "p-3"
+          )}>
             <div className="flex items-start justify-between">
-              <p className="text-sm text-red-400 flex-1">{error}</p>
+              <p className={cn(
+                "text-red-400 flex-1",
+                isMobile ? "text-xs" : "text-sm"
+              )}>
+                {error}
+              </p>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onResetError}
                 className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-auto"
               >
-                <X className="h-3 w-3" />
+                <X className={cn(isMobile ? "h-2.5 w-2.5" : "h-3 w-3")} />
               </Button>
             </div>
           </div>
@@ -179,10 +210,13 @@ export default function ProfessionalSidebar({
             />
           </CardHeader>
           {expandedSections.vision && (
-            <CardContent className="p-3 pt-0 space-y-3">
+            <CardContent className={cn("pt-0 space-y-3", isMobile ? "p-2" : "p-3")}>
               {!referenceImage ? (
                 <div
-                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                  className={cn(
+                    "flex flex-col items-center justify-center w-full border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors",
+                    isMobile ? "p-3" : "p-4"
+                  )}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
@@ -192,69 +226,90 @@ export default function ProfessionalSidebar({
                     onChange={onFileUpload}
                     accept="image/png, image/jpeg, image/webp"
                   />
-                  <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
-                  <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
-                  <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
+                  <FileImage className={cn(
+                    "text-[#ADADAD] mb-2",
+                    isMobile ? "w-5 h-5" : "w-6 h-6"
+                  )} />
+                  <p className={cn(
+                    "font-medium text-[#FDFDFD] mb-1",
+                    isMobile ? "text-xs" : "text-sm"
+                  )}>
+                    Upload Reference
+                  </p>
+                  <p className={cn(
+                    "text-[#ADADAD]",
+                    isMobile ? "text-xs" : "text-xs"
+                  )}>
+                    {isMobile ? "PNG, JPG, WEBP" : "PNG, JPG, WEBP up to 10MB"}
+                  </p>
                 </div>
               ) : (
                 <div className="space-y-2">
-                  <div className="relative">
+                  <div className={cn(
+                    "relative rounded-[2px] overflow-hidden border border-[#333333]",
+                    isMobile ? "h-24" : "h-32"
+                  )}>
                     <img
                       src={referenceImage}
                       alt="Reference"
-                      className="w-full h-24 object-cover rounded-[2px] border border-[#333333]"
+                      className="w-full h-full object-cover"
                     />
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={onClearReference}
-                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
+                      className="absolute top-1 right-1 text-white hover:text-red-400 hover:bg-red-500/20 p-1 h-auto"
                     >
-                      <X className="h-3 w-3" />
+                      <X className={cn(isMobile ? "h-3 w-3" : "h-4 w-4")} />
                     </Button>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
-                      <div className="grid grid-cols-1 gap-1">
+                  {/* Sport & View Selection */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <label className={cn(
+                        "text-[#ADADAD] font-medium",
+                        isMobile ? "text-xs" : "text-sm"
+                      )}>
+                        Sport
+                      </label>
+                      <select
+                        value={selectedSport}
+                        onChange={(e) => setSelectedSport(e.target.value)}
+                        className={cn(
+                          "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] rounded-[2px] focus:border-[#A20131] focus:outline-none",
+                          isMobile ? "px-2 py-1 text-xs" : "px-3 py-2 text-sm"
+                        )}
+                      >
                         {SPORTS_OPTIONS.map(sport => (
-                          <button
-                            key={sport.id}
-                            onClick={() => setSelectedSport(sport.id)}
-                            className={cn(
-                              "p-2 rounded-[2px] border text-left transition-all duration-200",
-                              selectedSport === sport.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                            )}
-                          >
-                            <div className="text-xs font-medium">{sport.name}</div>
-                            <div className="text-xs opacity-70">{sport.description}</div>
-                          </button>
+                          <option key={sport.id} value={sport.id} className="bg-[#1a1a1a] text-[#FDFDFD]">
+                            {sport.name}
+                          </option>
                         ))}
-                      </div>
+                      </select>
                     </div>
                     
-                    <div>
-                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
-                      <div className="grid grid-cols-1 gap-1">
+                    <div className="space-y-1">
+                      <label className={cn(
+                        "text-[#ADADAD] font-medium",
+                        isMobile ? "text-xs" : "text-sm"
+                      )}>
+                        View
+                      </label>
+                      <select
+                        value={selectedView}
+                        onChange={(e) => setSelectedView(e.target.value)}
+                        className={cn(
+                          "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] rounded-[2px] focus:border-[#A20131] focus:outline-none",
+                          isMobile ? "px-2 py-1 text-xs" : "px-3 py-2 text-sm"
+                        )}
+                      >
                         {VIEW_OPTIONS.map(view => (
-                          <button
-                            key={view.id}
-                            onClick={() => setSelectedView(view.id)}
-                            className={cn(
-                              "p-2 rounded-[2px] border text-left transition-all duration-200",
-                              selectedView === view.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                            )}
-                          >
-                            <div className="text-xs font-medium">{view.name}</div>
-                            <div className="text-xs opacity-70">{view.description}</div>
-                          </button>
+                          <option key={view.id} value={view.id} className="bg-[#1a1a1a] text-[#FDFDFD]">
+                            {view.name}
+                          </option>
                         ))}
-                      </div>
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -263,8 +318,212 @@ export default function ProfessionalSidebar({
           )}
         </Card>
 
+        {/* Team Selection */}
+        <Card className="cyber-card border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Team Selection" 
+              section="team" 
+              icon={Settings}
+              badge={selectedTeam || undefined}
+            />
+          </CardHeader>
+          {expandedSections.team && (
+            <CardContent className={cn("pt-0", isMobile ? "p-2" : "p-3")}>
+              <select
+                value={selectedTeam}
+                onChange={(e) => setSelectedTeam(e.target.value)}
+                className={cn(
+                  "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] rounded-[2px] focus:border-[#A20131] focus:outline-none",
+                  isMobile ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"
+                )}
+              >
+                <option value="" className="bg-[#1a1a1a] text-[#FDFDFD]">Select a team...</option>
+                {availableTeams.map(team => (
+                  <option key={team} value={team} className="bg-[#1a1a1a] text-[#FDFDFD]">
+                    {team.charAt(0).toUpperCase() + team.slice(1)}
+                  </option>
+                ))}
+              </select>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Player Details */}
+        <Card className="cyber-card border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Player Details" 
+              section="player" 
+              icon={User}
+              required={true}
+              badge={playerName && playerNumber ? "Ready" : undefined}
+            />
+          </CardHeader>
+          {expandedSections.player && (
+            <CardContent className={cn("pt-0 space-y-3", isMobile ? "p-2 space-y-2" : "p-3")}>
+              <div className="space-y-1">
+                <label className={cn(
+                  "text-[#ADADAD] font-medium",
+                  isMobile ? "text-xs" : "text-sm"
+                )}>
+                  Player Name
+                </label>
+                <input
+                  type="text"
+                  value={playerName}
+                  onChange={(e) => setPlayerName(e.target.value)}
+                  placeholder="Enter player name"
+                  className={cn(
+                    "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] placeholder:text-[#666666] rounded-[2px] focus:border-[#A20131] focus:outline-none",
+                    isMobile ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"
+                  )}
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <label className={cn(
+                  "text-[#ADADAD] font-medium",
+                  isMobile ? "text-xs" : "text-sm"
+                )}>
+                  Jersey Number
+                </label>
+                <input
+                  type="text"
+                  value={playerNumber}
+                  onChange={(e) => setPlayerNumber(e.target.value)}
+                  placeholder="00"
+                  maxLength={2}
+                  className={cn(
+                    "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] placeholder:text-[#666666] rounded-[2px] focus:border-[#A20131] focus:outline-none",
+                    isMobile ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"
+                  )}
+                />
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Style Selection */}
+        <Card className="cyber-card border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Style & Quality" 
+              section="style" 
+              icon={Sparkles}
+              badge={selectedStyle || undefined}
+            />
+          </CardHeader>
+          {expandedSections.style && (
+            <CardContent className={cn("pt-0 space-y-4", isMobile ? "p-2 space-y-3" : "p-3")}>
+              {/* Style Grid */}
+              <div className="space-y-2">
+                <label className={cn(
+                  "text-[#ADADAD] font-medium",
+                  isMobile ? "text-xs" : "text-sm"
+                )}>
+                  Jersey Style
+                </label>
+                <div className={cn(
+                  "grid gap-2",
+                  isMobile ? "grid-cols-2" : "grid-cols-3"
+                )}>
+                  {STYLE_FILTERS.map(style => {
+                    const Icon = style.icon
+                    return (
+                      <button
+                        key={style.id}
+                        onClick={() => setSelectedStyle(style.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-1 rounded-[2px] border transition-all duration-200",
+                          isMobile ? "p-2" : "p-3",
+                          selectedStyle === style.id
+                            ? "border-[#A20131] bg-[#A20131]/10"
+                            : "border-[#333333] hover:border-[#A20131]/50 hover:bg-[#A20131]/5"
+                        )}
+                      >
+                        <Icon className={cn(
+                          selectedStyle === style.id ? "text-[#A20131]" : "text-[#ADADAD]",
+                          isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+                        )} />
+                        <span className={cn(
+                          "font-medium",
+                          isMobile ? "text-xs" : "text-sm",
+                          selectedStyle === style.id ? "text-[#A20131]" : "text-[#FDFDFD]"
+                        )}>
+                          {style.label}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Quality Selection */}
+              <div className="space-y-2">
+                <label className={cn(
+                  "text-[#ADADAD] font-medium",
+                  isMobile ? "text-xs" : "text-sm"
+                )}>
+                  Image Quality
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => setQuality('standard')}
+                    className={cn(
+                      "flex flex-col items-center rounded-[2px] border transition-all duration-200",
+                      isMobile ? "p-2" : "p-3",
+                      quality === 'standard'
+                        ? "border-[#A20131] bg-[#A20131]/10"
+                        : "border-[#333333] hover:border-[#A20131]/50"
+                    )}
+                  >
+                    <span className={cn(
+                      "font-medium",
+                      isMobile ? "text-xs" : "text-sm",
+                      quality === 'standard' ? "text-[#A20131]" : "text-[#FDFDFD]"
+                    )}>
+                      Standard
+                    </span>
+                    <span className={cn(
+                      "text-[#ADADAD]",
+                      isMobile ? "text-xs" : "text-xs"
+                    )}>
+                      $0.04
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setQuality('hd')}
+                    className={cn(
+                      "flex flex-col items-center rounded-[2px] border transition-all duration-200",
+                      isMobile ? "p-2" : "p-3",
+                      quality === 'hd'
+                        ? "border-[#A20131] bg-[#A20131]/10"
+                        : "border-[#333333] hover:border-[#A20131]/50"
+                    )}
+                  >
+                    <span className={cn(
+                      "font-medium",
+                      isMobile ? "text-xs" : "text-sm",
+                      quality === 'hd' ? "text-[#A20131]" : "text-[#FDFDFD]"
+                    )}>
+                      HD
+                    </span>
+                    <span className={cn(
+                      "text-[#ADADAD]",
+                      isMobile ? "text-xs" : "text-xs"
+                    )}>
+                      $0.08
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+
         {/* Custom Prompt */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="cyber-card border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Custom Prompt" 
@@ -274,222 +533,49 @@ export default function ProfessionalSidebar({
             />
           </CardHeader>
           {expandedSections.prompt && (
-            <CardContent className="p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Additional Instructions (Optional)
+            <CardContent className={cn("pt-0", isMobile ? "p-2" : "p-3")}>
+              <div className="space-y-2">
+                <label className={cn(
+                  "text-[#ADADAD] font-medium",
+                  isMobile ? "text-xs" : "text-sm"
+                )}>
+                  Additional Instructions
                 </label>
                 <textarea
                   value={customPrompt}
                   onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder="e.g., make it more colorful, add special patterns, vintage style..."
-                  rows={3}
-                  maxLength={200}
-                  className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
+                  placeholder="Add specific details about colors, patterns, or design elements..."
+                  rows={isMobile ? 3 : 4}
+                  className={cn(
+                    "cyber-input w-full bg-transparent border border-[#333333] text-[#FDFDFD] placeholder:text-[#666666] rounded-[2px] focus:border-[#A20131] focus:outline-none resize-none",
+                    isMobile ? "px-2 py-1.5 text-xs" : "px-3 py-2 text-sm"
+                  )}
                 />
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-[#ADADAD]">
-                    Custom instructions for AI generation
-                  </p>
-                  <span className="text-xs text-[#ADADAD]">
-                    {customPrompt.length}/200
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Team Selection */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Team" 
-              section="team" 
-              icon={Globe}
-              required={!isVisionMode}
-              badge={selectedTeam || undefined}
-            />
-          </CardHeader>
-          {expandedSections.team && (
-            <CardContent className="p-4 pt-0">
-              <select
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                disabled={isVisionMode}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px]",
-                  "transition-colors",
-                  "pointer-events-auto relative", 
-                  selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
-                  isVisionMode && "opacity-50 cursor-not-allowed"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                <option value="" className="bg-[#14101e] text-[#FDFDFD]">
-                  Select a team...
-                </option>
-                {availableTeams.map((team) => (
-                  <option key={team} value={team} className="bg-[#14101e] text-[#FDFDFD]">
-                    {team}
-                  </option>
-                ))}
-              </select>
-              {isVisionMode && (
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Team auto-detected from reference image
+                <p className={cn(
+                  "text-[#666666]",
+                  isMobile ? "text-xs" : "text-xs"
+                )}>
+                  Optional: Describe specific elements you want in the jersey design
                 </p>
-              )}
+              </div>
             </CardContent>
           )}
         </Card>
 
-        {/* Style Selection */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Style" 
-              section="style" 
-              icon={Palette}
-              badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-            />
-          </CardHeader>
-          {expandedSections.style && (
-            <CardContent className="p-4 pt-0">
-              <select
-                value={selectedStyle}
-                onChange={(e) => setSelectedStyle(e.target.value)}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px] transition-colors pointer-events-auto relative", 
-                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
-                    {style.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-[#ADADAD] mt-2">
-                Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-              </p>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Player Details */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Player" 
-              section="player" 
-              icon={User}
-              required
-              badge={playerName && playerNumber ? `${playerName} #${playerNumber}` : undefined}
-            />
-          </CardHeader>
-          {expandedSections.player && (
-            <CardContent className="p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Player Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
-                    placeholder="JEFF"
-                    maxLength={12}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
-                      playerName ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Jersey Number
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={playerNumber}
-                    onChange={(e) => setPlayerNumber(e.target.value)}
-                    placeholder="10"
-                    maxLength={2}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
-                      playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-[#ADADAD]">Name: max 12 chars • Number: 1-99</p>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Quality Settings */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Quality" 
-              section="settings" 
-              icon={Settings}
-              badge={quality.toUpperCase()}
-            />
-          </CardHeader>
-          {expandedSections.settings && (
-            <CardContent className="p-3 pt-0">
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setQuality('standard')}
-                  className={cn(
-                    "p-2 rounded-[2px] border transition-colors",
-                    quality === 'standard' 
-                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
-                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
-                  )}
-                >
-                  <span className="font-semibold text-sm">STANDARD</span>
-                </button>
-                <button
-                  onClick={() => setQuality('hd')}
-                  className={cn(
-                    "p-2 rounded-[2px] border transition-colors",
-                    quality === 'hd'
-                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
-                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
-                  )}
-                >
-                  <span className="font-semibold text-sm">HD</span>
-                </button>
-              </div>
-              {generationCost && (
-                <div className="mt-3 p-2 rounded-[2px] bg-[#333333]/20 border border-[#333333]">
-                  <div className="flex justify-between items-center text-xs">
-                    <span className='text-gray-400'>Generation Cost:</span>
-                    <span className="text-white font-mono">{generationCost.toFixed(2)} Credits</span>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          )}
-        </Card>
+        {/* Cost Display */}
+        {generationCost && (
+          <div className={cn(
+            "p-3 bg-[#333333]/20 border border-[#333333] rounded-[2px] text-center",
+            isMobile && "p-2"
+          )}>
+            <p className={cn(
+              "text-[#ADADAD]",
+              isMobile ? "text-xs" : "text-sm"
+            )}>
+              Estimated Cost: <span className="text-[#A20131] font-medium">${generationCost.toFixed(3)}</span>
+            </p>
+          </div>
+        )}
       </div>
     </TooltipProvider>
   )

@@ -2,17 +2,44 @@
 
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { Shield } from 'lucide-react';
+import { Shield, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import NavLink from './ui/NavLink';
 import { client, supportedChains, wallets, chzMainnet } from '@/lib/ThirdwebProvider';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function Header() {
   const account = useActiveAccount();
   const wallet = useActiveWallet();
+  const isMobile = useIsMobile();
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const [adminCheckLoading, setAdminCheckLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when switching to desktop
+  useEffect(() => {
+    if (!isMobile) {
+      setMobileMenuOpen(false);
+    }
+  }, [isMobile]);
+
+  // Close mobile menu when clicking outside
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-mobile-menu]') && !target.closest('[data-mobile-menu-toggle]')) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen]);
 
   // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
   useEffect(() => {
@@ -91,56 +118,170 @@ export default function Header() {
     checkAdminStatus();
   }, [account, wallet]);
 
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const NavItems = ({ mobile = false, onItemClick }: { mobile?: boolean; onItemClick?: () => void }) => (
+    <div className={cn(
+      mobile 
+        ? "flex flex-col space-y-4 w-full" 
+        : "flex items-center space-x-6"
+    )}>
+      <NavLink 
+        href="/" 
+        className={cn(mobile && "w-full text-center py-2")}
+        onClick={onItemClick}
+      >
+        Jerseys
+      </NavLink>
+      <NavLink 
+        href="/stadiums" 
+        className={cn(mobile && "w-full text-center py-2")}
+        onClick={onItemClick}
+      >
+        Stadiums
+      </NavLink>
+      <NavLink 
+        href="/badges" 
+        className={cn(mobile && "w-full text-center py-2")}
+        onClick={onItemClick}
+      >
+        Badges
+      </NavLink>
+      <NavLink 
+        href="/marketplace" 
+        className={cn(mobile && "w-full text-center py-2")}
+        onClick={onItemClick}
+      >
+        Marketplace
+      </NavLink>
+      
+      <a 
+        href="#" 
+        className={cn(
+          "text-secondary hover:text-white transition-colors duration-200 text-sm font-medium",
+          mobile && "w-full text-center py-2"
+        )}
+        onClick={onItemClick}
+      >
+        My NFTs
+      </a>
+      
+      {/* Admin Panel - Only visible to admin users */}
+      {userIsAdmin && (
+        <Link 
+          href="/admin" 
+          className={cn(
+            "flex items-center justify-center space-x-2 text-accent hover:text-accent/80 transition-colors border border-accent/30 px-3 py-1 rounded-lg hover:border-accent/50 hover:bg-accent/10",
+            mobile && "w-full"
+          )}
+          onClick={onItemClick}
+        >
+          <Shield className="w-4 h-4" />
+          <span>Admin Panel</span>
+        </Link>
+      )}
+      
+      {/* Loading indicator for admin check */}
+      {adminCheckLoading && account && (
+        <div className={cn(
+          "flex items-center space-x-2 text-accent/50",
+          mobile && "justify-center w-full py-2"
+        )}>
+          <div className="w-3 h-3 border border-accent/50 border-t-transparent rounded-full animate-spin"></div>
+          <span className="text-xs">Checking admin...</span>
+        </div>
+      )}
+    </div>
+  );
+
   return (
-    <header className="w-full border-b border-[#333333] bg-transparent relative z-50">
-      <div className="w-full px-6 py-3 flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <img 
-            src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png" 
-            alt="Chiliz Logo" 
-            className="w-auto h-12 object-contain ml-6"
-          />
-        </div>
+    <>
+      {/* Mobile Menu Overlay */}
+      {isMobile && mobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
 
-        <nav className="hidden lg:flex items-center space-x-6">
-          <NavLink href="/">Jerseys</NavLink>
-          <NavLink href="/stadiums">Stadiums</NavLink>
-          <NavLink href="/badges">Badges</NavLink>
-          <NavLink href="/marketplace">Marketplace</NavLink>
-          
-          <a href="#" className="text-secondary hover:text-white transition-colors duration-200 text-sm font-medium">
-            My NFTs
-          </a>
-          
-          {/* Admin Panel - Only visible to admin users */}
-          {userIsAdmin && (
-            <Link 
-              href="/admin" 
-              className="flex items-center space-x-2 text-accent hover:text-accent/80 transition-colors border border-accent/30 px-3 py-1 rounded-lg hover:border-accent/50 hover:bg-accent/10"
-            >
-              <Shield className="w-4 h-4" />
-              <span>Admin Panel</span>
-            </Link>
-          )}
-          
-          {/* Loading indicator for admin check */}
-          {adminCheckLoading && account && (
-            <div className="flex items-center space-x-2 text-accent/50">
-              <div className="w-3 h-3 border border-accent/50 border-t-transparent rounded-full animate-spin"></div>
-              <span className="text-xs">Checking admin...</span>
+      <header className="w-full border-b border-[#333333] bg-transparent relative z-50">
+        <div className={cn(
+          "w-full px-3 md:px-6 flex justify-between items-center",
+          isMobile ? "py-2" : "py-3"
+        )}>
+          {/* Logo */}
+          <div className="flex items-center space-x-3">
+            <img 
+              src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png" 
+              alt="Chiliz Logo" 
+              className={cn(
+                "object-contain",
+                isMobile ? "w-auto h-8 ml-2" : "w-auto h-12 ml-6"
+              )}
+            />
+          </div>
+
+          {/* Desktop Navigation */}
+          <nav className="hidden lg:flex items-center space-x-6">
+            <NavItems />
+          </nav>
+
+          {/* Mobile Menu Button & Connect Button */}
+          <div className="flex items-center space-x-2">
+            {/* Connect Button */}
+            <div className={cn(isMobile && "scale-90 origin-right")}>
+              <ConnectButton 
+                client={client}
+                wallets={wallets}
+                chains={supportedChains}
+                theme="dark"
+              />
             </div>
-          )}
-        </nav>
 
-        <div className="flex items-center space-x-4">
-          <ConnectButton 
-            client={client}
-            wallets={wallets}
-            chains={supportedChains}
-            theme="dark"
-          />
+            {/* Mobile Menu Toggle */}
+            {isMobile && (
+              <Button
+                data-mobile-menu-toggle
+                variant="ghost"
+                size="sm"
+                onClick={toggleMobileMenu}
+                className={cn(
+                  "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 p-2",
+                  mobileMenuOpen && "bg-[#A20131]/20 text-[#A20131]"
+                )}
+              >
+                {mobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile Navigation Menu */}
+        {isMobile && (
+          <div 
+            data-mobile-menu
+            className={cn(
+              "absolute top-full left-0 right-0 bg-gradient-to-b from-[#030303] to-[#0b0518] border-b border-[#333333] shadow-lg transition-all duration-300 ease-in-out lg:hidden",
+              mobileMenuOpen 
+                ? "opacity-100 visible translate-y-0" 
+                : "opacity-0 invisible -translate-y-2"
+            )}
+          >
+            <div className="px-4 py-6">
+              <NavItems 
+                mobile={true} 
+                onItemClick={() => setMobileMenuOpen(false)} 
+              />
+            </div>
+          </div>
+        )}
+      </header>
+    </>
   );
 } 
