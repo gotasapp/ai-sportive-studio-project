@@ -143,14 +143,14 @@ export default function MarketplacePage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
         {itemsToShow.map((item) => (
           <MarketplaceCard 
-            key={item.id || item._id}
+            key={item.id}
             name={item.name}
             imageUrl={item.imageUrl}
             price={item.price || 'Not for sale'}
             collection={item.collection || `By ${item.creator?.name || item.creator || 'Anonymous'}`}
             category={item.category}
             // Dados específicos do marketplace
-            tokenId={item.tokenId || item._id}
+            tokenId={item.tokenId}
             assetContract={item.contractAddress || getContractByCategory(item.category)}
             owner={item.owner || item.creator?.wallet}
             isListed={item.isListed || false}
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
     <div className="p-6 space-y-4">
       {filteredNfts.map((item) => (
         <div 
-          key={item.id || item._id}
+          key={item.id}
           className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">

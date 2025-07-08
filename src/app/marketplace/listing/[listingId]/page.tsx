@@ -1,12 +1,13 @@
 'use client';
 
-import { useContract, useListing } from '@thirdweb-dev/react';
 import { notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useActiveWalletChain } from 'thirdweb/react';
 import Header from '@/components/Header';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
-import ListingControls from '@/components/marketplace/ListingControls'; // Importando o novo componente
+import ListingControls from '@/components/marketplace/ListingControls';
+import { MarketplaceService, DirectListing } from '@/lib/services/marketplace-service';
 
 // Definindo um tipo básico para os detalhes do NFT que vem do nosso DB
 interface NftDetails {
@@ -21,15 +22,37 @@ interface NftDetails {
 
 export default function ListingPage({ params }: { params: { listingId: string } }) {
   const { listingId } = params;
-
-  const { contract: marketplaceContract } = useContract(
-    process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT,
-    'marketplace-v3'
-  );
-
-  const { data: listing, isLoading: isLoadingListing, error } = useListing(marketplaceContract as any, listingId);
+  const chain = useActiveWalletChain();
+  
+  const [listing, setListing] = useState<DirectListing | null>(null);
+  const [isLoadingListing, setIsLoadingListing] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [nftDetails, setNftDetails] = useState<NftDetails | null>(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(true);
+
+  // Carregar listagem usando Marketplace V3 API
+  useEffect(() => {
+    const loadListing = async () => {
+      if (!chain) return;
+      
+      setIsLoadingListing(true);
+      setError(null);
+      
+      try {
+        console.log('🔍 Carregando listagem:', listingId, 'na chain:', chain.id);
+        const listingData = await MarketplaceService.getListing(chain.id, listingId);
+        setListing(listingData);
+        console.log('✅ Listagem carregada:', listingData);
+      } catch (err: any) {
+        console.error('❌ Erro ao carregar listagem:', err);
+        setError(err.message || 'Falha ao carregar listagem');
+      } finally {
+        setIsLoadingListing(false);
+      }
+    };
+
+    loadListing();
+  }, [listingId, chain]);
 
   useEffect(() => {
     const fetchNftDetails = async () => {
@@ -41,7 +64,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
         let data: NftDetails | null = null;
         for (const endpoint of endpoints) {
           try {
-            const res = await fetch(`/api/${endpoint}/token/${listing.asset.id}`);
+            const res = await fetch(`/api/${endpoint}/token/${listing.tokenId.toString()}`);
             if (res.ok) {
               data = await res.json();
               break; 
@@ -54,7 +77,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
         if (data) {
           setNftDetails(data);
         } else {
-          throw new Error(`NFT com tokenId ${listing.asset.id} não encontrado em nenhuma categoria.`);
+          throw new Error(`NFT com tokenId ${listing.tokenId.toString()} não encontrado em nenhuma categoria.`);
         }
 
       } catch (e) {
@@ -81,7 +104,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
     notFound();
   }
 
-  const isAuction = listing.type === 1;
+  const isAuction = false; // Marketplace V3 Direct Listings não são leilões
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-white">
@@ -99,12 +122,12 @@ export default function ListingPage({ params }: { params: { listingId: string } 
         <div className="flex flex-col justify-center">
           <p className="text-accent font-semibold mb-2">{nftDetails.collection || 'Coleção'}</p>
           <h1 className="text-4xl lg:text-5xl font-bold mb-2">{nftDetails.name}</h1>
-          <p className="text-secondary mb-6">Token ID: {listing.asset.id}</p>
+          <p className="text-secondary mb-6">Token ID: {listing.tokenId.toString()}</p>
           <p className="text-lg text-gray-300 mb-8 leading-relaxed">{nftDetails.description}</p>
           
           <div className="bg-card p-6 rounded-lg border border-secondary/20">
              <h2 className="text-2xl font-bold mb-4">{isAuction ? 'Auction Details' : 'Sale Details'}</h2>
-             {marketplaceContract && <ListingControls listing={listing} marketplaceContract={marketplaceContract}/>}
+             <ListingControls listing={listing} />
           </div>
         </div>
       </main>
