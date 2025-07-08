@@ -691,6 +691,22 @@ export default function JerseyEditor() {
             })
 
             setAnalysisResult(finalResult)
+            
+            // CRITICAL FIX: Store in sessionStorage immediately for recovery
+            if (finalResult) {
+              try {
+                sessionStorage.setItem('chz_vision_analysis', JSON.stringify({
+                  analysis: finalResult,
+                  timestamp: Date.now(),
+                  sport: selectedSport,
+                  view: selectedView
+                }))
+                console.log('💾 [ANALYSIS BACKUP] Stored analysis in sessionStorage as backup')
+              } catch (storageError) {
+                console.warn('⚠️ [ANALYSIS BACKUP] Failed to store in sessionStorage:', storageError)
+              }
+            }
+            
             console.log('✅ [VISION ANALYSIS] Analysis completed successfully')
             console.log('🔍 [VISION ANALYSIS] Final result stored:', {
               type: typeof finalResult,
@@ -793,12 +809,35 @@ export default function JerseyEditor() {
             
             try {
               await analyzeReferenceImage()
+              // CRITICAL FIX: Wait for state update and get fresh analysis
+              await new Promise(resolve => setTimeout(resolve, 100)) // Allow state to update
               currentAnalysis = analysisResult // Get the fresh analysis
               console.log('✅ [FORCE RE-ANALYSIS] Emergency analysis completed:', {
                 hasNewAnalysis: !!currentAnalysis,
                 analysisType: typeof currentAnalysis,
-                analysisKeys: currentAnalysis && typeof currentAnalysis === 'object' ? Object.keys(currentAnalysis) : 'not_object'
+                analysisKeys: currentAnalysis && typeof currentAnalysis === 'object' ? Object.keys(currentAnalysis) : 'not_object',
+                analysisPreview: typeof currentAnalysis === 'string' ? currentAnalysis.substring(0, 100) + '...' : 'not_string'
               })
+              
+              // ADDITIONAL FIX: If still null, try sessionStorage recovery
+              if (!currentAnalysis) {
+                console.log('🔄 [FORCE RE-ANALYSIS] Still no analysis, trying sessionStorage again...')
+                try {
+                  const backupData = sessionStorage.getItem('chz_vision_analysis')
+                  if (backupData) {
+                    const backup = JSON.parse(backupData)
+                    if (backup.analysis) {
+                      currentAnalysis = backup.analysis
+                      console.log('✅ [FORCE RE-ANALYSIS] Recovered from sessionStorage:', {
+                        analysisType: typeof currentAnalysis,
+                        analysisLength: typeof currentAnalysis === 'string' ? currentAnalysis.length : 'not_string'
+                      })
+                    }
+                  }
+                } catch (storageError) {
+                  console.warn('⚠️ [FORCE RE-ANALYSIS] SessionStorage recovery failed:', storageError)
+                }
+              }
             } catch (reAnalysisError) {
               console.error('❌ [FORCE RE-ANALYSIS] Failed:', reAnalysisError)
               // Continue with empty analysis
