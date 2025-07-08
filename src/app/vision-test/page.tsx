@@ -259,7 +259,7 @@ Return ONLY a valid JSON object:
   }
 
   const getCurrentAnalysisPrompt = () => {
-    return ORIGINAL_JSON_PROMPTS[selectedSport][selectedView]
+    return (ORIGINAL_JSON_PROMPTS as any)[selectedSport][selectedView]
   }
 
   const [analysisResult, setAnalysisResult] = useState<any>(null)
