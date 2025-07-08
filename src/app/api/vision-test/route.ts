@@ -90,8 +90,8 @@ export async function POST(request: NextRequest) {
       console.log('🔄 [VISION-TEST] Using enhanced intelligent fallback...');
       
       const fallbackAnalysis = generateEnhancedFallback(prompt, detail);
-      
-      return NextResponse.json({
+        
+        return NextResponse.json({
         success: true,
         analysis: fallbackAnalysis,
         model_used: `${model} (enhanced_intelligent_fallback)`,
@@ -103,8 +103,8 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await response.json();
-    
-    if (!result.success) {
+      
+      if (!result.success) {
       throw new Error(result.error || 'Vision analysis failed');
     }
 

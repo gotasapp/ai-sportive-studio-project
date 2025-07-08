@@ -4,40 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const ENHANCED_BASE_PROMPTS = {
   "soccer": {
     "front": {
-      "base": `Create a professional soccer jersey front view with the following specifications:
-
-JERSEY REQUIREMENTS:
-- Sport: Soccer/Football jersey
-- View: Front view only, centered composition
-- Player: {{playerName}} #{{{playerNumber}}}
-- Style: {{style}} design aesthetic
-- Quality: {{qualityLevel}} professional grade
-
-VISUAL COMPOSITION:
-- Single jersey only, no shorts, no pants, no additional clothing
-- Jersey positioned flat and centered in frame
-- Professional product photography style
-- Clean background (white or transparent)
-- Perfect front-facing orientation
-
-DESIGN ELEMENTS:
-- Team badge/crest prominently displayed on left chest
-- Sponsor logo positioning as appropriate
-- Collar and neckline in harmonious style
-- Sleeve design consistent with overall aesthetic
-- Proper proportions and professional cut
-
-COLOR AND PATTERN FIDELITY:
-- Maintain exact color schemes when specified
-- Preserve pattern integrity (stripes, gradients, etc.)
-- Consistent color application across all elements
-- Professional color balance and harmony
-
-TECHNICAL SPECIFICATIONS:
-- High-resolution quality
-- Professional lighting and shadows
-- Realistic fabric texture and material representation
-- Proper jersey proportions and fit`,
+      "base": `A professional soccer jersey front view, centered composition. Team crest on chest, {{style}} design style. Player {{playerName}} #{{{playerNumber}}}. Clean background, high-resolution quality, professional lighting.`,
 
       "quality_enhancers": {
         "basic": "Clean design, good proportions",
@@ -47,40 +14,7 @@ TECHNICAL SPECIFICATIONS:
     },
 
     "back": {
-      "base": `Create a professional soccer jersey back view with the following specifications:
-
-JERSEY REQUIREMENTS:
-- Sport: Soccer/Football jersey
-- View: Back view only, centered composition
-- Player: {{playerName}} #{{{playerNumber}}}
-- Style: {{style}} design aesthetic
-- Quality: {{qualityLevel}} professional grade
-
-VISUAL COMPOSITION:
-- Single jersey only, no shorts, no pants, no additional clothing
-- Jersey positioned flat and centered in frame
-- Professional product photography style
-- Clean background (white or transparent)
-- Perfect back-facing orientation
-
-PLAYER IDENTIFICATION:
-- Player name "{{playerName}}" positioned at top-back area
-- Player number "{{playerNumber}}" prominently displayed center-back
-- Font style appropriate to team and league standards
-- Name and number colors contrasting with jersey base
-- Professional typography and spacing
-
-COLOR AND PATTERN FIDELITY:
-- Maintain exact color schemes when specified
-- Preserve pattern integrity from front to back
-- Consistent color application across all elements
-- Professional color balance and harmony
-
-TECHNICAL SPECIFICATIONS:
-- High-resolution quality
-- Professional lighting and shadows
-- Realistic fabric texture and material representation
-- Proper jersey proportions and fit`,
+      "base": `A professional soccer jersey back view, centered composition. Player name "{{playerName}}" at top-back, player number "{{playerNumber}}" prominently displayed center-back. {{style}} design style. Clean background, high-resolution quality, professional lighting.`,
 
       "quality_enhancers": {
         "basic": "Clear name and number, good proportions",

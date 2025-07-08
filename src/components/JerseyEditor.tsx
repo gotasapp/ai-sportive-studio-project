@@ -308,15 +308,64 @@ export default function JerseyEditor() {
       }
 
       // Try to parse as JSON if possible, otherwise keep as string
-      let parsedAnalysis = visionResult.analysis
+      let finalResult = visionResult.analysis
+      
+      console.log('🔍 [VISION ANALYSIS] Raw analysis data:', {
+        hasAnalysis: !!visionResult.analysis,
+        analysisType: typeof visionResult.analysis,
+        analysisLength: visionResult.analysis?.length || 0,
+        analysisPreview: visionResult.analysis?.substring(0, 200) + '...',
+        startsWithJson: visionResult.analysis?.trim().startsWith('{') || visionResult.analysis?.trim().startsWith('```json')
+      })
+      
+      // Enhanced JSON parsing with better error handling
       try {
-        parsedAnalysis = JSON.parse(visionResult.analysis)
-        console.log('✅ [VISION ANALYSIS] Successfully parsed JSON analysis')
-      } catch {
-        console.log('ℹ️ [VISION ANALYSIS] Analysis is text format (not JSON)')
+        // Remove markdown code blocks if present
+        let cleanAnalysis = visionResult.analysis
+        if (cleanAnalysis.includes('```json')) {
+          cleanAnalysis = cleanAnalysis.replace(/```json\n?/g, '').replace(/```/g, '').trim()
+        }
+        
+        // Try to parse JSON
+        const parsedResult = JSON.parse(cleanAnalysis)
+        finalResult = parsedResult
+        console.log('✅ [VISION ANALYSIS] Successfully parsed JSON analysis:', {
+          hasColors: !!(parsedResult.dominantColors || parsedResult.dominant_colors),
+          hasPattern: !!(parsedResult.visualPattern || parsedResult.pattern),
+          keys: Object.keys(parsedResult)
+        })
+      } catch (parseError: any) {
+        console.log('⚠️ [VISION ANALYSIS] JSON parse failed, using raw text:', parseError.message)
+        // Keep original text if JSON parsing fails
+        finalResult = visionResult.analysis
       }
 
-      setAnalysisResult(parsedAnalysis)
+      // ===== CRITICAL: PERSISTENT STORAGE FOR ANALYSIS =====
+      setAnalysisResult(finalResult)
+      
+      // Store in sessionStorage as backup to prevent loss
+      if (finalResult) {
+        try {
+          sessionStorage.setItem('chz_vision_analysis', JSON.stringify({
+            analysis: finalResult,
+            timestamp: Date.now(),
+            sport: selectedSport,
+            view: selectedView
+          }))
+          console.log('💾 [ANALYSIS BACKUP] Stored analysis in sessionStorage as backup')
+        } catch (storageError) {
+          console.warn('⚠️ [ANALYSIS BACKUP] Failed to store in sessionStorage:', storageError)
+        }
+      }
+      
+      console.log('✅ [VISION ANALYSIS] Analysis completed successfully')
+      console.log('🔍 [VISION ANALYSIS] Final result stored:', {
+        type: typeof finalResult,
+        isObject: typeof finalResult === 'object',
+        hasData: !!finalResult,
+        preview: typeof finalResult === 'object' ? JSON.stringify(finalResult).substring(0, 100) + '...' : String(finalResult).substring(0, 100) + '...',
+        backupStored: true
+      })
 
     } catch (error: any) {
       console.error('❌ [VISION ANALYSIS] Error:', error)
@@ -473,6 +522,51 @@ export default function JerseyEditor() {
 
   // ===== MODIFIED GENERATION FUNCTION - DUAL SYSTEM =====
   const generateContent = async () => {
+    // ===== ENHANCED DEBUG SYSTEM =====
+    console.log('🚀 [GENERATION START] ='.repeat(20))
+    console.log('🔍 [GENERATION DEBUG] Initial state check:', {
+      timestamp: new Date().toISOString(),
+      hasReferenceImage: !!referenceImage,
+      hasReferenceImageBlob: !!referenceImageBlob,
+      hasAnalysisResult: !!analysisResult,
+      analysisResultType: typeof analysisResult,
+      analysisResultKeys: analysisResult && typeof analysisResult === 'object' ? Object.keys(analysisResult) : 'not_object',
+      selectedSport,
+      selectedView,
+      playerName,
+      playerNumber,
+      customPrompt: customPrompt?.substring(0, 100) + '...',
+      quality,
+      isVisionMode,
+      selectedVisionModel
+    })
+    
+    // Enhanced debug for analysis result
+    if (analysisResult) {
+      console.log('🔍 [ANALYSIS DEBUG] Detailed analysis inspection:', {
+        isObject: typeof analysisResult === 'object',
+        isString: typeof analysisResult === 'string',
+        isNull: analysisResult === null,
+        isUndefined: analysisResult === undefined,
+        length: typeof analysisResult === 'string' ? analysisResult.length : 'not_string',
+        hasColors: analysisResult && typeof analysisResult === 'object' && (analysisResult.dominantColors || analysisResult.dominant_colors),
+        firstChars: typeof analysisResult === 'string' ? analysisResult.substring(0, 50) : 'not_string',
+        objectKeys: typeof analysisResult === 'object' ? Object.keys(analysisResult) : [],
+        stringifiedLength: JSON.stringify(analysisResult).length,
+        stringifiedPreview: JSON.stringify(analysisResult).substring(0, 200) + '...'
+      })
+      
+      // Deep analysis of color data
+      if (typeof analysisResult === 'object' && analysisResult.dominantColors) {
+        console.log('🎨 [COLOR DEBUG] Dominant colors found:', analysisResult.dominantColors)
+      }
+      if (typeof analysisResult === 'object' && analysisResult.dominant_colors) {
+        console.log('🎨 [COLOR DEBUG] Alternative color format found:', analysisResult.dominant_colors)
+      }
+    } else {
+      console.log('❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues')
+    }
+
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
     if (!isConnected) {
       setError('🔒 Please connect your wallet to generate jerseys')
@@ -611,14 +705,45 @@ export default function JerseyEditor() {
 
             // Parse JSON result ou usar texto direto
             let finalResult = analysisData.analysis
+            
+            console.log('🔍 [VISION ANALYSIS] Raw analysis data:', {
+              hasAnalysis: !!analysisData.analysis,
+              analysisType: typeof analysisData.analysis,
+              analysisLength: analysisData.analysis?.length || 0,
+              analysisPreview: analysisData.analysis?.substring(0, 200) + '...',
+              startsWithJson: analysisData.analysis?.trim().startsWith('{') || analysisData.analysis?.trim().startsWith('```json')
+            })
+            
+            // Enhanced JSON parsing with better error handling
             try {
-              finalResult = JSON.parse(analysisData.analysis)
-            } catch {
-              // Se não conseguir fazer parse, usar como texto
+              // Remove markdown code blocks if present
+              let cleanAnalysis = analysisData.analysis
+              if (cleanAnalysis.includes('```json')) {
+                cleanAnalysis = cleanAnalysis.replace(/```json\n?/g, '').replace(/```/g, '').trim()
+              }
+              
+              // Try to parse JSON
+              const parsedResult = JSON.parse(cleanAnalysis)
+              finalResult = parsedResult
+              console.log('✅ [VISION ANALYSIS] Successfully parsed JSON analysis:', {
+                hasColors: !!(parsedResult.dominantColors || parsedResult.dominant_colors),
+                hasPattern: !!(parsedResult.visualPattern || parsedResult.pattern),
+                keys: Object.keys(parsedResult)
+              })
+            } catch (parseError: any) {
+              console.log('⚠️ [VISION ANALYSIS] JSON parse failed, using raw text:', parseError.message)
+              // Keep original text if JSON parsing fails
+              finalResult = analysisData.analysis
             }
 
             setAnalysisResult(finalResult)
             console.log('✅ [VISION ANALYSIS] Analysis completed successfully')
+            console.log('🔍 [VISION ANALYSIS] Final result stored:', {
+              type: typeof finalResult,
+              isObject: typeof finalResult === 'object',
+              hasData: !!finalResult,
+              preview: typeof finalResult === 'object' ? JSON.stringify(finalResult).substring(0, 100) + '...' : String(finalResult).substring(0, 100) + '...'
+            })
             
           } catch (analysisError: any) {
             console.error('❌ [VISION ANALYSIS] Failed:', analysisError)
@@ -666,40 +791,131 @@ export default function JerseyEditor() {
         })
 
         // STEP 2: Combine BASE PROMPT + ANALYSIS + Quality enhancers (exactly like vision-test)
-        const analysisText = typeof analysisResult === 'object' 
-          ? JSON.stringify(analysisResult, null, 2)
-          : analysisResult
+        // ===== CRITICAL: PRESERVE ANALYSIS RESULT =====
+        console.log('🔍 [ANALYSIS PRESERVATION] Current analysisResult state:', {
+          hasAnalysisResult: !!analysisResult,
+          analysisResultType: typeof analysisResult,
+          analysisResultKeys: analysisResult && typeof analysisResult === 'object' ? Object.keys(analysisResult) : 'not_object',
+          analysisResultPreview: typeof analysisResult === 'object' 
+            ? JSON.stringify(analysisResult).substring(0, 200) + '...'
+            : String(analysisResult).substring(0, 200) + '...'
+        })
+
+        // ===== CRITICAL FIX: RECOVERY STRATEGY FOR LOST ANALYSIS =====
+        let currentAnalysis = analysisResult
+        
+        // If analysis is lost, try to recover from sessionStorage first
+        if (!currentAnalysis || currentAnalysis === null || (typeof currentAnalysis === 'object' && Object.keys(currentAnalysis).length === 0)) {
+          console.log('⚠️ [ANALYSIS LOST] Analysis result was lost, attempting recovery...')
+          
+          // Step 1: Try to recover from sessionStorage
+          try {
+            const backupData = sessionStorage.getItem('chz_vision_analysis')
+            if (backupData) {
+              const backup = JSON.parse(backupData)
+              // Check if backup is recent (within 1 hour) and matches current sport/view
+              const isRecentBackup = (Date.now() - backup.timestamp) < 3600000 // 1 hour
+              const isMatchingContext = backup.sport === selectedSport && backup.view === selectedView
+              
+              if (isRecentBackup && isMatchingContext && backup.analysis) {
+                currentAnalysis = backup.analysis
+                setAnalysisResult(currentAnalysis) // Restore to state
+                console.log('✅ [ANALYSIS RECOVERY] Successfully recovered from sessionStorage:', {
+                  analysisType: typeof currentAnalysis,
+                  analysisKeys: currentAnalysis && typeof currentAnalysis === 'object' ? Object.keys(currentAnalysis) : 'not_object',
+                  backupAge: Math.round((Date.now() - backup.timestamp) / 1000 / 60) + ' minutes'
+                })
+              } else {
+                console.log('⚠️ [ANALYSIS RECOVERY] Backup found but expired or mismatched context')
+              }
+            }
+          } catch (recoveryError) {
+            console.warn('⚠️ [ANALYSIS RECOVERY] Failed to recover from sessionStorage:', recoveryError)
+          }
+          
+          // Step 2: If still no analysis, force re-analysis
+          if (!currentAnalysis || currentAnalysis === null) {
+            console.log('🔄 [FORCE RE-ANALYSIS] Starting emergency analysis...')
+            
+            try {
+              await analyzeReferenceImage()
+              currentAnalysis = analysisResult // Get the fresh analysis
+              console.log('✅ [FORCE RE-ANALYSIS] Emergency analysis completed:', {
+                hasNewAnalysis: !!currentAnalysis,
+                analysisType: typeof currentAnalysis,
+                analysisKeys: currentAnalysis && typeof currentAnalysis === 'object' ? Object.keys(currentAnalysis) : 'not_object'
+              })
+            } catch (reAnalysisError) {
+              console.error('❌ [FORCE RE-ANALYSIS] Failed:', reAnalysisError)
+              // Continue with empty analysis
+              currentAnalysis = null
+            }
+          }
+        }
+        
+        const analysisText = typeof currentAnalysis === 'object' 
+          ? JSON.stringify(currentAnalysis, null, 2)
+          : String(currentAnalysis || 'No analysis available')
 
         console.log('🔍 [DEBUG] Analysis result details:', {
-          type: typeof analysisResult,
-          isObject: typeof analysisResult === 'object',
+          type: typeof currentAnalysis,
+          isObject: typeof currentAnalysis === 'object',
           analysisLength: analysisText.length,
           analysisPreview: analysisText.substring(0, 200) + '...',
-          hasColors: !!(analysisResult && typeof analysisResult === 'object' && (analysisResult.dominantColors || analysisResult.dominant_colors)),
-          rawAnalysis: analysisResult
+          hasColors: !!(currentAnalysis && typeof currentAnalysis === 'object' && (currentAnalysis.dominantColors || currentAnalysis.dominant_colors)),
+          hasColorData: !!(currentAnalysis && typeof currentAnalysis === 'object' && currentAnalysis.dominantColors),
+          rawAnalysis: currentAnalysis,
+          localCopyWorking: !!currentAnalysis,
+          wasReAnalyzed: !analysisResult && !!currentAnalysis
         })
         
         // ===== ENHANCED COLOR AND PATTERN PRESERVATION =====
         let colorPreservationPrompt = ""
         let patternPreservationPrompt = ""
         
-        // Extract color information from analysis if available
-        if (analysisResult && typeof analysisResult === 'object') {
+        // Extract color information from analysis if available (using local copy)
+        if (currentAnalysis && typeof currentAnalysis === 'object') {
+          console.log('🎨 [COLOR EXTRACTION] Processing analysis for color data:', {
+            hasAnalysis: !!currentAnalysis,
+            hasDominantColors: !!(currentAnalysis.dominantColors),
+            hasAlternativeColors: !!(currentAnalysis.dominant_colors),
+            analysisKeys: Object.keys(currentAnalysis)
+          })
+          
           // Enhanced color preservation based on analysis
-          const colors = analysisResult.dominantColors || analysisResult.dominant_colors || {}
+          const colors = currentAnalysis.dominantColors || currentAnalysis.dominant_colors || {}
+          console.log('🎨 [COLOR EXTRACTION] Extracted colors:', colors)
+          
           if (colors.primary || colors.primaryColor) {
             colorPreservationPrompt = `
-CRITICAL COLOR FIDELITY REQUIREMENTS:
-- Primary color MUST BE: ${colors.primary || colors.primaryColor || 'as analyzed'}
-- Secondary color MUST BE: ${colors.secondary || colors.secondaryColor || 'as analyzed'}  
-- Accent color MUST BE: ${colors.accent || colors.accentColor || 'as analyzed'}
-- Color description: ${colors.colorDescription || 'maintain exact color saturation and tone'}
-- NO COLOR SHIFTING OR ALTERATIONS ALLOWED
-- Colors must match the reference image EXACTLY`
+ABSOLUTE COLOR MATCHING REQUIREMENTS - FOLLOW EXACTLY:
+🎨 PRIMARY COLOR: ${colors.primary || colors.primaryColor} - USE THIS EXACT COLOR, NO VARIATIONS
+🎨 SECONDARY COLOR: ${colors.secondary || colors.secondaryColor} - USE THIS EXACT COLOR, NO VARIATIONS
+🎨 ACCENT COLOR: ${colors.accent || colors.accentColor} - USE THIS EXACT COLOR, NO VARIATIONS
+
+CRITICAL COLOR RULES:
+- EXACT color reproduction from reference image is MANDATORY
+- NO creative interpretation of colors allowed
+- NO adding extra colors not in the reference
+- NO changing saturation, brightness, or hue
+- ${colors.colorDescription || 'Match the exact color scheme of the reference image'}
+- The jersey MUST look identical to the uploaded reference in terms of colors
+
+FORBIDDEN COLOR ACTIONS:
+- Do NOT add rainbow colors, multicolored patterns, or extra design elements
+- Do NOT make the jersey more colorful than the reference
+- Do NOT use bright colors if the reference is simple/monochrome
+- Do NOT add artistic interpretation - copy the reference exactly`
+            
+            console.log('✅ [COLOR EXTRACTION] Color preservation prompt created:', colorPreservationPrompt.length + ' chars')
+          } else {
+            console.log('⚠️ [COLOR EXTRACTION] No primary color found in analysis')
           }
 
           // Enhanced pattern preservation
-          const pattern = analysisResult.visualPattern || analysisResult.pattern || {}
+          const pattern = currentAnalysis.visualPattern || currentAnalysis.pattern || {}
+          console.log('🔶 [PATTERN EXTRACTION] Extracted pattern:', pattern)
+          
           if (pattern.type || pattern.description) {
             patternPreservationPrompt = `
 CRITICAL PATTERN FIDELITY REQUIREMENTS:
@@ -709,55 +925,43 @@ CRITICAL PATTERN FIDELITY REQUIREMENTS:
 - Pattern width/scale: ${pattern.patternWidth || pattern.width || 'as in reference'}
 - NO PATTERN ALTERATIONS OR MODIFICATIONS ALLOWED
 - Pattern must match the reference image EXACTLY`
+            
+            console.log('✅ [PATTERN EXTRACTION] Pattern preservation prompt created:', patternPreservationPrompt.length + ' chars')
+          } else {
+            console.log('⚠️ [PATTERN EXTRACTION] No pattern data found in analysis')
           }
 
           // Team elements preservation
-          const teamElements = analysisResult.teamElements || {}
+          const teamElements = currentAnalysis.teamElements || {}
+          console.log('🏷️ [TEAM EXTRACTION] Extracted team elements:', teamElements)
+          
           if (teamElements.teamBadge || teamElements.sponsor) {
             colorPreservationPrompt += `
 TEAM ELEMENTS PRESERVATION:
 - Team badge: ${teamElements.teamBadge || 'maintain exact badge characteristics'}
 - Sponsor elements: ${teamElements.sponsor || 'preserve sponsor positioning and style'}
 - Logo placement: ${teamElements.logoPlacement || 'exact positioning as reference'}`
+            
+            console.log('✅ [TEAM EXTRACTION] Team elements added to color preservation prompt')
           }
+        } else {
+          console.log('❌ [ANALYSIS MISSING] No analysis data available for color/pattern extraction')
+          console.log('🔍 [ANALYSIS MISSING] Current analysis state:', {
+            currentAnalysis,
+            type: typeof currentAnalysis,
+            isNull: currentAnalysis === null,
+            isUndefined: currentAnalysis === undefined
+          })
         }
 
+        // ===== SIMPLE VISION-TEST APPROACH (ORIGINAL WORKING VERSION) =====
         const finalCombinedPrompt = `${basePrompt}
 
-REFERENCE IMAGE ANALYSIS FOR FAITHFUL REPRODUCTION:
-${analysisText}
+ORIGINAL DESIGN ANALYSIS: ${analysisText}
 
-${colorPreservationPrompt}
+${customPrompt ? `CUSTOM REQUIREMENTS: ${customPrompt}` : ''}
 
-${patternPreservationPrompt}
-
-${customPrompt ? `ADDITIONAL CUSTOM INSTRUCTIONS: ${customPrompt}` : ''}
-
-ENHANCED NEGATIVE PROMPTS FOR JERSEY FIDELITY:
-ABSOLUTELY FORBIDDEN - NEVER INCLUDE:
-- No shorts, pants, or lower body clothing of any kind
-- No shoes, socks, or footwear visible
-- No multiple jerseys in the same image
-- No people wearing the jersey or human models
-- No arms, hands, torso, or body parts
-- No hangers, mannequins, or clothing displays
-- No backgrounds with fields, courts, or sports venues
-- No sports equipment (balls, goals, etc.)
-- No text overlays, watermarks, or logos unrelated to the team
-- No blurry, pixelated, or low-quality rendering
-- No color alterations from the reference image
-- No pattern modifications from the reference design
-- No cartoon or non-photorealistic styles
-
-JERSEY COMPOSITION REQUIREMENTS:
-- Single ${selectedSport} jersey only
-- ${selectedView} view, perfectly centered
-- Professional product photography style
-- Clean background (white or transparent)
-- High-resolution, studio-quality lighting
-- Exact color matching to reference image
-- Perfect pattern reproduction
-- Professional ${selectedSport}-specific proportions`.trim()
+QUALITY REQUIREMENTS: Professional ${selectedSport} jersey, studio lighting, exact color matching to reference image, high-resolution quality.`.trim()
 
         console.log('🎨 [ENHANCED VISION GENERATION] Step 2: Enhanced combined prompt ready:', {
           baseLength: basePrompt.length,
@@ -814,7 +1018,7 @@ JERSEY COMPOSITION REQUIREMENTS:
             // Method 1: Try fetch conversion
             console.log('🔄 [VISION GENERATION] Converting base64 to blob...')
             const response = await fetch(imageDataUrl)
-            const blob = await response.blob()
+        const blob = await response.blob()
             
             // Validate blob
             if (!blob || blob.size === 0) {
@@ -901,20 +1105,20 @@ JERSEY COMPOSITION REQUIREMENTS:
         
         if (finalBlob && finalBlob.size > 0) {
           console.log('✅ [SAVE] Proceeding with database save using local blob...')
-          await saveJerseyToDB({
-            name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
-            prompt: finalCombinedPrompt,
+        await saveJerseyToDB({
+          name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
+          prompt: finalCombinedPrompt,
             imageUrl: generatedImage, // Use the converted base64 or original URL
-            creatorWallet: address || "N/A",
-            tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
-            metadata: {
-              generationMode: 'vision_enhanced',
-              hasReferenceImage: true,
-              analysisUsed: !!analysisResult,
-              sport: selectedSport,
-              view: selectedView,
-              visionModel: selectedVisionModel,
-              qualityLevel: 'advanced',
+          creatorWallet: address || "N/A",
+          tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
+          metadata: {
+            generationMode: 'vision_enhanced',
+            hasReferenceImage: true,
+            analysisUsed: !!analysisResult,
+            sport: selectedSport,
+            view: selectedView,
+            visionModel: selectedVisionModel,
+            qualityLevel: 'advanced',
               costUsd: visionResult.cost_usd,
               dalleImageUrl: visionResult.image_url // Keep original URL for reference
             }

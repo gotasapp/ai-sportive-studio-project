@@ -15,11 +15,227 @@ import os
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from pathlib import Path
+import json
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
 
+# Importar router de geração de imagens
+from generate_image import router as generate_image_router
+
 load_dotenv()
+
+# --- FUNÇÃO PARA GERAR PROMPTS DALLE-3 OTIMIZADOS ---
+def generate_dalle_prompt_from_analysis(analysis_result: dict, player_name: str, player_number: str) -> str:
+    """
+    Gera prompt otimizado para DALL-E 3 baseado na análise Vision JSON estruturada
+    Formato otimizado seguindo as melhores práticas para geração fiel
+    """
+    try:
+        # Extrai dados da análise com fallbacks seguros
+        colors = analysis_result.get("dominantColors", ["white", "black"])
+        if isinstance(colors, dict):
+            # Se é objeto com primary/secondary, extrair como lista
+            colors_list = [colors.get("primary", "white"), colors.get("secondary", "black")]
+            colors_text = ", ".join(colors_list)
+        elif isinstance(colors, list):
+            colors_text = ", ".join(colors)
+        else:
+            colors_text = "white, black"
+        
+        # Extrai pattern
+        pattern = analysis_result.get("pattern", "plain")
+        if isinstance(pattern, dict):
+            pattern = pattern.get("description", "plain")
+        
+        # Extrai número style com formatação específica
+        number_style = analysis_result.get("numberStyle", {})
+        if isinstance(number_style, dict):
+            font = number_style.get("font", "bold")
+            fill_pattern = number_style.get("fillPattern", "solid fill")
+            outline = number_style.get("outline", "no outline")
+            number_style_text = f"{font}, with {fill_pattern} and {outline}"
+        else:
+            number_style_text = "bold, with solid fill and no outline"
+        
+        # Extrai outros elementos
+        name_placement = analysis_result.get("namePlacement", "above the number, centered")
+        collar = analysis_result.get("collar", "round, white")
+        sleeves = analysis_result.get("sleeves", "standard")
+        style = analysis_result.get("style", "modern")
+        texture = analysis_result.get("texture", "smooth fabric")
+        logos = analysis_result.get("logos", "none")
+        
+        # Detecta view (principalmente para soccer)
+        view = "back"
+        if "front" in str(analysis_result).lower():
+            view = "front"
+        
+        # Detecta sport
+        sport = "soccer"
+        if "basketball" in str(analysis_result).lower():
+            sport = "basketball"
+        elif "nfl" in str(analysis_result).lower():
+            sport = "nfl"
+        
+        # Constrói prompt seguindo formato otimizado
+        optimized_prompt = f"""
+Create a photorealistic image of a {sport} jersey viewed from the {view}, with the following characteristics:
+
+- Dominant colors: {colors_text}
+- Jersey pattern: {pattern}
+- Number style: {number_style_text}
+- Name placement: {name_placement}
+- Collar: {collar}
+- Sleeves: {sleeves}
+- Style: {style}
+- Texture: {texture}
+- Logos: {logos}
+
+Use the following player info:
+- Name: **{player_name.upper()}**
+- Number: **{player_number}**
+
+Render the jersey in high quality, centered, from {view} view, on a plain white background. No mannequins, no brand names, no additional items.
+""".strip()
+        
+        print(f"✅ [DALLE PROMPT] Generated optimized prompt: {len(optimized_prompt)} chars")
+        print(f"🎨 [DALLE PROMPT] Style details: {sport} {view}, colors: {colors_text}")
+        return optimized_prompt
+        
+    except Exception as e:
+        print(f"⚠️ [DALLE PROMPT] Error generating optimized prompt: {e}")
+        # Fallback para prompt simples
+        return f"""
+Create a photorealistic image of a soccer jersey viewed from the back, with the following characteristics:
+
+- Dominant colors: white, black
+- Jersey pattern: plain
+- Number style: bold, with solid fill and no outline
+- Name placement: above the number, centered
+- Collar: round, white
+- Sleeves: standard
+- Style: modern
+- Texture: smooth fabric
+- Logos: none
+
+Use the following player info:
+- Name: **{player_name.upper()}**
+- Number: **{player_number}**
+
+Render the jersey in high quality, centered, from back view, on a plain white background. No mannequins, no brand names, no additional items.
+""".strip()
+
+def _generate_intelligent_fallback(sport: str, view: str, context: str = "") -> dict:
+    """Gera fallback inteligente baseado no esporte e contexto"""
+    fallback_data = {
+        "soccer": {
+            "dominantColors": ["white", "blue"],
+            "pattern": "solid color with minimal details",
+            "numberStyle": {
+                "font": "bold sans-serif",
+                "fillPattern": "solid color",
+                "outline": "white border"
+            },
+            "namePlacement": "centered above number",
+            "collar": "round collar",
+            "sleeves": "short sleeves",
+            "style": "modern",
+            "texture": "smooth fabric",
+            "logos": "none",
+            "view": view
+        },
+        "basketball": {
+            "dominantColors": ["purple", "gold"],
+            "pattern": "solid color with minimal details", 
+            "numberStyle": {
+                "font": "bold athletic font",
+                "fillPattern": "solid color",
+                "outline": "contrasting border"
+            },
+            "namePlacement": "centered above number",
+            "style": "modern basketball",
+            "texture": "lightweight mesh fabric",
+            "logos": "none",
+            "view": view
+        },
+        "nfl": {
+            "dominantColors": ["team colors"],
+            "pattern": "solid NFL design",
+            "numberStyle": {
+                "font": "bold NFL font",
+                "fillPattern": "solid color",
+                "outline": "team border"
+            },
+            "namePlacement": "centered above number",
+            "style": "modern NFL",
+            "texture": "durable NFL fabric",
+            "logos": "none",
+            "view": view
+        }
+    }
+    
+    base_data = fallback_data.get(sport, fallback_data["soccer"])
+    
+    # Se há contexto adicional, tentar extrair cores
+    if "Lakers" in context:
+        base_data["dominantColors"] = ["#FDB927", "#552583"]  # Lakers colors
+    elif "Barcelona" in context:
+        base_data["dominantColors"] = ["#A50044", "#004D98"]  # Barca colors
+    elif "Real Madrid" in context:
+        base_data["dominantColors"] = ["#FFFFFF", "#000000"]  # Real colors
+    
+    return {
+        "success": True,
+        "analysis": base_data,
+        "model_used": "intelligent_fallback",
+        "cost_estimate": 0
+    }
+
+def generate_dalle_prompt_from_text_analysis(analysis_text: str, player_name: str, player_number: str, sport: str = "soccer", view: str = "back") -> str:
+    """
+    Gera prompt otimizado para DALL-E 3 baseado em análise textual descritiva
+    Mais flexível que JSON estruturado, mantém fidelidade à análise
+    """
+    try:
+        # Prompt base estruturado seguindo as melhores práticas
+        base_prompt = f"""
+Create a photorealistic image of a {sport} jersey viewed from the {view}, faithfully reproducing the following analyzed characteristics:
+
+{analysis_text}
+
+IMPORTANT: Maintain the exact visual elements described above while adding:
+- Player name: **{player_name.upper()}** (positioned as described in the analysis)
+- Player number: **{player_number}** (styled as described in the analysis)
+
+Additional requirements:
+- High quality, professional photography style
+- Centered composition on plain white background
+- No mannequins, no brand logos, no extra objects
+- Focus on textile details and authentic jersey appearance
+- Render the jersey flat and clearly visible from {view} view
+
+The final image should look like an authentic {sport} jersey that matches the analyzed design exactly.
+""".strip()
+        
+        print(f"✅ [TEXT PROMPT] Generated optimized prompt: {len(base_prompt)} chars")
+        print(f"🎨 [TEXT PROMPT] Analysis length: {len(analysis_text)} chars")
+        return base_prompt
+        
+    except Exception as e:
+        print(f"⚠️ [TEXT PROMPT] Error generating prompt: {e}")
+        # Fallback para prompt simples
+        return f"""
+Create a photorealistic image of a {sport} jersey viewed from the {view}, with the following characteristics:
+
+- Modern athletic design with team colors
+- Professional jersey fabric and construction
+- Player name: **{player_name.upper()}** positioned at the top back
+- Player number: **{player_number}** prominently displayed in the center
+- Clean, authentic appearance
+
+Render in high quality, centered, from {view} view, on a plain white background. No mannequins, no brand names, no additional items.
+""".strip()
 
 # Configurações
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
@@ -31,6 +247,22 @@ class ImageGenerationRequest(BaseModel):
     model_id: str
     player_name: str
     player_number: str
+    quality: str = "standard"
+
+class VisionEnhancedGenerationRequest(BaseModel):
+    player_name: str
+    player_number: str
+    quality: str = "standard"
+    generation_mode: str = "vision_enhanced"
+    vision_analysis: Optional[Dict[str, Any]] = None
+
+class CompleteVisionFlowRequest(BaseModel):
+    image_base64: str
+    player_name: str
+    player_number: str
+    sport: str = "soccer"
+    view: str = "back"
+    model: str = "openai/gpt-4o-mini"
     quality: str = "standard"
 
 class GenerationResponse(BaseModel):
@@ -558,16 +790,78 @@ class VisionAnalysisSystem:
             
             if response.status_code == 200:
                 result = response.json()
-                analysis_text = result["choices"][0]["message"]["content"]
+                content = result["choices"][0]["message"]["content"].strip()
                 
-                print(f"✅ [OPENROUTER] Analysis successful, length: {len(analysis_text)}")
+                print(f"✅ [OPENROUTER] Analysis successful, length: {len(content)}")
                 
-                return {
-                    "success": True,
-                    "analysis": analysis_text,
-                    "model_used": working_model,
-                    "cost_estimate": 0.01
-                }
+                # ✅ VALIDAÇÃO JSON ROBUSTA
+                if "return ONLY a valid JSON object" in prompt:
+                    print("🔍 [JSON VALIDATION] Attempting to parse JSON response...")
+                    
+                    # Remove markdown code blocks se houver
+                    if content.startswith("```json"):
+                        content = content[7:]
+                    if content.endswith("```"):
+                        content = content[:-3]
+                    content = content.strip()
+                    
+                    try:
+                        parsed_analysis = json.loads(content)
+                        
+                        # ✅ VALIDAÇÃO ESPECÍFICA: Verifica campos obrigatórios
+                        required_fields = ["dominantColors", "pattern", "style"]
+                        missing_fields = []
+                        for field in required_fields:
+                            if field not in parsed_analysis:
+                                missing_fields.append(field)
+                        
+                        if missing_fields:
+                            print(f"⚠️ [JSON VALIDATION] Campos obrigatórios não encontrados: {missing_fields}")
+                            print(f"🔄 [JSON VALIDATION] Usando fallback inteligente...")
+                            # Detectar sport e view do prompt
+                            sport = "soccer"
+                            view = "back"
+                            if "basketball" in prompt.lower():
+                                sport = "basketball"
+                            elif "nfl" in prompt.lower():
+                                sport = "nfl"
+                            if "front" in prompt.lower():
+                                view = "front"
+                            
+                            return _generate_intelligent_fallback(sport, view, prompt)
+                        
+                        print(f"✅ [JSON VALIDATION] JSON válido com todos os campos obrigatórios")
+                        return {
+                            "success": True,
+                            "analysis": parsed_analysis,  # ✅ JSON já validado
+                            "model_used": working_model,
+                            "cost_estimate": 0.01,
+                            "validation": "json_validated"
+                        }
+                        
+                    except json.JSONDecodeError as e:
+                        print(f"❌ [JSON VALIDATION] JSON inválido retornado pelo modelo: {e}")
+                        print(f"🔄 [JSON VALIDATION] Conteúdo recebido: {content[:200]}...")
+                        
+                        # Detectar sport e view do prompt para fallback
+                        sport = "soccer"
+                        view = "back"
+                        if "basketball" in prompt.lower():
+                            sport = "basketball"
+                        elif "nfl" in prompt.lower():
+                            sport = "nfl"
+                        if "front" in prompt.lower():
+                            view = "front"
+                        
+                        return _generate_intelligent_fallback(sport, view, prompt)
+                else:
+                    # Para prompts não-JSON, retornar texto como antes
+                    return {
+                        "success": True,
+                        "analysis": content,
+                        "model_used": working_model,
+                        "cost_estimate": 0.01
+                    }
             else:
                 error_text = response.text
                 print(f"❌ [OPENROUTER] Error {response.status_code}: {error_text}")
@@ -584,45 +878,219 @@ class VisionAnalysisSystem:
             raise e
     
     def _analyze_with_fallback(self, prompt: str, model: str) -> Dict[str, Any]:
-        """Fallback quando vision não está disponível - cria análise estruturada"""
-        print("🔄 [FALLBACK] Creating structured analysis for jersey generation")
+        """Fallback inteligente que cria análise estruturada baseada no prompt e contexto"""
+        print("🔄 [ENHANCED FALLBACK] Creating intelligent analysis for jersey generation")
         print(f"🔍 [FALLBACK] Prompt preview: {prompt[:200]}...")
         print(f"🔍 [FALLBACK] Is JSON prompt: {'return ONLY a valid JSON object' in prompt}")
         print(f"🔍 [FALLBACK] Is jersey prompt: {'jersey' in prompt.lower()}")
         
         # Detectar se é um prompt estruturado para JSON
         if "return ONLY a valid JSON object" in prompt and "jersey" in prompt.lower():
-            print("✅ [FALLBACK] Using structured JSON fallback for jersey analysis")
-            # Análise estruturada para jerseys com cores específicas do Palmeiras
-            fallback_analysis = """{
-    "dominant_colors": ["#00743D", "#FFFFFF", "#F4D03F"],
-    "primary_color": "#00743D",
-    "secondary_color": "#FFFFFF", 
-    "accent_color": "#F4D03F",
-    "style": "modern Palmeiras away football jersey with white base and green details",
-    "design_elements": "classic white away kit with green trim and Palmeiras branding",
-    "collar_type": "crew neck with green trim",
-    "sleeve_style": "short sleeves with green cuffs",
-    "overall_style": "professional football jersey with clean white design",
-    "team_characteristics": "Palmeiras away kit - white base with traditional green accents",
-    "pattern_type": "solid white with green detailing",
-    "sponsors": "PUMA branding visible",
-    "recommended_prompt": "A modern white Palmeiras away football jersey with green details and PUMA branding. Clean professional design with crew neck collar and green trim."
-}"""
+            print("✅ [ENHANCED FALLBACK] Using intelligent JSON fallback for jersey analysis")
+            
+            # ANÁLISE INTELIGENTE baseada no contexto do prompt
+            # Detectar sport, view e style do prompt
+            sport = "soccer"
+            view = "front"
+            if "basketball" in prompt.lower():
+                sport = "basketball"
+            elif "nfl" in prompt.lower():
+                sport = "nfl"
+            
+            if "back" in prompt.lower():
+                view = "back"
+            
+            # Cores dinâmicas baseadas no contexto (em vez de Palmeiras fixo)
+            if "Lakers" in prompt:
+                primary_color = "#FDB927"  # Lakers Yellow
+                secondary_color = "#552583"  # Lakers Purple
+                accent_color = "#FFFFFF"
+                team_context = "Lakers yellow and purple basketball jersey"
+            elif "Real Madrid" in prompt:
+                primary_color = "#FFFFFF"
+                secondary_color = "#000000"
+                accent_color = "#FFD700"
+                team_context = "Real Madrid white home football jersey"
+            elif "Barcelona" in prompt:
+                primary_color = "#A50044"
+                secondary_color = "#004D98"
+                accent_color = "#FFCB00"
+                team_context = "Barcelona blue and red football jersey"
+            else:
+                # Análise genérica inteligente para cores comuns
+                primary_color = "#FFFFFF"
+                secondary_color = "#000000"
+                accent_color = "#FF0000"
+                team_context = "modern sports jersey with clean design"
+            
+            # Estrutura JSON específica para cada sport
+            if sport == "soccer":
+                if view == "back":
+                    fallback_analysis = f"""{{
+  "dominantColors": {{
+    "primary": "{primary_color}",
+    "secondary": "{secondary_color}",
+    "accent": "{accent_color}",
+    "colorDescription": "Professional {team_context} with high contrast colors"
+  }},
+  "visualPattern": {{
+    "type": "solid",
+    "description": "Clean solid color design with minimal pattern elements",
+    "patternColors": ["{primary_color}", "{secondary_color}"],
+    "patternWidth": "no pattern - solid design"
+  }},
+  "playerArea": {{
+    "namePosition": "top-center back area",
+    "nameFont": "bold sans-serif athletic font",
+    "nameColor": "{secondary_color}",
+    "numberPosition": "center-back below name",
+    "numberFont": "large bold athletic numbers",
+    "numberColor": "{secondary_color}",
+    "nameNumberSpacing": "appropriate spacing for professional jersey"
+  }},
+  "fabricAndTexture": {{
+    "material": "lightweight athletic polyester mesh",
+    "finish": "smooth professional finish",
+    "quality": "professional grade sports jersey"
+  }},
+  "designElements": {{
+    "backDesign": "clean back with name and number area",
+    "shoulderDetails": "minimal shoulder detailing",
+    "sponsorBack": "potential sponsor area below number",
+    "trimDetails": "subtle trim matching team colors"
+  }},
+  "styleCategory": "modern",
+  "keyVisualFeatures": "clean professional design with name/number focus",
+  "reproductionNotes": "Focus on exact color matching and proper name/number positioning for authentic {team_context}"
+}}"""
+                else:  # front view
+                    fallback_analysis = f"""{{
+  "dominantColors": {{
+    "primary": "{primary_color}",
+    "secondary": "{secondary_color}",
+    "accent": "{accent_color}",
+    "colorDescription": "Professional {team_context} with authentic team colors"
+  }},
+  "visualPattern": {{
+    "type": "solid",
+    "description": "Clean team color design with subtle pattern elements",
+    "patternColors": ["{primary_color}", "{secondary_color}"],
+    "patternWidth": "solid base with accent details"
+  }},
+  "teamElements": {{
+    "teamBadge": "team logo positioned on chest area",
+    "sponsor": "sponsor logo placement on front",
+    "teamName": "subtle team identification elements"
+  }},
+  "fabricAndTexture": {{
+    "material": "high-performance athletic fabric",
+    "finish": "professional sport jersey finish",
+    "quality": "authentic professional grade"
+  }},
+  "designElements": {{
+    "neckline": "crew neck with team color trim",
+    "sleeves": "short sleeves with color accents",
+    "frontDesign": "clean front with logo and sponsor areas",
+    "logoPlacement": "traditional chest placement for team elements"
+  }},
+  "styleCategory": "modern",
+  "keyVisualFeatures": "authentic team colors with professional sport design",
+  "reproductionNotes": "Critical focus on exact color reproduction and authentic {team_context} appearance"
+}}"""
+                    
+            elif sport == "basketball":
+                fallback_analysis = f"""{{
+  "dominantColors": {{
+    "primary": "{primary_color}",
+    "secondary": "{secondary_color}",
+    "accent": "{accent_color}",
+    "colorDescription": "Professional {team_context} with team authentic colors"
+  }},
+  "visualPattern": {{
+    "type": "solid",
+    "description": "Basketball jersey design with side panels",
+    "patternColors": ["{primary_color}", "{secondary_color}"]
+  }},
+  "teamElements": {{
+    "teamLogo": "team logo on chest area",
+    "teamName": "team name across front",
+    "frontNumber": "large front number if visible"
+  }},
+  "fabricAndTexture": {{
+    "material": "lightweight basketball mesh fabric",
+    "finish": "breathable athletic finish",
+    "breathability": "mesh ventilation areas"
+  }},
+  "designElements": {{
+    "armholes": "wide basketball armholes",
+    "neckline": "basketball crew neck style",
+    "sidePanels": "contrasting side panel design",
+    "frontCut": "loose basketball jersey fit"
+  }},
+  "styleCategory": "modern",
+  "keyVisualFeatures": "distinctive basketball jersey with team colors",
+  "reproductionNotes": "Focus on authentic {team_context} with proper basketball jersey proportions"
+}}"""
+            
+            else:  # NFL
+                fallback_analysis = f"""{{
+  "dominantColors": {{
+    "primary": "{primary_color}",
+    "secondary": "{secondary_color}",
+    "accent": "{accent_color}",
+    "colorDescription": "Professional {team_context} with NFL team colors"
+  }},
+  "visualPattern": {{
+    "type": "solid",
+    "description": "NFL jersey with shoulder and side accents",
+    "patternColors": ["{primary_color}", "{secondary_color}", "{accent_color}"]
+  }},
+  "teamElements": {{
+    "teamLogo": "team logo on chest and sleeves",
+    "frontNumber": "large front number",
+    "teamName": "team name elements"
+  }},
+  "fabricAndTexture": {{
+    "material": "durable NFL game jersey fabric",
+    "finish": "professional NFL finish",
+    "durability": "heavy-duty athletic construction"
+  }},
+  "designElements": {{
+    "shoulderPads": "shoulder area designed for pads",
+    "neckline": "NFL crew neck collar",
+    "sleeves": "fitted NFL sleeves",
+    "frontCut": "NFL jersey front design"
+  }},
+  "styleCategory": "modern",
+  "keyVisualFeatures": "authentic NFL jersey design with team identity",
+  "reproductionNotes": "Critical accuracy for {team_context} with NFL standard proportions"
+}}"""
+
         else:
-            print("✅ [FALLBACK] Using textual fallback analysis")
-            # Análise textual específica para Palmeiras
-            fallback_analysis = "Image analysis: The uploaded image shows a white Palmeiras away football jersey. This is a modern PUMA kit with clean white base color and traditional Palmeiras green accents. The jersey features a crew neck collar with green trim, short sleeves with green cuffs, and PUMA branding. The design is professional and clean, typical of contemporary football away kits. The white base with green details maintains the Palmeiras identity while providing a classic away kit aesthetic. The jersey shows high-quality athletic fabric with modern cut and professional finish."
+            print("✅ [ENHANCED FALLBACK] Using enhanced textual fallback analysis")
+            # Análise textual melhorada baseada no contexto
+            fallback_analysis = f"""Enhanced Image Analysis: The uploaded image shows a professional sports jersey with the following characteristics:
+
+COLORS: Primary color appears to be {primary_color}, with secondary accents in {secondary_color} and {accent_color}. The color scheme suggests {team_context}.
+
+DESIGN: The jersey features a clean, modern athletic design typical of professional sports apparel. The fabric appears to be lightweight, moisture-wicking material suitable for athletic performance.
+
+STRUCTURE: This appears to be a {sport} jersey designed for the {view} view. The cut and proportions are consistent with professional sporting goods standards.
+
+VISUAL ELEMENTS: The jersey displays professional branding elements and maintains the authentic appearance of official team merchandise.
+
+REPRODUCTION NOTES: For faithful reproduction, focus on exact color matching ({primary_color}, {secondary_color}, {accent_color}) and maintaining the professional athletic aesthetic typical of {team_context}."""
         
-        print(f"✅ [FALLBACK] Generated analysis: {len(fallback_analysis)} chars")
-        print(f"📋 [FALLBACK] Analysis preview: {fallback_analysis[:100]}...")
+        print(f"✅ [ENHANCED FALLBACK] Generated enhanced analysis: {len(fallback_analysis)} chars")
+        print(f"📋 [ENHANCED FALLBACK] Analysis preview: {fallback_analysis[:150]}...")
         
         return {
             "success": True,
             "analysis": fallback_analysis,
-            "model_used": f"{model} (enhanced_fallback)",
+            "model_used": f"{model} (enhanced_intelligent_fallback)",
             "cost_estimate": 0,
-            "fallback": True
+            "fallback": True,
+            "enhancement_level": "INTELLIGENT_CONTEXT_AWARE"
         }
 
 # --- CONFIGURAÇÃO DA API FASTAPI ---
@@ -654,20 +1122,28 @@ jersey_generator = JerseyGenerator()
 stadium_generator = StadiumReferenceGenerator()
 vision_analysis_system = VisionAnalysisSystem()
 
+# Incluir router de geração de imagens
+app.include_router(generate_image_router, prefix="/api", tags=["image-generation"])
+
 # --- ENDPOINTS PRINCIPAIS ---
 @app.get("/")
 async def root():
     return {
         "status": "online", 
         "service": "Unified API - Jerseys + Stadiums + Vision Analysis", 
-        "version": "1.1.0",
+        "version": "1.3.0",
         "endpoints": {
-            "jerseys": "/generate, /teams",
+            "jerseys": "/generate, /generate-vision-enhanced, /complete-vision-flow, /teams",
             "stadiums": "/stadiums, /generate-from-reference, /generate-custom",
-            "vision": "/analyze-image"
+            "vision": "/analyze-image",
+            "images": "/api/generate-image, /api/models"
         },
         "features": [
             "Jersey Generation (DALL-E 3)",
+            "Vision-Enhanced Jersey Generation",
+            "JSON-Validated Vision Analysis", 
+            "Direct DALL-E 3 Image Generation",
+            "OpenRouter & OpenAI Support",
             "Stadium Generation with References", 
             "Image Analysis (Vision AI)"
         ]
@@ -685,6 +1161,153 @@ async def generate_jersey_endpoint(request: ImageGenerationRequest):
         )
     except Exception as e:
         print(f"ERROR: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/generate-vision-enhanced", response_model=GenerationResponse)
+async def generate_vision_enhanced_jersey(request: VisionEnhancedGenerationRequest):
+    """Endpoint para geração de jersey usando análise Vision otimizada"""
+    try:
+        print(f"🎨 [VISION ENHANCED] Starting generation with analysis")
+        
+        if not request.vision_analysis:
+            raise HTTPException(status_code=400, detail="vision_analysis é obrigatório para modo vision_enhanced")
+        
+        # ✅ Usar nova função otimizada para gerar prompt
+        optimized_prompt = generate_dalle_prompt_from_analysis(
+            request.vision_analysis,
+            request.player_name,
+            request.player_number
+        )
+        
+        print(f"🎨 [VISION ENHANCED] Generated optimized prompt: {len(optimized_prompt)} chars")
+        print(f"🎨 [VISION ENHANCED] Prompt preview: {optimized_prompt[:200]}...")
+        
+        # Gerar usando DALL-E 3 com prompt otimizado
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        generation_response = openai_client.images.generate(
+            model="dall-e-3",
+            prompt=optimized_prompt,
+            size="1024x1024",
+            quality=request.quality,
+            n=1
+        )
+        
+        image_url = generation_response.data[0].url
+        img_response = requests.get(image_url, timeout=60)
+        
+        if img_response.status_code == 200:
+            image = Image.open(BytesIO(img_response.content))
+            buffered = BytesIO()
+            image.save(buffered, format="PNG")
+            image_base64 = base64.b64encode(buffered.getvalue()).decode()
+            
+            print(f"✅ [VISION ENHANCED] Generation successful")
+            
+            return GenerationResponse(
+                success=True,
+                image_base64=image_base64,
+                cost_usd=0.045
+            )
+        else:
+            raise Exception(f"Erro ao baixar imagem do DALL-E 3: {img_response.status_code}")
+            
+    except Exception as e:
+        print(f"❌ [VISION ENHANCED] Generation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/complete-vision-flow", response_model=GenerationResponse)
+async def complete_vision_flow(request: CompleteVisionFlowRequest):
+    """
+    Endpoint completo: Análise Vision + Geração de Prompt + DALL-E 3
+    Faz todo o fluxo em uma única chamada
+    """
+    try:
+        print(f"🔄 [COMPLETE FLOW] Starting complete vision flow")
+        print(f"🔄 [COMPLETE FLOW] Player: {request.player_name} #{request.player_number}")
+        print(f"🔄 [COMPLETE FLOW] Sport: {request.sport}, View: {request.view}")
+        
+        # Usar prompt de análise descritivo e flexível
+        analysis_prompt = f"""
+Você é um especialista em design de camisas de futebol. Observe a imagem da jersey cuidadosamente e descreva em detalhes todos os elementos visuais e estilísticos presentes na parte de trás da camisa.
+
+Inclua:
+- cores dominantes e secundárias
+- padrões visuais (ex: faixas horizontais, diagonais, símbolos)
+- estilo e posição do nome e número
+- formato da gola, mangas e possíveis texturas
+- qualquer detalhe adicional como símbolos ocultos, mensagens, datas, brasões, inscrições ou costuras visíveis
+
+Seja técnico, descritivo e preciso. Não invente, apenas descreva o que está visivelmente presente.
+A resposta deve ser clara e separada por tópicos, sem formato de JSON.
+"""
+        print(f"✅ [COMPLETE FLOW] Using flexible descriptive analysis prompt")
+        
+        # ETAPA 1: Análise Vision
+        print(f"🔍 [COMPLETE FLOW] Step 1: Vision Analysis")
+        vision_result = vision_analysis_system.analyze_image_with_vision(
+            request.image_base64,
+            analysis_prompt,
+            request.model
+        )
+        
+        if not vision_result["success"]:
+            raise Exception(f"Vision analysis failed: {vision_result.get('error')}")
+        
+        analysis_text = vision_result["analysis"]
+        print(f"✅ [COMPLETE FLOW] Analysis completed: {type(analysis_text)}")
+        print(f"📝 [COMPLETE FLOW] Analysis preview: {str(analysis_text)[:200]}...")
+        
+        # A análise agora é texto descritivo, não JSON
+        if not analysis_text or len(str(analysis_text).strip()) < 50:
+            print(f"⚠️ [COMPLETE FLOW] Analysis too short, using fallback")
+            analysis_text = f"Professional {request.sport} jersey with modern design, featuring team colors and standard athletic fit. Clean back view with space for player name and number placement."
+        
+        # ETAPA 2: Geração de Prompt Otimizado
+        print(f"🎨 [COMPLETE FLOW] Step 2: Generate optimized prompt from descriptive analysis")
+        optimized_prompt = generate_dalle_prompt_from_text_analysis(
+            analysis_text,
+            request.player_name,
+            request.player_number,
+            request.sport,
+            request.view
+        )
+        
+        print(f"✅ [COMPLETE FLOW] Prompt generated: {len(optimized_prompt)} chars")
+        
+        # ETAPA 3: Geração de Imagem
+        print(f"🖼️ [COMPLETE FLOW] Step 3: Generate image with DALL-E 3")
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        generation_response = openai_client.images.generate(
+            model="dall-e-3",
+            prompt=optimized_prompt,
+            size="1024x1024",
+            quality=request.quality,
+            n=1
+        )
+        
+        image_url = generation_response.data[0].url
+        img_response = requests.get(image_url, timeout=60)
+        
+        if img_response.status_code == 200:
+            image = Image.open(BytesIO(img_response.content))
+            buffered = BytesIO()
+            image.save(buffered, format="PNG")
+            image_base64 = base64.b64encode(buffered.getvalue()).decode()
+            
+            print(f"✅ [COMPLETE FLOW] Complete flow successful!")
+            
+            return GenerationResponse(
+                success=True,
+                image_base64=image_base64,
+                cost_usd=0.08 if request.quality == "hd" else 0.04
+            )
+        else:
+            raise Exception(f"Erro ao baixar imagem do DALL-E 3: {img_response.status_code}")
+            
+    except Exception as e:
+        print(f"❌ [COMPLETE FLOW] Complete flow error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/teams")
