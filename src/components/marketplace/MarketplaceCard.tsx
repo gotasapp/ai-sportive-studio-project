@@ -28,6 +28,8 @@ interface MarketplaceCardProps {
   auctionId?: string;
   currentBid?: string;
   endTime?: Date;
+  // Informações de ofertas
+  activeOffers?: number;
 }
 
 const categoryColors = {
@@ -51,7 +53,8 @@ export default function MarketplaceCard({
   isAuction = false,
   auctionId,
   currentBid,
-  endTime
+  endTime,
+  activeOffers = 0
 }: MarketplaceCardProps) {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
@@ -276,6 +279,15 @@ export default function MarketplaceCard({
                     <AlertTriangle className="h-4 w-4 text-red-400" title="Invalid price detected" />
                   )}
                 </div>
+              </div>
+            )}
+            
+            {/* Active Offers Counter */}
+            {activeOffers > 0 && (
+              <div className="mt-1">
+                <p className="text-xs text-[#A20131]">
+                  {activeOffers} active offer{activeOffers !== 1 ? 's' : ''}
+                </p>
               </div>
             )}
           </div>

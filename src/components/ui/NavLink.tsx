@@ -9,6 +9,7 @@ interface NavLinkProps {
   className?: string;
   activeClassName?: string;
   inactiveClassName?: string;
+  onClick?: () => void;
 }
 
 export default function NavLink({ 
@@ -16,7 +17,8 @@ export default function NavLink({
   children, 
   className = '',
   activeClassName = 'text-white',
-  inactiveClassName = 'text-white/70 hover:text-white'
+  inactiveClassName = 'text-white/70 hover:text-white',
+  onClick
 }: NavLinkProps) {
   const pathname = usePathname();
   const isActive = pathname === href;
@@ -24,7 +26,7 @@ export default function NavLink({
   const combinedClassName = `${className} ${isActive ? activeClassName : inactiveClassName} transition-colors duration-200 text-sm font-medium`;
 
   return (
-    <Link href={href} className={combinedClassName}>
+    <Link href={href} className={combinedClassName} onClick={onClick}>
       {children}
     </Link>
   );

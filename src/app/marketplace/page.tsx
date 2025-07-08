@@ -160,6 +160,8 @@ export default function MarketplacePage() {
             auctionId={item.auctionId}
             currentBid={item.currentBid}
             endTime={item.auctionEndTime}
+            // Dados de ofertas
+            activeOffers={item.activeOffers || 0}
           />
         ))}
       </div>
