@@ -93,7 +93,7 @@ export default function BuyNowButton({
        }
        
        // Check if listing status is valid
-       if (realListing.status !== 'CREATED' && realListing.status !== 1) {
+       if (realListing.status !== 'CREATED') {
          toast.error('This listing is no longer available.');
          console.error('❌ LISTING WITH INVALID STATUS:', realListing.status);
          return;
