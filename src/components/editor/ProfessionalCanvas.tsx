@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react'
 import { 
   ZoomIn, ZoomOut, RotateCcw, Download, Maximize2, 
   Loader2, AlertCircle, CheckCircle, Eye, Move,
-  Grid3X3, Layers, Image as ImageIcon, MoreHorizontal
+  Grid3X3, Layers, Image as ImageIcon
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -12,7 +12,6 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { isAdmin } from '@/lib/admin-config'
-import { useIsMobile } from '@/hooks/use-mobile'
 import Image from 'next/image';
 
 // Importando os novos componentes profissionais
@@ -46,13 +45,11 @@ export default function ProfessionalCanvas({
   referenceImage,
   isVisionMode
 }: ProfessionalCanvasProps) {
-  const isMobile = useIsMobile()
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [showGrid, setShowGrid] = useState(false)
   const [showReference, setShowReference] = useState(false)
-  const [showMobileControls, setShowMobileControls] = useState(false)
   const canvasRef = useRef<HTMLDivElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
 
@@ -72,92 +69,36 @@ export default function ProfessionalCanvas({
     }
   }
 
-  // Enhanced touch and mouse handling for mobile
-  const handleInteractionStart = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!generatedImage) return
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (generatedImage) {
+      setIsDragging(true)
+      const startX = e.clientX - pan.x
+      const startY = e.clientY - pan.y
 
-    e.preventDefault()
-    setIsDragging(true)
-
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY
-    
-    const startX = clientX - pan.x
-    const startY = clientY - pan.y
-
-    const handleMove = (e: MouseEvent | TouchEvent) => {
-      const moveX = 'touches' in e ? e.touches[0].clientX : e.clientX
-      const moveY = 'touches' in e ? e.touches[0].clientY : e.clientY
-      
-      setPan({
-        x: moveX - startX,
-        y: moveY - startY
-      })
-    }
-
-    const handleEnd = () => {
-      setIsDragging(false)
-      document.removeEventListener('mousemove', handleMove as EventListener)
-      document.removeEventListener('mouseup', handleEnd)
-      document.removeEventListener('touchmove', handleMove as EventListener)
-      document.removeEventListener('touchend', handleEnd)
-    }
-
-    document.addEventListener('mousemove', handleMove as EventListener)
-    document.addEventListener('mouseup', handleEnd)
-    document.addEventListener('touchmove', handleMove as EventListener, { passive: false })
-    document.addEventListener('touchend', handleEnd)
-  }
-
-  // Pinch-to-zoom for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // Pinch gesture detected
-      const touch1 = e.touches[0]
-      const touch2 = e.touches[1]
-      const distance = Math.hypot(
-        touch1.clientX - touch2.clientX,
-        touch1.clientY - touch2.clientY
-      )
-      
-      let lastDistance = distance
-
-      const handleTouchMove = (e: TouchEvent) => {
-        if (e.touches.length === 2) {
-          e.preventDefault()
-          const touch1 = e.touches[0]
-          const touch2 = e.touches[1]
-          const newDistance = Math.hypot(
-            touch1.clientX - touch2.clientX,
-            touch1.clientY - touch2.clientY
-          )
-          
-          const scale = newDistance / lastDistance
-          setZoom(prev => Math.min(Math.max(prev * scale, 0.5), 3))
-          lastDistance = newDistance
-        }
+      const handleMouseMove = (e: MouseEvent) => {
+        setPan({
+          x: e.clientX - startX,
+          y: e.clientY - startY
+        })
       }
 
-      const handleTouchEnd = () => {
-        document.removeEventListener('touchmove', handleTouchMove)
-        document.removeEventListener('touchend', handleTouchEnd)
+      const handleMouseUp = () => {
+        setIsDragging(false)
+        document.removeEventListener('mousemove', handleMouseMove)
+        document.removeEventListener('mouseup', handleMouseUp)
       }
 
-      document.addEventListener('touchmove', handleTouchMove, { passive: false })
-      document.addEventListener('touchend', handleTouchEnd)
-    } else {
-      handleInteractionStart(e)
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
     }
   }
 
   const renderPlaceholder = () => (
-    <div className="flex-1 flex items-center justify-center bg-[#14101e] rounded-lg">
-      <div className="text-center text-[#444444] p-4">
-        <ImageIcon className="w-24 h-24 mx-auto mb-4 max-lg:w-16 max-lg:h-16" />
-        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2 max-lg:text-base">
-          Jersey Preview
-        </h3>
-        <p className="text-sm text-[#ADADAD] max-lg:text-xs max-lg:px-2">
+    <div className="flex-1 flex items-center justify-center bg-[#14101e]">
+      <div className="placeholder-content text-center text-[#444444]">
+        <ImageIcon className="w-24 h-24 mx-auto" />
+        <h3 className="mt-4 text-lg font-semibold text-[#FDFDFD]">Jersey Preview</h3>
+        <p className="mt-1 text-sm text-[#ADADAD]">
           Your generated jersey will appear here once created.
         </p>
       </div>
@@ -165,43 +106,43 @@ export default function ProfessionalCanvas({
   )
 
   const renderLoading = () => (
-    <div className="flex-1 flex items-center justify-center rounded-lg">
-      <div className="text-center p-4">
-        <div className="w-16 h-16 mx-auto mb-4 relative max-lg:w-12 max-lg:h-12 max-lg:mb-2">
-          <Loader2 className="w-16 h-16 text-[#A20131] animate-spin max-lg:w-12 max-lg:h-12" />
-          <div className="absolute inset-0 w-16 h-16 border-2 border-[#A20131]/20 rounded-full max-lg:w-12 max-lg:h-12"></div>
+    <div className="flex-1 flex items-center justify-center">
+      <div className="loading-content text-center">
+        <div className="w-16 h-16 mx-auto mb-4 relative">
+          <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
+          <div className="absolute inset-0 w-16 h-16 border-2 border-[#A20131]/20 rounded-full"></div>
         </div>
-        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2 max-lg:text-base max-lg:mb-1">
+        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
           Generating Jersey...
         </h3>
-        <p className="text-sm text-[#ADADAD] mb-4 max-lg:text-xs max-lg:mb-2 max-lg:px-2">
+        <p className="text-sm text-[#ADADAD] mb-4">
           {isVisionMode ? 'Analyzing reference image and generating design...' : 'Creating your custom jersey design...'}
         </p>
-        <div className="flex items-center justify-center gap-2 max-lg:gap-1">
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse max-lg:w-1.5 max-lg:h-1.5"></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse max-lg:w-1.5 max-lg:h-1.5" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse max-lg:w-1.5 max-lg:h-1.5" style={{ animationDelay: '0.4s' }}></div>
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
         </div>
       </div>
     </div>
   )
 
   const renderError = () => (
-    <div className="flex-1 flex items-center justify-center rounded-lg">
-      <div className="text-center max-w-md p-4 max-lg:max-w-xs">
-        <div className="w-16 h-16 mx-auto mb-4 bg-red-500/10 rounded-full flex items-center justify-center max-lg:w-12 max-lg:h-12 max-lg:mb-2">
-          <AlertCircle className="w-8 h-8 text-red-400 max-lg:w-6 max-lg:h-6" />
+    <div className="flex-1 flex items-center justify-center">
+      <div className="error-content text-center max-w-md">
+        <div className="w-16 h-16 mx-auto mb-4 bg-red-500/10 rounded-full flex items-center justify-center">
+          <AlertCircle className="w-8 h-8 text-red-400" />
         </div>
-        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2 max-lg:text-base max-lg:mb-1">
+        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
           Generation Failed
         </h3>
-        <p className="text-sm text-red-400 mb-4 max-lg:text-xs max-lg:mb-2">
+        <p className="text-sm text-red-400 mb-4">
           {error}
         </p>
         <Button
           onClick={onResetError}
           variant="outline"
-          className="bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20 max-lg:text-xs max-lg:px-3 max-lg:py-1.5"
+          className="bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
         >
           Try Again
         </Button>
@@ -212,29 +153,29 @@ export default function ProfessionalCanvas({
   const renderImage = () => (
     <div className="flex-1 flex flex-col">
       {/* Canvas Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2 bg-[#333333]/20 border-b border-[#333333] max-lg:px-2 max-lg:py-1">
-        <div className="flex items-center gap-2 max-lg:gap-1">
-          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 max-lg:text-xs max-lg:px-1.5 max-lg:py-0.5">
-            <CheckCircle className="w-2.5 h-2.5 mr-1 max-lg:w-2 max-lg:h-2 max-lg:mr-0.5" />
+      <div className="canvas-toolbar flex items-center justify-between px-4 py-2 bg-[#333333]/20 border-b border-[#333333]">
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
+            <CheckCircle className="w-2.5 h-2.5 mr-1" />
             Generated
           </Badge>
-          <span className="text-xs text-[#ADADAD] max-lg:text-[10px] max-lg:truncate max-lg:max-w-24">
+          <span className="text-xs text-[#ADADAD]">
             {selectedTeam} • {playerName} #{playerNumber}
           </span>
         </div>
         
-        <div className="flex items-center gap-2 max-lg:gap-1">
+        <div className="flex items-center gap-2">
           <TooltipProvider>
-            <div className="flex items-center gap-1 max-lg:gap-0.5">
+            <div className="zoom-controls flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleZoomOut}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:p-1 max-lg:h-auto"
+                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
-                    <ZoomOut className="h-3.5 w-3.5 max-lg:h-3 max-lg:w-3" />
+                    <ZoomOut className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -242,7 +183,7 @@ export default function ProfessionalCanvas({
                 </TooltipContent>
               </Tooltip>
 
-              <span className="text-xs text-[#ADADAD] min-w-[3rem] text-center max-lg:text-[10px] max-lg:min-w-[2rem]">
+              <span className="zoom-percentage text-xs text-[#ADADAD] min-w-[3rem] text-center">
                 {Math.round(zoom * 100)}%
               </span>
 
@@ -252,89 +193,13 @@ export default function ProfessionalCanvas({
                     variant="ghost"
                     size="sm"
                     onClick={handleZoomIn}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:p-1 max-lg:h-auto"
+                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50"
                   >
-                    <ZoomIn className="h-3.5 w-3.5 max-lg:h-3 max-lg:w-3" />
+                    <ZoomIn className="h-3.5 w-3.5" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Zoom In</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleResetView}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:p-1 max-lg:h-auto"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5 max-lg:h-3 max-lg:w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Reset View</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <div className="w-px h-4 bg-[#333333] mx-1 max-lg:hidden" />
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setShowGrid(!showGrid)}
-                    className={cn(
-                      "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:hidden",
-                      showGrid && "bg-[#A20131]/20 text-[#A20131]"
-                    )}
-                  >
-                    <Grid3X3 className="h-3.5 w-3.5" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Toggle Grid</p>
-                </TooltipContent>
-              </Tooltip>
-
-              {isVisionMode && referenceImage && (
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setShowReference(!showReference)}
-                      className={cn(
-                        "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:hidden",
-                        showReference && "bg-[#A20131]/20 text-[#A20131]"
-                      )}
-                    >
-                      <Layers className="h-3.5 w-3.5" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Toggle Reference</p>
-                  </TooltipContent>
-                </Tooltip>
-              )}
-
-              <div className="w-px h-4 bg-[#333333] mx-1 max-lg:hidden" />
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleDownload}
-                    className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 max-lg:p-1 max-lg:h-auto"
-                  >
-                    <Download className="h-3.5 w-3.5 max-lg:h-3 max-lg:w-3" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Download Image</p>
                 </TooltipContent>
               </Tooltip>
             </div>
@@ -342,92 +207,75 @@ export default function ProfessionalCanvas({
         </div>
       </div>
 
-      {/* Canvas Container */}
+      {/* Canvas Area */}
       <div 
         ref={canvasRef}
-        className="flex-1 relative overflow-hidden bg-[#14101e] cursor-move"
-        onMouseDown={handleInteractionStart as any}
-        onTouchStart={handleTouchStart}
-        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+        className="canvas-area flex-1 relative overflow-hidden bg-[#14101e] cursor-move"
+        onMouseDown={handleMouseDown}
+        style={{ cursor: isDragging ? 'grabbing' : generatedImage ? 'grab' : 'default' }}
       >
-        {/* Grid Background - Desktop only */}
+        {/* Grid Overlay */}
         {showGrid && (
           <div 
-            className="absolute inset-0 opacity-20 pointer-events-none max-lg:hidden"
+            className="absolute inset-0 pointer-events-none opacity-20"
             style={{
               backgroundImage: `
-                linear-gradient(to right, #333 1px, transparent 1px),
-                linear-gradient(to bottom, #333 1px, transparent 1px)
+                linear-gradient(to right, #333333 1px, transparent 1px),
+                linear-gradient(to bottom, #333333 1px, transparent 1px)
               `,
               backgroundSize: '20px 20px'
             }}
           />
         )}
 
-        {/* Reference Image Overlay */}
+        {/* Reference Image */}
         {showReference && referenceImage && (
-          <div className="absolute top-4 right-4 w-24 h-24 md:w-32 md:h-32 border border-[#333333] rounded-lg overflow-hidden opacity-50 max-lg:inset-0 max-lg:w-auto max-lg:h-auto max-lg:opacity-30">
-            <Image
+          <div 
+            className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            style={{
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
+            }}
+          >
+            <img
               src={referenceImage}
               alt="Reference"
-              fill
-              className="object-cover max-lg:object-contain"
+              className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#A20131]/50 rounded-lg"
             />
           </div>
         )}
 
-        {/* Main Image */}
+        {/* Generated Image */}
         <div 
           className="absolute inset-0 flex items-center justify-center"
           style={{
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            transition: isDragging ? 'none' : 'transform 0.1s ease-out'
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
           }}
         >
-          <Image
+          <img
             ref={imageRef}
-            src={generatedImage!}
+            src={generatedImage || ''}
             alt="Generated Jersey"
-            width={512}
-            height={512}
-            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl w-[400px] h-[400px] max-lg:w-[280px] max-lg:h-[280px]"
+            className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-[#333333]"
             draggable={false}
           />
         </div>
 
-        {/* Mobile Controls Overlay */}
-        <div className="absolute bottom-4 right-4 flex gap-2 max-lg:flex max-lg:bg-black/50 max-lg:backdrop-blur-sm max-lg:rounded-lg max-lg:p-2 lg:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleZoomOut}
-            className="bg-black/50 backdrop-blur-sm text-[#ADADAD] hover:text-[#FDFDFD] p-2 h-auto max-lg:bg-transparent"
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleZoomIn}
-            className="bg-black/50 backdrop-blur-sm text-[#ADADAD] hover:text-[#FDFDFD] p-2 h-auto max-lg:bg-transparent"
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleDownload}
-            className="bg-black/50 backdrop-blur-sm text-[#ADADAD] hover:text-[#FDFDFD] p-2 h-auto max-lg:bg-transparent"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
+        {/* Pan/Zoom Instructions */}
+                    <div className="pan-zoom-instructions absolute bottom-4 left-4 bg-black/50 backdrop-blur-sm rounded-lg p-2">
+          <div className="flex items-center gap-2 text-xs text-[#ADADAD]">
+            <Move className="w-3 h-3" />
+            <span>Drag to pan • Scroll to zoom</span>
+          </div>
         </div>
       </div>
     </div>
   )
 
-  if (isLoading) return renderLoading()
-  if (error) return renderError()
-  if (!generatedImage) return renderPlaceholder()
-  return renderImage()
+  return (
+    <Card className="ProfessionalCanvas h-full mt-[10px] m-[10px] mb-0 bg-[#111011] border-[#333333] shadow-xl max-w-4xl mx-auto">
+      <CardContent className="p-[1px] pb-0 h-full flex flex-col">
+        {error ? renderError() : isLoading ? renderLoading() : generatedImage ? renderImage() : renderPlaceholder()}
+      </CardContent>
+    </Card>
+  )
 } 

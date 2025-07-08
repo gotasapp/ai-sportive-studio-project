@@ -112,6 +112,215 @@
   box-shadow: 0 0 8px rgba(253, 253, 253, 0.08), 0 0 16px rgba(253, 253, 253, 0.03);
 }
 
+/* ProfessionalSidebar Responsive Styles */
+@media (max-width: 767px) {
+  .ProfessionalSidebar {
+    padding: 8px;
+  }
+  
+  .ProfessionalSidebar .space-y-4 {
+    gap: 8px;
+  }
+  
+  .ProfessionalSidebar .SectionHeader {
+    padding: 8px 12px;
+  }
+  
+  .ProfessionalSidebar .SectionHeader .text-sm {
+    font-size: 12px;
+  }
+  
+  .ProfessionalSidebar .SectionHeader .h-4 {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .ProfessionalSidebar .CardContent {
+    padding: 8px;
+  }
+  
+  .ProfessionalSidebar .cyber-select {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .ProfessionalSidebar .text-xs {
+    font-size: 10px;
+  }
+  
+  .ProfessionalSidebar input {
+    padding: 6px 32px 6px 8px;
+    font-size: 12px;
+  }
+  
+  .ProfessionalSidebar textarea {
+    padding: 8px;
+    font-size: 12px;
+  }
+  
+  .ProfessionalSidebar .upload-area {
+    padding: 12px;
+  }
+  
+  .ProfessionalSidebar .upload-area .w-6 {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .ProfessionalSidebar .sport-view-buttons {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  
+  .ProfessionalSidebar .sport-view-buttons button {
+    padding: 8px;
+    font-size: 11px;
+  }
+  
+  .ProfessionalSidebar .quality-buttons {
+    gap: 8px;
+  }
+  
+  .ProfessionalSidebar .quality-buttons button {
+    padding: 8px;
+    font-size: 11px;
+  }
+}
+
+/* ProfessionalCanvas Responsive Styles */
+@media (max-width: 767px) {
+  .ProfessionalCanvas {
+    margin: 4px;
+    margin-top: 8px;
+  }
+  
+  .ProfessionalCanvas .CardContent {
+    padding: 0;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar {
+    padding: 8px 12px;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar .text-xs {
+    font-size: 10px;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar .Badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar .w-2\.5 {
+    width: 8px;
+    height: 8px;
+  }
+  
+  .ProfessionalCanvas .zoom-controls {
+    gap: 4px;
+  }
+  
+  .ProfessionalCanvas .zoom-controls button {
+    padding: 4px;
+  }
+  
+  .ProfessionalCanvas .zoom-controls .h-3\.5 {
+    width: 12px;
+    height: 12px;
+  }
+  
+  .ProfessionalCanvas .zoom-percentage {
+    font-size: 10px;
+    min-width: 2rem;
+  }
+  
+  .ProfessionalCanvas .canvas-area {
+    min-height: 300px;
+  }
+  
+  .ProfessionalCanvas .placeholder-content .w-24 {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .ProfessionalCanvas .placeholder-content .text-lg {
+    font-size: 16px;
+  }
+  
+  .ProfessionalCanvas .placeholder-content .text-sm {
+    font-size: 12px;
+  }
+  
+  .ProfessionalCanvas .loading-content .w-16 {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .ProfessionalCanvas .loading-content .text-lg {
+    font-size: 16px;
+  }
+  
+  .ProfessionalCanvas .loading-content .text-sm {
+    font-size: 12px;
+  }
+  
+  .ProfessionalCanvas .error-content .w-16 {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .ProfessionalCanvas .error-content .w-8 {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .ProfessionalCanvas .error-content .text-lg {
+    font-size: 16px;
+  }
+  
+  .ProfessionalCanvas .error-content .text-sm {
+    font-size: 12px;
+  }
+  
+  .ProfessionalCanvas .pan-zoom-instructions {
+    bottom: 8px;
+    left: 8px;
+    padding: 6px 8px;
+  }
+  
+  .ProfessionalCanvas .pan-zoom-instructions .w-3 {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .ProfessionalCanvas .pan-zoom-instructions .text-xs {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ProfessionalSidebar .space-y-4 {
+    gap: 12px;
+  }
+  
+  .ProfessionalSidebar .SectionHeader {
+    padding: 10px 12px;
+  }
+  
+  .ProfessionalSidebar .CardContent {
+    padding: 10px;
+  }
+  
+  .ProfessionalCanvas {
+    margin: 6px;
+    margin-top: 8px;
+  }
+  
+  .ProfessionalCanvas .canvas-toolbar {
+    padding: 10px 16px;
+  }
+}
+
 .cyber-border {
   position: relative;
   background: transparent;
