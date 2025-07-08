@@ -71,22 +71,32 @@ export async function POST(request: Request) {
 }
 
 // GET handler para buscar jerseys aprovados do MongoDB
-export async function GET() {
+export async function GET(request: Request) {
   try {
     console.log('✅ GET Jerseys - Buscando do MongoDB');
+    
+    const { searchParams } = new URL(request.url);
+    const owner = searchParams.get('owner');
+    const status = searchParams.get('status') || 'Approved';
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     const jerseys = db.collection(COLLECTION_NAME);
 
-    const approvedJerseys = await jerseys
-      .find({ status: 'Approved' })
+    // Build query filter
+    const filter: any = { status };
+    if (owner) {
+      filter['creator.wallet'] = owner;
+    }
+
+    const foundJerseys = await jerseys
+      .find(filter)
       .sort({ createdAt: -1 })
       .limit(50)
       .toArray();
 
-    console.log(`✅ Found ${approvedJerseys.length} approved jerseys`);
-    return NextResponse.json(approvedJerseys);
+    console.log(`✅ Found ${foundJerseys.length} jerseys for ${owner ? `owner ${owner}` : 'all users'}`);
+    return NextResponse.json(foundJerseys);
 
   } catch (error) {
     console.error('Error fetching jerseys:', error);

@@ -10,6 +10,8 @@ import { client, supportedChains, wallets, chzMainnet } from '@/lib/ThirdwebProv
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { AccountName } from '@/components/ui/account-name';
+import { CustomConnectButton } from '@/components/ui/custom-connect-button';
 
 export default function Header() {
   const account = useActiveAccount();
@@ -157,16 +159,13 @@ export default function Header() {
         Marketplace
       </NavLink>
       
-      <a 
-        href="#" 
-        className={cn(
-          "text-secondary hover:text-white transition-colors duration-200 text-sm font-medium",
-          mobile && "w-full text-center py-2"
-        )}
+      <NavLink 
+        href="/profile" 
+        className={cn(mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
-        My NFTs
-      </a>
+        Profile
+      </NavLink>
       
       {/* Admin Panel - Only visible to admin users */}
       {userIsAdmin && (
@@ -232,7 +231,7 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             {/* Connect Button */}
             <div className={cn(isMobile && "scale-90 origin-right")}>
-              <ConnectButton 
+              <CustomConnectButton 
                 client={client}
                 wallets={wallets}
                 chains={supportedChains}
