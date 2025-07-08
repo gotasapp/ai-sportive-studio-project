@@ -79,7 +79,7 @@ export default function MarketplacePage() {
   // Update counters whenever underlying data changes
   useEffect(() => {
     // Usar dados do marketplace em vez de allNfts legacy
-    const collections = new Set(marketplaceItems.map(item => item.collection).filter(Boolean));
+    const collections = new Set(marketplaceItems.map(item => item.category).filter(Boolean));
     setCounters({
       total: collections.size,
       watchlist: watchlist.length,
@@ -108,7 +108,7 @@ export default function MarketplacePage() {
     if (searchTerm.trim()) {
       filtered = filtered.filter(item => 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.collection?.toLowerCase().includes(searchTerm.toLowerCase())
+        item.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -184,7 +184,7 @@ export default function MarketplacePage() {
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-[#FDFDFD]">{item.name}</h3>
-            <p className="text-sm text-[#FDFDFD]/70">{item.collection}</p>
+            <p className="text-sm text-[#FDFDFD]/70">{item.category}</p>
           </div>
           <div className="text-right">
             <div className="text-sm font-medium text-[#FDFDFD]">{item.price}</div>
