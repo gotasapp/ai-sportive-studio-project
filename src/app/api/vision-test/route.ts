@@ -55,8 +55,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Enhanced Vision API call with detail parameter
-    // Force localhost for local development (override any production URL)
-    const visionApiUrl = 'http://localhost:8000';
+    const visionApiUrl = process.env.VISION_API_URL || 'http://localhost:8000';
     
     console.log('🌐 [VISION-TEST] Calling enhanced Python Vision API...');
     console.log('🎯 [VISION-TEST] Target URL:', `${visionApiUrl}/analyze-image`);

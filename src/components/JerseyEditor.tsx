@@ -552,24 +552,59 @@ export default function JerseyEditor() {
               throw new Error('No analysis prompt received from API')
             }
 
-            // Send to Vision API (agora unificada)
-            const visionResponse = await fetch('/api/vision-test', {
+            // Send to Vision API (backend Python unificado)
+            const visionAnalysisUrl = process.env.NODE_ENV === 'production' 
+              ? `${process.env.VISION_API_URL || 'https://your-backend.vercel.app'}/analyze-image`
+              : 'http://localhost:8000/analyze-image'
+            
+            console.log('🌐 [VISION ANALYSIS] Making request to:', visionAnalysisUrl)
+            console.log('🔑 [VISION ANALYSIS] Environment check:', {
+              hasOpenRouterKey: !!process.env.OPENROUTER_API_KEY,
+              nodeEnv: process.env.NODE_ENV,
+              model: selectedVisionModel
+            })
+            
+            const analysisPayload = {
+              image_base64: imageBase64.split(',')[1], // Remove data:image prefix
+              prompt: structuredPrompt,
+              model: selectedVisionModel,
+              type: 'vision-analysis'
+            }
+            
+            console.log('📤 [VISION ANALYSIS] Payload:', {
+              hasImage: !!analysisPayload.image_base64,
+              imageSize: analysisPayload.image_base64?.length || 0,
+              promptSize: analysisPayload.prompt?.length || 0,
+              model: analysisPayload.model,
+              type: analysisPayload.type
+            })
+
+            const visionResponse = await fetch(visionAnalysisUrl, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
-              body: JSON.stringify({
-                image_base64: imageBase64,
-                prompt: structuredPrompt, // Usar 'prompt' para consistência com API unificada
-                model: selectedVisionModel
-              }),
+              body: JSON.stringify(analysisPayload),
             })
 
+            console.log('📥 [VISION ANALYSIS] Response status:', visionResponse.status)
+
             if (!visionResponse.ok) {
-              throw new Error(`Vision analysis failed: ${visionResponse.status}`)
+              const errorText = await visionResponse.text()
+              console.error('❌ [VISION ANALYSIS] Error response:', errorText)
+              throw new Error(`Vision analysis failed: ${visionResponse.status} - ${errorText}`)
             }
 
             const analysisData = await visionResponse.json()
+            console.log('🔍 [VISION ANALYSIS] Full result:', {
+              success: analysisData.success,
+              hasAnalysis: !!analysisData.analysis,
+              analysisLength: analysisData.analysis?.length || 0,
+              analysisPreview: analysisData.analysis?.substring(0, 100) + '...',
+              modelUsed: analysisData.model_used,
+              isFallback: analysisData.model_used?.includes('fallback')
+            })
+            
             if (!analysisData.success) {
               throw new Error(analysisData.error || 'Vision analysis failed')
             }
@@ -634,6 +669,15 @@ export default function JerseyEditor() {
         const analysisText = typeof analysisResult === 'object' 
           ? JSON.stringify(analysisResult, null, 2)
           : analysisResult
+
+        console.log('🔍 [DEBUG] Analysis result details:', {
+          type: typeof analysisResult,
+          isObject: typeof analysisResult === 'object',
+          analysisLength: analysisText.length,
+          analysisPreview: analysisText.substring(0, 200) + '...',
+          hasColors: !!(analysisResult && typeof analysisResult === 'object' && (analysisResult.dominantColors || analysisResult.dominant_colors)),
+          rawAnalysis: analysisResult
+        })
         
         // ===== ENHANCED COLOR AND PATTERN PRESERVATION =====
         let colorPreservationPrompt = ""
@@ -757,15 +801,66 @@ JERSEY COMPOSITION REQUIREMENTS:
         })
 
         // Handle base64 response from vision-generate API (CORS-safe)
+        let finalBlob: Blob | null = null
+        
         if (visionResult.image_base64) {
           console.log('✅ [VISION GENERATION] Using base64 image from API')
           
-          setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`)
+          const imageDataUrl = `data:image/png;base64,${visionResult.image_base64}`
+          setGeneratedImage(imageDataUrl)
           
-          // Convert base64 to blob for saving
-          const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
-          const blob = await response.blob()
-          setGeneratedImageBlob(blob)
+          // Convert base64 to blob for saving - GARANTIR QUE FUNCIONE
+          try {
+            // Method 1: Try fetch conversion
+            console.log('🔄 [VISION GENERATION] Converting base64 to blob...')
+            const response = await fetch(imageDataUrl)
+            const blob = await response.blob()
+            
+            // Validate blob
+            if (!blob || blob.size === 0) {
+              throw new Error('Blob creation failed - empty blob')
+            }
+            
+            // Store in both local variable AND state
+            finalBlob = blob
+            setGeneratedImageBlob(blob)
+            
+            console.log('✅ [VISION GENERATION] Image blob created successfully:', {
+              size: blob.size,
+              type: blob.type,
+              hasBlob: !!blob
+            })
+            
+          } catch (blobError: any) {
+            console.error('❌ [VISION GENERATION] Fetch method failed, trying manual conversion:', blobError)
+            
+            // Method 2: Manual base64 to blob conversion
+            try {
+              const byteCharacters = atob(visionResult.image_base64)
+              const byteNumbers = new Array(byteCharacters.length)
+              for (let i = 0; i < byteCharacters.length; i++) {
+                byteNumbers[i] = byteCharacters.charCodeAt(i)
+              }
+              const byteArray = new Uint8Array(byteNumbers)
+              const manualBlob = new Blob([byteArray], { type: 'image/png' })
+              
+              if (!manualBlob || manualBlob.size === 0) {
+                throw new Error('Manual blob creation also failed')
+              }
+              
+              // Store in both local variable AND state
+              finalBlob = manualBlob
+              setGeneratedImageBlob(manualBlob)
+              
+              console.log('✅ [VISION GENERATION] Manual blob creation successful:', {
+                size: manualBlob.size,
+                type: manualBlob.type
+              })
+            } catch (manualError: any) {
+              console.error('❌ [VISION GENERATION] Both blob creation methods failed:', manualError)
+              throw new Error(`Failed to create image blob: ${blobError.message} | ${manualError.message}`)
+            }
+          }
           
         } else if (visionResult.image_url) {
           // Fallback: try direct URL (may have CORS issues)
@@ -795,25 +890,47 @@ JERSEY COMPOSITION REQUIREMENTS:
           throw new Error('No image data received from vision generation API')
         }
 
-        // Save to DB with complete vision metadata
-        await saveJerseyToDB({
-          name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
-          prompt: finalCombinedPrompt,
-          imageUrl: generatedImage, // Use the converted base64 or original URL
-          creatorWallet: address || "N/A",
-          tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
-          metadata: {
-            generationMode: 'vision_enhanced',
-            hasReferenceImage: true,
-            analysisUsed: !!analysisResult,
-            sport: selectedSport,
-            view: selectedView,
-            visionModel: selectedVisionModel,
-            qualityLevel: 'advanced',
-            costUsd: visionResult.cost_usd,
-            dalleImageUrl: visionResult.image_url // Keep original URL for reference
-          }
-        }, generatedImageBlob!);
+        // ✅ Save to DB with complete vision metadata
+        console.log('🔍 [SAVE] Final blob check before saving:', {
+          hasLocalBlob: !!finalBlob,
+          localBlobSize: finalBlob?.size,
+          localBlobType: finalBlob?.type,
+          hasStateBlob: !!generatedImageBlob,
+          stateBlobSize: generatedImageBlob?.size
+        });
+        
+        if (finalBlob && finalBlob.size > 0) {
+          console.log('✅ [SAVE] Proceeding with database save using local blob...')
+          await saveJerseyToDB({
+            name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
+            prompt: finalCombinedPrompt,
+            imageUrl: generatedImage, // Use the converted base64 or original URL
+            creatorWallet: address || "N/A",
+            tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
+            metadata: {
+              generationMode: 'vision_enhanced',
+              hasReferenceImage: true,
+              analysisUsed: !!analysisResult,
+              sport: selectedSport,
+              view: selectedView,
+              visionModel: selectedVisionModel,
+              qualityLevel: 'advanced',
+              costUsd: visionResult.cost_usd,
+              dalleImageUrl: visionResult.image_url // Keep original URL for reference
+            }
+          }, finalBlob);
+        } else {
+          console.error('❌ [SAVE] Cannot save to DB: no valid blob available');
+          console.log('🔍 [SAVE] Debug info:', {
+            generatedImage: !!generatedImage,
+            generatedImageLength: generatedImage?.length,
+            visionResultHasBase64: !!visionResult.image_base64,
+            visionResultBase64Length: visionResult.image_base64?.length,
+            finalBlobExists: !!finalBlob,
+            finalBlobSize: finalBlob?.size
+          });
+          throw new Error('Image generated but blob creation failed - cannot save to database');
+        }
 
         console.log('🎉 [VISION GENERATION] Complete vision-test flow completed successfully!')
         
