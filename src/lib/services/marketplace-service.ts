@@ -934,7 +934,18 @@ export class MarketplaceService {
         params: [numericListingId]
       });
 
-      const listing = result as DirectListing;
+      // Converter status numérico para string
+      const statusMap: { [key: number]: 'UNSET' | 'CREATED' | 'COMPLETED' | 'CANCELLED' } = {
+        0: 'UNSET',
+        1: 'CREATED', 
+        2: 'COMPLETED',
+        3: 'CANCELLED'
+      };
+
+      const listing: DirectListing = {
+        ...result,
+        status: statusMap[result.status as number] || 'UNSET'
+      };
       
       // 🚨 VALIDAÇÕES CRÍTICAS DOS DADOS DO BLOCKCHAIN
       console.log('🔍 VALIDANDO DADOS DA LISTAGEM:');
@@ -1008,7 +1019,20 @@ export class MarketplaceService {
       params: [BigInt(auctionId)]
     });
 
-    return result as Auction;
+    // Converter status numérico para string
+    const statusMap: { [key: number]: 'UNSET' | 'CREATED' | 'COMPLETED' | 'CANCELLED' } = {
+      0: 'UNSET',
+      1: 'CREATED', 
+      2: 'COMPLETED',
+      3: 'CANCELLED'
+    };
+
+    const auction: Auction = {
+      ...result,
+      status: statusMap[result.status as number] || 'UNSET'
+    };
+
+    return auction;
   }
 
   /**
@@ -1086,8 +1110,21 @@ export class MarketplaceService {
         params: [BigInt(startId), BigInt(endId)]
       });
 
-      console.log(`✅ Encontradas ${result.length} listagens válidas`);
-      return result as DirectListing[];
+      // Converter status numérico para string em cada listing
+      const statusMap: { [key: number]: 'UNSET' | 'CREATED' | 'COMPLETED' | 'CANCELLED' } = {
+        0: 'UNSET',
+        1: 'CREATED', 
+        2: 'COMPLETED',
+        3: 'CANCELLED'
+      };
+
+      const listings: DirectListing[] = result.map(item => ({
+        ...item,
+        status: statusMap[item.status as number] || 'UNSET'
+      }));
+
+      console.log(`✅ Encontradas ${listings.length} listagens válidas`);
+      return listings;
       
     } catch (error: any) {
       console.error('❌ Erro ao buscar listagens:', error);
