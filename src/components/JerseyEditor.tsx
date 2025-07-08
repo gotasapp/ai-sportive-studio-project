@@ -646,10 +646,8 @@ export default function JerseyEditor() {
               throw new Error('No analysis prompt received from API')
             }
 
-            // Send to Vision API (backend Python unificado)
-            const visionAnalysisUrl = process.env.NODE_ENV === 'production' 
-              ? `${process.env.VISION_API_URL || 'https://your-backend.vercel.app'}/analyze-image`
-              : 'http://localhost:8000/analyze-image'
+            // Send to Vision API (usar endpoint interno do Next.js)
+            const visionAnalysisUrl = '/api/vision-test'
             
             console.log('🌐 [VISION ANALYSIS] Making request to:', visionAnalysisUrl)
             console.log('🔑 [VISION ANALYSIS] Environment check:', {

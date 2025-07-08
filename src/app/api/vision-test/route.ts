@@ -54,55 +54,73 @@ export async function POST(request: NextRequest) {
       useCase: selectedDetail.use_case
     });
 
-    // Enhanced Vision API call with detail parameter
-    const visionApiUrl = process.env.VISION_API_URL || 'http://localhost:8000';
+    // Tentar usar OpenRouter diretamente se disponível, senão usar fallback
+    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
     
-    console.log('🌐 [VISION-TEST] Calling enhanced Python Vision API...');
-    console.log('🎯 [VISION-TEST] Target URL:', `${visionApiUrl}/analyze-image`);
-    
-    const payload = {
-      image_base64: image_base64.startsWith('data:') ? image_base64.split(',')[1] : image_base64,
-      prompt,
-      model,
-      type: "vision-analysis"
-    };
-
-    console.log('📤 [VISION-TEST] Payload details:', {
-      imageLength: payload.image_base64.length,
-      promptLength: payload.prompt.length,
-      model: payload.model,
-      type: payload.type
-    });
-
-    const response = await fetch(`${visionApiUrl}/analyze-image`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(60000) // 60 second timeout
-    });
-
-    if (!response.ok) {
-      console.error('❌ [VISION-TEST] Python API error:', response.status, response.statusText);
+    if (openRouterApiKey) {
+      console.log('🌐 [VISION-TEST] Using OpenRouter directly...');
       
-      // Enhanced fallback with structured analysis
-      console.log('🔄 [VISION-TEST] Using enhanced intelligent fallback...');
-      
-      const fallbackAnalysis = generateEnhancedFallback(prompt, detail);
-        
-        return NextResponse.json({
-        success: true,
-        analysis: fallbackAnalysis,
-        model_used: `${model} (enhanced_intelligent_fallback)`,
-        detail_level: detail,
-        cost_estimate: 0,
-        fallback: true,
-        enhancement_level: 'INTELLIGENT_FALLBACK'
-      });
+      try {
+        const openRouterResponse = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openRouterApiKey}`,
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://jersey-generator-ai2.vercel.app',
+            'X-Title': 'CHZ Jersey Generator'
+          },
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: prompt },
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: `data:image/jpeg;base64,${image_base64.startsWith('data:') ? image_base64.split(',')[1] : image_base64}`,
+                      detail: detail
+                    }
+                  }
+                ]
+              }
+            ],
+            max_tokens: 1000,
+            temperature: 0.7
+          }),
+          signal: AbortSignal.timeout(60000)
+        });
+
+        if (openRouterResponse.ok) {
+          const result = await openRouterResponse.json();
+          const analysis = result.choices[0].message.content;
+          
+          console.log('✅ [VISION-TEST] OpenRouter analysis completed');
+          return NextResponse.json({
+            success: true,
+            analysis: analysis,
+            model_used: model,
+            detail_level: detail,
+            detail_config: selectedDetail,
+            cost_estimate: 0.01 * selectedDetail.cost_multiplier,
+            enhancement_level: 'OPENROUTER_DIRECT',
+            processing_time: 'unknown'
+          });
+        }
+      } catch (openRouterError: any) {
+        console.error('❌ [VISION-TEST] OpenRouter error:', openRouterError);
+      }
     }
 
-    const result = await response.json();
+    // Fallback inteligente se OpenRouter não disponível ou falhar
+    console.log('🔄 [VISION-TEST] Using enhanced intelligent fallback...');
+    const fallbackAnalysis = generateEnhancedFallback(prompt, detail);
+    
+    const result = {
+      success: true,
+      analysis: fallbackAnalysis
+    };
       
       if (!result.success) {
       throw new Error(result.error || 'Vision analysis failed');
