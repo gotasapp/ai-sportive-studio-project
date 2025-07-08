@@ -51,6 +51,9 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
   },
 
+  // Transpile problematic packages
+  transpilePackages: ['@web3modal/core', '@web3modal/ui', '@reown/appkit'],
+
   // Output configuration for deployment
   output: 'standalone',
   
@@ -66,6 +69,25 @@ const nextConfig = {
         tls: false,
       }
     }
+
+    // Fix for HeartbeatWorker and other worker files
+    config.module.rules.push({
+      test: /\.worker\.js$/,
+      use: { loader: 'worker-loader' },
+    });
+
+    // Handle worker files that might be causing issues
+    config.module.rules.push({
+      test: /HeartbeatWorker/,
+      type: 'javascript/auto',
+    });
+
+    // Ensure ES modules are handled correctly
+    config.experiments = {
+      ...config.experiments,
+      topLevelAwait: true,
+    };
+
     return config
   },
 };
