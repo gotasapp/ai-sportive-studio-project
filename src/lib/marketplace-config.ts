@@ -52,13 +52,23 @@ export function getMarketplaceContract(chainId: number) {
     throw new Error(`Marketplace contract not configured for chain ${chainId}`);
   }
   
+  // Determinar a chain correta baseada no chainId
+  let chain;
+  if (chainId === chzMainnet.id) {
+    chain = chzMainnet;
+  } else if (chainId === polygon.id) {
+    chain = polygon;
+  } else if (chainId === polygonAmoy.id) {
+    chain = polygonAmoy;
+  } else {
+    // Fallback para Polygon Amoy como padrão para chains não reconhecidas
+    chain = polygonAmoy;
+  }
+
   return getContract({
     client,
     address: contractAddress,
-    chain: chainId === chzMainnet.id ? chzMainnet : 
-           chainId === polygon.id ? polygon : 
-           chainId === polygonAmoy.id ? polygonAmoy : 
-           undefined,
+    chain,
   });
 }
 
@@ -69,13 +79,23 @@ export function getNFTContract(chainId: number) {
     throw new Error(`NFT contract not configured for chain ${chainId}`);
   }
   
+  // Determinar a chain correta baseada no chainId
+  let chain;
+  if (chainId === chzMainnet.id) {
+    chain = chzMainnet;
+  } else if (chainId === polygon.id) {
+    chain = polygon;
+  } else if (chainId === polygonAmoy.id) {
+    chain = polygonAmoy;
+  } else {
+    // Fallback para Polygon Amoy como padrão para chains não reconhecidas
+    chain = polygonAmoy;
+  }
+
   return getContract({
     client,
     address: contractAddress,
-    chain: chainId === chzMainnet.id ? chzMainnet : 
-           chainId === polygon.id ? polygon : 
-           chainId === polygonAmoy.id ? polygonAmoy : 
-           undefined,
+    chain,
   });
 }
 
