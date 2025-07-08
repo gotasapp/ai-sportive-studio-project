@@ -113,7 +113,7 @@ export class MarketplaceService {
       }
       
       // 🔍 DESCOBRIR O TOKEN ID REAL
-      let numericTokenId: bigint;
+      let numericTokenId: bigint = BigInt(0); // Inicializar com valor padrão
       
       // Se é um ObjectId do MongoDB, precisamos descobrir o tokenId real
       if (params.tokenId.length === 24 && /^[0-9a-fA-F]{24}$/.test(params.tokenId)) {
