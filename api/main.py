@@ -204,18 +204,21 @@ Create a photorealistic image of a {sport} jersey viewed from the {view}, faithf
 
 {analysis_text}
 
-IMPORTANT: Maintain the exact visual elements described above while adding:
-- Player name: **{player_name.upper()}** (positioned as described in the analysis)
-- Player number: **{player_number}** (styled as described in the analysis)
+CRITICAL PLAYER CUSTOMIZATION:
+- Display player name "{player_name.upper()}" in bold letters at the TOP BACK area of the jersey
+- Display player number "{player_number}" prominently in the CENTER BACK area below the name
+- Use high contrast colors for name and number text to ensure visibility
+- Position name and number exactly as they would appear on a professional {sport} jersey
 
-Additional requirements:
+Technical requirements:
 - High quality, professional photography style
 - Centered composition on plain white background
-- No mannequins, no brand logos, no extra objects
+- No mannequins, no people, no brand logos, no extra objects
 - Focus on textile details and authentic jersey appearance
 - Render the jersey flat and clearly visible from {view} view
+- Ensure name "{player_name.upper()}" and number "{player_number}" are clearly readable and properly sized
 
-The final image should look like an authentic {sport} jersey that matches the analyzed design exactly.
+The final image must show an authentic {sport} jersey that matches the analyzed design with the specified player name and number clearly visible.
 """.strip()
         
         print(f"✅ [TEXT PROMPT] Generated optimized prompt: {len(base_prompt)} chars")
@@ -230,11 +233,21 @@ Create a photorealistic image of a {sport} jersey viewed from the {view}, with t
 
 - Modern athletic design with team colors
 - Professional jersey fabric and construction
-- Player name: **{player_name.upper()}** positioned at the top back
-- Player number: **{player_number}** prominently displayed in the center
-- Clean, authentic appearance
 
-Render in high quality, centered, from {view} view, on a plain white background. No mannequins, no brand names, no additional items.
+CRITICAL PLAYER DETAILS:
+- Player name "{player_name.upper()}" displayed in BOLD letters at the TOP BACK area
+- Player number "{player_number}" prominently displayed in the CENTER BACK area below the name
+- Name and number must be clearly visible with high contrast colors
+- Use standard professional {sport} jersey font and positioning
+
+Technical specs:
+- High quality, professional photography style
+- Centered composition on plain white background
+- No mannequins, no people, no brand names, no additional items
+- Render the jersey flat and clearly visible from {view} view
+- Ensure both name "{player_name.upper()}" and number "{player_number}" are clearly readable
+
+The jersey must show the player customization prominently and authentically.
 """.strip()
 
 # Configurações
@@ -1265,10 +1278,23 @@ A resposta deve ser clara e separada por tópicos, sem formato de JSON.
         
         # ETAPA 2: Geração de Prompt Otimizado
         print(f"🎨 [COMPLETE FLOW] Step 2: Generate optimized prompt from descriptive analysis")
+        
+        # Validar e limpar dados do jogador
+        player_name_clean = (request.player_name or "").strip()
+        player_number_clean = (request.player_number or "").strip()
+        
+        # Usar valores padrão se vazios
+        if not player_name_clean:
+            player_name_clean = "PLAYER"
+        if not player_number_clean:
+            player_number_clean = "00"
+            
+        print(f"👤 [COMPLETE FLOW] Player data: name='{player_name_clean}', number='{player_number_clean}'")
+        
         optimized_prompt = generate_dalle_prompt_from_text_analysis(
             analysis_text,
-            request.player_name,
-            request.player_number,
+            player_name_clean,
+            player_number_clean,
             request.sport,
             request.view
         )
@@ -1298,11 +1324,16 @@ A resposta deve ser clara e separada por tópicos, sem formato de JSON.
             
             print(f"✅ [COMPLETE FLOW] Complete flow successful!")
             
-            return GenerationResponse(
-                success=True,
-                image_base64=image_base64,
-                cost_usd=0.08 if request.quality == "hd" else 0.04
-            )
+            return {
+                "success": True,
+                "image_url": image_url,
+                "image_base64": image_base64,
+                "analysis": analysis_text,
+                "prompt": optimized_prompt,
+                "cost_usd": 0.08 if request.quality == "hd" else 0.04,
+                "player_name_used": player_name_clean,
+                "player_number_used": player_number_clean
+            }
         else:
             raise Exception(f"Erro ao baixar imagem do DALL-E 3: {img_response.status_code}")
             

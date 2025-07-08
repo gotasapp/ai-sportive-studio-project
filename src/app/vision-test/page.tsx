@@ -11,64 +11,34 @@ export default function VisionTestPage() {
   // PROMPTS JSON ESTRUTURADOS ORIGINAIS QUE FUNCIONAVAM PERFEITAMENTE
   const ORIGINAL_JSON_PROMPTS = {
     "soccer": {
-      "back": `You are an expert image analyst specializing in soccer jersey back view analysis. Analyze this soccer jersey back view image with EXTREME precision for faithful reproduction.
+      "back": `You are a professional uniform designer specializing in sportswear. Analyze the image of a soccer jersey from the back. Describe in **precise visual and technical detail** everything that is visible.
 
-CRITICAL INSTRUCTIONS:
-1. Extract EXACT colors and their relationships
-2. Analyze name/number area positioning and styling
-3. Identify all patterns and design elements
-4. Note specific details needed for identical reproduction
+Instructions:
+- Be highly observant.
+- Do not assume or generalize.
+- Focus on design-specific details that a production team would need.
 
-Return ONLY a valid JSON object with this EXACT structure:
+Respond in clear **bullet-point text**, structured like this:
 
-{
-  "dominantColors": {
-    "primary": "exact primary jersey color with specific name/hex",
-    "secondary": "exact secondary color with specific name/hex",
-    "accent": "exact accent/trim color with specific name/hex", 
-    "colorDescription": "comprehensive color analysis of the jersey"
-  },
-  "visualPattern": {
-    "type": "solid|horizontal_stripes|vertical_stripes|diagonal_stripes|geometric|gradient|mixed",
-    "description": "detailed pattern description including measurements",
-    "patternColors": ["color1", "color2", "color3"],
-    "patternWidth": "specific stripe width or pattern scale"
-  },
-  "playerArea": {
-    "namePosition": "exact name area position (top-center, upper-back, etc.)",
-    "nameFont": "font style description (bold, condensed, serif, sans-serif)",
-    "nameColor": "exact color of player name text",
-    "numberPosition": "exact number position (center-back, below-name, etc.)",
-    "numberFont": "number font style, weight, and relative size",
-    "numberColor": "exact color of player number",
-    "nameNumberSpacing": "spacing between name and number areas",
-    "textStyling": "any outlines, shadows, or special text effects"
-  },
-  "fabricAndTexture": {
-    "material": "visible fabric type from back view",
-    "finish": "surface finish visible",
-    "quality": "professional, replica, vintage assessment"
-  },
-  "designElements": {
-    "backDesign": "unique back design elements beyond name/number",
-    "shoulderDetails": "shoulder and upper back design details",
-    "sponsorBack": "any sponsor elements visible on back",
-    "trimDetails": "collar, sleeve, and hem trim details from back view",
-    "stitchingDetails": "visible stitching patterns or seam details"
-  },
-  "styleCategory": "modern|classic|retro|vintage|urban|premium",
-  "keyVisualFeatures": "most distinctive back view elements for reproduction",
-  "reproductionNotes": "critical specific details for faithful back view reproduction"
-}
+1. **Primary and secondary colors**: name and hex if possible
+2. **Pattern or fabric texture**: describe any subtle design, weaves, mesh or print pattern visible
+3. **Logos and text**:
+   - Sponsor text (ex: "Crefisa") → position, color, font type (e.g., custom sans-serif), case, size relative to shirt
+   - Any manufacturer logos (e.g. Puma) → position, quantity, size
+   - Any symbols above the collar or near shoulders
+4. **Collar and sleeve details**:
+   - Collar type, color, and trim details
+   - Sleeve endings: any contrasting bands or colored cuffs
+5. **Stitching and structure**:
+   - Any visible seams (e.g. central vertical line down the back)
+   - Stitch lines around shoulders or sides
+6. **Presence of player name or number**: is there any? If not, state clearly: "No number or name visible"
+7. **Back layout**:
+   - Empty space for name/number?
+   - Design symmetry or asymmetry
+8. **Style category**: modern, classic, retro, minimalistic, sponsor-heavy
 
-FOCUS AREAS:
-- Exact color matching for all elements
-- Name/number area precise positioning and styling
-- Pattern consistency with front (if striped/patterned)
-- Trim and accent color details
-- Any unique back design elements
-
-This analysis enables IDENTICAL reproduction. Be extremely specific about colors, positioning, and styling details.`,
+Avoid unnecessary summaries. Focus on details that matter visually and structurally.`,
 
       "front": `You are an expert image analyst specializing in soccer jersey color and pattern analysis. Analyze this soccer jersey front view image with EXTREME precision.
 
@@ -490,7 +460,11 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
 
       console.log('🚀 [COMPLETE-VISION-FLOW] Iniciando fluxo completo: análise → prompt → geração...')
       console.log('📋 Sport:', selectedSport, 'View:', selectedView)
-      console.log('👤 Player:', playerName || 'N/A', 'Number:', playerNumber || 'N/A')
+      console.log('👤 Player Info:')
+      console.log('  - Name input value:', `"${playerName}"`)
+      console.log('  - Number input value:', `"${playerNumber}"`)
+      console.log('  - Name length:', playerName.length)
+      console.log('  - Number length:', playerNumber.length)
       
       // Preparar dados para o endpoint
       const requestData = {
@@ -501,6 +475,12 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
         player_number: playerNumber || undefined,
         quality: 'hd'
       }
+      
+      console.log('📦 Request data being sent:')
+      console.log('  - player_name:', `"${requestData.player_name}"`)
+      console.log('  - player_number:', `"${requestData.player_number}"`)
+      console.log('  - sport:', requestData.sport)
+      console.log('  - view:', requestData.view)
 
       // Chamar nosso novo endpoint /complete-vision-flow
       const response = await fetch('http://localhost:8000/complete-vision-flow', {
@@ -529,10 +509,13 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
       setGenerationPrompt(result.prompt || 'Prompt gerado automaticamente')
       setGeneratedImage(result.image_url || null)
 
-      // Log dos resultados
+      // Log dos resultados detalhados
       console.log('📝 Analysis:', result.analysis)
-      console.log('💭 Prompt:', result.prompt)
+      console.log('💭 Prompt used:', result.prompt)
       console.log('🖼️ Image URL:', result.image_url)
+      console.log('👤 Player data used in backend:')
+      console.log('  - Name used:', `"${result.player_name_used}"`)
+      console.log('  - Number used:', `"${result.player_number_used}"`)
 
     } catch (error: any) {
       console.error('❌ [COMPLETE-VISION-FLOW] Erro no fluxo completo:', error)
@@ -562,10 +545,10 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
         
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2">🔍 Vision Test Lab (ORIGINAL RESTORED)</h1>
-          <p className="text-gray-400">Original JSON structured prompts that generated PERFECT identical reproductions</p>
+          <h1 className="text-4xl font-bold mb-2">🔍 Vision Test Lab (ENHANCED)</h1>
+          <p className="text-gray-400">Professional technical analysis prompts for precise jersey reproduction</p>
           <div className="mt-2 px-4 py-2 bg-blue-500/20 border border-blue-500/50 rounded-lg inline-block">
-            <p className="text-blue-300 text-sm">✅ Using ORIGINAL JSON structured prompts with exact color extraction</p>
+            <p className="text-blue-300 text-sm">✅ Using ENHANCED descriptive prompts with technical production details</p>
           </div>
         </div>
 
@@ -614,7 +597,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
               
               <div className="p-3 bg-blue-800/50 rounded border border-blue-600">
                 <p className="text-xs text-blue-200">
-                  <strong>🎯 ORIGINAL JSON Prompt:</strong> Structured analysis with exact color extraction and reproduction notes
+                  <strong>🎯 ENHANCED Descriptive Prompt:</strong> Technical analysis with bullet-point structure and production details
                 </p>
               </div>
             </div>
@@ -697,11 +680,11 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
                 disabled={isAnalyzing || !image}
                 className="w-full p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-medium transition-colors"
               >
-                {isAnalyzing ? '🔄 Analyzing with JSON Structure...' : '🔍 Analyze with Original JSON Prompts'}
+                {isAnalyzing ? '🔄 Analyzing with Enhanced Prompts...' : '🔍 Analyze with Enhanced Technical Prompts'}
               </button>
               
               <p className="text-xs text-blue-400 mt-2">
-                ✨ Original structured JSON analysis that generated perfect identical results
+                ✨ Enhanced technical analysis with bullet-point structure for precise reproduction
               </p>
             </div>
 
@@ -776,7 +759,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
             
             {/* Analysis Result */}
             <div className="bg-black/40 rounded-lg p-6 border border-gray-700">
-              <h2 className="text-xl font-semibold mb-4">📋 Structured JSON Analysis</h2>
+              <h2 className="text-xl font-semibold mb-4">📋 Technical Analysis Results</h2>
               
               {analysisResult ? (
                 <div className="bg-gray-800 p-4 rounded-lg">
@@ -789,8 +772,8 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-500 italic">Upload image and click "Analyze with Original JSON Prompts"</p>
-                  <p className="text-xs text-blue-400 mt-2">🎯 Structured analysis extracts exact colors, patterns, and reproduction details</p>
+                  <p className="text-gray-500 italic">Upload image and click "Analyze with Enhanced Technical Prompts"</p>
+                  <p className="text-xs text-blue-400 mt-2">🎯 Technical analysis extracts colors, patterns, logos, and production details</p>
                 </div>
               )}
             </div>
