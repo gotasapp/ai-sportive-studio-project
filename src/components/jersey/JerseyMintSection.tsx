@@ -314,7 +314,7 @@ export default function JerseyMintSection({
                       <a
                         href={forceNetwork === 'polygon-amoy' 
                           ? `https://amoy.polygonscan.com/tx/${transactionHash}`
-                          : getTransactionUrl(transactionHash, chainId || 88888)
+                          : getTransactionUrl(transactionHash)
                         }
                         target="_blank"
                         rel="noopener noreferrer"
