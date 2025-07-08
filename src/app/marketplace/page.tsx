@@ -152,7 +152,7 @@ export default function MarketplacePage() {
             // Dados específicos do marketplace
             tokenId={item.tokenId}
             assetContract={item.contractAddress || getContractByCategory(item.category)}
-            owner={item.owner || item.creator?.wallet}
+            owner={item.owner || item.creator}
             isListed={item.isListed || false}
             listingId={item.listingId}
             // Dados de leilão
