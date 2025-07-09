@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     console.log(`📋 Found ${events.length} NewListing events`);
 
     // 2. Analisar cada evento
-    const eventDetails = [];
+    const eventDetails: any[] = [];
     for (const event of events) {
       const { listingCreator, listingId, assetContract } = event.args;
       const listing = event.args.listing;
@@ -72,7 +72,7 @@ export async function POST(request: Request) {
     const dbClient = await clientPromise;
     const db = dbClient.db(DB_NAME);
     
-    const mongoAnalysis = [];
+    const mongoAnalysis: any[] = [];
     const collections = ['jerseys', 'stadiums', 'badges'];
     
     for (const collectionName of collections) {
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
 
     // 4. Tentar fazer match manual
     console.log('🔍 3. Attempting manual matching...');
-    const matches = [];
+    const matches: any[] = [];
     
     for (const event of eventDetails) {
       const eventTokenId = event.tokenId;
@@ -143,7 +143,7 @@ export async function POST(request: Request) {
       eventsFound: events.length,
       nftsInMongo: mongoAnalysis.length,
       potentialMatches: matches.length,
-      issues: []
+      issues: [] as string[]
     };
 
     // Verificar problemas comuns
