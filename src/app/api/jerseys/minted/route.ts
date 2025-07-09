@@ -27,7 +27,7 @@ export async function GET(request: Request) {
       
       // Deve ter transactionHash (prova de mint)
       $or: [
-        { transactionHash: { $exists: true, $ne: null, $ne: '' } },
+        { transactionHash: { $exists: true, $nin: [null, ''] } },
         { mintedAt: { $exists: true, $ne: null } },
         { isMinted: true },
         { mintStatus: 'success' },
