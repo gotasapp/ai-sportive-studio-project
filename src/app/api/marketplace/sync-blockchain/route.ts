@@ -62,8 +62,8 @@ export async function GET(request: Request) {
           tokenUri,
           contractAddress: '0xfF973a4aFc5A96DEc81366461A461824c4f80254'
         });
-      } catch (error) {
-        console.log(`⚠️ Error fetching token ${i}:`, error.message);
+      } catch (error: any) {
+        console.log(`⚠️ Error fetching token ${i}:`, error?.message || error);
       }
     }
 
@@ -247,12 +247,12 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Blockchain Sync Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to sync blockchain data',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 }
@@ -356,11 +356,11 @@ export async function POST(request: Request) {
               message: 'Unknown correction type'
             });
         }
-      } catch (correctionError) {
+      } catch (correctionError: any) {
         results.push({
           type: correction.type,
           success: false,
-          error: correctionError.message
+          error: correctionError?.message || correctionError
         });
       }
     }
@@ -374,12 +374,12 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Blockchain Sync POST Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to apply corrections',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 } 
