@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     }
 
     // 1.3 - Buscar listings reais do marketplace
-    let realListings = [];
+    let realListings: any[] = [];
     try {
       const totalListings = await readContract({
         contract: marketplaceContract,
