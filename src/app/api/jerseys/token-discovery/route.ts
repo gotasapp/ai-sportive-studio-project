@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
-import { getRpcClient } from 'thirdweb';
+import { eth_getTransactionReceipt } from 'thirdweb/rpc';
 import { polygonAmoy } from 'thirdweb/chains';
 
 /**
@@ -35,13 +35,10 @@ export async function POST(request: Request) {
 
     // Método 1: Analisar eventos da transação
     try {
-      // Get transaction receipt usando RPC client
-      const rpcClient = getRpcClient({
+      // Get transaction receipt usando eth_getTransactionReceipt
+      const receipt = await eth_getTransactionReceipt({
         client,
         chain: polygonAmoy,
-      });
-      
-      const receipt = await rpcClient.getTransactionReceipt({
         hash: transactionHash as `0x${string}`,
       });
 
