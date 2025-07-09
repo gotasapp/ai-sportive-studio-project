@@ -97,7 +97,7 @@ export async function POST(request: Request) {
         cleanupResults.duplicatesFound += duplicates.length - 1;
         
         // Ordenar por data de criação (mais recente primeiro)
-        duplicates.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        duplicates.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         
         // Manter apenas o primeiro (mais recente), remover o resto
         const toKeep = duplicates[0];
