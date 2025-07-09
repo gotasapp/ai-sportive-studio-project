@@ -9,7 +9,7 @@ interface CustomConnectButtonProps {
   client: any;
   wallets: any;
   chains: any;
-  theme?: string;
+  theme?: "dark" | "light";
   className?: string;
 }
 
