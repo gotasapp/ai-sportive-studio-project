@@ -146,7 +146,7 @@ export async function POST(request: Request) {
 
                   // Extrair team
                   if (metadata.attributes) {
-                    const teamAttr = metadata.attributes.find(attr => 
+                    const teamAttr = metadata.attributes.find((attr: any) => 
                       attr.trait_type === 'Team' && attr.value !== 'Legacy Mint'
                     );
                     if (teamAttr) team = teamAttr.value;
@@ -209,9 +209,9 @@ export async function POST(request: Request) {
                 specificDoc = {
                   ...baseDoc,
                   teamName: team,
-                  playerName: metadata?.attributes?.find(a => a.trait_type === 'Player Name')?.value || 'Unknown',
-                  playerNumber: metadata?.attributes?.find(a => a.trait_type === 'Player Number')?.value || '00',
-                  style: metadata?.attributes?.find(a => a.trait_type === 'Style')?.value || 'modern',
+                  playerName: metadata?.attributes?.find((a: any) => a.trait_type === 'Player Name')?.value || 'Unknown',
+                  playerNumber: metadata?.attributes?.find((a: any) => a.trait_type === 'Player Number')?.value || '00',
+                  style: metadata?.attributes?.find((a: any) => a.trait_type === 'Style')?.value || 'modern',
                   type: 'jersey'
                 };
                 break;
