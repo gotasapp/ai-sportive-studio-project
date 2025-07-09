@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     const db = mongoClient.db('chz-app-db');
 
     for (const chainId of selectedChains) {
-      const config = CHAIN_CONFIGS[chainId];
+      const config = CHAIN_CONFIGS[chainId as keyof typeof CHAIN_CONFIGS];
       if (!config || !config.nftContract) {
         console.log(`⚠️ Skipping chain ${chainId}: No configuration found`);
         continue;
@@ -250,8 +250,8 @@ export async function POST(request: Request) {
 
             if (!existing) {
               await db.collection(collectionName).insertOne(specificDoc);
-              chainResults[nftType] = chainResults[nftType] || { created: 0, errors: 0 };
-              chainResults[nftType].created++;
+              chainResults[nftType as keyof typeof chainResults] = chainResults[nftType as keyof typeof chainResults] || { created: 0, errors: 0 };
+              (chainResults[nftType as keyof typeof chainResults] as any).created++;
               chainResults.total.created++;
               console.log(`✅ Created ${config.name} ${nftType} tokenId ${i}: ${name}`);
             } else {
@@ -263,13 +263,13 @@ export async function POST(request: Request) {
               console.log(`🔄 Updated ${config.name} ${nftType} tokenId ${i}: ${name}`);
             }
 
-          } catch (tokenError) {
-            console.error(`❌ Error processing ${config.name} token ${i}:`, tokenError.message);
+          } catch (tokenError: any) {
+            console.error(`❌ Error processing ${config.name} token ${i}:`, tokenError?.message || tokenError);
             chainResults.total.errors++;
           }
         }
 
-        results.byChain[chainId] = {
+        (results.byChain as any)[chainId] = {
           name: config.name,
           contract: config.nftContract,
           totalSupply: Number(totalSupply),
@@ -282,9 +282,9 @@ export async function POST(request: Request) {
 
       } catch (chainError) {
         console.error(`❌ Error processing chain ${chainId}:`, chainError);
-        results.byChain[chainId] = {
-          name: config.name,
-          error: chainError.message
+        (results.byChain as any)[chainId] = {
+          name: config?.name || 'Unknown',
+          error: (chainError as any)?.message || chainError
         };
       }
     }
@@ -307,12 +307,12 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Multi-Chain Rebuild Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to rebuild multi-chain MongoDB',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 }
@@ -345,7 +345,7 @@ export async function GET(request: Request) {
       const chainStadiums = await db.collection('stadiums').countDocuments(chainFilter);
       const chainBadges = await db.collection('badges').countDocuments(chainFilter);
       
-      chainStats[cId] = {
+      (chainStats as any)[cId] = {
         name: config.name,
         contract: config.nftContract,
         jerseys: chainJerseys,
@@ -369,11 +369,11 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({
       success: false,
       error: 'Failed to check multi-chain status',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 } 
