@@ -102,12 +102,6 @@ export function CustomConnectButton({
                   connectButton={{
                     label: "Switch Account"
                   }}
-                  detailsButton={{
-                    displayBalanceToken: {
-                      symbol: "CHZ",
-                      address: "0x0000000000000000000000000000000000000000"
-                    }
-                  }}
                 />
               </div>
             </div>
