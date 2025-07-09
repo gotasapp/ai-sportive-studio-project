@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useThirdwebProfiles } from '@/hooks/useThirdwebProfiles';
-import { Mail, Phone, User, Wallet, Plus, ExternalLink } from 'lucide-react';
+import { AccountLinkingModal } from './AccountLinkingModal';
+import { Mail, Phone, User, Wallet, Plus, ExternalLink, Trash2 } from 'lucide-react';
 
 const profileTypeIcons = {
   email: Mail,
@@ -40,7 +42,15 @@ const profileTypeLabels = {
 };
 
 export function ConnectedProfiles() {
-  const { profiles, loading, error, totalProfiles } = useThirdwebProfiles();
+  const { profiles, loading, error, totalProfiles, refetch } = useThirdwebProfiles();
+  const [isLinkingModalOpen, setIsLinkingModalOpen] = useState(false);
+
+  const handleAccountLinked = () => {
+    // Recarregar perfis após linking
+    if (refetch) {
+      refetch();
+    }
+  };
 
   if (loading) {
     return (
@@ -91,10 +101,7 @@ export function ConnectedProfiles() {
               variant="outline" 
               size="sm"
               className="cyber-button"
-              onClick={() => {
-                // TODO: Implement account linking
-                console.log('Link account clicked');
-              }}
+              onClick={() => setIsLinkingModalOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Link Account
@@ -151,10 +158,7 @@ export function ConnectedProfiles() {
               variant="outline" 
               size="sm"
               className="w-full cyber-button mt-4"
-              onClick={() => {
-                // TODO: Implement account linking
-                console.log('Link additional account clicked');
-              }}
+              onClick={() => setIsLinkingModalOpen(true)}
             >
               <Plus className="h-4 w-4 mr-2" />
               Link Additional Account
@@ -162,6 +166,12 @@ export function ConnectedProfiles() {
           </>
         )}
       </CardContent>
+      
+      <AccountLinkingModal
+        isOpen={isLinkingModalOpen}
+        onClose={() => setIsLinkingModalOpen(false)}
+        onAccountLinked={handleAccountLinked}
+      />
     </Card>
   );
 } 
