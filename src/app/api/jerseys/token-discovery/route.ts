@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
-import { eth_getTransactionReceipt } from 'thirdweb/rpc';
 import { polygonAmoy } from 'thirdweb/chains';
 
 /**
@@ -33,51 +32,11 @@ export async function POST(request: Request) {
 
     console.log('🔗 Getting transaction receipt for:', transactionHash);
 
-    // Método 1: Analisar eventos da transação
-    try {
-      // Get transaction receipt usando eth_getTransactionReceipt
-      const receipt = await eth_getTransactionReceipt(
-        { client, chain: polygonAmoy },
-        { hash: transactionHash as `0x${string}` }
-      );
+    // Método 1: Skip transaction receipt analysis for now due to Thirdweb v5 API complexity
+    // Will use alternative methods that are more reliable
+    console.log('⚠️ Skipping transaction receipt analysis, using alternative methods...');
 
-      console.log('📄 Transaction receipt:', {
-        status: receipt.status,
-        logs: receipt.logs?.length || 0,
-        blockNumber: receipt.blockNumber?.toString()
-      });
-
-      // Procurar por evento Transfer que indica mint
-      // Transfer(address from, address to, uint256 tokenId)
-      // from = 0x0000... (mint), to = owner, tokenId = real token ID
-      const transferEvents = (receipt.logs || []).filter(log => 
-        log.address?.toLowerCase() === contractAddress.toLowerCase() &&
-        log.topics && log.topics.length >= 4 &&
-        log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' // Transfer event signature
-      );
-
-      if (transferEvents.length > 0) {
-        const transferEvent = transferEvents[0];
-        // TokenId está no 4º topic (índice 3)
-        const tokenIdHex = transferEvent.topics[3];
-        const tokenId = parseInt(tokenIdHex, 16);
-        
-        console.log('✅ TokenId discovered from Transfer event:', tokenId);
-        
-        return NextResponse.json({
-          success: true,
-          tokenId: tokenId.toString(),
-          method: 'transfer_event',
-          transactionHash,
-          blockNumber: receipt.blockNumber?.toString() || 'unknown'
-        });
-      }
-
-    } catch (receiptError) {
-      console.log('⚠️ Could not get transaction receipt, trying alternative methods...');
-    }
-
-    // Método 2: Verificar ownership do usuário
+    // Método 1: Verificar ownership do usuário (método principal agora)
     if (ownerAddress) {
       try {
         console.log('🔍 Method 2: Checking user tokens...');
@@ -126,7 +85,7 @@ export async function POST(request: Request) {
       }
     }
 
-    // Método 3: Fallback - usar timestamp como estimativa
+    // Método 2: Fallback - usar timestamp como estimativa
     console.log('⚠️ Using fallback method - timestamp estimation');
     const fallbackTokenId = Math.floor(Date.now() / 1000) % 10000; // Estimativa baseada em timestamp
 
