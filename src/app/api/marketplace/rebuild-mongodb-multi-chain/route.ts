@@ -361,7 +361,7 @@ export async function GET(request: Request) {
       currentStatus: {
         filtered: { chainId, jerseys, stadiums, badges, total: jerseys + stadiums + badges },
         byChain: chainStats,
-        globalTotal: Object.values(chainStats).reduce((sum, chain) => sum + chain.total, 0)
+        globalTotal: Object.values(chainStats).reduce((sum, chain: any) => sum + chain.total, 0)
       },
       supportedChains: CHAIN_CONFIGS,
       message: 'Multi-chain MongoDB status. Use POST with action: REBUILD_MULTI_CHAIN',
