@@ -89,7 +89,7 @@ export async function POST(request: Request) {
 
               // Extrair team dos atributos
               if (metadata.attributes) {
-                const teamAttr = metadata.attributes.find(attr => 
+                const teamAttr = metadata.attributes.find((attr: any) => 
                   attr.trait_type === 'Team' && 
                   attr.value !== 'Legacy Mint'
                 );
@@ -113,8 +113,8 @@ export async function POST(request: Request) {
           name
         });
 
-      } catch (error) {
-        console.log(`⚠️ Error fetching token ${i}:`, error.message);
+      } catch (error: any) {
+        console.log(`⚠️ Error fetching token ${i}:`, error?.message || error);
         continue;
       }
     }
@@ -165,9 +165,9 @@ export async function POST(request: Request) {
             specificDoc = {
               ...baseDoc,
               teamName: nft.team,
-              playerName: nft.metadata?.attributes?.find(a => a.trait_type === 'Player Name')?.value || 'Unknown',
-              playerNumber: nft.metadata?.attributes?.find(a => a.trait_type === 'Player Number')?.value || '00',
-              style: nft.metadata?.attributes?.find(a => a.trait_type === 'Style')?.value || 'modern',
+              playerName: nft.metadata?.attributes?.find((a: any) => a.trait_type === 'Player Name')?.value || 'Unknown',
+              playerNumber: nft.metadata?.attributes?.find((a: any) => a.trait_type === 'Player Number')?.value || '00',
+              style: nft.metadata?.attributes?.find((a: any) => a.trait_type === 'Style')?.value || 'modern',
               type: 'jersey'
             };
             break;
@@ -255,12 +255,12 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ MongoDB Rebuild Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Failed to rebuild MongoDB from blockchain',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 }
@@ -292,11 +292,11 @@ export async function GET(request: Request) {
       timestamp: new Date().toISOString()
     });
 
-  } catch (error) {
+  } catch (error: any) {
     return NextResponse.json({
       success: false,
       error: 'Failed to check MongoDB status',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 } 
