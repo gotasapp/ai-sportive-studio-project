@@ -166,7 +166,7 @@ export async function GET(request: Request) {
     const db = dbClient.db(DB_NAME);
     
     // Contar NFTs listados por coleção
-    const stats = {};
+    const stats: Record<string, any> = {};
     const collections = ['jerseys', 'stadiums', 'badges'];
     
     for (const collectionName of collections) {
