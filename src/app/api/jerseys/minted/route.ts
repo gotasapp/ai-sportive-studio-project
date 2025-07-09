@@ -80,8 +80,8 @@ export async function GET(request: Request) {
     // Log detalhado para debug
     if (processedJerseys.length > 0) {
       console.log('📋 Minted NFTs details:');
-      processedJerseys.forEach((jersey, index) => {
-        console.log(`${index + 1}. ${jersey.name} - TX: ${jersey.transactionHash?.slice(0, 10)}...`);
+      processedJerseys.forEach((jersey: any, index) => {
+        console.log(`${index + 1}. ${jersey.name || 'Unnamed Jersey'} - TX: ${jersey.transactionHash?.slice(0, 10)}...`);
       });
     } else {
       console.log('⚠️ No minted NFTs found. Users need to mint NFTs first.');
