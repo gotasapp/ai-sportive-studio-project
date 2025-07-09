@@ -34,7 +34,7 @@ export async function GET(request: Request) {
       const filter: any = {
         status: 'Approved',
         $or: [
-          { transactionHash: { $exists: true, $ne: null, $ne: '' } },
+          { transactionHash: { $exists: true, $nin: [null, ''] } },
           { isMinted: true },
           { mintStatus: 'minted' },
           { mintStatus: 'success' }
