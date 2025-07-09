@@ -128,8 +128,7 @@ export async function POST(request: Request) {
                   fetchUrl = tokenUri.replace('ipfs://', 'https://ipfs.io/ipfs/');
                 }
                 
-                const metadataResponse = await fetch(fetchUrl, { 
-                  timeout: 5000,
+                const metadataResponse = await fetch(fetchUrl, {
                   headers: { 'Accept': 'application/json' }
                 });
                 
