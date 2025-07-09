@@ -245,7 +245,7 @@ export async function GET(request: Request) {
     const dbClient = await clientPromise;
     const db = dbClient.db(DB_NAME);
     
-    const stats = {};
+    const stats: Record<string, any> = {};
     const collections = ['jerseys', 'stadiums', 'badges'];
     
     for (const collectionName of collections) {
