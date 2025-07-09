@@ -99,8 +99,8 @@ export async function GET(request: Request) {
               contractAddress
             });
 
-          } catch (tokenError) {
-            console.log(`⚠️ Could not fetch token ${tokenId}:`, tokenError.message);
+          } catch (tokenError: any) {
+            console.log(`⚠️ Could not fetch token ${tokenId}:`, tokenError?.message || tokenError);
             continue;
           }
         }
@@ -113,12 +113,12 @@ export async function GET(request: Request) {
           contractAddress
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error fetching all NFTs:', error);
         return NextResponse.json({
           success: false,
           error: 'Failed to fetch NFTs from collection',
-          details: error.message
+          details: error?.message || error
         }, { status: 500 });
       }
     }
@@ -171,11 +171,11 @@ export async function GET(request: Request) {
           }
         });
 
-      } catch (error) {
+      } catch (error: any) {
         return NextResponse.json({
           success: false,
           error: `Token ${tokenId} not found or error fetching`,
-          details: error.message
+          details: error?.message || error
         }, { status: 404 });
       }
     }
@@ -237,7 +237,7 @@ export async function GET(request: Request) {
                 contractAddress
               });
             }
-          } catch (tokenError) {
+          } catch (tokenError: any) {
             continue;
           }
         }
@@ -250,12 +250,12 @@ export async function GET(request: Request) {
           ownedCount: ownedNfts.length
         });
 
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Error fetching owned NFTs:', error);
         return NextResponse.json({
           success: false,
           error: 'Failed to fetch owned NFTs',
-          details: error.message
+          details: error?.message || error
         }, { status: 500 });
       }
     }
@@ -265,12 +265,12 @@ export async function GET(request: Request) {
       error: 'Invalid action. Use: getAllNFTs, getNFT, or getOwnedNFTs'
     }, { status: 400 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ NFT Collection API Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Internal server error',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 }
@@ -340,11 +340,11 @@ export async function POST(request: Request) {
             success: true
           });
 
-        } catch (error) {
+        } catch (error: any) {
           results.push({
             tokenId: tokenId.toString(),
             success: false,
-            error: error.message
+            error: error?.message || error
           });
         }
       }
@@ -362,12 +362,12 @@ export async function POST(request: Request) {
       error: 'Invalid POST action. Use: batchGetNFTs'
     }, { status: 400 });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ NFT Collection API POST Error:', error);
     return NextResponse.json({
       success: false,
       error: 'Internal server error',
-      details: error.message
+      details: error?.message || error
     }, { status: 500 });
   }
 } 
