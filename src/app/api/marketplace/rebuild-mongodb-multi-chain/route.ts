@@ -201,7 +201,7 @@ export async function POST(request: Request) {
 
             // Determinar coleção específica
             let collectionName;
-            let specificDoc = { ...baseDoc };
+            let specificDoc: any = { ...baseDoc };
 
             switch (nftType) {
               case 'jersey':
