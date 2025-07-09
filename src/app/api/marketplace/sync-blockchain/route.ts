@@ -116,7 +116,7 @@ export async function GET(request: Request) {
     // 3. CRUZAR DADOS E IDENTIFICAR DISCREPÂNCIAS
     console.log('🔍 Step 3: Cross-referencing data...');
 
-    const syncResults = {
+    const syncResults: any = {
       totalRealNFTs: Number(totalSupply),
       totalRealListings: realListings.length,
       totalMongoDBRecords: jerseys.length + stadiums.length + badges.length,
