@@ -618,7 +618,7 @@ export default function CollectionMintPage() {
                     </div>
 
                     <div className="text-xs text-gray-400 text-center">
-                      By clicking "mint", you agree to the Magic Eden Terms of Service.
+                      By clicking &quot;mint&quot;, you agree to the Magic Eden Terms of Service.
                     </div>
 
                     <Button 
