@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
+import { getRpcClient } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 
 /**
@@ -34,24 +35,28 @@ export async function POST(request: Request) {
 
     // Método 1: Analisar eventos da transação
     try {
-      // Get transaction receipt usando thirdweb
-      const receipt = await client.getTransactionReceipt({
-        transactionHash,
+      // Get transaction receipt usando RPC client
+      const rpcClient = getRpcClient({
+        client,
         chain: polygonAmoy,
+      });
+      
+      const receipt = await rpcClient.getTransactionReceipt({
+        hash: transactionHash as `0x${string}`,
       });
 
       console.log('📄 Transaction receipt:', {
         status: receipt.status,
-        logs: receipt.logs.length,
-        blockNumber: receipt.blockNumber
+        logs: receipt.logs?.length || 0,
+        blockNumber: receipt.blockNumber?.toString()
       });
 
       // Procurar por evento Transfer que indica mint
       // Transfer(address from, address to, uint256 tokenId)
       // from = 0x0000... (mint), to = owner, tokenId = real token ID
-      const transferEvents = receipt.logs.filter(log => 
-        log.address.toLowerCase() === contractAddress.toLowerCase() &&
-        log.topics.length >= 4 &&
+      const transferEvents = (receipt.logs || []).filter(log => 
+        log.address?.toLowerCase() === contractAddress.toLowerCase() &&
+        log.topics && log.topics.length >= 4 &&
         log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' // Transfer event signature
       );
 
@@ -68,7 +73,7 @@ export async function POST(request: Request) {
           tokenId: tokenId.toString(),
           method: 'transfer_event',
           transactionHash,
-          blockNumber: receipt.blockNumber.toString()
+          blockNumber: receipt.blockNumber?.toString() || 'unknown'
         });
       }
 
