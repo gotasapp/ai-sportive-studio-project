@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     }
 
     // 4.2 - Remover duplicatas (manter apenas o mais recente)
-    for (const [key, duplicates] of duplicateGroups.entries()) {
+    duplicateGroups.forEach((duplicates, key) => {
       if (duplicates.length > 1) {
         cleanupResults.duplicatesFound += duplicates.length - 1;
         
@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         const toKeep = duplicates[0];
         const toRemove = duplicates.slice(1);
         
-        for (const duplicate of toRemove) {
+        toRemove.forEach(async (duplicate) => {
           // Determinar coleção
           let collectionName = 'jerseys';
           if (duplicate.type === 'stadium') collectionName = 'stadiums';
@@ -125,9 +125,9 @@ export async function POST(request: Request) {
           } catch (deleteError) {
             console.error(`❌ Erro ao remover duplicado ${duplicate._id}:`, deleteError);
           }
-        }
+        });
       }
-    }
+    });
 
     // 4.3 - Verificar listagens com preços astronômicos
     for (const listing of validListings) {
