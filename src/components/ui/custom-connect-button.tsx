@@ -26,13 +26,14 @@ export function CustomConnectButton({
   if (!account) {
     // Show regular connect button when not connected
     return (
-      <ConnectButton 
-        client={client}
-        wallets={wallets}
-        chains={chains}
-        theme={theme}
-        className={className}
-      />
+      <div className={className}>
+        <ConnectButton 
+          client={client}
+          wallets={wallets}
+          chains={chains}
+          theme={theme}
+        />
+      </div>
     );
   }
 
