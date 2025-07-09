@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       invalidPricesFixed: 0,
       orphanedListings: 0,
       orphanedListingsRemoved: 0,
-      correctionsApplied: []
+      correctionsApplied: [] as any[]
     };
 
     // 4.1 - Identificar NFTs duplicados (mesmo nome, imagem, criador)
