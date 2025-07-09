@@ -87,71 +87,102 @@ export function useMarketplaceData() {
       console.log('✅ Metadados carregados:', allNFTMetadata.length, 'NFTs');
 
       // 4. Mapear listagens reais com metadados
-      const marketplaceItems: MarketplaceItem[] = realListings.map((listing) => {
-        // Tentar encontrar metadados correspondentes
-        const metadata = allNFTMetadata.find(nft => {
-          const listingTokenId = listing.tokenId.toString();
-          console.log('🔍 Procurando metadados para tokenId:', listingTokenId, 'em', nft._id);
+      const marketplaceItems: MarketplaceItem[] = realListings
+        .map((listing) => {
+          // 🚨 VALIDAÇÃO CRÍTICA DO PREÇO ANTES DE CONTINUAR
+          const priceInWei = listing.pricePerToken;
+          const priceInEther = Number(priceInWei) / Math.pow(10, 18);
           
-          // Tentar várias formas de comparação
-          return nft._id === listingTokenId || 
-                 String(listing.tokenId) === nft._id ||
-                 // Se o tokenId é 15, pode corresponder ao último NFT criado
-                 (listingTokenId === "15" && nft.name?.includes("Corinthians JEFF"));
-        }) || 
-        // Fallback: pegar o último NFT criado se não encontrou correspondência exata
-        allNFTMetadata.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
-        
-        console.log('🔍 Metadados encontrados:', !!metadata, metadata?.name);
-        
-        // Corrigir conversão do preço (BigInt para decimal)
-        const priceInWei = listing.pricePerToken;
-        const priceInEther = Number(priceInWei) / Math.pow(10, 18); // Conversão correta de wei para ether
-        const formattedPrice = priceInEther.toFixed(3); // Máximo 3 casas decimais
-        const finalPriceString = `${formattedPrice} MATIC`;
-        
-        console.log('💰 Conversão de preço:', {
-          priceInWei: priceInWei.toString(),
-          priceInEther,
-          formattedPrice,
-          finalPriceString,
-          isReasonable: priceInEther > 0 && priceInEther < 1000
-        });
-        
-        // Se não encontrou metadados, criar item básico
-        const baseItem = {
-          id: listing.listingId.toString(),
-          name: metadata?.name || `NFT #${listing.tokenId}`,
-          imageUrl: metadata?.imageUrl || '/placeholder-nft.png',
-          tokenId: listing.tokenId.toString(),
-          contractAddress: listing.assetContract,
-          category: (metadata?.category || 'jersey') as 'jersey' | 'stadium' | 'badge',
-          owner: listing.listingCreator,
-          creator: listing.listingCreator,
-          // Dados reais da listagem com preço corrigido
-          isListed: true,
-          listingId: listing.listingId.toString(),
-          price: finalPriceString,
-          currency: 'MATIC',
-          // Dados de leilão (falso para listagens diretas)
-          isAuction: false,
-          activeOffers: 0,
-          // Metadados
-          description: metadata?.description || '',
-          createdAt: metadata?.createdAt || new Date().toISOString(),
-        };
-        
-        console.log('📋 Item mapeado:', {
-          listingId: listing.listingId.toString(),
-          tokenId: listing.tokenId.toString(),
-          name: baseItem.name,
-          price: baseItem.price,
-          imageUrl: baseItem.imageUrl,
-          hasMetadata: !!metadata
-        });
-        
-        return baseItem;
-      });
+          // Detectar preços astronômicos e pular esta listagem
+          if (priceInEther > 1000 || priceInEther <= 0 || !isFinite(priceInEther)) {
+            console.warn('🚨 PREÇO ASTRONÔMICO DETECTADO - PULANDO LISTAGEM:', {
+              listingId: listing.listingId.toString(),
+              priceInWei: priceInWei.toString(),
+              priceInEther,
+              tokenId: listing.tokenId.toString()
+            });
+            return null; // Pular esta listagem
+          }
+          
+          // Tentar encontrar metadados correspondentes COM VALIDAÇÃO ESTRITA
+          const metadata = allNFTMetadata.find(nft => {
+            const listingTokenId = listing.tokenId.toString();
+            
+            // ✅ APENAS correspondência EXATA - SEM FALLBACKS
+            const exactMatch = nft._id === listingTokenId || 
+                               String(listing.tokenId) === nft._id ||
+                               nft.tokenId === listingTokenId ||
+                               nft.blockchainTokenId === listingTokenId;
+            
+            if (exactMatch) {
+              console.log('✅ Correspondência EXATA encontrada:', {
+                listingTokenId,
+                nftId: nft._id,
+                nftName: nft.name
+              });
+            }
+            
+            return exactMatch;
+          });
+          
+          // 🚨 SE NÃO ENCONTROU METADADOS EXATOS, PULAR ESTA LISTAGEM
+          if (!metadata) {
+            console.warn('⚠️ LISTAGEM SEM METADADOS CORRESPONDENTES - PULANDO:', {
+              listingId: listing.listingId.toString(),
+              tokenId: listing.tokenId.toString(),
+              availableNFTs: allNFTMetadata.map(nft => ({ id: nft._id, name: nft.name }))
+            });
+            return null; // Pular esta listagem
+          }
+          
+          console.log('🔍 Metadados encontrados:', !!metadata, metadata?.name);
+          
+          // Conversão segura do preço
+          const formattedPrice = priceInEther.toFixed(6); // 6 casas decimais para precisão
+          const finalPriceString = `${formattedPrice} MATIC`;
+          
+          console.log('💰 Conversão de preço VALIDADA:', {
+            priceInWei: priceInWei.toString(),
+            priceInEther,
+            formattedPrice,
+            finalPriceString,
+            isReasonable: priceInEther > 0 && priceInEther < 1000
+          });
+          
+          // Criar item com dados VALIDADOS
+          const baseItem = {
+            id: listing.listingId.toString(),
+            name: metadata.name,
+            imageUrl: metadata.imageUrl,
+            tokenId: listing.tokenId.toString(),
+            contractAddress: listing.assetContract,
+            category: (metadata.category || 'jersey') as 'jersey' | 'stadium' | 'badge',
+            owner: listing.listingCreator,
+            creator: listing.listingCreator,
+            // Dados reais da listagem com preço validado
+            isListed: true,
+            listingId: listing.listingId.toString(),
+            price: finalPriceString,
+            currency: 'MATIC',
+            // Dados de leilão (falso para listagens diretas)
+            isAuction: false,
+            activeOffers: 0,
+            // Metadados
+            description: metadata.description || '',
+            createdAt: metadata.createdAt || new Date().toISOString(),
+          };
+          
+          console.log('📋 Item mapeado VALIDADO:', {
+            listingId: listing.listingId.toString(),
+            tokenId: listing.tokenId.toString(),
+            name: baseItem.name,
+            price: baseItem.price,
+            imageUrl: baseItem.imageUrl
+          });
+          
+          return baseItem;
+        })
+        .filter(item => item !== null) as MarketplaceItem[]; // Remover itens nulos
       
       // 5. Adicionar NFTs não listados (apenas para visualização)
       const unlistedNFTs: MarketplaceItem[] = allNFTMetadata
