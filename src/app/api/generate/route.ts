@@ -108,6 +108,27 @@ export async function POST(request: NextRequest) {
       });
     }
     
+    // ===== STANDARD MODE - ORIGINAL SYSTEM =====
+    else {
+      console.log('🎨 [GENERATE API] Using Standard Mode (Original System)');
+      console.log('🎨 [GENERATE API] Standard details:', {
+        model_id: body.model_id,
+        player_name: body.player_name,
+        player_number: body.player_number,
+        quality: body.quality
+      });
+      
+      // Standard request - keep original format that works with main_unified.py
+      adaptedBody = {
+        model_id: body.model_id,
+        player_name: body.player_name || 'PLAYER',
+        player_number: body.player_number || '10',
+        quality: body.quality || 'standard'
+      };
+      
+      console.log('✅ [GENERATE API] Standard request prepared for Python API');
+    }
+    
     console.log('📦 [GENERATE API] Final request body:', JSON.stringify(adaptedBody, null, 2));
     
     const response = await fetch(`${API_BASE_URL}/generate`, {
