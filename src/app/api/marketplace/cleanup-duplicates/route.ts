@@ -92,7 +92,7 @@ export async function POST(request: Request) {
     }
 
     // 4.2 - Remover duplicatas (manter apenas o mais recente)
-    for (const [key, duplicates] of duplicateGroups) {
+    for (const [key, duplicates] of duplicateGroups.entries()) {
       if (duplicates.length > 1) {
         cleanupResults.duplicatesFound += duplicates.length - 1;
         
