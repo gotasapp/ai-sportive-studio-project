@@ -160,6 +160,14 @@ export default function Header() {
       </NavLink>
       
       <NavLink 
+        href="/launchpad" 
+        className={cn(mobile && "w-full text-center py-2")}
+        onClick={onItemClick}
+      >
+        Launchpad
+      </NavLink>
+      
+      <NavLink 
         href="/profile" 
         className={cn(mobile && "w-full text-center py-2")}
         onClick={onItemClick}

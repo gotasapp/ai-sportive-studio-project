@@ -30,49 +30,49 @@ export default function MarketplaceStats({
 }: MarketplaceStatsProps) {
   const stats = [
     {
-      title: "Total Listings",
+      title: "Listings",
       value: totalListings,
-      description: "NFTs for sale",
-      icon: <Tag className="h-5 w-5 text-[#A20131]" />,
+      description: "For sale",
+      icon: <Tag className="h-3 w-3 text-[#A20131]" />,
       color: "text-blue-400"
     },
     {
-      title: "Total Auctions", 
+      title: "Auctions", 
       value: totalAuctions,
-      description: "Active auctions",
-      icon: <TrendingUp className="h-5 w-5 text-[#A20131]" />,
+      description: "Active",
+      icon: <TrendingUp className="h-3 w-3 text-[#A20131]" />,
       color: "text-green-400"
     },
     {
-      title: "Total Volume",
+      title: "Volume",
       value: totalVolume,
-      description: "Trading volume",
-      icon: <DollarSign className="h-5 w-5 text-[#A20131]" />,
+      description: "Total",
+      icon: <DollarSign className="h-3 w-3 text-[#A20131]" />,
       color: "text-purple-400"
     },
     {
-      title: "Floor Price",
+      title: "Floor",
       value: floorPrice,
-      description: "Lowest price",
-      icon: <BarChart3 className="h-5 w-5 text-[#A20131]" />,
+      description: "Lowest",
+      icon: <BarChart3 className="h-3 w-3 text-[#A20131]" />,
       color: "text-orange-400"
     }
   ];
 
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
+    <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2 ${className}`}>
       {stats.map((stat, index) => (
         <Card key={index} className="cyber-card border-[#FDFDFD]/10">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
+            <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
               {stat.title}
             </CardTitle>
-            <div className="p-2 rounded-lg bg-[#A20131]/20">
+            <div className="p-1 rounded bg-[#A20131]/20">
               {stat.icon}
             </div>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stat.color} mb-1`}>
+          <CardContent className="p-2 pt-0">
+            <div className={`text-sm font-bold ${stat.color} mb-0.5`}>
               {stat.value}
             </div>
             <p className="text-xs text-[#FDFDFD]/50">
