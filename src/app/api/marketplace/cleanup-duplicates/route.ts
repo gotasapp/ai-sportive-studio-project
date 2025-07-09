@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         const toKeep = duplicates[0];
         const toRemove = duplicates.slice(1);
         
-        toRemove.forEach(async (duplicate) => {
+        toRemove.forEach(async (duplicate: any) => {
           // Determinar coleção
           let collectionName = 'jerseys';
           if (duplicate.type === 'stadium') collectionName = 'stadiums';
