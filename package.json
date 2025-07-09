@@ -9,7 +9,8 @@
     "lint": "next lint",
     "db:populate": "node scripts/populate-db.js",
     "db:seed": "npm run db:populate",
-    "dev:fresh": "npm run db:populate && npm run dev"
+    "dev:fresh": "npm run db:populate && npm run dev",
+    "check:minted": "node scripts/check-minted-nfts.js"
   },
   "dependencies": {
     "@heroicons/react": "^2.2.0",

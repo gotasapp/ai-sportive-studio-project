@@ -482,6 +482,38 @@ export default function JerseyEditor() {
       setMintStatus('success');
       setMintSuccess(`🎉 Legacy mint successful! Transaction: ${result.transactionHash}`)
       setTransactionHash(result.transactionHash || 'N/A')
+
+      // ✅ CRITICAL: Atualizar MongoDB também para LEGACY MINTs
+      try {
+        console.log('💾 Updating MongoDB with legacy mint success...');
+        const updateResponse = await fetch('/api/jerseys/update-mint-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userWallet: address,
+            transactionHash: result.transactionHash,
+            tokenId: null, // Legacy mint não retorna tokenId imediatamente
+            status: 'minted',
+            chainId: 80002, // Polygon Amoy
+            blockNumber: null
+          })
+        });
+
+        if (updateResponse.ok) {
+          const updateResult = await updateResponse.json();
+          console.log('✅ MongoDB updated successfully for legacy mint:', updateResult);
+          
+          // Show success message with explorer link
+          setMintSuccess(
+            `🎉 Legacy NFT minted successfully! View on explorer: https://amoy.polygonscan.com/tx/${result.transactionHash}`
+          );
+        } else {
+          console.error('❌ Failed to update MongoDB for legacy mint:', await updateResponse.text());
+        }
+      } catch (dbError) {
+        console.error('❌ Error updating database for legacy mint:', dbError);
+        // Don't fail the mint, just log the error
+      }
       
     } catch (error: any) {
       console.error('❌ Legacy mint failed:', error)
@@ -1145,6 +1177,72 @@ Design based on analysis: ${analysisText}`
     setError(null);
     setSaveError(null);
   }
+
+  // ✅ Monitor transaction status and update database when minted
+  useEffect(() => {
+    if (mintStatus === 'pending' && mintedTokenId) {
+      const interval = setInterval(async () => {
+        console.log(`🔎 Checking status for queueId: ${mintedTokenId}`);
+        const statusResult = await getTransactionStatus(mintedTokenId);
+        
+        if (statusResult.result) {
+          const { status, transactionHash: finalTxHash, errorMessage, blockNumber, tokenId } = statusResult.result;
+          console.log('🔍 Engine status:', status);
+
+          if (status === 'mined') {
+            setMintStatus('success');
+            setMintSuccess('NFT successfully created on blockchain!');
+            setTransactionHash(finalTxHash);
+            clearInterval(interval);
+
+            // ✅ CRITICAL: Update MongoDB with transaction hash
+            try {
+              console.log('💾 Updating MongoDB with mint success...');
+              const updateResponse = await fetch('/api/jerseys/update-mint-status', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  userWallet: address,
+                  transactionHash: finalTxHash,
+                  tokenId: tokenId || null,
+                  queueId: mintedTokenId,
+                  status: 'minted',
+                  chainId: 80002, // Polygon Amoy
+                  blockNumber: blockNumber || null
+                })
+              });
+
+              if (updateResponse.ok) {
+                const updateResult = await updateResponse.json();
+                console.log('✅ MongoDB updated successfully:', updateResult);
+                
+                // Show success message with explorer link
+                setMintSuccess(
+                  `🎉 NFT minted successfully! View on explorer: https://amoy.polygonscan.com/tx/${finalTxHash}`
+                );
+              } else {
+                console.error('❌ Failed to update MongoDB:', await updateResponse.text());
+              }
+            } catch (dbError) {
+              console.error('❌ Error updating database:', dbError);
+              // Don't fail the mint, just log the error
+            }
+
+          } else if (status === 'errored' || status === 'cancelled') {
+            setMintStatus('error');
+            setMintError(`Transaction failed: ${errorMessage || 'Unknown error'}`);
+            clearInterval(interval);
+          }
+        } else if (statusResult.error) {
+          setMintStatus('error');
+          setMintError(`Error checking status: ${statusResult.error}`);
+          clearInterval(interval);
+        }
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [mintStatus, mintedTokenId, getTransactionStatus, address]);
 
   useEffect(() => {
     const loadTeams = async () => {
