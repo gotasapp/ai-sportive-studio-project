@@ -131,7 +131,7 @@ export async function POST(request: Request) {
     // await db.collection('stadiums').deleteMany({});
     // await db.collection('badges').deleteMany({});
 
-    const results = {
+    const results: any = {
       jerseys: { created: 0, errors: 0 },
       stadiums: { created: 0, errors: 0 },
       badges: { created: 0, errors: 0 },
