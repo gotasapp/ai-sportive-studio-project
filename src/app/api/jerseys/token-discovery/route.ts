@@ -36,11 +36,10 @@ export async function POST(request: Request) {
     // Método 1: Analisar eventos da transação
     try {
       // Get transaction receipt usando eth_getTransactionReceipt
-      const receipt = await eth_getTransactionReceipt({
-        client,
-        chain: polygonAmoy,
-        hash: transactionHash as `0x${string}`,
-      });
+      const receipt = await eth_getTransactionReceipt(
+        { client, chain: polygonAmoy },
+        { hash: transactionHash as `0x${string}` }
+      );
 
       console.log('📄 Transaction receipt:', {
         status: receipt.status,
