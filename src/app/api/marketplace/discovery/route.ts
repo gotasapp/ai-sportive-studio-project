@@ -98,59 +98,9 @@ export async function POST(request: Request) {
       console.log('⚠️ Could not get listings, trying alternative method...');
     }
 
-    // Método 2: Analisar evento Transfer da transação
+    // Método 2: Skip transaction receipt analysis for now due to Thirdweb v5 API complexity
     if (transactionHash) {
-      try {
-        console.log('🔗 Method 2: Analyzing Transfer events...');
-        
-        const receipt = await client.getTransactionReceipt({
-          transactionHash,
-          chain: polygonAmoy,
-        });
-
-        console.log('📄 Transaction receipt:', {
-          status: receipt.status,
-          logs: receipt.logs.length,
-          blockNumber: receipt.blockNumber.toString()
-        });
-
-        // Procurar evento Transfer: Transfer(address from, address to, uint256 tokenId)
-        const transferEvents = receipt.logs.filter(log => 
-          log.address.toLowerCase() === contractAddress.toLowerCase() &&
-          log.topics.length >= 4 &&
-          log.topics[0] === '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-        );
-
-        if (transferEvents.length > 0) {
-          const transferEvent = transferEvents[0];
-          const tokenIdHex = transferEvent.topics[3];
-          const tokenId = parseInt(tokenIdHex, 16);
-          const fromAddress = '0x' + transferEvent.topics[1].slice(26);
-          const toAddress = '0x' + transferEvent.topics[2].slice(26);
-          
-          console.log('✅ Transfer event found:', {
-            from: fromAddress,
-            to: toAddress,
-            tokenId,
-            isMint: fromAddress === '0x0000000000000000000000000000000000000000'
-          });
-          
-          return NextResponse.json({
-            success: true,
-            tokenId: tokenId.toString(),
-            method: 'transfer_event',
-            transactionHash,
-            blockNumber: receipt.blockNumber.toString(),
-            transferDetails: {
-              from: fromAddress,
-              to: toAddress,
-              isMint: fromAddress === '0x0000000000000000000000000000000000000000'
-            }
-          });
-        }
-      } catch (receiptError) {
-        console.log('⚠️ Could not analyze transaction receipt...');
-      }
+      console.log('⚠️ Skipping transaction receipt analysis, using alternative methods...');
     }
 
     // Método 3: Verificar ownership atual do usuário
