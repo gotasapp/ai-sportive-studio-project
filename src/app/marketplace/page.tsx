@@ -13,7 +13,6 @@ import MarketplaceFilters, {
 import CollectionsTable from '@/components/marketplace/CollectionsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
 
-import { DebugListings } from '@/components/marketplace/DebugListings';
 import { AlertCircle, Loader2, Grid3X3, List } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
@@ -310,13 +309,6 @@ export default function MarketplacePage() {
           ownedCount={counters.owned}
           onShowInsights={handleShowInsights}
         />
-
-        {/* Debug Component (temporary) */}
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 py-4">
-          <div className="max-w-7xl mx-auto space-y-4">
-            <DebugListings />
-          </div>
-        </div>
 
         {/* Content */}
         <div className="container mx-auto px-6 md:px-8 lg:px-12 pb-8">

@@ -375,17 +375,17 @@ export default function MarketplaceCard({
           {/* Status badges */}
           <div className="absolute bottom-3 left-3">
             {isListed && !isAuction && (
-              <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/50">
+              <span className="bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
                 For Sale
               </span>
             )}
             {isAuction && (
-              <span className={`text-xs px-2 py-1 rounded-full border ${
+              <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border backdrop-blur-sm ${
                 endTime && new Date() > endTime 
-                  ? 'bg-red-500/20 text-red-400 border-red-500/50' 
-                  : 'bg-orange-500/20 text-orange-400 border-orange-500/50'
+                  ? 'bg-black/80 text-white border-white/30' 
+                  : 'bg-black/80 text-white border-white/30'
               }`}>
-                {endTime && new Date() > endTime ? '🏁 Ended' : '🏆 Live Auction'}
+                {endTime && new Date() > endTime ? 'Auction Ended' : 'Live Auction'}
               </span>
             )}
           </div>
