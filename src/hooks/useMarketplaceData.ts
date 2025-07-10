@@ -7,7 +7,7 @@ import { useActiveWalletChain } from 'thirdweb/react';
 import { getContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
-import { getNFTs } from 'thirdweb/extensions/erc721';
+import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
 
 // Thirdweb client
 const client = createThirdwebClient({
@@ -94,19 +94,31 @@ export function useMarketplaceData() {
 
       console.log(`✅ Found ${nfts.length} NFTs in contract`);
 
-             // Process NFTs DIRECTLY from Thirdweb data (simple approach)
-       console.log('🔄 Processing NFTs directly from Thirdweb data...');
+             // Process NFTs with MANUAL OWNER LOOKUP
+       console.log('🔄 Processing NFTs with manual owner lookup...');
        console.log('📋 Sample NFT from Thirdweb:', nfts[0]);
        
-       const processedNFTs = nfts.map((nft, index) => {
+       const processedNFTs = await Promise.all(nfts.map(async (nft, index) => {
          const tokenId = nft.id.toString();
          const metadata = nft.metadata || {};
          
-         // Use Thirdweb data directly
-         const nftOwner = nft.owner || 'Unknown';
+         // MANUALLY FETCH OWNER using ownerOf function
+         let nftOwner = 'Unknown';
+         try {
+           nftOwner = await ownerOf({
+             contract,
+             tokenId: BigInt(tokenId)
+           });
+           console.log(`✅ NFT #${tokenId} owner found:`, nftOwner);
+         } catch (error) {
+           console.warn(`⚠️ Could not fetch owner for NFT #${tokenId}:`, error);
+           nftOwner = nft.owner || 'Unknown';
+         }
          
-         console.log(`🔍 NFT #${tokenId} basic info:`, {
-           nftOwner: nftOwner.slice(0, 10) + '...',
+         console.log(`🔍 NFT #${tokenId} FULL DEBUG:`, {
+           rawNftOwner: nft.owner,
+           fetchedOwner: nftOwner,
+           nftOwnerType: typeof nft.owner,
            hasMetadata: !!metadata,
            hasImage: !!metadata.image
          });
@@ -140,7 +152,7 @@ export function useMarketplaceData() {
          });
          
          return marketplaceNFT;
-       });
+       }));
        
        console.log('🎯 All NFTs processed successfully:', processedNFTs.length);
 
