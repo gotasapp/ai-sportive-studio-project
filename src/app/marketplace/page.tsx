@@ -274,7 +274,7 @@ export default function MarketplacePage() {
       <div className="flex-1">
         {/* Featured Carousel */}
         <div className="w-full">
-          <FeaturedCarousel />
+          <FeaturedCarousel marketplaceData={marketplaceItems || []} />
         </div>
 
         {/* Marketplace Stats */}

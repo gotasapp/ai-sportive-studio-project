@@ -25,7 +25,11 @@ interface FeaturedNFT {
   createdAt: string;
 }
 
-export default function FeaturedCarousel() {
+interface FeaturedCarouselProps {
+  marketplaceData?: any[];
+}
+
+export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarouselProps) {
   const [featuredNFTs, setFeaturedNFTs] = useState<FeaturedNFT[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -34,69 +38,49 @@ export default function FeaturedCarousel() {
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
-    const loadRealFeaturedData = async () => {
+    const processFeaturedData = () => {
       setLoading(true);
       setError(null);
       
       try {
-        // Buscar dados reais de todas as APIs
-        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-          fetch('/api/jerseys'),
-          fetch('/api/stadiums'),
-          fetch('/api/badges')
-        ]);
-
-        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-          throw new Error('Failed to fetch featured NFT data');
-        }
-
-        const jerseys: RealNFT[] = await jerseysResponse.json();
-        const stadiums: RealNFT[] = await stadiumsResponse.json();
-        const badges: RealNFT[] = await badgesResponse.json();
-
-        // Combinar todos os NFTs e adicionar categoria
-        const allNFTs: RealNFT[] = [
-          ...jerseys.map(j => ({ ...j, category: 'jersey' as const })),
-          ...stadiums.map(s => ({ ...s, category: 'stadium' as const })),
-          ...badges.map(b => ({ ...b, category: 'badge' as const }))
-        ];
-
-        if (allNFTs.length === 0) {
+        console.log('🎠 Processing featured carousel data:', marketplaceData.length, 'items');
+        
+        if (marketplaceData.length === 0) {
           setFeaturedNFTs([]);
+          setLoading(false);
           return;
         }
 
-        // Ordenar por data de criação (mais recentes primeiro) e pegar os primeiros
-        const sortedNFTs = allNFTs.sort((a, b) => 
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        // Selecionar até 5 NFTs para o carousel
-        const featuredCount = Math.min(sortedNFTs.length, 5);
-        const selectedNFTs = sortedNFTs.slice(0, featuredCount);
+        // Pegar uma seleção de NFTs para o carousel (priorizando variedade)
+        const featuredCount = Math.min(marketplaceData.length, 5);
+        
+        // Misturar um pouco os NFTs para variedade e pegar os primeiros
+        const shuffledNFTs = [...marketplaceData].sort(() => Math.random() - 0.5);
+        const selectedNFTs = shuffledNFTs.slice(0, featuredCount);
 
         // Mapear para o formato do carousel
         const featured: FeaturedNFT[] = selectedNFTs.map(nft => ({
           name: nft.name,
-          collection: nft.creator?.name || `${nft.category.charAt(0).toUpperCase() + nft.category.slice(1)} Collection`,
-          imageUrl: nft.imageUrl,
-          category: nft.category,
-          createdAt: nft.createdAt
+          collection: nft.collection || `${(nft.category || 'NFT').charAt(0).toUpperCase() + (nft.category || 'NFT').slice(1)} Collection`,
+          imageUrl: nft.imageUrl || nft.image, // Fallback para 'image' se 'imageUrl' não existir
+          category: nft.category || 'nft',
+          createdAt: nft.createdAt || new Date().toISOString()
         }));
 
+        console.log('🎠 Featured NFTs selected:', featured.length);
         setFeaturedNFTs(featured);
 
       } catch (error: any) {
-        console.error('❌ Error loading featured NFTs:', error);
-        setError(error.message || 'Failed to load featured NFTs');
+        console.error('❌ Error processing featured NFTs:', error);
+        setError(error.message || 'Failed to process featured NFTs');
         setFeaturedNFTs([]);
       } finally {
         setLoading(false);
       }
     };
 
-    loadRealFeaturedData();
-  }, []);
+    processFeaturedData();
+  }, [marketplaceData]);
   
   // GSAP Timeline para animação suave do carrossel
   useEffect(() => {
