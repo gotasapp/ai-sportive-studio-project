@@ -606,12 +606,26 @@ export class MarketplaceService {
     }
   ) {
     try {
+      console.log('🎯 Dando lance no leilão:', params);
+      
       const contract = getMarketplaceContract(chainId);
       const bidValue = priceToWei(params.bidAmount);
       
+      // Validar lance
+      const numBidAmount = parseFloat(params.bidAmount);
+      if (isNaN(numBidAmount) || numBidAmount <= 0) {
+        throw new Error(`Lance inválido: "${params.bidAmount}". Deve ser um número positivo.`);
+      }
+      
+      console.log('💰 Preparando lance:', {
+        auctionId: params.auctionId,
+        bidAmount: params.bidAmount,
+        bidAmountWei: bidValue.toString()
+      });
+      
       const transaction = prepareContractCall({
         contract,
-        method: "function bidInAuction(uint256 auctionId, uint256 bidAmount) payable",
+        method: "function bidInAuction(uint256 _auctionId, uint256 _bidAmount) payable",
         params: [BigInt(params.auctionId), bidValue],
         value: bidValue, // Enviar valor do lance
       });
@@ -621,9 +635,13 @@ export class MarketplaceService {
         account,
       });
 
+      console.log('✅ Lance realizado:', result.transactionHash);
+      toast.success(`Lance de ${params.bidAmount} MATIC realizado com sucesso!`);
+
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
       console.error('❌ Erro ao dar lance:', error);
+      toast.error(`Falha ao dar lance: ${error.message}`);
       throw new Error(error?.reason || error?.message || 'Falha ao dar lance');
     }
   }
@@ -637,6 +655,8 @@ export class MarketplaceService {
     auctionId: string
   ) {
     try {
+      console.log('💰 Coletando pagamento do leilão:', auctionId);
+      
       const contract = getMarketplaceContract(chainId);
       
       const transaction = prepareContractCall({
@@ -650,9 +670,13 @@ export class MarketplaceService {
         account,
       });
 
+      console.log('✅ Pagamento coletado:', result.transactionHash);
+      toast.success('Pagamento do leilão coletado com sucesso!');
+
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
       console.error('❌ Erro ao coletar pagamento:', error);
+      toast.error(`Falha ao coletar pagamento: ${error.message}`);
       throw new Error(error?.reason || error?.message || 'Falha ao coletar pagamento');
     }
   }
@@ -666,6 +690,8 @@ export class MarketplaceService {
     auctionId: string
   ) {
     try {
+      console.log('🏆 Coletando NFT do leilão:', auctionId);
+      
       const contract = getMarketplaceContract(chainId);
       
       const transaction = prepareContractCall({
@@ -679,9 +705,13 @@ export class MarketplaceService {
         account,
       });
 
+      console.log('✅ NFT coletado:', result.transactionHash);
+      toast.success('NFT do leilão coletado com sucesso!');
+
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
       console.error('❌ Erro ao coletar NFT:', error);
+      toast.error(`Falha ao coletar NFT: ${error.message}`);
       throw new Error(error?.reason || error?.message || 'Falha ao coletar NFT');
     }
   }
@@ -927,11 +957,13 @@ export class MarketplaceService {
     offerId: string
   ) {
     try {
+      console.log('✅ Aceitando oferta:', offerId);
+      
       const contract = getMarketplaceContract(chainId);
       
       const transaction = prepareContractCall({
         contract,
-        method: "function acceptOffer(uint256 offerId)",
+        method: "function acceptOffer(uint256 _offerId)",
         params: [BigInt(offerId)]
       });
 
@@ -940,10 +972,49 @@ export class MarketplaceService {
         account,
       });
 
+      console.log('✅ Oferta aceita:', result.transactionHash);
+      toast.success('Oferta aceita com sucesso!');
+      
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
       console.error('❌ Erro ao aceitar oferta:', error);
+      toast.error(`Falha ao aceitar oferta: ${error.message}`);
       throw new Error(error?.reason || error?.message || 'Falha ao aceitar oferta');
+    }
+  }
+
+  /**
+   * Cancelar oferta
+   */
+  static async cancelOffer(
+    account: Account,
+    chainId: number,
+    offerId: string
+  ) {
+    try {
+      console.log('🚫 Cancelando oferta:', offerId);
+      
+      const contract = getMarketplaceContract(chainId);
+      
+      const transaction = prepareContractCall({
+        contract,
+        method: "function cancelOffer(uint256 _offerId)",
+        params: [BigInt(offerId)]
+      });
+
+      const result = await sendTransaction({
+        transaction,
+        account,
+      });
+
+      console.log('✅ Oferta cancelada:', result.transactionHash);
+      toast.success('Oferta cancelada com sucesso!');
+      
+      return { success: true, transactionHash: result.transactionHash };
+    } catch (error: any) {
+      console.error('❌ Erro ao cancelar oferta:', error);
+      toast.error(`Falha ao cancelar oferta: ${error.message}`);
+      throw new Error(error?.reason || error?.message || 'Falha ao cancelar oferta');
     }
   }
 

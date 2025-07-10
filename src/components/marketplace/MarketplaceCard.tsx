@@ -14,6 +14,8 @@ import { CancelListingButton } from './CancelListingButton';
 import AuctionBidButton from './AuctionBidButton';
 import { CreateAuctionModal } from './CreateAuctionModal';
 import { CancelAuctionButton } from './CancelAuctionButton';
+import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
+import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 
 interface MarketplaceCardProps {
@@ -82,6 +84,11 @@ export default function MarketplaceCard({
     accountAddress: account?.address,
     isOwner,
     isListed,
+    isAuction,
+    auctionId,
+    endTime,
+    currentBid,
+    isAuctionEnded: endTime ? new Date() > endTime : false,
     showCreateListing,
     hasAssetContract: !!assetContract,
     shouldShowListButton: isOwner && !isListed && !isAuction,
@@ -187,36 +194,67 @@ export default function MarketplaceCard({
           </div>
         );
       }
-    } else if (isAuction && auctionId && endTime) {
+    } else if (isAuction && auctionId) {
       // NFT está em leilão
-      const isAuctionEnded = new Date() > endTime;
-      return (
-        <div className="space-y-2">
-          {!isAuctionEnded ? (
-            <AuctionBidButton
-              auctionId={auctionId}
-              currentBid={currentBid || '0 MATIC'}
-              endTime={endTime}
-              className="w-full"
-            />
-          ) : (
-            <Button 
-              disabled
-              className="w-full bg-gray-500/20 text-gray-400 cursor-not-allowed"
-            >
-              Auction Ended
-            </Button>
-          )}
-          {!isOwner && assetContract && (
-            <MakeOfferButton
-              assetContract={assetContract}
-              tokenId={tokenId}
-              nftName={name}
-              className="w-full"
-            />
-          )}
-        </div>
-      );
+      const isAuctionEnded = endTime ? new Date() > endTime : false;
+      
+
+      
+      if (isOwner) {
+        // Botões para o dono do leilão
+        return (
+          <div className="space-y-2">
+            {!isAuctionEnded ? (
+              <CancelAuctionButton
+                auctionId={auctionId}
+                nftName={name}
+                className="w-full"
+                variant="outline"
+              />
+            ) : (
+              <div className="space-y-2">
+                <CollectAuctionPayoutButton
+                  auctionId={auctionId}
+                  nftName={name}
+                  className="w-full"
+                  variant="default"
+                />
+              </div>
+            )}
+          </div>
+        );
+      } else {
+        // Botões para compradores
+        return (
+          <div className="space-y-2">
+            {!isAuctionEnded ? (
+              <AuctionBidButton
+                auctionId={auctionId}
+                currentBid={currentBid || '0 MATIC'}
+                endTime={endTime}
+                className="w-full"
+              />
+                          ) : (
+                <div className="space-y-2">
+                  <CollectAuctionTokensButton
+                    auctionId={auctionId}
+                    nftName={name}
+                    className="w-full"
+                    variant="default"
+                  />
+                </div>
+              )}
+            {assetContract && (
+              <MakeOfferButton
+                assetContract={assetContract}
+                tokenId={tokenId}
+                nftName={name}
+                className="w-full"
+              />
+            )}
+          </div>
+        );
+      };
     } else {
       // NFT não está listado nem em leilão
       return (
@@ -341,17 +379,8 @@ export default function MarketplaceCard({
           <div className="mb-3">
             {isAuction ? (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">
-                  {endTime && new Date() > endTime ? 'Auction Ended' : 'Auction'}
-                </p>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-[#A20131]">{currentBid || price}</p>
-                  {endTime && new Date() <= endTime && (
-                    <p className="text-xs text-orange-400">
-                      Ends: {endTime.toLocaleDateString()} {endTime.toLocaleTimeString()}
-                    </p>
-                  )}
-                </div>
+                <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
+                <p className="text-sm font-medium text-[#A20131]">{currentBid || price}</p>
               </div>
             ) : (
               <div>

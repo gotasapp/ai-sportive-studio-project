@@ -217,23 +217,48 @@ export function useMarketplaceData() {
            const auctionEndTime = Number(marketplaceAuction.endTimestamp);
            const isAuctionActive = currentTime < auctionEndTime;
            
-           if (isAuctionActive) {
-             // Get current highest bid or minimum bid amount
-             const minBid = marketplaceAuction.minimumBidAmount?.toString() || '0';
-             const buyoutBid = marketplaceAuction.buyoutBidAmount?.toString() || '0';
+           // 🚨 DEBUG AUCTION PROCESSING
+           console.log('🏆 PROCESSING AUCTION:', {
+             tokenId,
+             auctionId: marketplaceAuction.auctionId?.toString(),
+             auctionCreator: marketplaceAuction.auctionCreator,
+             currentTime,
+             currentTimeDate: new Date(currentTime * 1000),
+             auctionEndTime,
+             auctionEndTimeDate: new Date(auctionEndTime * 1000),
+             isAuctionActive,
+             endTimestamp: marketplaceAuction.endTimestamp,
+             endTimestampType: typeof marketplaceAuction.endTimestamp,
+             minimumBid: marketplaceAuction.minimumBidAmount?.toString(),
+             timeLeft: auctionEndTime - currentTime,
+             timeLeftHours: (auctionEndTime - currentTime) / 3600
+           });
+           
+                        if (isAuctionActive) {
+             // Convert from Wei to MATIC (divide by 10^18)
+             const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
+             const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
              
-             currentBid = `${minBid} MATIC`;
-             price = `Starting: ${minBid} MATIC`;
+             console.log('💰 BID CONVERSION:', {
+               minBidWei: minBidWei.toString(),
+               minBidMatic,
+               displayValue: `${minBidMatic} MATIC`
+             });
              
-             // If there's a buyout price, show it
-             if (buyoutBid && buyoutBid !== '0') {
-               price += ` | Buyout: ${buyoutBid} MATIC`;
-             }
+             currentBid = `${minBidMatic} MATIC`;
+             price = `${minBidMatic} MATIC`;
              
              currency = 'MATIC';
              endTime = new Date(auctionEndTime * 1000);
            } else {
-             price = 'Auction Ended';
+             // Para leilões expirados, converter Wei para MATIC
+             const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
+             const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
+             
+             currentBid = `${minBidMatic} MATIC`;
+             price = `${minBidMatic} MATIC`;
+             currency = 'MATIC';
+             endTime = new Date(auctionEndTime * 1000);
            }
            auctionIdString = String(marketplaceAuction.auctionId);
          }
@@ -250,9 +275,22 @@ export function useMarketplaceData() {
            listingId: listingIdString,
            listingIdType: typeof listingIdString,
            auctionId: auctionIdString,
+           auctionCreator: marketplaceAuction?.auctionCreator,
            auctionEndTime: endTime,
+           currentBid,
            rawListingId: marketplaceListing?.id,
            rawListingIdType: typeof marketplaceListing?.id
+         });
+         
+         // Para leilões, o owner é o auctionCreator, não o owner do NFT (que está em escrow)
+         const actualOwner = isAuction && marketplaceAuction ? marketplaceAuction.auctionCreator : nftOwner;
+         
+         console.log(`👤 OWNER DETECTION #${tokenId}:`, {
+           isAuction,
+           nftOwner,
+           auctionCreator: marketplaceAuction?.auctionCreator,
+           actualOwner,
+           ownerSource: isAuction ? 'auctionCreator' : 'nftOwner'
          });
          
          const marketplaceNFT: MarketplaceNFT = {
@@ -264,8 +302,8 @@ export function useMarketplaceData() {
            imageUrl: metadata.image ? convertIpfsToHttp(metadata.image) : '',
            price: price,
            currency: currency,
-           owner: nftOwner,
-           creator: nftOwner ? nftOwner.slice(0, 6) + '...' : 'Unknown',
+           owner: actualOwner,
+           creator: actualOwner ? actualOwner.slice(0, 6) + '...' : 'Unknown',
            category: 'nft',
            type: 'nft', 
            attributes: metadata.attributes || [],
