@@ -8,7 +8,12 @@ import { getAllValidListings } from 'thirdweb/extensions/marketplace';
  * API de diagnóstico para testar conectividade da Thirdweb em produção
  */
 export async function GET() {
-  const results = {
+  const results: {
+    timestamp: string;
+    environment: string | undefined;
+    tests: any;
+    summary?: any;
+  } = {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV,
     tests: {} as any

@@ -132,12 +132,12 @@ export function useMarketplaceData() {
         timeoutPromise
       ]) as any[];
       
-      // Filter only listings and auctions from our NFT contract
-      const ourContractListings = marketplaceListings.filter(listing => 
-        listing.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
+            // Filter only listings and auctions from our NFT contract
+      const ourContractListings = marketplaceListings.filter((listing: any) =>
+        listing.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()     
       );
       
-      const ourContractAuctions = marketplaceAuctions.filter(auction => 
+            const ourContractAuctions = marketplaceAuctions.filter((auction: any) =>
         auction.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
       );
       
@@ -145,12 +145,12 @@ export function useMarketplaceData() {
       const listingsByTokenId = new Map();
       const auctionsByTokenId = new Map();
       
-      ourContractListings.forEach(listing => {
+      ourContractListings.forEach((listing: any) => {
         const tokenId = listing.tokenId.toString();
         listingsByTokenId.set(tokenId, listing);
       });
       
-      ourContractAuctions.forEach(auction => {
+      ourContractAuctions.forEach((auction: any) => {
         const tokenId = auction.tokenId.toString();
         auctionsByTokenId.set(tokenId, auction);
       });
@@ -160,7 +160,7 @@ export function useMarketplaceData() {
       
       // 🚨 DEBUG: Log detailed auction data from Thirdweb
       console.log('🔍 DETAILED AUCTION ANALYSIS:');
-      ourContractAuctions.forEach((auction, index) => {
+      ourContractAuctions.forEach((auction: any, index: number) => {
         console.log(`🏆 Auction ${index}:`, {
           tokenId: auction.tokenId?.toString(),
           id: auction.id, // ← Verificar se é 'id' em vez de 'auctionId'
@@ -175,7 +175,7 @@ export function useMarketplaceData() {
       
       // 🚨 DEBUG: Log all valid listings to find the correct ID
       console.log('🔍 ALL MARKETPLACE LISTINGS DEBUG:');
-      marketplaceListings.forEach((listing, index) => {
+      marketplaceListings.forEach((listing: any, index: number) => {
         console.log(`📋 Listing ${index}:`, {
           id: listing.id?.toString(),
           assetContract: listing.assetContractAddress,
@@ -188,7 +188,7 @@ export function useMarketplaceData() {
       
       // 🚨 DEBUG: Log specifically our contract listings
       console.log('🎯 OUR CONTRACT LISTINGS:');
-      ourContractListings.forEach((listing, index) => {
+      ourContractListings.forEach((listing: any, index: number) => {
         console.log(`📋 Our Listing ${index}:`, {
           id: listing.id?.toString(),
           tokenId: listing.tokenId?.toString(),
@@ -201,7 +201,7 @@ export function useMarketplaceData() {
       console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
       console.log('📋 Sample NFT from Thirdweb:', nfts[0]);
        
-       const processedNFTs = await Promise.all(nfts.map(async (nft, index) => {
+       const processedNFTs = await Promise.all(nfts.map(async (nft: any, index: number) => {
          const tokenId = nft.id.toString();
          const metadata = nft.metadata || {};
          
@@ -597,7 +597,7 @@ function categorizeNFTs(nfts: MarketplaceNFT[]) {
  */
 function selectFeaturedNFTs(nfts: MarketplaceNFT[]): MarketplaceNFT[] {
   // Prioritize NFTs with images and good metadata
-  const withImages = nfts.filter(nft => 
+        const withImages = nfts.filter((nft: any) => 
     nft.image && 
     nft.name
   );
