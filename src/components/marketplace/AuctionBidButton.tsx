@@ -27,7 +27,7 @@ export default function AuctionBidButton({
   minimumBid,
   buyoutPrice,
   endTime,
-  currency = 'CHZ',
+  currency = 'MATIC',
   className = '',
   disabled = false
 }: AuctionBidButtonProps) {
@@ -58,6 +58,13 @@ export default function AuctionBidButton({
       return;
     }
 
+    // 🔧 VALIDAÇÃO: Verificar se auctionId é válido
+    if (!auctionId || auctionId === 'undefined' || auctionId === 'null' || auctionId === 'INVALID_AUCTION_ID') {
+      console.error('❌ AuctionBidButton: auctionId inválido:', auctionId);
+      toast.error('This auction has technical issues. Please contact support.');
+      return;
+    }
+
     const bidValue = parseFloat(bidAmount);
     const minRequired = parseFloat(nextMinBid);
 
@@ -70,19 +77,31 @@ export default function AuctionBidButton({
     toast.info('Sending bid... Approve the transaction in your wallet.');
 
     try {
-      // Check if auction has expired
-      const isExpired = await MarketplaceService.isAuctionExpired(chain.id, auctionId);
-      
-      if (isExpired) {
-        toast.error('This auction has already ended.');
-        return;
-      }
+      // 🔍 DEBUG: Log do auctionId antes de enviar bid
+      console.log('🔍 DEBUG AuctionBidButton - Starting bid process:', {
+        auctionId,
+        auctionIdType: typeof auctionId,
+        auctionIdValue: auctionId,
+        bidAmount,
+        chainId: chain.id
+      });
 
-      // Validate bid amount
+      console.log('✅ SENDING BID TO CONTRACT - Skipping expiration check...');
+
+      // Validate bid amount against current bid
       if (!bidAmount || parseFloat(bidAmount) <= parseFloat(currentBid || '0')) {
+        console.log('❌ BID VALIDATION FAILED:', {
+          bidAmount,
+          currentBid,
+          parsedBid: parseFloat(bidAmount),
+          parsedCurrent: parseFloat(currentBid || '0'),
+          isTooLow: parseFloat(bidAmount) <= parseFloat(currentBid || '0')
+        });
         toast.error('Bid too low. Must be higher than current bid.');
         return;
       }
+
+      console.log('✅ BID VALIDATION PASSED - Sending transaction...');
 
       const result = await MarketplaceService.bidInAuction(
         account,

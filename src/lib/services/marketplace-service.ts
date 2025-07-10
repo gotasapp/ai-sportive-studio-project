@@ -595,7 +595,7 @@ export class MarketplaceService {
   }
 
   /**
-   * Dar lance em leilão
+   * Fazer lance em leilão
    */
   static async bidInAuction(
     account: Account,
@@ -605,44 +605,67 @@ export class MarketplaceService {
       bidAmount: string;
     }
   ) {
+    console.log('🏆 STARTING BID IN AUCTION:', {
+      auctionId: params.auctionId,
+      bidAmount: params.bidAmount,
+      chainId
+    });
+
     try {
-      console.log('🎯 Dando lance no leilão:', params);
-      
       const contract = getMarketplaceContract(chainId);
-      const bidValue = priceToWei(params.bidAmount);
       
-      // Validar lance
-      const numBidAmount = parseFloat(params.bidAmount);
-      if (isNaN(numBidAmount) || numBidAmount <= 0) {
-        throw new Error(`Lance inválido: "${params.bidAmount}". Deve ser um número positivo.`);
-      }
+      // Convert bid amount to Wei (multiply by 10^18)
+      const bidAmountWei = priceToWei(params.bidAmount);
       
-      console.log('💰 Preparando lance:', {
-        auctionId: params.auctionId,
-        bidAmount: params.bidAmount,
-        bidAmountWei: bidValue.toString()
+      console.log('💰 BID AMOUNT CONVERSION:', {
+        originalAmount: params.bidAmount,
+        bidAmountWei: bidAmountWei.toString(),
+        auctionId: params.auctionId
       });
-      
-      const transaction = prepareContractCall({
+
+      // Prepare the bid transaction using Thirdweb v5 syntax
+      const transaction = await prepareContractCall({
         contract,
         method: "function bidInAuction(uint256 _auctionId, uint256 _bidAmount) payable",
-        params: [BigInt(params.auctionId), bidValue],
-        value: bidValue, // Enviar valor do lance
+        params: [
+          BigInt(params.auctionId),
+          bidAmountWei
+        ],
+        value: bidAmountWei // Send the bid amount as native currency value
       });
 
+      console.log('📋 TRANSACTION PREPARED:', {
+        auctionId: params.auctionId,
+        bidAmountWei: bidAmountWei.toString(),
+        hasValue: !!transaction.value
+      });
+
+      // Send the transaction
       const result = await sendTransaction({
         transaction,
-        account,
+        account
       });
 
-      console.log('✅ Lance realizado:', result.transactionHash);
-      toast.success(`Lance de ${params.bidAmount} MATIC realizado com sucesso!`);
+      console.log('✅ BID TRANSACTION SENT:', {
+        transactionHash: result.transactionHash,
+        auctionId: params.auctionId
+      });
 
-      return { success: true, transactionHash: result.transactionHash };
+      return result;
+
     } catch (error: any) {
-      console.error('❌ Erro ao dar lance:', error);
-      toast.error(`Falha ao dar lance: ${error.message}`);
-      throw new Error(error?.reason || error?.message || 'Falha ao dar lance');
+      console.error('❌ Error in bidInAuction:', error);
+      
+      // Enhanced error messages
+      if (error.message?.includes('auction ended') || error.message?.includes('expired')) {
+        throw new Error('This auction has ended and no longer accepts bids.');
+      } else if (error.message?.includes('bid too low') || error.message?.includes('minimum')) {
+        throw new Error('Your bid amount is too low. Please bid higher than the current minimum.');
+      } else if (error.message?.includes('insufficient funds') || error.message?.includes('balance')) {
+        throw new Error('Insufficient funds to place this bid.');
+      } else {
+        throw new Error(`Failed to place bid: ${error.message || 'Unknown error'}`);
+      }
     }
   }
 
@@ -1311,25 +1334,57 @@ export class MarketplaceService {
    * Obter lance vencedor de um leilão
    */
   static async getWinningBid(chainId: number, auctionId: string) {
-    const contract = getMarketplaceContract(chainId);
-    
-    const result = await readContract({
-      contract,
-      method: "function getWinningBid(uint256 auctionId) view returns (address bidder, address currency, uint256 bidAmount)",
-      params: [BigInt(auctionId)]
-    });
+    try {
+      const contract = getMarketplaceContract(chainId);
+      
+      const result = await readContract({
+        contract,
+        method: "function getWinningBid(uint256 auctionId) view returns (address bidder, address currency, uint256 bidAmount)",
+        params: [BigInt(auctionId)]
+      });
 
-    return {
-      bidder: result[0],
-      currency: result[1],
-      bidAmount: result[2],
-    };
+      const bidAmountInMatic = weiToPrice(result[2]);
+      
+      console.log('🏆 CURRENT WINNING BID:', {
+        auctionId,
+        bidder: result[0],
+        currency: result[1],
+        bidAmountWei: result[2].toString(),
+        bidAmountMatic: bidAmountInMatic
+      });
+
+      return {
+        bidder: result[0],
+        currency: result[1],
+        bidAmount: result[2],
+        bidAmountFormatted: `${bidAmountInMatic} MATIC`,
+        hasValidBid: result[0] !== '0x0000000000000000000000000000000000000000'
+      };
+    } catch (error: any) {
+      console.error('❌ Error getting winning bid:', error);
+      // Se não há bid, retornar valores padrão
+      return {
+        bidder: '0x0000000000000000000000000000000000000000',
+        currency: '0x0000000000000000000000000000000000000000',
+        bidAmount: BigInt(0),
+        bidAmountFormatted: '0 MATIC',
+        hasValidBid: false
+      };
+    }
   }
 
   /**
    * Verificar se leilão expirou
    */
   static async isAuctionExpired(chainId: number, auctionId: string): Promise<boolean> {
+    // 🔧 VALIDAÇÃO: Verificar se auctionId é válido
+    if (!auctionId || auctionId === 'undefined' || auctionId === 'null' || auctionId === 'INVALID_AUCTION_ID') {
+      console.error('❌ isAuctionExpired: auctionId inválido:', auctionId);
+      throw new Error('Invalid auction ID provided');
+    }
+
+    console.log('🔍 isAuctionExpired called with:', { chainId, auctionId, type: typeof auctionId });
+
     const contract = getMarketplaceContract(chainId);
     
     const result = await readContract({
@@ -1337,6 +1392,33 @@ export class MarketplaceService {
       method: "function isAuctionExpired(uint256 auctionId) view returns (bool)",
       params: [BigInt(auctionId)]
     });
+
+    // 🔍 DEBUG: Também buscar dados do leilão para comparar tempos
+    try {
+      const auctionData = await readContract({
+        contract,
+        method: "function getAuction(uint256 auctionId) view returns ((uint256 auctionId, address auctionCreator, address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 minimumBidAmount, uint256 buyoutBidAmount, uint64 timeBufferInSeconds, uint64 bidBufferBps, uint64 startTimestamp, uint64 endTimestamp, uint8 tokenType, uint8 status) auction)",
+        params: [BigInt(auctionId)]
+      });
+      
+      const currentTime = Math.floor(Date.now() / 1000);
+      const endTime = Number(auctionData.endTimestamp);
+      
+      console.log('⏰ AUCTION TIME ANALYSIS:', {
+        auctionId,
+        currentTime,
+        currentTimeDate: new Date(currentTime * 1000).toLocaleString(),
+        endTimestamp: endTime,
+        endTimeDate: new Date(endTime * 1000).toLocaleString(),
+        timeLeft: endTime - currentTime,
+        timeLeftMinutes: (endTime - currentTime) / 60,
+        isExpiredByContract: result,
+        isExpiredByTime: currentTime >= endTime,
+        rawAuctionData: auctionData
+      });
+    } catch (debugError) {
+      console.warn('⚠️ Could not fetch auction data for debug:', debugError);
+    }
 
     return result;
   }

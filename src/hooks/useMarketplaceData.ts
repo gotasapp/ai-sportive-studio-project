@@ -147,6 +147,21 @@ export function useMarketplaceData() {
       console.log(`📋 Found ${marketplaceListings.length} total listings (${ourContractListings.length} from our contract)`);
       console.log(`🏆 Found ${marketplaceAuctions.length} total auctions (${ourContractAuctions.length} from our contract)`);
       
+      // 🚨 DEBUG: Log detailed auction data from Thirdweb
+      console.log('🔍 DETAILED AUCTION ANALYSIS:');
+      ourContractAuctions.forEach((auction, index) => {
+        console.log(`🏆 Auction ${index}:`, {
+          tokenId: auction.tokenId?.toString(),
+          id: auction.id, // ← Verificar se é 'id' em vez de 'auctionId'
+          auctionId: auction.auctionId,
+          auctionIdType: typeof auction.auctionId,
+          auctionCreator: auction.auctionCreator,
+          minimumBidAmount: auction.minimumBidAmount?.toString(),
+          endTimestamp: auction.endTimestamp,
+          rawAuction: auction
+        });
+      });
+      
       // 🚨 DEBUG: Log all valid listings to find the correct ID
       console.log('🔍 ALL MARKETPLACE LISTINGS DEBUG:');
       marketplaceListings.forEach((listing, index) => {
@@ -220,7 +235,10 @@ export function useMarketplaceData() {
            // 🚨 DEBUG AUCTION PROCESSING
            console.log('🏆 PROCESSING AUCTION:', {
              tokenId,
-             auctionId: marketplaceAuction.auctionId?.toString(),
+             id: marketplaceAuction.id, // ← O valor correto conforme docs
+             auctionId: marketplaceAuction.auctionId, // ← Provavelmente undefined
+             auctionIdType: typeof marketplaceAuction.auctionId,
+             auctionIdToString: marketplaceAuction.auctionId?.toString(),
              auctionCreator: marketplaceAuction.auctionCreator,
              currentTime,
              currentTimeDate: new Date(currentTime * 1000),
@@ -260,7 +278,19 @@ export function useMarketplaceData() {
              currency = 'MATIC';
              endTime = new Date(auctionEndTime * 1000);
            }
-           auctionIdString = String(marketplaceAuction.auctionId);
+           // 🔧 FIX: Usar 'id' em vez de 'auctionId' conforme documentação Thirdweb
+           // Tratar valores problemáticos no service layer em vez de aqui
+           auctionIdString = marketplaceAuction.id !== undefined && marketplaceAuction.id !== null 
+             ? String(marketplaceAuction.id)
+             : 'INVALID_AUCTION_ID'; // Placeholder para identificar problemas
+           
+           // 🔍 DEBUG: Log final do auctionId processado
+           console.log('🎯 AUCTION ID FINAL:', {
+             tokenId,
+             rawAuctionId: marketplaceAuction.id, // ← Mudado de auctionId para id
+             finalAuctionIdString: auctionIdString,
+             willPassToComponent: auctionIdString || 'undefined'
+           });
          }
          
          console.log(`🔍 NFT #${tokenId} FULL DEBUG:`, {
@@ -312,7 +342,7 @@ export function useMarketplaceData() {
            blockchain: { verified: true, tokenId, owner: nft.owner },
            contractAddress: contractAddress,
            isAuction: isAuction,
-           activeOffers: 0,
+            activeOffers: 0,
            listingId: listingIdString,
            auctionId: auctionIdString,
            currentBid: currentBid,

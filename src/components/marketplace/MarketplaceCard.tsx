@@ -231,10 +231,12 @@ export default function MarketplaceCard({
               <AuctionBidButton
                 auctionId={auctionId}
                 currentBid={currentBid || '0 MATIC'}
+                minimumBid={currentBid || '0'}
                 endTime={endTime}
+                currency="MATIC"
                 className="w-full"
               />
-                          ) : (
+            ) : (
                 <div className="space-y-2">
                   <CollectAuctionTokensButton
                     auctionId={auctionId}
