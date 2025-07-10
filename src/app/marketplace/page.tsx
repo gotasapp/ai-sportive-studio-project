@@ -95,16 +95,52 @@ export default function MarketplacePage() {
     // Garantir que marketplaceItems não seja undefined
     let filtered = marketplaceItems || [];
     
-    // Aplicar filtro de categoria
+    const allCategories = [...new Set(filtered.map(item => item.category))];
+    console.log('🔍 FILTER DEBUG:', {
+      tokenType,
+      totalItems: filtered.length,
+      sampleCategories: filtered.slice(0, 5).map(item => ({ name: item.name, category: item.category })),
+      allCategories,
+      allCategoriesExpanded: allCategories,
+      sampleFullItems: filtered.slice(0, 2)
+    });
+    console.log('📋 CATEGORIES FOUND:', allCategories);
+    console.log('🎯 SAMPLE ITEM FULL:', filtered[0]);
+    
+    // Aplicar filtro de categoria (com detecção inteligente)
     if (tokenType !== 'all') {
-      const categoryMap: Record<string, string> = {
-        'jerseys': 'jersey',
-        'stadiums': 'stadium', 
-        'badges': 'badge'
-      };
+      console.log('🎯 Filtering by category:', { tokenType });
       
-      const targetCategory = categoryMap[tokenType] || tokenType;
-      filtered = filtered.filter(item => item.category === targetCategory);
+      filtered = filtered.filter(item => {
+        // Primeira tentativa: categoria exata
+        if (tokenType === 'jerseys' && item.category === 'jersey') return true;
+        if (tokenType === 'stadiums' && item.category === 'stadium') return true; 
+        if (tokenType === 'badges' && item.category === 'badge') return true;
+        
+        // Fallback: detecção inteligente baseada em nome/descrição
+        const name = (item.name || '').toLowerCase();
+        const description = (item.description || '').toLowerCase();
+        
+        if (tokenType === 'jerseys') {
+          return name.includes('jersey') || description.includes('jersey') || 
+                 name.includes('#') || description.includes('ai-generated') ||
+                 (name.includes(' ') && name.match(/\b\w+\s+\w+\s+#\d+/)); // Pattern: "Team Player #Number"
+        }
+        
+        if (tokenType === 'stadiums') {
+          return name.includes('stadium') || description.includes('stadium') ||
+                 name.includes('arena') || description.includes('arena');
+        }
+        
+        if (tokenType === 'badges') {
+          return name.includes('badge') || description.includes('badge') ||
+                 name.includes('achievement') || description.includes('achievement');
+        }
+        
+        return false;
+      });
+      
+      console.log('✅ After smart category filter:', filtered.length, 'items');
     }
     
     // Aplicar busca por nome
@@ -116,6 +152,7 @@ export default function MarketplacePage() {
     }
     
     // Atualizar filteredNfts com dados filtrados do marketplace
+    console.log('💾 Setting filteredNfts:', filtered.length, 'items');
     setFilteredNfts(filtered);
   }, [tokenType, marketplaceItems, searchTerm]);
 
@@ -139,9 +176,15 @@ export default function MarketplacePage() {
   };
 
   const renderGridView = () => {
-    // Sempre usar dados do marketplace (reais) em vez de dados legacy
-    // Garantir que marketplaceItems não seja undefined
-    const itemsToShow = marketplaceItems || [];
+    // Usar dados filtrados para respeitar os filtros aplicados
+    const itemsToShow = filteredNfts;
+    
+    console.log('🎯 GRID VIEW RENDER:', {
+      filteredNftsLength: filteredNfts.length,
+      itemsToShowLength: itemsToShow.length,
+      tokenType,
+      firstFewItems: itemsToShow.slice(0, 3).map(item => ({ name: item.name, category: item.category }))
+    });
     
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">

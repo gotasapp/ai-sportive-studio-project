@@ -34,35 +34,35 @@ export default function MarketplaceStats({
       value: totalListings,
       description: "For sale",
       icon: <Tag className="h-3 w-3 text-[#A20131]" />,
-      color: "text-blue-400"
+      color: "text-[#FDFDFD]"
     },
     {
       title: "Auctions", 
       value: totalAuctions,
       description: "Active",
       icon: <TrendingUp className="h-3 w-3 text-[#A20131]" />,
-      color: "text-green-400"
+      color: "text-[#FDFDFD]"
     },
     {
       title: "Volume",
       value: totalVolume,
       description: "Total",
       icon: <DollarSign className="h-3 w-3 text-[#A20131]" />,
-      color: "text-purple-400"
+      color: "text-[#FDFDFD]"
     },
     {
       title: "Floor",
       value: floorPrice,
       description: "Lowest",
       icon: <BarChart3 className="h-3 w-3 text-[#A20131]" />,
-      color: "text-orange-400"
+      color: "text-[#FDFDFD]"
     }
   ];
 
   return (
     <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2 ${className}`}>
       {stats.map((stat, index) => (
-        <Card key={index} className="cyber-card border-[#FDFDFD]/10">
+        <Card key={index} className="bg-transparent border-[#FDFDFD]/10">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
             <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
               {stat.title}
