@@ -6,6 +6,7 @@ import { useReadContract } from 'thirdweb/react'
 import { getContract, createThirdwebClient } from 'thirdweb'
 import { polygonAmoy } from 'thirdweb/chains'
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721'
+import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -18,13 +19,10 @@ import {
   User, 
   Wallet, 
   Image as ImageIcon, 
-  TrendingUp, 
-  ShoppingCart,
   Tag,
   Upload,
   Edit3,
   Settings,
-  Activity,
   Trophy,
   Coins,
   Trash2
@@ -42,10 +40,6 @@ interface UserProfile {
   avatar: string
   walletAddress: string
   joinedDate: string
-  totalNFTs: number
-  totalSales: number
-  totalPurchases: number
-  balance: string
 }
 
 interface NFTItem {
@@ -65,6 +59,7 @@ const client = createThirdwebClient({
 
 // Contract setup
 const NFT_CONTRACT_ADDRESS = '0xfF973a4aFc5A96DEc81366461A461824c4f80254'; // Polygon Amoy
+const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET!;
 
 // Helper functions
 function convertIpfsToHttp(ipfsUrl: string): string {
@@ -136,7 +131,7 @@ export default function ProfilePage() {
     }
   }, [account])
 
-  // Load user NFTs using Thirdweb native hooks
+  // Load user NFTs using Thirdweb native hooks + marketplace data
   useEffect(() => {
     const fetchUserNFTs = async () => {
       if (!account?.address) return
@@ -147,24 +142,69 @@ export default function ProfilePage() {
       try {
         console.log('🎯 Fetching user NFTs for:', account.address)
 
-        // Create contract instance
-        const contract = getContract({
+        // Create contract instances
+        const nftContract = getContract({
           client,
           chain: polygonAmoy,
           address: NFT_CONTRACT_ADDRESS,
         })
 
-        // Get all NFTs from the contract
-        console.log('📦 Fetching all NFTs from contract...')
-        const allNFTs = await getNFTs({
-          contract,
-          start: 0,
-          count: 200, // Fetch up to 200 NFTs
+        const marketplaceContract = getContract({
+          client,
+          chain: polygonAmoy,
+          address: MARKETPLACE_CONTRACT_ADDRESS,
         })
 
-        console.log(`✅ Found ${allNFTs.length} total NFTs in contract`)
+        // Fetch NFTs and marketplace data in parallel
+        console.log('📦 Fetching NFTs and marketplace data...')
+        const [allNFTs, marketplaceListings, marketplaceAuctions] = await Promise.all([
+          getNFTs({
+            contract: nftContract,
+            start: 0,
+            count: 200,
+          }),
+          getAllValidListings({
+            contract: marketplaceContract,
+            start: 0,
+            count: 200,
+          }),
+          getAllAuctions({
+            contract: marketplaceContract,
+            start: 0,
+            count: 200,
+          })
+        ])
 
-        // Filter NFTs owned by the current user
+        console.log(`✅ Found ${allNFTs.length} total NFTs in contract`)
+        console.log(`✅ Found ${marketplaceListings.length} marketplace listings`)
+        console.log(`✅ Found ${marketplaceAuctions.length} marketplace auctions`)
+
+        // Filter marketplace data for our contract only
+        const ourContractListings = marketplaceListings.filter(listing => 
+          listing.assetContractAddress.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
+        )
+        
+        const ourContractAuctions = marketplaceAuctions.filter(auction => 
+          auction.assetContractAddress.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
+        )
+
+        // Create lookup maps by tokenId
+        const listingsByTokenId = new Map()
+        const auctionsByTokenId = new Map()
+        
+        ourContractListings.forEach(listing => {
+          const tokenId = listing.tokenId.toString()
+          listingsByTokenId.set(tokenId, listing)
+        })
+        
+        ourContractAuctions.forEach(auction => {
+          const tokenId = auction.tokenId.toString()
+          auctionsByTokenId.set(tokenId, auction)
+        })
+
+        console.log(`📋 Found ${ourContractListings.length} listings and ${ourContractAuctions.length} auctions from our contract`)
+
+        // Process user NFTs with marketplace status
         const userOwnedNFTs: NFTItem[] = []
 
         for (const nft of allNFTs) {
@@ -173,36 +213,80 @@ export default function ProfilePage() {
             
             // Check ownership using ownerOf
             const owner = await ownerOf({
-              contract,
+              contract: nftContract,
               tokenId: BigInt(tokenId),
             })
 
-            // If user owns this NFT, add to collection
+            // Check if this NFT is listed by the user
+            const listing = listingsByTokenId.get(tokenId)
+            const auction = auctionsByTokenId.get(tokenId)
+            
+            let isUserListed = false
+            let isUserOwned = false
+            let nftStatus: 'owned' | 'listed' | 'created' = 'owned'
+            let nftPrice: string | undefined = undefined
+
+            // Check if user owns this NFT directly
             if (owner.toLowerCase() === account.address.toLowerCase()) {
+              isUserOwned = true
+            }
+
+            // Check if user listed this NFT (user is the seller/creator of listing)
+            if (listing && listing.creatorAddress.toLowerCase() === account.address.toLowerCase()) {
+              isUserListed = true
+              nftStatus = 'listed'
+              nftPrice = listing.currencyValuePerToken?.displayValue
+              console.log(`📋 User has listing: NFT ${tokenId} for ${nftPrice}`)
+            }
+
+            // Check if user has this NFT in auction
+            if (auction && auction.auctionCreator.toLowerCase() === account.address.toLowerCase()) {
+              isUserListed = true
+              nftStatus = 'listed'
+              const minBidWei = auction.minimumBidAmount || BigInt(0)
+              const minBidMatic = Number(minBidWei) / Math.pow(10, 18)
+              nftPrice = `${minBidMatic} MATIC`
+              console.log(`🏆 User has auction: NFT ${tokenId} with min bid ${nftPrice}`)
+            }
+
+            // Include NFT if user owns it OR has it listed
+            if (isUserOwned || isUserListed) {
               const metadata = nft.metadata || {}
-              
-              // Determine category from metadata
               const category = determineCategory(metadata)
+              
+              // Check if user created this NFT (basic check)
+              const isCreatedByUser = 
+                metadata.creator?.toLowerCase() === account.address.toLowerCase() ||
+                metadata.minted_by?.toLowerCase() === account.address.toLowerCase() ||
+                metadata.attributes?.some((attr: any) => 
+                  (attr.trait_type?.toLowerCase() === 'creator' || 
+                   attr.trait_type?.toLowerCase() === 'minted_by') &&
+                  attr.value?.toLowerCase() === account.address.toLowerCase()
+                )
+              
+              if (isCreatedByUser) {
+                nftStatus = 'created'
+              }
               
               const nftItem: NFTItem = {
                 id: `${NFT_CONTRACT_ADDRESS}-${tokenId}`,
                 name: metadata.name || `NFT #${tokenId}`,
                 imageUrl: convertIpfsToHttp(metadata.image || ''),
-                price: undefined, // Will check marketplace status separately
-                status: 'owned', // Default status
-                createdAt: new Date().toISOString(), // Would ideally come from mint events
+                price: nftPrice,
+                status: nftStatus,
+                createdAt: new Date().toISOString(),
                 collection: category
               }
 
               userOwnedNFTs.push(nftItem)
-              console.log(`✅ Added user NFT: ${nftItem.name} (Token ID: ${tokenId})`)
+              console.log(`✅ Added user NFT: ${nftItem.name} (Token ID: ${tokenId}, Status: ${nftStatus})`)
             }
           } catch (error) {
-            console.warn(`⚠️ Could not check ownership for token ${nft.id}:`, error)
+            console.warn(`⚠️ Could not process NFT ${nft.id}:`, error)
           }
         }
 
-        console.log(`🎉 Found ${userOwnedNFTs.length} NFTs owned by user`)
+        console.log(`🎉 Found ${userOwnedNFTs.length} NFTs for user (owned + listed)`)
         setUserNFTs(userOwnedNFTs)
 
       } catch (error) {
@@ -236,11 +320,7 @@ export default function ProfilePage() {
             username: `User ${account.address.slice(0, 6)}...${account.address.slice(-4)}`,
             avatar: '',
             walletAddress: account.address,
-            joinedDate: new Date().toISOString(),
-            totalNFTs: 0,
-            totalSales: 0,
-            totalPurchases: 0,
-            balance: '0'
+            joinedDate: new Date().toISOString()
           }
           setUserProfile(defaultProfile)
           setEditedUsername(defaultProfile.username)
@@ -510,44 +590,7 @@ export default function ProfilePage() {
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="bg-[#14101e] border-gray-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Total NFTs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{userNFTs.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-[#14101e] border-gray-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Listed</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{listedNFTs.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-[#14101e] border-gray-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Created</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{createdNFTs.length}</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-[#14101e] border-gray-700">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-400">Balance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-white">{userProfile?.balance || '0'} CHZ</div>
-            </CardContent>
-          </Card>
-        </div>
+
 
 
 
@@ -561,21 +604,15 @@ export default function ProfilePage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-5 bg-[#0b0518]">
+              <TabsList className="grid w-full grid-cols-3 bg-[#0b0518]">
                 <TabsTrigger value="all" className="text-white data-[state=active]:bg-[#A20131]">
                   All ({userNFTs.length})
-                </TabsTrigger>
-                <TabsTrigger value="owned" className="text-white data-[state=active]:bg-[#A20131]">
-                  Owned ({ownedNFTs.length})
                 </TabsTrigger>
                 <TabsTrigger value="listed" className="text-white data-[state=active]:bg-[#A20131]">
                   Listed ({listedNFTs.length})
                 </TabsTrigger>
                 <TabsTrigger value="created" className="text-white data-[state=active]:bg-[#A20131]">
                   Created ({createdNFTs.length})
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="text-white data-[state=active]:bg-[#A20131]">
-                  Activity
                 </TabsTrigger>
               </TabsList>
               
@@ -590,20 +627,6 @@ export default function ProfilePage() {
                   </div>
                 ) : (
                   <NFTGrid nfts={userNFTs} />
-                )}
-              </TabsContent>
-              
-              <TabsContent value="owned" className="mt-6">
-                {nftsLoading ? (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-white">Loading your NFTs from blockchain...</div>
-                  </div>
-                ) : nftsError ? (
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-red-400">Error: {nftsError}</div>
-                  </div>
-                ) : (
-                  <NFTGrid nfts={ownedNFTs} />
                 )}
               </TabsContent>
               
@@ -635,12 +658,7 @@ export default function ProfilePage() {
                 )}
               </TabsContent>
               
-              <TabsContent value="activity" className="mt-6">
-                <div className="text-center py-8 text-gray-400">
-                  <Activity className="h-12 w-12 mx-auto mb-4" />
-                  <p>Activity history coming soon...</p>
-                </div>
-              </TabsContent>
+
             </Tabs>
           </CardContent>
         </Card>
