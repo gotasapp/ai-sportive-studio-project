@@ -11,16 +11,48 @@ import {
   Crown, Shield, AlertTriangle, Download, RefreshCw, MoreHorizontal, Loader2 
 } from 'lucide-react'
 
-// Definindo o tipo de usuário com base na API
+// Definindo o tipo de usuário com base na API real
 interface User {
-  id: string;
-  walletAddress: string;
-  name: string;
-  email: string;
-  joinedAt: string;
+  _id: string;
+  wallet?: string;
+  name?: string;
+  email?: string;
+  createdAt?: string;
+  updatedAt?: string;
   nftsCreated: number;
-  lastActivity: string;
+  lastActivity?: string;
   status: 'Active' | 'Inactive' | 'Banned';
+  displayName: string;
+  hasLinkedAccounts: boolean;
+  joinedAt: string;
+  stats: {
+    nftsCreated: number;
+    daysSinceJoined: number;
+    daysSinceActivity: number;
+  };
+  // Campos adicionais vindos do MongoDB
+  linkedAccounts?: {
+    email?: string;
+    discord?: string;
+    twitter?: string;
+  };
+}
+
+interface UserStats {
+  totalUsers: number;
+  activeUsers: number;
+  inactiveUsers: number;
+  bannedUsers: number;
+  usersWithNFTs: number;
+  usersWithLinkedAccounts: number;
+  totalNFTsCreated: number;
+  newUsers: number;
+}
+
+interface ApiResponse {
+  users: User[];
+  stats: UserStats;
+  timestamp: string;
 }
 
 const statusColors: { [key in User['status']]: string } = {
@@ -31,6 +63,7 @@ const statusColors: { [key in User['status']]: string } = {
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('')
@@ -42,14 +75,22 @@ export default function UsersPage() {
       setLoading(true);
       setError(null);
       try {
+        console.log('🔄 Fetching users data...');
         const response = await fetch('/api/admin/users');
         if (!response.ok) {
           throw new Error('Failed to fetch users');
         }
-        const data: User[] = await response.json();
-        setUsers(data);
+        const data: ApiResponse = await response.json();
+        console.log('✅ Users data received:', data);
+        
+        setUsers(data.users || []);
+        setUserStats(data.stats);
       } catch (err: any) {
+        console.error('❌ Error fetching users:', err);
         setError(err.message);
+        // Fallback to empty data
+        setUsers([]);
+        setUserStats(null);
       } finally {
         setLoading(false);
       }
@@ -60,10 +101,19 @@ export default function UsersPage() {
 
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.walletAddress.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || user.status === filterStatus
+    if (!user) return false;
+    
+    // Use os campos já processados pela API
+    const userName = user.displayName;
+    const userEmail = user.linkedAccounts?.email || '';
+    const userWallet = user.wallet || '';
+    const userStatus = user.status;
+    
+    const matchesSearch = searchTerm === '' || 
+                         userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         userWallet.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || userStatus === filterStatus;
     
     return matchesSearch && matchesStatus;
   })
@@ -95,41 +145,91 @@ export default function UsersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-200">User Management</h1>
-          <p className="text-gray-400 mt-2">Manage users, permissions and activity</p>
+          <p className="text-gray-400 mt-2">
+            Manage users, permissions and activity
+            {userStats && (
+              <span className="ml-2 text-cyan-400">
+                • {userStats.totalUsers} total users • {userStats.usersWithNFTs} creators
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="outline" className="border-cyan-500/30">
+          <Button variant="outline" className="border-cyan-500/30" disabled={loading}>
             <Download className="w-4 h-4 mr-2" />
             Export Users
           </Button>
-          <Button className="cyber-button" onClick={() => window.location.reload()}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+          <Button 
+            className="cyber-button" 
+            onClick={() => window.location.reload()}
+            disabled={loading}
+          >
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="w-4 h-4 mr-2" />
+            )}
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards - Manteremos estáticos por enquanto */}
+      {/* Stats Cards - Dados Reais */}
        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card className="cyber-card border-cyan-500/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-200">Total Users</CardTitle><Users className="h-4 w-4 text-cyan-400" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-cyan-300">3,429</div></CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-cyan-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-cyan-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.totalUsers || 0)}
+            </div>
+          </CardContent>
         </Card>
         <Card className="cyber-card border-green-500/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-200">Active Users</CardTitle><UserCheck className="h-4 w-4 text-green-400" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-green-300">2,847</div></CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">Active Users</CardTitle>
+            <UserCheck className="h-4 w-4 text-green-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.activeUsers || 0)}
+            </div>
+          </CardContent>
         </Card>
         <Card className="cyber-card border-blue-500/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-200">New Users</CardTitle><Activity className="h-4 w-4 text-blue-400" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-blue-300">156</div></CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">New Users</CardTitle>
+            <Activity className="h-4 w-4 text-blue-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.newUsers || 0)}
+            </div>
+          </CardContent>
         </Card>
         <Card className="cyber-card border-purple-500/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-200">Premium Users</CardTitle><Crown className="h-4 w-4 text-purple-400" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-purple-300">89</div></CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">NFT Creators</CardTitle>
+            <Crown className="h-4 w-4 text-purple-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-purple-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.usersWithNFTs || 0)}
+            </div>
+          </CardContent>
         </Card>
         <Card className="cyber-card border-red-500/30">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-sm font-medium text-gray-200">Banned Users</CardTitle><Ban className="h-4 w-4 text-red-400" /></CardHeader>
-          <CardContent><div className="text-2xl font-bold text-red-300">23</div></CardContent>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">Inactive Users</CardTitle>
+            <Ban className="h-4 w-4 text-red-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.inactiveUsers || 0)}
+            </div>
+          </CardContent>
         </Card>
       </div>
 
@@ -177,23 +277,77 @@ export default function UsersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {loading ? renderSkeleton() : filteredUsers.map(user => (
-                       <tr key={user.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                         <td className="p-4"><input type="checkbox" className="cyber-checkbox" /></td>
-                         <td className="p-4">
-                           <div className="font-medium text-white">{user.name}</div>
-                           <div className="text-gray-400">{user.walletAddress}</div>
-                         </td>
-                         <td className="p-4">
-                           <Badge className={statusColors[user.status]}>{user.status}</Badge>
-                         </td>
-                         <td className="p-4 text-white text-center">{user.nftsCreated}</td>
-                         <td className="p-4 text-gray-400">{new Date(user.joinedAt).toLocaleDateString()}</td>
-                         <td className="p-4">
-                           <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
-                         </td>
-                       </tr>
-                    ))}
+                    {loading ? renderSkeleton() : (
+                      filteredUsers.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-gray-400">
+                            {error ? `Error: ${error}` : 'No users found'}
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredUsers.map(user => {
+                          const userWallet = user.wallet || 'Not connected';
+                          const joinDate = user.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'Unknown';
+                          
+                          return (
+                            <tr key={user._id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                              <td className="p-4"><input type="checkbox" className="cyber-checkbox" /></td>
+                              <td className="p-4">
+                                <div className="font-medium text-white">{user.displayName}</div>
+                                <div className="text-gray-400 text-xs">
+                                  {userWallet !== 'Not connected' && userWallet.length > 20 
+                                    ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` 
+                                    : userWallet}
+                                </div>
+                                {user.linkedAccounts?.email && (
+                                  <div className="text-cyan-400 text-xs flex items-center gap-1">
+                                    <Mail className="w-3 h-3" />
+                                    {user.linkedAccounts.email}
+                                  </div>
+                                )}
+                                {user.linkedAccounts?.discord && (
+                                  <div className="text-purple-400 text-xs">Discord linked</div>
+                                )}
+                                {user.linkedAccounts?.twitter && (
+                                  <div className="text-blue-400 text-xs">Twitter linked</div>
+                                )}
+                              </td>
+                              <td className="p-4">
+                                <Badge className={statusColors[user.status]}>{user.status}</Badge>
+                                {user.stats.daysSinceActivity > 0 && (
+                                  <div className="text-xs text-gray-500 mt-1">
+                                    {user.stats.daysSinceActivity}d ago
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-4 text-white text-center">
+                                <div className="font-medium">{user.nftsCreated}</div>
+                                {user.nftsCreated > 0 && (
+                                  <div className="text-xs text-green-400">Creator</div>
+                                )}
+                              </td>
+                              <td className="p-4 text-gray-400">
+                                <div>{joinDate}</div>
+                                {user.stats.daysSinceJoined > 0 && (
+                                  <div className="text-xs text-gray-500">
+                                    {user.stats.daysSinceJoined} days ago
+                                  </div>
+                                )}
+                              </td>
+                              <td className="p-4">
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm"
+                                  onClick={() => handleUserAction(user._id, 'view')}
+                                >
+                                  <MoreHorizontal className="w-4 h-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
