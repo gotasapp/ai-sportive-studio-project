@@ -135,10 +135,14 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         {
           assetContract: nft.assetContractAddress,
           tokenId: nft.tokenId,
+          quantity: '1',
+          currency: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', // Native token (MATIC)
           minimumBidAmount: minBid,
-          buyoutBidAmount: buyoutPrice || undefined,
-          startTimestamp: new Date(),
-          endTimestamp: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+          buyoutBidAmount: buyoutPrice || '0',
+          timeBufferInSeconds: 300, // 5 minutes
+          bidBufferBps: 500, // 5% bid buffer
+          startTimestamp: Math.floor(Date.now() / 1000),
+          endTimestamp: Math.floor((Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000), // 7 days
         }
       );
 

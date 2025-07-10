@@ -54,7 +54,6 @@ export default function BuyNowButton({
       client={client}
       listingId={BigInt(listingId)}
       quantity={BigInt(quantity)}
-      asChild
       disabled={disabled}
       style={{
         background: 'none',

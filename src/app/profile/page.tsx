@@ -41,6 +41,10 @@ interface UserProfile {
   avatar: string
   walletAddress: string
   joinedDate: string
+  totalNFTs?: number
+  totalSales?: number
+  totalPurchases?: number
+  balance?: string
 }
 
 interface NFTItem {
@@ -161,12 +165,12 @@ export default function ProfilePage() {
           getAllValidListings({
             contract: marketplaceContract,
             start: 0,
-            count: 200,
+            count: BigInt(200),
           }),
           getAllAuctions({
             contract: marketplaceContract,
             start: 0,
-            count: 200,
+            count: BigInt(200),
           })
         ])
 
@@ -251,13 +255,13 @@ export default function ProfilePage() {
               
               // Check if user created this NFT (basic check)
               const isCreatedByUser = 
-                metadata.creator?.toLowerCase() === account.address.toLowerCase() ||
-                metadata.minted_by?.toLowerCase() === account.address.toLowerCase() ||
-                metadata.attributes?.some((attr: any) => 
+                (metadata.creator as any)?.toLowerCase() === account.address.toLowerCase() ||
+                (metadata.minted_by as any)?.toLowerCase() === account.address.toLowerCase() ||
+                (Array.isArray(metadata.attributes) && metadata.attributes.some((attr: any) => 
                   (attr.trait_type?.toLowerCase() === 'creator' || 
                    attr.trait_type?.toLowerCase() === 'minted_by') &&
                   attr.value?.toLowerCase() === account.address.toLowerCase()
-                )
+                ))
               
               if (isCreatedByUser) {
                 nftStatus = 'created'
@@ -549,7 +553,7 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-1">
                   <Wallet className="h-4 w-4" />
                   <span className="text-sm font-mono">
-                    {account.address.slice(0, 6)}...{account.address.slice(-4)}
+                    {account?.address.slice(0, 6)}...{account?.address.slice(-4)}
                   </span>
                 </div>
                 <div className="flex items-center space-x-1">

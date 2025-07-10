@@ -44,15 +44,10 @@ export async function POST(request: Request) {
     // 1. Descobrir listingId se não foi fornecido
     let actualListingId = listingId;
     if (!actualListingId) {
-      console.log('🔍 ListingId not provided, attempting to discover...');
-      actualListingId = await MarketplaceService.discoverListingId(80002, transactionHash);
-      
-      if (actualListingId) {
-        console.log('✅ Discovered listingId:', actualListingId);
-      } else {
-        console.log('⚠️ Could not discover listingId, will use placeholder');
-        actualListingId = 'pending-discovery';
-      }
+      console.log('🔍 ListingId not provided, using placeholder (discoverListingId temporarily disabled)');
+      // TODO: Re-enable discoverListingId method after deploy works
+      // actualListingId = await MarketplaceService.discoverListingId(80002, transactionHash);
+      actualListingId = 'pending-discovery';
     }
 
     // 2. Buscar dados reais da listagem se listingId foi descoberto
@@ -140,7 +135,7 @@ export async function POST(request: Request) {
               'marketplace.thirdwebData': realListingData ? {
                 id: realListingData.id.toString(),
                 tokenId: realListingData.tokenId.toString(),
-                assetContract: realListingData.assetContract,
+                assetContract: realListingData.assetContractAddress,
                 pricePerToken: realListingData.pricePerToken.toString()
               } : null,
               
@@ -166,14 +161,14 @@ export async function POST(request: Request) {
               success: true,
               message: 'NFT updated with listing data',
               nft: {
-                id: updatedNFT._id.toString(),
-                name: updatedNFT.name,
-                tokenId: updatedNFT.tokenId,
+                id: updatedNFT!._id.toString(),
+                name: updatedNFT!.name,
+                tokenId: updatedNFT!.tokenId,
                 collection: collectionUsed,
                 isListed: true,
                 listingId: actualListingId,
                 transactionHash: transactionHash,
-                marketplace: updatedNFT.marketplace
+                marketplace: updatedNFT!.marketplace
               }
             });
           }

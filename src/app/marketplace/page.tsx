@@ -95,7 +95,7 @@ export default function MarketplacePage() {
     // Garantir que marketplaceItems não seja undefined
     let filtered = marketplaceItems || [];
     
-    const allCategories = [...new Set(filtered.map(item => item.category))];
+    const allCategories = Array.from(new Set(filtered.map(item => item.category)));
     console.log('🔍 FILTER DEBUG:', {
       tokenType,
       totalItems: filtered.length,

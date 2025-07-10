@@ -112,12 +112,12 @@ export function useMarketplaceData() {
         getAllValidListings({
           contract: marketplaceContract,
           start: 0,
-          count: 100, // Get up to 100 listings
+          count: BigInt(100), // Get up to 100 listings
         }),
         getAllAuctions({
           contract: marketplaceContract,
           start: 0,
-          count: 100, // Get up to 100 auctions
+          count: BigInt(100), // Get up to 100 auctions
         })
       ]);
       
@@ -153,11 +153,11 @@ export function useMarketplaceData() {
         console.log(`🏆 Auction ${index}:`, {
           tokenId: auction.tokenId?.toString(),
           id: auction.id, // ← Verificar se é 'id' em vez de 'auctionId'
-          auctionId: auction.auctionId,
-          auctionIdType: typeof auction.auctionId,
-          auctionCreator: auction.auctionCreator,
+          auctionId: auction.id, // Use 'id' instead of 'auctionId'
+          auctionIdType: typeof auction.id,
+          auctionCreator: auction.creatorAddress, // Use 'creatorAddress' instead of 'auctionCreator'
           minimumBidAmount: auction.minimumBidAmount?.toString(),
-          endTimestamp: auction.endTimestamp,
+          endTimestamp: auction.endTimeInSeconds,
           rawAuction: auction
         });
       });
@@ -229,24 +229,24 @@ export function useMarketplaceData() {
            listingIdString = String(marketplaceListing.id); // Ensure string conversion
          } else if (isAuction && marketplaceAuction) {
            const currentTime = Math.floor(Date.now() / 1000);
-           const auctionEndTime = Number(marketplaceAuction.endTimestamp);
+           const auctionEndTime = Number(marketplaceAuction.endTimeInSeconds);
            const isAuctionActive = currentTime < auctionEndTime;
            
            // 🚨 DEBUG AUCTION PROCESSING
            console.log('🏆 PROCESSING AUCTION:', {
              tokenId,
              id: marketplaceAuction.id, // ← O valor correto conforme docs
-             auctionId: marketplaceAuction.auctionId, // ← Provavelmente undefined
-             auctionIdType: typeof marketplaceAuction.auctionId,
-             auctionIdToString: marketplaceAuction.auctionId?.toString(),
-             auctionCreator: marketplaceAuction.auctionCreator,
+             auctionId: marketplaceAuction.id, // Use 'id' instead of 'auctionId'
+             auctionIdType: typeof marketplaceAuction.id,
+             auctionIdToString: marketplaceAuction.id?.toString(),
+             auctionCreator: marketplaceAuction.creatorAddress, // Use 'creatorAddress'
              currentTime,
              currentTimeDate: new Date(currentTime * 1000),
              auctionEndTime,
              auctionEndTimeDate: new Date(auctionEndTime * 1000),
              isAuctionActive,
-             endTimestamp: marketplaceAuction.endTimestamp,
-             endTimestampType: typeof marketplaceAuction.endTimestamp,
+             endTimestamp: marketplaceAuction.endTimeInSeconds,
+             endTimestampType: typeof marketplaceAuction.endTimeInSeconds,
              minimumBid: marketplaceAuction.minimumBidAmount?.toString(),
              timeLeft: auctionEndTime - currentTime,
              timeLeftHours: (auctionEndTime - currentTime) / 3600
@@ -312,15 +312,15 @@ export function useMarketplaceData() {
            rawListingIdType: typeof marketplaceListing?.id
          });
          
-         // Para leilões, o owner é o auctionCreator, não o owner do NFT (que está em escrow)
-         const actualOwner = isAuction && marketplaceAuction ? marketplaceAuction.auctionCreator : nftOwner;
+         // Para leilões, o owner é o creatorAddress, não o owner do NFT (que está em escrow)
+         const actualOwner = isAuction && marketplaceAuction ? marketplaceAuction.creatorAddress : nftOwner;
          
          console.log(`👤 OWNER DETECTION #${tokenId}:`, {
            isAuction,
            nftOwner,
-           auctionCreator: marketplaceAuction?.auctionCreator,
+           auctionCreator: marketplaceAuction?.creatorAddress,
            actualOwner,
-           ownerSource: isAuction ? 'auctionCreator' : 'nftOwner'
+           ownerSource: isAuction ? 'creatorAddress' : 'nftOwner'
          });
          
          const marketplaceNFT: MarketplaceNFT = {
@@ -336,7 +336,7 @@ export function useMarketplaceData() {
            creator: actualOwner ? actualOwner.slice(0, 6) + '...' : 'Unknown',
            category: 'nft',
            type: 'nft', 
-           attributes: metadata.attributes || [],
+           attributes: Array.isArray(metadata.attributes) ? metadata.attributes : [],
            isListed: isListed,
            isVerified: true,
            blockchain: { verified: true, tokenId, owner: nft.owner },

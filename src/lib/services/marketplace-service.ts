@@ -1,6 +1,7 @@
-import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract } from 'thirdweb';
+import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract, getRpcClient } from 'thirdweb';
 import { getAllValidListings } from 'thirdweb/extensions/marketplace';
 import { Account } from 'thirdweb/wallets';
+import { polygonAmoy } from 'thirdweb/chains';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
 
@@ -386,7 +387,7 @@ export class MarketplaceService {
       const allListings = await getAllValidListings({
         contract,
         start: 0,
-        count: 100 // Buscar até 100 listagens
+        count: BigInt(100) // Buscar até 100 listagens
       });
       
       const currentListing = allListings.find(listing => 
@@ -478,7 +479,7 @@ export class MarketplaceService {
       const buyoutBidWei = params.buyoutBidAmount === '0' ? BigInt(0) : BigInt(params.buyoutBidAmount); // 0 = sem buyout
       
       // Validar e converter tokenId
-      let numericTokenId: bigint;
+      let numericTokenId: bigint = BigInt(0); // Inicializar com valor padrão
       try {
         // Se é um número válido, usar diretamente
         if (/^\d+$/.test(params.tokenId)) {
@@ -1485,4 +1486,53 @@ export class MarketplaceService {
       return [];
     }
   }
+
+  /**
+   * Descobrir listingId a partir do transactionHash
+   * TODO: Implementar corretamente após deploy funcionar
+   */
+  /*
+  static async discoverListingId(chainId: number, transactionHash: string): Promise<string | null> {
+    try {
+      console.log('🔍 Discovering listingId from transaction:', transactionHash);
+      
+      const client = createThirdwebClient({
+        secretKey: process.env.THIRDWEB_SECRET_KEY!,
+      });
+
+      const chain = chainId === 80002 ? polygonAmoy : polygonAmoy; // Usar Polygon Amoy como padrão
+      
+      // Buscar receipt da transação
+      const receipt = await getRpcClient({ client, chain }).request({
+        method: 'eth_getTransactionReceipt',
+        params: [transactionHash],
+      });
+
+      if (!receipt || !receipt.logs) {
+        console.log('⚠️ No transaction receipt or logs found');
+        return null;
+      }
+
+      // Procurar pelo evento ListingAdded que contém o listingId
+      // Event signature para ListingAdded(uint256 indexed listingId, address indexed assetContract, address indexed lister, ...)
+      const listingAddedTopic = '0x4b4b2a0c4b4b2a0c4b4b2a0c4b4b2a0c4b4b2a0c4b4b2a0c4b4b2a0c4b4b2a0c'; // Placeholder - seria preciso o hash real
+      
+      // Como alternativa, vamos buscar o último listingId criado e verificar se foi na mesma transação
+      const totalListings = await MarketplaceService.getTotalListings(chainId);
+      const lastListingId = Number(totalListings) - 1;
+      
+      if (lastListingId >= 0) {
+        console.log('✅ Found potential listingId:', lastListingId);
+        return lastListingId.toString();
+      }
+
+      console.log('⚠️ Could not discover listingId from transaction');
+      return null;
+      
+    } catch (error: any) {
+      console.error('❌ Error discovering listingId:', error);
+      return null;
+    }
+  }
+  */
 } 

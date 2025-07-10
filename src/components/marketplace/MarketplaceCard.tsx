@@ -246,7 +246,7 @@ export default function MarketplaceCard({
                 auctionId={auctionId}
                 currentBid={displayCurrentBid || '0 MATIC'}
                 minimumBid={currentBid || '0'}
-                endTime={endTime}
+                endTime={endTime || new Date()}
                 currency="MATIC"
                 className="w-full"
                 onBidSuccess={() => {
