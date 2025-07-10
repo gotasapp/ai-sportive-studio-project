@@ -28,7 +28,7 @@ interface ThirdwebDataCache {
 
 // Cache global para evitar múltiplas chamadas
 let globalCache: ThirdwebDataCache | null = null;
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+const CACHE_DURATION = 1 * 60 * 1000; // 1 minuto - mais frequente para dados dinâmicos
 
 /**
  * FUNÇÃO PRINCIPAL: Busca dados da Thirdweb com fallback
@@ -43,9 +43,9 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
   try {
     console.log('🎯 Fetching fresh Thirdweb data...');
     
-    // Timeout agressivo para produção
+    // Timeout aumentado para garantir dados reais em produção
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 8000);
+      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 15000); // 15s timeout
     });
 
     const nftContract = getContract({

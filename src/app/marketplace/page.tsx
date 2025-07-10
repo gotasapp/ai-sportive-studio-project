@@ -13,10 +13,10 @@ import MarketplaceFilters, {
 import CollectionsTable from '@/components/marketplace/CollectionsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
 
-import { AlertCircle, Loader2, Grid3X3, List } from 'lucide-react';
+import { AlertCircle, Loader2, Grid3X3, List, RefreshCw } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
-import { useMarketplaceDataRobust } from '@/hooks/useMarketplaceDataRobust';
+import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
 
@@ -24,8 +24,11 @@ export default function MarketplacePage() {
   // Thirdweb hooks
   const chain = useActiveWalletChain();
   
-  // Marketplace data (ROBUSTO - NUNCA FALHA)
-  const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, dataSource } = useMarketplaceDataRobust();
+  // Marketplace data (COM LÓGICA COMPLETA DE LISTINGS/AUCTIONS)
+  const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
+  
+  // Estado para refresh manual
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Filter States
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
@@ -173,6 +176,30 @@ export default function MarketplacePage() {
   const handleShowInsights = () => {
     console.log('Showing insights...');
     // Here you would open an insights modal or navigate to insights page
+  };
+
+  // Função para forçar refresh dos dados
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      // Limpar cache primeiro
+      await fetch('/api/marketplace/refresh-cache', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'clear' })
+      });
+      
+      // Recarregar dados
+      if (refetch) {
+        await refetch();
+      }
+      
+      console.log('✅ Marketplace data refreshed');
+    } catch (error) {
+      console.error('❌ Error refreshing marketplace:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const renderGridView = () => {
@@ -365,24 +392,41 @@ export default function MarketplacePage() {
         </div>
 
         {/* Filters */}
-        <MarketplaceFilters
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          timeFilter={timeFilter}
-          onTimeFilterChange={setTimeFilter}
-          priceSort={priceSort}
-          onPriceSortChange={setPriceSort}
-          tokenType={tokenType}
-          onTokenTypeChange={setTokenType}
-          viewType={viewType}
-          onViewChange={setViewType}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          totalCollections={counters.total}
-          watchlistCount={counters.watchlist}
-          ownedCount={counters.owned}
-          onShowInsights={handleShowInsights}
-        />
+        <div className="container mx-auto px-6 md:px-8 lg:px-12">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              <MarketplaceFilters
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                timeFilter={timeFilter}
+                onTimeFilterChange={setTimeFilter}
+                priceSort={priceSort}
+                onPriceSortChange={setPriceSort}
+                tokenType={tokenType}
+                onTokenTypeChange={setTokenType}
+                viewType={viewType}
+                onViewChange={setViewType}
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                totalCollections={counters.total}
+                watchlistCount={counters.watchlist}
+                ownedCount={counters.owned}
+                onShowInsights={handleShowInsights}
+              />
+            </div>
+            
+            {/* Botão de Refresh */}
+            <button
+              onClick={handleRefresh}
+              disabled={isRefreshing || marketplaceLoading}
+              className="ml-4 px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+              title="Refresh marketplace data"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            </button>
+          </div>
+        </div>
 
         {/* Content */}
         <div className="container mx-auto px-6 md:px-8 lg:px-12 pb-8">

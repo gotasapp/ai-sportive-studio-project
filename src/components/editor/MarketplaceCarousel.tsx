@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { convertIpfsToHttp } from '@/lib/utils';
 
 interface MarketplaceItem {
   name: string;
@@ -110,7 +111,7 @@ export default function MarketplaceCarousel({ items, isLoading }: MarketplaceCar
                   <div className="bg-neutral-900 rounded p-2 transition-all duration-300 hover:scale-105 cursor-pointer">
                     <div className="aspect-[4/5] rounded mb-1.5 relative overflow-hidden border border-neutral-700" data-name={nft.name}>
                       {index % 3 === 0 && <div className="absolute top-1 right-1 w-2 h-2 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50 z-10"></div>}
-                      <Image src={nft.imageUrl} alt={nft.name} layout="fill" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 pointer-events-none" onError={handleImageError}/>
+                      <Image src={convertIpfsToHttp(nft.imageUrl)} alt={nft.name} layout="fill" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 pointer-events-none" onError={handleImageError}/>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     </div>
                     <div className="space-y-1">

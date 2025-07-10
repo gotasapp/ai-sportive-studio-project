@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Star, AlertCircle } from 'lucide-react';
 import Image from 'next/image';
 import { gsap } from 'gsap';
+import { convertIpfsToHttp } from '@/lib/utils';
 
 interface RealNFT {
   _id: string;
@@ -174,7 +175,7 @@ export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarou
             className="relative w-full h-full flex-shrink-0"
           >
             <Image
-              src={nft.imageUrl}
+              src={convertIpfsToHttp(nft.imageUrl)}
               alt={nft.name}
               fill
               style={{ objectFit: 'cover' }}

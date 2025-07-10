@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { convertIpfsToHttp } from '@/lib/utils';
 
 interface MarketplaceNFT {
   name: string;
@@ -132,7 +133,7 @@ function CompactNFTCard({ nft }: CompactNFTCardProps) {
         <div className="relative aspect-square mb-2 rounded-lg overflow-hidden bg-gray-dark/50">
           {!imageError ? (
             <img
-              src={nft.imageUrl}
+              src={convertIpfsToHttp(nft.imageUrl)}
               alt={nft.name}
               className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
               onError={() => setImageError(true)}
