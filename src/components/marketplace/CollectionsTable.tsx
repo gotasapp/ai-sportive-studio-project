@@ -137,22 +137,44 @@ export default function CollectionsTable({
         const collectionsData: CollectionStat[] = []
         console.log('✅ Collections array created:', collectionsData);
 
+        // Função para calcular estatísticas reais
+        const calculateRealStats = (categoryItems: any[], categoryName: string) => {
+          const listedItems = categoryItems.filter(item => item.isListed || item.isAuction);
+          const prices = listedItems.map(item => {
+            const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
+            return isNaN(price) ? 0 : price;
+          }).filter(price => price > 0);
+          
+          const floorPrice = prices.length > 0 ? Math.min(...prices) : 0;
+          const totalVolume = prices.reduce((sum, price) => sum + price, 0);
+          const avgPrice = prices.length > 0 ? totalVolume / prices.length : 0;
+          
+          return {
+            floorPrice,
+            volume24h: totalVolume,
+            sales24h: listedItems.length,
+            supply: categoryItems.length,
+            owners: new Set(categoryItems.map(item => item.owner || item.creator?.wallet || 'unknown').filter(owner => owner !== 'unknown')).size || 1
+          };
+        };
+
         // Jersey Collection
         console.log('👕 Checking jersey collection, count:', jerseys.length);
         if (jerseys.length > 0) {
           console.log('👕 Creating jersey collection with image:', jerseys[0].imageUrl);
+          const stats = calculateRealStats(jerseys, 'jersey');
           collectionsData.push({
             rank: 1,
             name: 'Jersey Collection',
-            imageUrl: jerseys[0].imageUrl,
-            floorPrice: 0.05,
-            floorPriceChange: 15.2,
-            volume24h: jerseys.length * 0.05 * 2.3,
-            volumeChange: 8.5,
-            sales24h: Math.floor(jerseys.length * 0.3),
-            salesChange: 12.1,
-            supply: jerseys.length,
-            owners: Math.floor(jerseys.length * 0.7),
+            imageUrl: jerseys[0].imageUrl || jerseys[0].image,
+            floorPrice: stats.floorPrice,
+            floorPriceChange: 0, // Sem dados históricos, mantém neutro
+            volume24h: stats.volume24h,
+            volumeChange: 0, // Sem dados históricos, mantém neutro
+            sales24h: stats.sales24h,
+            salesChange: 0, // Sem dados históricos, mantém neutro
+            supply: stats.supply,
+            owners: stats.owners,
             category: 'jersey',
             trendData: generateTrendData(),
             isWatchlisted: false,
@@ -162,18 +184,19 @@ export default function CollectionsTable({
 
         // Stadium Collection
         if (stadiums.length > 0) {
+          const stats = calculateRealStats(stadiums, 'stadium');
           collectionsData.push({
             rank: 2,
             name: 'Stadium Collection',
-            imageUrl: stadiums[0].imageUrl,
-            floorPrice: 0.15,
-            floorPriceChange: -5.8,
-            volume24h: stadiums.length * 0.15 * 1.8,
-            volumeChange: -12.3,
-            sales24h: Math.floor(stadiums.length * 0.4),
-            salesChange: -8.2,
-            supply: stadiums.length,
-            owners: Math.floor(stadiums.length * 0.6),
+            imageUrl: stadiums[0].imageUrl || stadiums[0].image,
+            floorPrice: stats.floorPrice,
+            floorPriceChange: 0, // Sem dados históricos, mantém neutro
+            volume24h: stats.volume24h,
+            volumeChange: 0, // Sem dados históricos, mantém neutro
+            sales24h: stats.sales24h,
+            salesChange: 0, // Sem dados históricos, mantém neutro
+            supply: stats.supply,
+            owners: stats.owners,
             category: 'stadium',
             trendData: generateTrendData(),
             isWatchlisted: true,
@@ -183,18 +206,19 @@ export default function CollectionsTable({
 
         // Badge Collection
         if (badges.length > 0) {
+          const stats = calculateRealStats(badges, 'badge');
           collectionsData.push({
             rank: 3,
             name: 'Badge Collection',
-            imageUrl: badges[0].imageUrl,
-            floorPrice: 0.03,
-            floorPriceChange: 25.4,
-            volume24h: badges.length * 0.03 * 3.2,
-            volumeChange: 18.7,
-            sales24h: Math.floor(badges.length * 0.5),
-            salesChange: 22.8,
-            supply: badges.length,
-            owners: Math.floor(badges.length * 0.8),
+            imageUrl: badges[0].imageUrl || badges[0].image,
+            floorPrice: stats.floorPrice,
+            floorPriceChange: 0, // Sem dados históricos, mantém neutro
+            volume24h: stats.volume24h,
+            volumeChange: 0, // Sem dados históricos, mantém neutro
+            sales24h: stats.sales24h,
+            salesChange: 0, // Sem dados históricos, mantém neutro
+            supply: stats.supply,
+            owners: stats.owners,
             category: 'badge',
             trendData: generateTrendData(),
             isWatchlisted: false,
