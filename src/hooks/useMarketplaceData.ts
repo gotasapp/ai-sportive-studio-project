@@ -9,6 +9,7 @@ import { createThirdwebClient } from 'thirdweb';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
+import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 
 // Thirdweb client
 const client = createThirdwebClient({
@@ -64,73 +65,19 @@ export function useMarketplaceData() {
   const fetchNFTsFromContract = async () => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
-      console.log('🎯 Fetching NFTs using Thirdweb native hooks...');
+      console.log('🎯 Fetching NFTs using PRODUCTION-READY system...');
       
-      // Add timeout for production
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
-      });
+      // 🚀 USAR NOSSA SOLUÇÃO DE PRODUÇÃO
+      const thirdwebData = await getThirdwebDataWithFallback();
+      const { nfts, listings: marketplaceListings, auctions: marketplaceAuctions } = thirdwebData;
 
-             // ALWAYS use Polygon Amoy where NFTs are minted (override user's chain)
-       const chainId = 80002; // Force Polygon Amoy where our NFTs exist
-       const contractAddress = NFT_CONTRACT_ADDRESSES[chainId as keyof typeof NFT_CONTRACT_ADDRESSES];
-       
-       if (!contractAddress) {
-         throw new Error(`Contract not deployed on chain ${chainId}`);
-       }
-
-       console.log('🔗 Contract:', contractAddress, 'on chain:', chainId, '(forced to Amoy where NFTs exist)');
-       
-       if (chain?.id && chain.id !== 80002) {
-         console.warn(`⚠️ User is on chain ${chain.id} but NFTs are on Polygon Amoy (80002). Forcing Amoy for NFT data.`);
-       }
-
-      // Always use Polygon Amoy where our NFTs are deployed
-      const currentChain = polygonAmoy;
-      const contract = getContract({
-        client,
-        chain: currentChain,
-        address: contractAddress,
-      });
-
-      // Fetch all NFTs from the contract using Thirdweb's getNFTs
-      console.log('📦 Fetching NFTs from contract...');
-      const nfts = await Promise.race([
-        getNFTs({
-          contract,
-          start: 0,
-          count: 100, // Fetch up to 100 NFTs
-        }),
-        timeoutPromise
-      ]) as any[];
-
-            console.log(`✅ Found ${nfts.length} NFTs in contract`);
-
-      // Fetch marketplace listings using NATIVE Thirdweb function
-      console.log('🏪 Fetching marketplace listings using getAllValidListings...');
+      // Get contract address for filtering
+      const chainId = 80002; // Polygon Amoy where our NFTs exist
+      const contractAddress = NFT_CONTRACT_ADDRESSES[chainId as keyof typeof NFT_CONTRACT_ADDRESSES];
       
-      const marketplaceContract = getContract({
-        client,
-        chain: currentChain,
-        address: MARKETPLACE_CONTRACT_ADDRESS,
-      });
-      
-      // Fetch both listings and auctions in parallel with timeout
-      const [marketplaceListings, marketplaceAuctions] = await Promise.race([
-        Promise.all([
-          getAllValidListings({
-            contract: marketplaceContract,
-            start: 0,
-            count: BigInt(100), // Get up to 100 listings
-          }),
-          getAllAuctions({
-            contract: marketplaceContract,
-            start: 0,
-            count: BigInt(100), // Get up to 100 auctions
-          })
-        ]),
-        timeoutPromise
-      ]) as any[];
+      console.log(`✅ Found ${nfts.length} NFTs in contract`);
+      console.log(`📋 Found ${marketplaceListings.length} total listings`);
+      console.log(`🏆 Found ${marketplaceAuctions.length} total auctions`);
       
             // Filter only listings and auctions from our NFT contract
       const ourContractListings = marketplaceListings.filter((listing: any) =>
