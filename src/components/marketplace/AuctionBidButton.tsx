@@ -19,6 +19,7 @@ interface AuctionBidButtonProps {
   currency?: string;
   className?: string;
   disabled?: boolean;
+  onBidSuccess?: () => void; // Callback para atualizar dados após bid
 }
 
 export default function AuctionBidButton({
@@ -29,7 +30,8 @@ export default function AuctionBidButton({
   endTime,
   currency = 'MATIC',
   className = '',
-  disabled = false
+  disabled = false,
+  onBidSuccess
 }: AuctionBidButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [bidAmount, setBidAmount] = useState('');
@@ -118,10 +120,16 @@ export default function AuctionBidButton({
       setIsOpen(false);
       setBidAmount('');
       
-      // Opcional: Recarregar dados do leilão
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Chamar callback para atualizar dados do leilão
+      if (onBidSuccess) {
+        console.log('🔄 Calling onBidSuccess callback to refresh auction data...');
+        onBidSuccess();
+      } else {
+        // Fallback: recarregar página se não houver callback
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
 
     } catch (error: any) {
       console.error('❌ Error sending bid:', error);

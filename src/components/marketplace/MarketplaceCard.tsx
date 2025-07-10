@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Heart, MoreVertical, Tag, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
+import { useAuctionData } from '@/hooks/useAuctionData';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import BuyNowButton from './BuyNowButton';
@@ -63,13 +64,26 @@ export default function MarketplaceCard({
   endTime,
   activeOffers = 0
 }: MarketplaceCardProps) {
+  const [isLiked, setIsLiked] = useState(false);
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [showUpdateListing, setShowUpdateListing] = useState(false);
   const [showCreateAuction, setShowCreateAuction] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
   
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
+
+  // 🔄 HOOK PARA DADOS DO LEILÃO EM TEMPO REAL
+  const auctionData = useAuctionData({
+    auctionId,
+    isAuction,
+    initialBid: currentBid || '1 MATIC',
+    refreshInterval: 30 // atualizar a cada 30 segundos
+  });
+
+  // Usar bid em tempo real se disponível, senão usar o valor inicial
+  const displayCurrentBid = isAuction 
+    ? (auctionData.hasValidBid ? auctionData.currentBid : currentBid)
+    : currentBid;
   
   // 🚨 SAFE PRICE VALIDATION
   const isPriceValid = price !== 'Not for sale' && price !== 'N/A' ? isValidPrice(price) : true;
@@ -230,11 +244,15 @@ export default function MarketplaceCard({
             {!isAuctionEnded ? (
               <AuctionBidButton
                 auctionId={auctionId}
-                currentBid={currentBid || '0 MATIC'}
+                currentBid={displayCurrentBid || '0 MATIC'}
                 minimumBid={currentBid || '0'}
                 endTime={endTime}
                 currency="MATIC"
                 className="w-full"
+                onBidSuccess={() => {
+                  console.log('🎯 Bid successful! Refreshing auction data...');
+                  auctionData.refetch();
+                }}
               />
             ) : (
                 <div className="space-y-2">
@@ -381,8 +399,18 @@ export default function MarketplaceCard({
           <div className="mb-3">
             {isAuction ? (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
-                <p className="text-sm font-medium text-[#A20131]">{currentBid || price}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
+                  {auctionData.isLoading && (
+                    <div className="animate-spin h-3 w-3 border border-[#A20131] border-t-transparent rounded-full"></div>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-[#A20131]">{displayCurrentBid || price}</p>
+                {auctionData.lastUpdated && (
+                  <p className="text-xs text-[#FDFDFD]/50">
+                    Updated: {new Date(auctionData.lastUpdated).toLocaleTimeString()}
+                  </p>
+                )}
               </div>
             ) : (
               <div>
