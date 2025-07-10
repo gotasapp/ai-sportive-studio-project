@@ -347,14 +347,7 @@ export default function MarketplacePage() {
           <FeaturedCarousel marketplaceData={marketplaceItems || []} />
         </div>
 
-        {/* Data Source Indicator */}
-        {dataSource !== 'thirdweb' && (
-          <div className="container mx-auto px-6 md:px-8 lg:px-12 py-2">
-            <div className="text-center text-xs text-[#A20131] bg-[#A20131]/10 px-3 py-2 rounded-lg">
-              {dataSource === 'mongodb' ? '📊 Using MongoDB Data' : '🛡️ Using Fallback Data'} - {dataSource === 'fallback' ? 'Some features may be limited' : 'All features available'}
-            </div>
-          </div>
-        )}
+        {/* Data Source Indicator - Removido temporariamente */}
 
         {/* Marketplace Stats */}
         <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
