@@ -142,8 +142,8 @@ export async function GET() {
       
       // Novos usuários (últimos 30 dias)
       newUsers: enrichedUsers.filter(u => {
-        if (!u.createdAt) return false;
-        const daysSinceJoined = (Date.now() - new Date(u.createdAt).getTime()) / (1000 * 60 * 60 * 24);
+        if (!u.joinedAt) return false;
+        const daysSinceJoined = (Date.now() - new Date(u.joinedAt).getTime()) / (1000 * 60 * 60 * 24);
         return daysSinceJoined <= 30;
       }).length
     };
