@@ -92,7 +92,7 @@ export function MarketplaceStatsLoading() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {Array.from({ length: 4 }).map((_, index) => (
-        <Card key={index} className="cyber-card">
+        <Card key={index} className="bg-transparent border-[#FDFDFD]/10">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <Skeleton className="h-4 w-20 bg-[#FDFDFD]/10" />

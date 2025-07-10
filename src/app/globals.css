@@ -347,6 +347,11 @@
   transition: all 0.2s ease;
 }
 
+/* Stats cards específicos com background transparente */
+.cyber-card.bg-transparent {
+  background: transparent !important;
+}
+
 .cyber-card::before {
   content: '';
   position: absolute;

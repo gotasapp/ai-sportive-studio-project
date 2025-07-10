@@ -34,28 +34,28 @@ export default function MarketplaceStats({
       value: totalListings,
       description: "For sale",
       icon: <Tag className="h-3 w-3 text-[#A20131]" />,
-      color: "text-[#FDFDFD]"
+      color: "text-blue-400"
     },
     {
       title: "Auctions", 
       value: totalAuctions,
       description: "Active",
       icon: <TrendingUp className="h-3 w-3 text-[#A20131]" />,
-      color: "text-[#FDFDFD]"
+      color: "text-green-400"
     },
     {
       title: "Volume",
       value: totalVolume,
       description: "Total",
       icon: <DollarSign className="h-3 w-3 text-[#A20131]" />,
-      color: "text-[#FDFDFD]"
+      color: "text-purple-400"
     },
     {
       title: "Floor",
       value: floorPrice,
       description: "Lowest",
       icon: <BarChart3 className="h-3 w-3 text-[#A20131]" />,
-      color: "text-[#FDFDFD]"
+      color: "text-orange-400"
     }
   ];
 

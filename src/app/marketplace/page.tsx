@@ -326,10 +326,31 @@ export default function MarketplacePage() {
             <MarketplaceStatsLoading />
           ) : (
             <MarketplaceStats
-              totalListings={marketplaceItems?.length || 0}
-              totalAuctions={0}
-              totalVolume="0 MATIC"
-              floorPrice="0 MATIC"
+              totalListings={marketplaceItems?.filter(item => item.isListed && !item.isAuction)?.length || 0}
+              totalAuctions={marketplaceItems?.filter(item => item.isAuction)?.length || 0}
+              totalVolume={(() => {
+                const totalVol = marketplaceItems?.reduce((sum, item) => {
+                  if (item.isListed || item.isAuction) {
+                    const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
+                    return sum + (isNaN(price) ? 0 : price);
+                  }
+                  return sum;
+                }, 0) || 0;
+                return `${totalVol.toFixed(2)} MATIC`;
+              })()}
+              floorPrice={(() => {
+                const listedItems = marketplaceItems?.filter(item => 
+                  (item.isListed || item.isAuction) && item.price && item.price !== 'Not for sale'
+                ) || [];
+                if (listedItems.length === 0) return '0 MATIC';
+                const prices = listedItems.map(item => {
+                  const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
+                  return isNaN(price) ? 0 : price;
+                }).filter(price => price > 0);
+                if (prices.length === 0) return '0 MATIC';
+                const minPrice = Math.min(...prices);
+                return `${minPrice.toFixed(3)} MATIC`;
+              })()}
             />
           )}
         </div>
