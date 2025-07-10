@@ -18,11 +18,14 @@ import {
   Wallet,
   Network
 } from 'lucide-react';
+import React from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function MarketplaceDebug() {
   const account = useActiveAccount();
   const activeChain = useActiveWalletChain();
   const switchChain = useSwitchActiveWalletChain();
+  const router = useRouter()
 
   const handleSwitchToAmoy = async () => {
     try {
@@ -632,10 +635,10 @@ export default function MarketplaceDebug() {
                   console.log('🔍 Marketplace Debug Info:', {
                     account: account?.address,
                     chainId,
-                                         contracts: {
-                       marketplace: marketplaceContract,
-                       nft: nftContract
-                     },
+                    contracts: {
+                      marketplace: marketplaceContract,
+                      nft: nftContract
+                    },
                     envVars: {
                       clientId: !!process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID,
                       walletConnect: !!process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
@@ -650,7 +653,7 @@ export default function MarketplaceDebug() {
                 size="sm" 
                 variant="outline"
                 className="border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/5"
-                onClick={() => window.open('/marketplace', '_blank')}
+                onClick={() => router.push('/marketplace')}
               >
                 Open Marketplace
               </Button>
@@ -659,7 +662,7 @@ export default function MarketplaceDebug() {
                 size="sm" 
                 variant="outline"
                 className="border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/5"
-                onClick={() => window.open('/marketplace/dashboard', '_blank')}
+                onClick={() => router.push('/marketplace/dashboard')}
               >
                 Dashboard
               </Button>

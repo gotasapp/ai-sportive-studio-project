@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 interface MarketplaceItem {
   name: string;
@@ -15,6 +16,7 @@ interface MarketplaceCarouselProps {
 }
 
 export default function MarketplaceCarousel({ items, isLoading }: MarketplaceCarouselProps) {
+  const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState(0);
@@ -142,7 +144,12 @@ export default function MarketplaceCarousel({ items, isLoading }: MarketplaceCar
         </div>
         
         <div className="mt-3 text-center">
-          <button className="px-4 py-2 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-sm">View All Items</button>
+          <button 
+            className="px-4 py-2 border border-accent/30 text-accent rounded hover:border-accent hover:bg-accent/10 transition-all text-sm"
+            onClick={() => router.push('/marketplace')}
+          >
+            View All Items
+          </button>
         </div>
       </div>
     </div>

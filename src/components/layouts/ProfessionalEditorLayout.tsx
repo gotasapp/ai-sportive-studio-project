@@ -65,7 +65,7 @@ export default function ProfessionalEditorLayout({
               <div className="sticky top-0 z-10 bg-transparent p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 flex justify-center">
-                    <h2 className="text-sm md:text-xl font-system font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent" style={{ fontWeight: 500 }}>
+                    <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
                       {title}
                     </h2>
                   </div>
@@ -213,7 +213,7 @@ export default function ProfessionalEditorLayout({
               {showTitle && (
                 <div className="sticky top-0 z-10 bg-[#111011] border-b border-[#333333] p-4">
                   <div className="flex items-center justify-between">
-                    <h2 className="text-lg font-system font-medium bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                    <h2 className="text-lg font-semibold text-[#FDFDFD] uppercase tracking-wide">
                       {title}
                     </h2>
                     <Button

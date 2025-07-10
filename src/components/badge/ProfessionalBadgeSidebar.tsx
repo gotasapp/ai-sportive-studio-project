@@ -353,7 +353,8 @@ export default function ProfessionalBadgeSidebar({
           )}
         </Card>
 
-        {/* Quality Settings */}
+        {/* Quality Settings - HIDDEN: Moved to Admin Panel Moderation */}
+        {/* 
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
@@ -410,6 +411,7 @@ export default function ProfessionalBadgeSidebar({
             </CardContent>
           )}
         </Card>
+        */}
       </div>
     </TooltipProvider>
   )

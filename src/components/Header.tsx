@@ -132,28 +132,28 @@ export default function Header() {
     )}>
       <NavLink 
         href="/" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Jerseys
       </NavLink>
       <NavLink 
         href="/stadiums" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Stadiums
       </NavLink>
       <NavLink 
         href="/badges" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Badges
       </NavLink>
       <NavLink 
         href="/marketplace" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Marketplace
@@ -161,7 +161,7 @@ export default function Header() {
       
       <NavLink 
         href="/launchpad" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Launchpad
@@ -169,7 +169,7 @@ export default function Header() {
       
       <NavLink 
         href="/profile" 
-        className={cn(mobile && "w-full text-center py-2")}
+        className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
         Profile
@@ -180,7 +180,7 @@ export default function Header() {
         <Link 
           href="/admin" 
           className={cn(
-            "flex items-center justify-center space-x-2 text-accent hover:text-accent/80 transition-colors border border-accent/30 px-3 py-1 rounded-lg hover:border-accent/50 hover:bg-accent/10",
+            "flex items-center justify-center space-x-2 text-accent hover:text-accent/80 transition-colors border border-accent/30 px-3 py-1 rounded-lg hover:border-accent/50 hover:bg-accent/10 uppercase",
             mobile && "w-full"
           )}
           onClick={onItemClick}

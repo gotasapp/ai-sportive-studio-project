@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Shield, Clock, CheckCircle, XCircle, RefreshCw, User, Shirt, Building, Award, Info, Image as ImageIcon, 
-  Plus, X, Settings, Filter
+  Plus, X, Settings, Filter, Zap, DollarSign
 } from 'lucide-react'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Input } from '@/components/ui/input'
@@ -38,6 +38,15 @@ interface ContentFilters {
   customPrompts: string[];
 }
 
+// Tipos para Quality Settings
+interface QualitySettings {
+  defaultQuality: 'standard' | 'hd';
+  allowUserChoice: boolean;
+  standardCost: number;
+  hdCost: number;
+  maxGenerationsPerUser: number;
+}
+
 const typeConfig = {
   Jersey: { icon: Shirt, color: 'text-blue-400' },
   Stadium: { icon: Building, color: 'text-green-400' },
@@ -62,6 +71,16 @@ export default function ModerationPage() {
   // Moderation Settings State
   const [moderationEnabled, setModerationEnabled] = useState(false);
   const [moderationLoading, setModerationLoading] = useState(false);
+  
+  // Quality Settings State
+  const [qualitySettings, setQualitySettings] = useState<QualitySettings>({
+    defaultQuality: 'standard',
+    allowUserChoice: false,
+    standardCost: 0.04,
+    hdCost: 0.08,
+    maxGenerationsPerUser: 50
+  });
+  const [qualityLoading, setQualityLoading] = useState(false);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -126,10 +145,27 @@ export default function ModerationPage() {
     }
   }, []);
 
+  // Fetch Quality Settings
+  const fetchQualitySettings = useCallback(async () => {
+    setQualityLoading(true);
+    try {
+      const response = await fetch('/api/admin/settings/quality');
+      if (response.ok) {
+        const data = await response.json();
+        setQualitySettings(data);
+      }
+    } catch (error) {
+      console.error('Error fetching quality settings:', error);
+    } finally {
+      setQualityLoading(false);
+    }
+  }, []);
+
   // Lazy loading - só carrega quando necessário
   const [activeTab, setActiveTab] = useState('queue');
   const [hasLoadedFilters, setHasLoadedFilters] = useState(false);
   const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
+  const [hasLoadedQuality, setHasLoadedQuality] = useState(false);
 
   useEffect(() => {
     // Sempre carrega os itens da queue primeiro
@@ -146,7 +182,11 @@ export default function ModerationPage() {
       fetchModerationSettings();
       setHasLoadedSettings(true);
     }
-  }, [activeTab, hasLoadedFilters, hasLoadedSettings, fetchContentFilters, fetchModerationSettings]);
+    if (activeTab === 'quality' && !hasLoadedQuality) {
+      fetchQualitySettings();
+      setHasLoadedQuality(true);
+    }
+  }, [activeTab, hasLoadedFilters, hasLoadedSettings, hasLoadedQuality, fetchContentFilters, fetchModerationSettings, fetchQualitySettings]);
 
   const handleDecision = async (itemId: string, decision: 'approved' | 'rejected', itemType: string) => {
     try {
@@ -269,6 +309,32 @@ export default function ModerationPage() {
     }
   };
 
+  // Quality Settings Functions
+  const updateQualitySettings = async (newSettings: Partial<QualitySettings>) => {
+    setQualityLoading(true);
+    try {
+      const response = await fetch('/api/admin/settings/quality', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update',
+          settings: { ...qualitySettings, ...newSettings }
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setQualitySettings(data.settings);
+        toast.success('Quality settings updated successfully!');
+      }
+    } catch (error) {
+      console.error('Error updating quality settings:', error);
+      toast.error('Failed to update quality settings');
+    } finally {
+      setQualityLoading(false);
+    }
+  };
+
   const renderSkeleton = () => (
     Array.from({ length: 4 }).map((_, i) => (
       <Card key={`skel-${i}`} className="cyber-card animate-pulse">
@@ -305,7 +371,7 @@ export default function ModerationPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 cyber-card border-cyan-500/30">
+        <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
           <TabsTrigger value="queue">
             <Shield className="w-4 h-4 mr-2" />
             Moderation Queue ({items.length})
@@ -313,6 +379,10 @@ export default function ModerationPage() {
           <TabsTrigger value="filters">
             <Filter className="w-4 h-4 mr-2" />
             Content Filters
+          </TabsTrigger>
+          <TabsTrigger value="quality">
+            <Zap className="w-4 h-4 mr-2" />
+            Quality Settings
           </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="w-4 h-4 mr-2" />
@@ -511,6 +581,149 @@ export default function ModerationPage() {
                 ) : (
                   <p className="text-sm text-gray-500 italic">No custom filters added yet.</p>
                 )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="quality">
+          <Card className="cyber-card border-cyan-500/30">
+            <CardHeader>
+              <CardTitle>Quality Settings</CardTitle>
+              <CardDescription>Configure default generation quality and user permissions for AI content creation.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Default Quality Setting */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Default Generation Quality</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <Button
+                    variant={qualitySettings.defaultQuality === 'standard' ? 'default' : 'outline'}
+                    onClick={() => updateQualitySettings({ defaultQuality: 'standard' })}
+                    disabled={qualityLoading}
+                    className="p-4 h-auto flex flex-col items-start"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <Zap className="w-4 h-4" />
+                      <span className="font-medium">Standard Quality</span>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      Fast generation • Lower cost • Good for prototypes
+                    </div>
+                    <div className="text-xs text-green-400 mt-1">
+                      ${qualitySettings.standardCost.toFixed(3)} per generation
+                    </div>
+                  </Button>
+                  
+                  <Button
+                    variant={qualitySettings.defaultQuality === 'hd' ? 'default' : 'outline'}
+                    onClick={() => updateQualitySettings({ defaultQuality: 'hd' })}
+                    disabled={qualityLoading}
+                    className="p-4 h-auto flex flex-col items-start"
+                  >
+                    <div className="flex items-center gap-2 mb-1">
+                      <DollarSign className="w-4 h-4" />
+                      <span className="font-medium">HD Quality</span>
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      High resolution • Premium cost • Production ready
+                    </div>
+                    <div className="text-xs text-orange-400 mt-1">
+                      ${qualitySettings.hdCost.toFixed(3)} per generation
+                    </div>
+                  </Button>
+                </div>
+              </div>
+
+              {/* User Choice Permission */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+                  <div className="flex items-center space-x-3">
+                    <Settings className="w-5 h-5 text-blue-400" />
+                    <div>
+                      <Label className="text-base font-medium">Allow User Quality Choice</Label>
+                      <p className="text-sm text-gray-400 mt-1">
+                        {qualitySettings.allowUserChoice 
+                          ? 'Users can choose between Standard and HD quality in generation interfaces' 
+                          : 'Users are restricted to the default quality setting only'
+                        }
+                      </p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={qualitySettings.allowUserChoice}
+                    onCheckedChange={(checked) => updateQualitySettings({ allowUserChoice: checked })}
+                    disabled={qualityLoading}
+                    className="scale-110"
+                  />
+                </div>
+              </div>
+
+              {/* Cost Configuration */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Cost Configuration</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label className="text-sm">Standard Quality Cost ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={qualitySettings.standardCost}
+                      onChange={(e) => updateQualitySettings({ standardCost: parseFloat(e.target.value) || 0 })}
+                      disabled={qualityLoading}
+                      className="cyber-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm">HD Quality Cost ($)</Label>
+                    <Input
+                      type="number"
+                      step="0.001"
+                      min="0"
+                      value={qualitySettings.hdCost}
+                      onChange={(e) => updateQualitySettings({ hdCost: parseFloat(e.target.value) || 0 })}
+                      disabled={qualityLoading}
+                      className="cyber-input"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Generation Limits */}
+              <div className="space-y-4">
+                <Label className="text-base font-medium">Usage Limits</Label>
+                <div className="space-y-2">
+                  <Label className="text-sm">Max Generations per User (per day)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={qualitySettings.maxGenerationsPerUser}
+                    onChange={(e) => updateQualitySettings({ maxGenerationsPerUser: parseInt(e.target.value) || 50 })}
+                    disabled={qualityLoading}
+                    className="cyber-input"
+                  />
+                  <p className="text-xs text-gray-400">
+                    Set daily generation limit to prevent abuse. Current: {qualitySettings.maxGenerationsPerUser} generations/day
+                  </p>
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
+                <div className="flex items-start space-x-3">
+                  <Info className="w-5 h-5 text-blue-400 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-medium text-blue-400 mb-2">Quality Settings Impact:</h4>
+                    <ul className="text-sm text-gray-300 space-y-1">
+                      <li>• <strong>Default Quality:</strong> Applied when users don't have choice permission</li>
+                      <li>• <strong>User Choice:</strong> Shows quality selector in Jersey, Stadium, and Badge editors</li>
+                      <li>• <strong>Cost Settings:</strong> Affects generation cost calculations and billing</li>
+                      <li>• <strong>Usage Limits:</strong> Prevents excessive API usage and controls costs</li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

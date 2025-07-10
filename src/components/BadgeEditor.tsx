@@ -1,8 +1,9 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
+import { useRouter } from 'next/navigation'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -36,6 +37,7 @@ interface MarketplaceNFT {
 }
 
 export default function BadgeEditor() {
+  const router = useRouter()
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
   
@@ -691,7 +693,8 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           }}
           onViewAll={() => {
             console.log('View all marketplace items')
-            window.open('/marketplace', '_blank')
+            // Navegação interna sem nova aba
+            router.push('/marketplace')
           }}
           title="Trending NFTs"
           showSearch={false}

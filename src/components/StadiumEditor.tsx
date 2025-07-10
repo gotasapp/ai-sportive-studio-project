@@ -8,6 +8,7 @@ import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
 import { isAdmin } from '@/lib/admin-config';
 import { getTransactionUrl } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Importando os novos componentes profissionais
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
@@ -28,6 +29,7 @@ export default function StadiumEditor() {
   // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
+  const router = useRouter()
   
   // Use account data directly
   const address = account?.address
@@ -525,7 +527,8 @@ export default function StadiumEditor() {
           }}
           onViewAll={() => {
             console.log('View all marketplace items')
-            window.open('/marketplace', '_blank')
+            // Navegação interna sem nova aba
+            router.push('/marketplace')
           }}
           title="Trending NFTs"
           showSearch={false}

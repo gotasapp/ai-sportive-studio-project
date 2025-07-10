@@ -2,6 +2,10 @@
 
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useState, useEffect } from 'react'
+import { useReadContract } from 'thirdweb/react'
+import { getContract, createThirdwebClient } from 'thirdweb'
+import { polygonAmoy } from 'thirdweb/chains'
+import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -54,13 +58,71 @@ interface NFTItem {
   collection: 'jerseys' | 'stadiums' | 'badges'
 }
 
+// Thirdweb client
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
+});
+
+// Contract setup
+const NFT_CONTRACT_ADDRESS = '0xfF973a4aFc5A96DEc81366461A461824c4f80254'; // Polygon Amoy
+
+// Helper functions
+function convertIpfsToHttp(ipfsUrl: string): string {
+  if (!ipfsUrl) return '';
+  if (ipfsUrl.startsWith('ipfs://')) {
+    return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
+  }
+  return ipfsUrl;
+}
+
+function determineCategory(metadata: any): 'jerseys' | 'stadiums' | 'badges' {
+  const name = (metadata.name || '').toLowerCase();
+  const description = (metadata.description || '').toLowerCase();
+  const attributes = metadata.attributes || [];
+  
+  // Check attributes first (most reliable)
+  const categoryAttribute = attributes.find((attr: any) => 
+    attr.trait_type?.toLowerCase() === 'category' || 
+    attr.trait_type?.toLowerCase() === 'type'
+  );
+  
+  if (categoryAttribute) {
+    const category = categoryAttribute.value?.toLowerCase();
+    if (category === 'jersey' || category === 'jerseys') return 'jerseys';
+    if (category === 'stadium' || category === 'stadiums') return 'stadiums';
+    if (category === 'badge' || category === 'badges') return 'badges';
+  }
+  
+  // Fallback to name/description analysis
+  if (name.includes('jersey') || description.includes('jersey') || name.includes('#')) {
+    return 'jerseys';
+  }
+  
+  if (name.includes('stadium') || description.includes('stadium') || 
+      name.includes('arena') || description.includes('arena')) {
+    return 'stadiums';
+  }
+  
+  if (name.includes('badge') || description.includes('badge') ||
+      name.includes('achievement') || description.includes('achievement')) {
+    return 'badges';
+  }
+  
+  // Default to jerseys
+  return 'jerseys';
+}
+
 export default function ProfilePage() {
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
   const { primaryEmail, primaryPhone, hasEmail, hasPhone } = useThirdwebProfiles()
   
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
+  // NFT states
   const [userNFTs, setUserNFTs] = useState<NFTItem[]>([])
+  const [nftsLoading, setNftsLoading] = useState(true)
+  const [nftsError, setNftsError] = useState<string | null>(null)
+  
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
   const [editedUsername, setEditedUsername] = useState('')
@@ -73,6 +135,86 @@ export default function ProfilePage() {
       return
     }
   }, [account])
+
+  // Load user NFTs using Thirdweb native hooks
+  useEffect(() => {
+    const fetchUserNFTs = async () => {
+      if (!account?.address) return
+
+      setNftsLoading(true)
+      setNftsError(null)
+
+      try {
+        console.log('🎯 Fetching user NFTs for:', account.address)
+
+        // Create contract instance
+        const contract = getContract({
+          client,
+          chain: polygonAmoy,
+          address: NFT_CONTRACT_ADDRESS,
+        })
+
+        // Get all NFTs from the contract
+        console.log('📦 Fetching all NFTs from contract...')
+        const allNFTs = await getNFTs({
+          contract,
+          start: 0,
+          count: 200, // Fetch up to 200 NFTs
+        })
+
+        console.log(`✅ Found ${allNFTs.length} total NFTs in contract`)
+
+        // Filter NFTs owned by the current user
+        const userOwnedNFTs: NFTItem[] = []
+
+        for (const nft of allNFTs) {
+          try {
+            const tokenId = nft.id.toString()
+            
+            // Check ownership using ownerOf
+            const owner = await ownerOf({
+              contract,
+              tokenId: BigInt(tokenId),
+            })
+
+            // If user owns this NFT, add to collection
+            if (owner.toLowerCase() === account.address.toLowerCase()) {
+              const metadata = nft.metadata || {}
+              
+              // Determine category from metadata
+              const category = determineCategory(metadata)
+              
+              const nftItem: NFTItem = {
+                id: `${NFT_CONTRACT_ADDRESS}-${tokenId}`,
+                name: metadata.name || `NFT #${tokenId}`,
+                imageUrl: convertIpfsToHttp(metadata.image || ''),
+                price: undefined, // Will check marketplace status separately
+                status: 'owned', // Default status
+                createdAt: new Date().toISOString(), // Would ideally come from mint events
+                collection: category
+              }
+
+              userOwnedNFTs.push(nftItem)
+              console.log(`✅ Added user NFT: ${nftItem.name} (Token ID: ${tokenId})`)
+            }
+          } catch (error) {
+            console.warn(`⚠️ Could not check ownership for token ${nft.id}:`, error)
+          }
+        }
+
+        console.log(`🎉 Found ${userOwnedNFTs.length} NFTs owned by user`)
+        setUserNFTs(userOwnedNFTs)
+
+      } catch (error) {
+        console.error('❌ Error fetching user NFTs:', error)
+        setNftsError(error instanceof Error ? error.message : 'Failed to fetch NFTs')
+      } finally {
+        setNftsLoading(false)
+      }
+    }
+
+    fetchUserNFTs()
+  }, [account?.address])
 
   // Load user profile data
   useEffect(() => {
@@ -103,56 +245,6 @@ export default function ProfilePage() {
           setUserProfile(defaultProfile)
           setEditedUsername(defaultProfile.username)
         }
-
-        // Load user NFTs from multiple collections
-        const [jerseysRes, stadiumsRes, badgesRes] = await Promise.all([
-          fetch(`/api/jerseys?owner=${account.address}`),
-          fetch(`/api/stadiums?owner=${account.address}`),
-          fetch(`/api/badges?owner=${account.address}`)
-        ])
-
-        const nfts: NFTItem[] = []
-        
-        if (jerseysRes.ok) {
-          const jerseys = await jerseysRes.json()
-          nfts.push(...jerseys.map((jersey: any) => ({
-            id: jersey._id,
-            name: jersey.name,
-            imageUrl: jersey.imageUrl,
-            price: jersey.price,
-            status: jersey.isListed ? 'listed' : 'owned',
-            createdAt: jersey.createdAt,
-            collection: 'jerseys'
-          })))
-        }
-
-        if (stadiumsRes.ok) {
-          const stadiums = await stadiumsRes.json()
-          nfts.push(...stadiums.map((stadium: any) => ({
-            id: stadium._id,
-            name: stadium.name,
-            imageUrl: stadium.imageUrl,
-            price: stadium.price,
-            status: stadium.isListed ? 'listed' : 'owned',
-            createdAt: stadium.createdAt,
-            collection: 'stadiums'
-          })))
-        }
-
-        if (badgesRes.ok) {
-          const badges = await badgesRes.json()
-          nfts.push(...badges.map((badge: any) => ({
-            id: badge._id,
-            name: badge.name,
-            imageUrl: badge.imageUrl,
-            price: badge.price,
-            status: badge.isListed ? 'listed' : 'owned',
-            createdAt: badge.createdAt,
-            collection: 'badges'
-          })))
-        }
-
-        setUserNFTs(nfts)
       } catch (error) {
         console.error('Error loading profile:', error)
       } finally {
@@ -537,19 +629,59 @@ export default function ProfilePage() {
               </TabsList>
               
               <TabsContent value="all" className="mt-6">
-                <NFTGrid nfts={userNFTs} />
+                {nftsLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-white">Loading your NFTs from blockchain...</div>
+                  </div>
+                ) : nftsError ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-red-400">Error: {nftsError}</div>
+                  </div>
+                ) : (
+                  <NFTGrid nfts={userNFTs} />
+                )}
               </TabsContent>
               
               <TabsContent value="owned" className="mt-6">
-                <NFTGrid nfts={ownedNFTs} />
+                {nftsLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-white">Loading your NFTs from blockchain...</div>
+                  </div>
+                ) : nftsError ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-red-400">Error: {nftsError}</div>
+                  </div>
+                ) : (
+                  <NFTGrid nfts={ownedNFTs} />
+                )}
               </TabsContent>
               
               <TabsContent value="listed" className="mt-6">
-                <NFTGrid nfts={listedNFTs} />
+                {nftsLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-white">Loading your NFTs from blockchain...</div>
+                  </div>
+                ) : nftsError ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-red-400">Error: {nftsError}</div>
+                  </div>
+                ) : (
+                  <NFTGrid nfts={listedNFTs} />
+                )}
               </TabsContent>
               
               <TabsContent value="created" className="mt-6">
-                <NFTGrid nfts={createdNFTs} />
+                {nftsLoading ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-white">Loading your NFTs from blockchain...</div>
+                  </div>
+                ) : nftsError ? (
+                  <div className="flex items-center justify-center h-64">
+                    <div className="text-red-400">Error: {nftsError}</div>
+                  </div>
+                ) : (
+                  <NFTGrid nfts={createdNFTs} />
+                )}
               </TabsContent>
               
               <TabsContent value="activity" className="mt-6">
