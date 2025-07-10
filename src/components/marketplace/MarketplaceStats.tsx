@@ -62,7 +62,7 @@ export default function MarketplaceStats({
   return (
     <div className={`grid grid-cols-2 lg:grid-cols-4 gap-2 ${className}`}>
       {stats.map((stat, index) => (
-        <Card key={index} className="bg-transparent border-[#FDFDFD]/10">
+        <Card key={index} className="cyber-card">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
             <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
               {stat.title}
