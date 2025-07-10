@@ -8,7 +8,7 @@ import { getContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
-import { getAllValidListings } from 'thirdweb/extensions/marketplace';
+import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 
 // Thirdweb client
 const client = createThirdwebClient({
@@ -107,25 +107,45 @@ export function useMarketplaceData() {
         address: MARKETPLACE_CONTRACT_ADDRESS,
       });
       
-      const marketplaceListings = await getAllValidListings({
-        contract: marketplaceContract,
-        start: 0,
-        count: 100, // Get up to 100 listings
-      });
+      // Fetch both listings and auctions in parallel
+      const [marketplaceListings, marketplaceAuctions] = await Promise.all([
+        getAllValidListings({
+          contract: marketplaceContract,
+          start: 0,
+          count: 100, // Get up to 100 listings
+        }),
+        getAllAuctions({
+          contract: marketplaceContract,
+          start: 0,
+          count: 100, // Get up to 100 auctions
+        })
+      ]);
       
-      // Filter only listings from our NFT contract
+      // Filter only listings and auctions from our NFT contract
       const ourContractListings = marketplaceListings.filter(listing => 
         listing.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
       );
       
-      // Create lookup map for quick access
+      const ourContractAuctions = marketplaceAuctions.filter(auction => 
+        auction.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
+      );
+      
+      // Create lookup maps for quick access
       const listingsByTokenId = new Map();
+      const auctionsByTokenId = new Map();
+      
       ourContractListings.forEach(listing => {
         const tokenId = listing.tokenId.toString();
         listingsByTokenId.set(tokenId, listing);
       });
       
-      console.log(`📋 Found ${marketplaceListings.length} total listings, ${ourContractListings.length} from our contract, mapped ${listingsByTokenId.size} by tokenId`);
+      ourContractAuctions.forEach(auction => {
+        const tokenId = auction.tokenId.toString();
+        auctionsByTokenId.set(tokenId, auction);
+      });
+      
+      console.log(`📋 Found ${marketplaceListings.length} total listings (${ourContractListings.length} from our contract)`);
+      console.log(`🏆 Found ${marketplaceAuctions.length} total auctions (${ourContractAuctions.length} from our contract)`);
 
       // Process NFTs with MANUAL OWNER LOOKUP + MARKETPLACE DATA
       console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
@@ -148,11 +168,33 @@ export function useMarketplaceData() {
            nftOwner = nft.owner || 'Unknown';
          }
          
-         // Check if this NFT is listed in marketplace
+         // Check if this NFT is listed or auctioned in marketplace
          const marketplaceListing = listingsByTokenId.get(tokenId);
+         const marketplaceAuction = auctionsByTokenId.get(tokenId);
+         
          const isListed = !!marketplaceListing;
-         const listingPrice = marketplaceListing?.currencyValuePerToken?.displayValue || 'Not for sale';
-         const currency = marketplaceListing?.currencyValuePerToken?.symbol || 'MATIC';
+         const isAuction = !!marketplaceAuction;
+         
+         let price = 'Not for sale';
+         let currency = 'MATIC';
+         let endTime: Date | undefined;
+         
+         if (isListed) {
+           price = marketplaceListing.currencyValuePerToken?.displayValue || 'Not for sale';
+           currency = marketplaceListing.currencyValuePerToken?.symbol || 'MATIC';
+         } else if (isAuction) {
+           const currentTime = Math.floor(Date.now() / 1000);
+           const auctionEndTime = Number(marketplaceAuction.endTimestamp);
+           const isAuctionActive = currentTime < auctionEndTime;
+           
+           if (isAuctionActive) {
+             price = `Min: ${marketplaceAuction.minimumBidAmount} MATIC`;
+             currency = 'MATIC';
+             endTime = new Date(auctionEndTime * 1000);
+           } else {
+             price = 'Auction Ended';
+           }
+         }
          
          console.log(`🔍 NFT #${tokenId} FULL DEBUG:`, {
            rawNftOwner: nft.owner,
@@ -161,8 +203,11 @@ export function useMarketplaceData() {
            hasMetadata: !!metadata,
            hasImage: !!metadata.image,
            isListed,
-           listingPrice,
-           listingId: marketplaceListing?.id
+           isAuction,
+           price,
+           listingId: marketplaceListing?.id,
+           auctionId: marketplaceAuction?.auctionId?.toString(),
+           auctionEndTime: endTime
          });
          
          const marketplaceNFT: MarketplaceNFT = {
@@ -172,7 +217,7 @@ export function useMarketplaceData() {
            description: metadata.description || '',
            image: metadata.image ? convertIpfsToHttp(metadata.image) : '',
            imageUrl: metadata.image ? convertIpfsToHttp(metadata.image) : '',
-           price: isListed ? listingPrice : 'Not for sale',
+           price: price,
            currency: currency,
            owner: nftOwner,
            creator: nftOwner ? nftOwner.slice(0, 6) + '...' : 'Unknown',
@@ -183,9 +228,11 @@ export function useMarketplaceData() {
            isVerified: true,
            blockchain: { verified: true, tokenId, owner: nft.owner },
            contractAddress: contractAddress,
-           isAuction: false,
-           activeOffers: 0,
-           listingId: marketplaceListing?.id
+           isAuction: isAuction,
+            activeOffers: 0,
+           listingId: marketplaceListing?.id,
+           auctionId: marketplaceAuction?.auctionId?.toString(),
+           endTime: endTime
          };
          
          console.log(`✅ NFT #${tokenId} processed:`, {
@@ -295,7 +342,7 @@ function processThirdwebNFT(nft: any, marketplaceListing?: any): MarketplaceNFT 
       contractAddress: nft.contract?.address
     },
     marketplace: marketplaceListing ? {
-      isListed: true,
+          isListed: true,
       listingId: marketplaceListing.id,
       price: marketplaceListing.pricePerToken,
       priceFormatted: price,
@@ -306,7 +353,7 @@ function processThirdwebNFT(nft: any, marketplaceListing?: any): MarketplaceNFT 
     },
     contractAddress: nft.contract?.address || '',
     listingId: marketplaceListing?.id,
-         isAuction: false,
+          isAuction: false,
      activeOffers: 0
    };
    

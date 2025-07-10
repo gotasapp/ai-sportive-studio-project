@@ -41,6 +41,14 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'cloudflare-ipfs.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'dweb.link',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.dweb.link',
       }
     ],
     dangerouslyAllowSVG: true,

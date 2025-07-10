@@ -1,0 +1,190 @@
+'use client';
+
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
+import { toast } from 'sonner';
+import { MarketplaceService } from '@/lib/services/marketplace-service';
+import { Edit3 } from 'lucide-react';
+
+interface UpdateListingModalProps {
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  listingId: string;
+  currentPrice: string;
+  nftName?: string;
+  tokenId?: string;
+}
+
+export function UpdateListingModal({ 
+  isOpen, 
+  onOpenChange, 
+  listingId, 
+  currentPrice, 
+  nftName,
+  tokenId 
+}: UpdateListingModalProps) {
+  const [newPrice, setNewPrice] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const account = useActiveAccount();
+  const chain = useActiveWalletChain();
+
+  const handleUpdatePrice = async () => {
+    if (!newPrice || isNaN(parseFloat(newPrice)) || parseFloat(newPrice) <= 0) {
+      toast.error('Please enter a valid price.');
+      return;
+    }
+
+    if (!account || !chain) {
+      toast.error('Please connect your wallet first.');
+      return;
+    }
+
+    // Verificar se está na rede correta
+    if (chain.id !== 80002) {
+      toast.error('Please switch to Polygon Amoy Testnet to update listings.');
+      return;
+    }
+
+    setIsLoading(true);
+    toast.info('Updating listing price... Approve the transaction in your wallet.');
+    
+    try {
+      console.log('🔄 UPDATING LISTING:');
+      console.log('📋 Listing ID:', listingId);
+      console.log('📋 Current Price:', currentPrice);
+      console.log('📋 New Price:', newPrice);
+      console.log('📋 Account:', account.address);
+      console.log('📋 Chain:', chain.id);
+      
+      const result = await MarketplaceService.updateListing(
+        account,
+        chain.id,
+        {
+          listingId,
+          newPricePerToken: newPrice
+        }
+      );
+
+      toast.success(`Price updated to ${newPrice} MATIC! 🎉`);
+      console.log('✅ Listing updated:', result.transactionHash);
+      onOpenChange(false);
+      
+      // Reset form
+      setNewPrice('');
+      
+      // Reload page to see updated price
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+    } catch (error: any) {
+      console.error('❌ Error updating listing:', error);
+      toast.error(error.message || 'Error updating listing price.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const priceChanged = newPrice && parseFloat(newPrice) !== parseFloat(currentPrice.replace(/[^0-9.]/g, ''));
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px] bg-card border-secondary/20 text-white">
+        <DialogHeader>
+          <DialogTitle className="text-[#FDFDFD] flex items-center gap-2">
+            <Edit3 className="h-5 w-5" />
+            Update Listing Price
+          </DialogTitle>
+          {nftName && (
+            <p className="text-sm text-[#FDFDFD]/70">
+              {nftName} {tokenId && `- Token #${tokenId}`}
+            </p>
+          )}
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="currentPrice" className="text-[#FDFDFD]/70">
+              Current Price
+            </Label>
+            <div className="cyber-input bg-[#333333]/10 text-[#FDFDFD]/50 cursor-not-allowed">
+              {currentPrice}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="newPrice" className="text-[#FDFDFD]">
+              New Price ({chain?.nativeCurrency?.symbol || 'MATIC'})
+            </Label>
+            <Input
+              id="newPrice"
+              type="number"
+              step="0.001"
+              min="0"
+              value={newPrice}
+              onChange={(e) => setNewPrice(e.target.value)}
+              placeholder="0.1"
+              className="cyber-input"
+              disabled={isLoading}
+            />
+            <p className="text-xs text-[#FDFDFD]/50">
+              Enter the new price for your NFT listing
+            </p>
+          </div>
+
+          {newPrice && (
+            <div className="p-3 bg-[#A20131]/10 border border-[#A20131]/30 rounded-lg">
+              <p className="text-sm text-[#FDFDFD]">
+                <span className="text-[#FDFDFD]/70">Price change:</span>{' '}
+                <span className="font-medium">
+                  {currentPrice} → {newPrice} {chain?.nativeCurrency?.symbol || 'MATIC'}
+                </span>
+              </p>
+              {priceChanged && (
+                <p className="text-xs text-[#FDFDFD]/70 mt-1">
+                  {parseFloat(newPrice) > parseFloat(currentPrice.replace(/[^0-9.]/g, '')) 
+                    ? '📈 Price increase' 
+                    : '📉 Price decrease'
+                  }
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            disabled={isLoading}
+            className="border-secondary/30 text-[#FDFDFD] hover:bg-secondary/10"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleUpdatePrice}
+            disabled={isLoading || !priceChanged}
+            className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+          >
+            {isLoading ? (
+              <>
+                <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
+                Updating...
+              </>
+            ) : (
+              <>
+                <Edit3 className="mr-2 h-4 w-4" />
+                Update Price
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+} 

@@ -32,7 +32,7 @@ export function getAddressUrl(address: string): string {
 }
 
 /**
- * Converts IPFS URLs to HTTP gateway URLs
+ * Converts IPFS URLs to HTTP gateway URLs with fallback gateways
  * @param src - The IPFS URL or hash
  * @returns HTTP gateway URL
  */
@@ -42,17 +42,36 @@ export function convertIpfsToHttp(src: string): string {
     return src;
   }
   
-  // Se é uma URL IPFS, converter para gateway HTTP
+  // Lista de gateways IPFS (ordenados por confiabilidade)
+  const gateways = [
+    'https://ipfs.io/ipfs',
+    'https://gateway.ipfs.io/ipfs',
+    'https://cloudflare-ipfs.com/ipfs',
+    'https://dweb.link/ipfs'
+  ];
+  
+  // Usar gateway rotativo baseado em hash para distribuir carga
+  const getRandomGateway = (hash: string) => {
+    const index = hash.charCodeAt(0) % gateways.length;
+    return gateways[index];
+  };
+  
+  let ipfsHash = '';
+  
+  // Se é uma URL IPFS, extrair hash
   if (src.startsWith('ipfs://')) {
-    const ipfsHash = src.replace('ipfs://', '');
-    return `https://gateway.ipfs.io/ipfs/${ipfsHash}`;
+    ipfsHash = src.replace('ipfs://', '');
   }
-  
-  // Se começa com Qm (hash IPFS), adicionar gateway
-  if (src.startsWith('Qm') || src.startsWith('bafy')) {
-    return `https://gateway.ipfs.io/ipfs/${src}`;
+  // Se começa com Qm ou bafy (hash IPFS direto)
+  else if (src.startsWith('Qm') || src.startsWith('bafy')) {
+    ipfsHash = src;
   }
-  
   // Fallback para URLs normais
-  return src;
+  else {
+    return src;
+  }
+  
+  // Retornar URL com gateway selecionado
+  const selectedGateway = getRandomGateway(ipfsHash);
+  return `${selectedGateway}/${ipfsHash}`;
 }

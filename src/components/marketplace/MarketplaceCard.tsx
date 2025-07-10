@@ -9,6 +9,9 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import BuyNowButton from './BuyNowButton';
 import MakeOfferButton from './MakeOfferButton';
 import { CreateListingModal } from './CreateListingModal';
+import { UpdateListingModal } from './UpdateListingModal';
+import { CancelListingButton } from './CancelListingButton';
+import AuctionBidButton from './AuctionBidButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 
 interface MarketplaceCardProps {
@@ -57,6 +60,7 @@ export default function MarketplaceCard({
   activeOffers = 0
 }: MarketplaceCardProps) {
   const [showCreateListing, setShowCreateListing] = useState(false);
+  const [showUpdateListing, setShowUpdateListing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   
   const account = useActiveAccount();
@@ -128,22 +132,76 @@ export default function MarketplaceCard({
   const renderActionButtons = () => {
     if (isListed && listingId) {
       // NFT está listado para venda direta
-      return (
-        <div className="space-y-2">
-          {isPriceValid ? (
-            <BuyNowButton
+      if (isOwner) {
+        // Botões para o dono da listagem
+        return (
+          <div className="space-y-2">
+            <Button
+              onClick={() => setShowUpdateListing(true)}
+              className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+            >
+              <Tag className="mr-2 h-4 w-4" />
+              Update Price
+            </Button>
+            <CancelListingButton
               listingId={listingId}
               price={price}
+              nftName={name}
+              tokenId={tokenId}
+              className="w-full"
+              variant="outline"
+            />
+          </div>
+        );
+      } else {
+        // Botões para compradores
+        return (
+          <div className="space-y-2">
+            {isPriceValid ? (
+              <BuyNowButton
+                listingId={listingId}
+                price={price}
+                className="w-full"
+              />
+            ) : (
+              <Button
+                disabled
+                className="w-full bg-red-500/20 text-red-400 cursor-not-allowed"
+                title="Cannot purchase due to invalid price"
+              >
+                <AlertTriangle className="mr-2 h-4 w-4" />
+                Invalid Price
+              </Button>
+            )}
+            {assetContract && (
+              <MakeOfferButton
+                assetContract={assetContract}
+                tokenId={tokenId}
+                nftName={name}
+                className="w-full"
+              />
+            )}
+          </div>
+        );
+      }
+    } else if (isAuction && auctionId && endTime) {
+      // NFT está em leilão
+      const isAuctionEnded = new Date() > endTime;
+      return (
+        <div className="space-y-2">
+          {!isAuctionEnded ? (
+            <AuctionBidButton
+              auctionId={auctionId}
+              currentBid={currentBid || '0 MATIC'}
+              endTime={endTime}
               className="w-full"
             />
           ) : (
-            <Button
+            <Button 
               disabled
-              className="w-full bg-red-500/20 text-red-400 cursor-not-allowed"
-              title="Cannot purchase due to invalid price"
+              className="w-full bg-gray-500/20 text-gray-400 cursor-not-allowed"
             >
-              <AlertTriangle className="mr-2 h-4 w-4" />
-              Invalid Price
+              Auction Ended
             </Button>
           )}
           {!isOwner && assetContract && (
@@ -156,28 +214,27 @@ export default function MarketplaceCard({
           )}
         </div>
       );
-    } else if (isAuction && auctionId && endTime) {
-      // NFT está em leilão
-      return (
-        <div className="space-y-2">
-          {/* TODO: Implementar AuctionBidButton quando necessário */}
-          <Button className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white">
-            {new Date() > endTime ? 'Auction Ended' : 'View Auction'}
-          </Button>
-        </div>
-      );
     } else {
       // NFT não está listado
       return (
         <div className="space-y-2">
           {isOwner ? (
-            <Button
-              onClick={handleListButtonClick}
-              className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
-            >
-              <Tag className="mr-2 h-4 w-4" />
-              List for Sale
-            </Button>
+            <>
+              <Button
+                onClick={handleListButtonClick}
+                className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+              >
+                <Tag className="mr-2 h-4 w-4" />
+                List for Sale
+              </Button>
+              <Button
+                onClick={() => {/* TODO: Implementar modal de auction */}}
+                variant="outline"
+                className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
+              >
+                🏆 Create Auction
+              </Button>
+            </>
           ) : (
             <MakeOfferButton
               assetContract={assetContract}
@@ -310,6 +367,18 @@ export default function MarketplaceCard({
             name,
             imageUrl,
           }}
+        />
+      )}
+
+      {/* Modal de atualização de listagem */}
+      {showUpdateListing && listingId && (
+        <UpdateListingModal
+          isOpen={showUpdateListing}
+          onOpenChange={setShowUpdateListing}
+          listingId={listingId}
+          currentPrice={price}
+          nftName={name}
+          tokenId={tokenId}
         />
       )}
     </>
