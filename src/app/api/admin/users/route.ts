@@ -87,7 +87,7 @@ export async function GET() {
 
             const mostRecentNFT = latestNFT
               .filter(nft => nft !== null)
-              .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+              .sort((a, b) => new Date(b!.createdAt).getTime() - new Date(a!.createdAt).getTime())[0];
 
             if (mostRecentNFT) {
               lastActivity = mostRecentNFT.createdAt;
