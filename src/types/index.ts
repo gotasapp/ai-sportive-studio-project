@@ -41,4 +41,33 @@ export interface StadiumResponse {
   error?: string;
   cost_usd?: number;
   prompt_used?: string;
+}
+
+export interface MarketplaceNFT {
+  id: string;
+  tokenId: string;
+  name: string;
+  description: string;
+  image: string;
+  imageUrl?: string; // For backward compatibility
+  price: string;
+  currency: string;
+  owner: string;
+  creator: string;
+  category: string;
+  type: string;
+  attributes: any[];
+  isListed: boolean;
+  isVerified: boolean;
+  blockchain: any;
+  marketplace?: any;
+  contractAddress: string;
+  createdAt?: string;
+  updatedAt?: string;
+  listingId?: string;
+  auctionId?: string;
+  isAuction?: boolean;
+  currentBid?: string;
+  auctionEndTime?: string;
+  activeOffers?: number;
 } 

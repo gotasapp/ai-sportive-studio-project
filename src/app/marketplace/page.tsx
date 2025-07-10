@@ -25,7 +25,7 @@ export default function MarketplacePage() {
   const chain = useActiveWalletChain();
   
   // Marketplace data
-  const { items: marketplaceItems, stats, loading: marketplaceLoading, error: marketplaceError } = useMarketplaceData();
+  const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError } = useMarketplaceData();
   
   // Filter States
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
@@ -79,7 +79,9 @@ export default function MarketplacePage() {
   // Update counters whenever underlying data changes
   useEffect(() => {
     // Usar dados do marketplace em vez de allNfts legacy
-    const collections = new Set(marketplaceItems.map(item => item.category).filter(Boolean));
+    // Garantir que marketplaceItems não seja undefined
+    const items = marketplaceItems || [];
+    const collections = new Set(items.map(item => item.category).filter(Boolean));
     setCounters({
       total: collections.size,
       watchlist: watchlist.length,
@@ -90,7 +92,8 @@ export default function MarketplacePage() {
   // Filter NFTs based on current filters
   useEffect(() => {
     // Filtros agora aplicados aos dados do marketplace
-    let filtered = marketplaceItems;
+    // Garantir que marketplaceItems não seja undefined
+    let filtered = marketplaceItems || [];
     
     // Aplicar filtro de categoria
     if (tokenType !== 'all') {
@@ -137,7 +140,8 @@ export default function MarketplacePage() {
 
   const renderGridView = () => {
     // Sempre usar dados do marketplace (reais) em vez de dados legacy
-    const itemsToShow = marketplaceItems;
+    // Garantir que marketplaceItems não seja undefined
+    const itemsToShow = marketplaceItems || [];
     
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
@@ -276,14 +280,14 @@ export default function MarketplacePage() {
         <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
           {marketplaceLoading ? (
             <MarketplaceStatsLoading />
-          ) : stats ? (
+          ) : (
             <MarketplaceStats
-              totalListings={stats.totalListings}
-              totalAuctions={stats.totalAuctions}
-              totalVolume={stats.totalVolume}
-              floorPrice={stats.floorPrice}
+              totalListings={marketplaceItems?.length || 0}
+              totalAuctions={0}
+              totalVolume="0 MATIC"
+              floorPrice="0 MATIC"
             />
-          ) : null}
+          )}
         </div>
 
         {/* Filters */}

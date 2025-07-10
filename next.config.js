@@ -24,6 +24,23 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
+      },
+      // IPFS gateways
+      {
+        protocol: 'https',
+        hostname: '**.ipfs.w3s.link',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gateway.ipfs.io',
+      },
+      {
+        protocol: 'https',
+        hostname: '**.ipfs.nftstorage.link',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cloudflare-ipfs.com',
       }
     ],
     dangerouslyAllowSVG: true,

@@ -1,353 +1,357 @@
+'use client';
+
 import { useState, useEffect } from 'react';
+import { MarketplaceNFT } from '@/types';
+import { convertIpfsToHttp } from '@/lib/utils';
 import { useActiveWalletChain } from 'thirdweb/react';
-import { MarketplaceService } from '@/lib/services/marketplace-service';
+import { getContract } from 'thirdweb';
+import { createThirdwebClient } from 'thirdweb';
+import { polygon, polygonAmoy } from 'thirdweb/chains';
+import { getNFTs } from 'thirdweb/extensions/erc721';
 
-interface MarketplaceItem {
-  id: string;
-  name: string;
-  imageUrl: string;
-  tokenId: string;
-  contractAddress: string;
-  category: 'jersey' | 'stadium' | 'badge';
-  owner: string;
-  creator: string;
-  // Marketplace specific data
-  isListed: boolean;
-  listingId?: string;
-  price?: string;
-  currency?: string;
-  // Auction data
-  isAuction: boolean;
-  auctionId?: string;
-  currentBid?: string;
-  auctionEndTime?: Date;
-  // Offer data
-  activeOffers: number;
-  // Metadata
-  description?: string;
-  attributes?: Array<{ trait_type: string; value: string }>;
-  createdAt: string;
+// Thirdweb client
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
+});
+
+// Contract addresses
+const NFT_CONTRACT_ADDRESSES = {
+  80002: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Amoy
+  137: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Mainnet (if needed)
+  88888: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // CHZ Mainnet (if needed)
+};
+
+interface MarketplaceData {
+  nfts: MarketplaceNFT[];
+  loading: boolean;
+  error: string | null;
+  totalCount: number;
+  categories: {
+    jerseys: MarketplaceNFT[];
+    stadiums: MarketplaceNFT[];
+    badges: MarketplaceNFT[];
+  };
+  featuredNFTs: MarketplaceNFT[];
 }
 
-interface MarketplaceStats {
-  totalListings: number;
-  totalAuctions: number;
-  totalVolume: string;
-  floorPrice: string;
-}
-
+/**
+ * Hook para buscar dados do marketplace usando Thirdweb hooks nativos
+ * APENAS NFTs realmente mintados no contrato
+ */
 export function useMarketplaceData() {
   const chain = useActiveWalletChain();
-  
-  const [items, setItems] = useState<MarketplaceItem[]>([]);
-  const [stats, setStats] = useState<MarketplaceStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<MarketplaceData>({
+    nfts: [],
+    loading: true,
+    error: null,
+    totalCount: 0,
+    categories: {
+      jerseys: [],
+      stadiums: [],
+      badges: []
+    },
+    featuredNFTs: []
+  });
 
-  const loadMarketplaceData = async () => {
-    if (!chain) return;
-    
-    setLoading(true);
-    setError(null);
+  useEffect(() => {
+    fetchNFTsFromContract();
+  }, [chain?.id]);
 
+  const fetchNFTsFromContract = async () => {
     try {
-      console.log('🔍 CARREGANDO DADOS REAIS DO MARKETPLACE...');
-      console.log('📋 Chain ID:', chain.id);
-      console.log('📋 Chain Name:', chain.name);
-      console.log('📋 Timestamp:', new Date().toISOString());
-      
-      // 1. Buscar listagens reais do blockchain
-      const realListings = await MarketplaceService.getAllValidListings(chain.id);
-      console.log('✅ Listagens encontradas no blockchain:', realListings.length);
-      console.log('📋 Listagens detalhadas:', realListings.map(l => ({
-        id: l.listingId.toString(),
-        tokenId: l.tokenId.toString(),
-        price: l.pricePerToken.toString(),
-        creator: l.listingCreator
-      })));
-      
-      // 2. Buscar dados dos NFTs das APIs (para metadados) com cache bust
-      const timestamp = Date.now();
-      const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-        fetch(`/api/jerseys?_t=${timestamp}`),
-        fetch(`/api/stadiums?_t=${timestamp}`), 
-        fetch(`/api/badges?_t=${timestamp}`)
-      ]);
+      setData(prev => ({ ...prev, loading: true, error: null }));
+      console.log('🎯 Fetching NFTs using Thirdweb native hooks...');
 
-      if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-        throw new Error('Failed to load NFT metadata');
-      }
+             // ALWAYS use Polygon Amoy where NFTs are minted (override user's chain)
+       const chainId = 80002; // Force Polygon Amoy where our NFTs exist
+       const contractAddress = NFT_CONTRACT_ADDRESSES[chainId as keyof typeof NFT_CONTRACT_ADDRESSES];
+       
+       if (!contractAddress) {
+         throw new Error(`Contract not deployed on chain ${chainId}`);
+       }
 
-      const jerseys = await jerseysResponse.json();
-      const stadiums = await stadiumsResponse.json();
-      const badges = await badgesResponse.json();
-      
-      // 3. Combinar todos os metadados
-      const allNFTMetadata = [...jerseys, ...stadiums, ...badges];
-      console.log('✅ Metadados carregados:', allNFTMetadata.length, 'NFTs');
+       console.log('🔗 Contract:', contractAddress, 'on chain:', chainId, '(forced to Amoy where NFTs exist)');
+       
+       if (chain?.id && chain.id !== 80002) {
+         console.warn(`⚠️ User is on chain ${chain.id} but NFTs are on Polygon Amoy (80002). Forcing Amoy for NFT data.`);
+       }
 
-      // 4. Mapear listagens reais com metadados
-      const marketplaceItems: MarketplaceItem[] = realListings
-        .map((listing) => {
-          // 🚨 VALIDAÇÃO CRÍTICA DO PREÇO ANTES DE CONTINUAR
-          const priceInWei = listing.pricePerToken;
-          const priceInEther = Number(priceInWei) / Math.pow(10, 18);
-          
-          // Detectar preços astronômicos e pular esta listagem
-          if (priceInEther > 1000 || priceInEther <= 0 || !isFinite(priceInEther)) {
-            console.warn('🚨 PREÇO ASTRONÔMICO DETECTADO - PULANDO LISTAGEM:', {
-              listingId: listing.listingId.toString(),
-              priceInWei: priceInWei.toString(),
-              priceInEther,
-              tokenId: listing.tokenId.toString()
-            });
-            return null; // Pular esta listagem
-          }
-          
-          // Tentar encontrar metadados correspondentes COM VALIDAÇÃO ESTRITA
-          const metadata = allNFTMetadata.find(nft => {
-            const listingTokenId = listing.tokenId.toString();
-            
-            // ✅ APENAS correspondência EXATA - SEM FALLBACKS
-            const exactMatch = nft._id === listingTokenId || 
-                               String(listing.tokenId) === nft._id ||
-                               nft.tokenId === listingTokenId ||
-                               nft.blockchainTokenId === listingTokenId;
-            
-            if (exactMatch) {
-              console.log('✅ Correspondência EXATA encontrada:', {
-                listingTokenId,
-                nftId: nft._id,
-                nftName: nft.name
-              });
-            }
-            
-            return exactMatch;
-          });
-          
-          // 🚨 SE NÃO ENCONTROU METADADOS EXATOS, PULAR ESTA LISTAGEM
-          if (!metadata) {
-            console.warn('⚠️ LISTAGEM SEM METADADOS CORRESPONDENTES - PULANDO:', {
-              listingId: listing.listingId.toString(),
-              tokenId: listing.tokenId.toString(),
-              availableNFTs: allNFTMetadata.map(nft => ({ id: nft._id, name: nft.name }))
-            });
-            return null; // Pular esta listagem
-          }
-          
-          console.log('🔍 Metadados encontrados:', !!metadata, metadata?.name);
-          
-          // Conversão segura do preço
-          const formattedPrice = priceInEther.toFixed(6); // 6 casas decimais para precisão
-          const finalPriceString = `${formattedPrice} MATIC`;
-          
-          console.log('💰 Conversão de preço VALIDADA:', {
-            priceInWei: priceInWei.toString(),
-            priceInEther,
-            formattedPrice,
-            finalPriceString,
-            isReasonable: priceInEther > 0 && priceInEther < 1000
-          });
-          
-          // Criar item com dados VALIDADOS
-          const baseItem = {
-            id: listing.listingId.toString(),
-            name: metadata.name,
-            imageUrl: metadata.imageUrl,
-            tokenId: listing.tokenId.toString(),
-            contractAddress: listing.assetContract,
-            category: (metadata.category || 'jersey') as 'jersey' | 'stadium' | 'badge',
-            owner: listing.listingCreator,
-            creator: listing.listingCreator,
-            // Dados reais da listagem com preço validado
-            isListed: true,
-            listingId: listing.listingId.toString(),
-            price: finalPriceString,
-            currency: 'MATIC',
-            // Dados de leilão (falso para listagens diretas)
-            isAuction: false,
-            activeOffers: 0,
-            // Metadados
-            description: metadata.description || '',
-            createdAt: metadata.createdAt || new Date().toISOString(),
-          };
-          
-          console.log('📋 Item mapeado VALIDADO:', {
-            listingId: listing.listingId.toString(),
-            tokenId: listing.tokenId.toString(),
-            name: baseItem.name,
-            price: baseItem.price,
-            imageUrl: baseItem.imageUrl
-          });
-          
-          return baseItem;
-        })
-        .filter(item => item !== null) as MarketplaceItem[]; // Remover itens nulos
-      
-      // 5. Adicionar NFTs não listados (apenas para visualização)
-      const unlistedNFTs: MarketplaceItem[] = allNFTMetadata
-        .filter(nft => {
-          // Filtrar apenas NFTs que não estão listados
-          return !realListings.some(listing => 
-            listing.tokenId.toString() === nft._id || 
-            String(listing.tokenId) === nft._id
-          );
-        })
-        .map(nft => ({
-          id: nft._id,
-          name: nft.name,
-          imageUrl: nft.imageUrl,
-          tokenId: nft._id,
-          contractAddress: getContractAddress(nft.category),
-          category: nft.category as 'jersey' | 'stadium' | 'badge',
-          owner: nft.creator?.wallet || '',
-          creator: nft.creator?.wallet || '',
-          // Não listado
-          isListed: false,
-          price: 'Not listed',
-          currency: 'MATIC',
-          isAuction: false,
-          activeOffers: 0,
-          description: nft.description || '',
-          createdAt: nft.createdAt,
-        }));
+      // Always use Polygon Amoy where our NFTs are deployed
+      const currentChain = polygonAmoy;
+      const contract = getContract({
+        client,
+        chain: currentChain,
+        address: contractAddress,
+      });
 
-      // 6. Combinar listados + não listados
-      const allItems = [...marketplaceItems, ...unlistedNFTs];
-      
-      // 7. Calcular estatísticas reais
-      const realStats: MarketplaceStats = {
-        totalListings: realListings.length,
-        totalAuctions: 0, // TODO: Buscar leilões reais quando implementado
-        totalVolume: realListings.length > 0 ? 
-          `${realListings.reduce((sum, listing) => {
-            const priceInEther = Number(listing.pricePerToken) / Math.pow(10, 18);
-            return sum + priceInEther;
-          }, 0).toFixed(3)} MATIC` : 
-          '0 MATIC',
-        floorPrice: realListings.length > 0 ? 
-          `${Math.min(...realListings.map(l => Number(l.pricePerToken) / Math.pow(10, 18))).toFixed(3)} MATIC` : 
-          '0 MATIC',
-      };
+      // Fetch all NFTs from the contract using Thirdweb's getNFTs
+      console.log('📦 Fetching NFTs from contract...');
+      const nfts = await getNFTs({
+        contract,
+        start: 0,
+        count: 100, // Fetch up to 100 NFTs
+      });
 
-      console.log('✅ DADOS DO MARKETPLACE CARREGADOS:');
-      console.log('📊 Listagens reais:', realListings.length);
-      console.log('📊 NFTs não listados:', unlistedNFTs.length);
-      console.log('📊 Total de itens:', allItems.length);
-      console.log('📊 Estatísticas:', realStats);
+      console.log(`✅ Found ${nfts.length} NFTs in contract`);
 
-      setItems(allItems);
-      setStats(realStats);
+             // Process NFTs DIRECTLY from Thirdweb data (simple approach)
+       console.log('🔄 Processing NFTs directly from Thirdweb data...');
+       console.log('📋 Sample NFT from Thirdweb:', nfts[0]);
+       
+       const processedNFTs = nfts.map((nft, index) => {
+         const tokenId = nft.id.toString();
+         const metadata = nft.metadata || {};
+         
+         // Use Thirdweb data directly
+         const nftOwner = nft.owner || 'Unknown';
+         
+         console.log(`🔍 NFT #${tokenId} basic info:`, {
+           nftOwner: nftOwner.slice(0, 10) + '...',
+           hasMetadata: !!metadata,
+           hasImage: !!metadata.image
+         });
+         
+         const marketplaceNFT: MarketplaceNFT = {
+           id: tokenId,
+           tokenId: tokenId,
+           name: metadata.name || `NFT #${tokenId}`,
+           description: metadata.description || '',
+           image: metadata.image ? convertIpfsToHttp(metadata.image) : '',
+           imageUrl: metadata.image ? convertIpfsToHttp(metadata.image) : '',
+           price: 'Not for sale',
+           currency: 'MATIC',
+           owner: nftOwner,
+           creator: nftOwner ? nftOwner.slice(0, 6) + '...' : 'Unknown',
+           category: 'nft',
+           type: 'nft', 
+           attributes: metadata.attributes || [],
+           isListed: false,
+           isVerified: true,
+           blockchain: { verified: true, tokenId, owner: nft.owner },
+           contractAddress: contractAddress,
+           isAuction: false,
+           activeOffers: 0
+         };
+         
+         console.log(`✅ NFT #${tokenId} processed:`, {
+           name: marketplaceNFT.name,
+           hasImage: !!marketplaceNFT.image,
+           imageUrl: marketplaceNFT.image?.slice(0, 50) + '...'
+         });
+         
+         return marketplaceNFT;
+       });
+       
+       console.log('🎯 All NFTs processed successfully:', processedNFTs.length);
 
-    } catch (error: any) {
-      console.error('❌ Error loading marketplace:', error);
-      setError(error.message || 'Error loading marketplace data');
-    } finally {
-      setLoading(false);
+             // Categorize and select featured NFTs (simplified)
+       const categorizedNFTs = {
+         jerseys: [],
+         stadiums: [],
+         badges: []
+       };
+       const featuredNFTs = processedNFTs.slice(0, 6); // Use first 6 as featured
+
+       console.log('✅ Marketplace data processed successfully:', {
+         total: processedNFTs.length,
+         featured: featuredNFTs.length,
+         sampleNFT: processedNFTs[0] ? {
+           name: processedNFTs[0].name,
+           image: processedNFTs[0].image ? 'has image' : 'no image'
+         } : 'none'
+       });
+
+      setData({
+        nfts: processedNFTs,
+        loading: false,
+        error: null,
+        totalCount: processedNFTs.length,
+        categories: categorizedNFTs,
+        featuredNFTs
+      });
+
+    } catch (error) {
+      console.error('❌ Error fetching NFTs from contract:', error);
+      setData(prev => ({
+        ...prev,
+        loading: false,
+        error: error instanceof Error ? error.message : 'Failed to fetch NFTs from contract'
+      }));
     }
   };
 
-  const getContractAddress = (category: string): string => {
-    if (!chain) return '';
+  return { ...data, refetch: fetchNFTsFromContract };
+}
+
+/**
+ * Fetch marketplace listings (optional - for pricing info)
+ */
+async function fetchMarketplaceListings(): Promise<any[]> {
+  try {
+    const response = await fetch('/api/marketplace/listings?limit=50');
+    const data = await response.json();
     
-    // Usar contrato universal para todos os tipos de NFT
-    const chainId = chain.id;
-    const universalContract = {
-      88888: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_CHZ || '',
-      88882: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_CHZ_TESTNET || '',
-      137: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON || '',
-      80002: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON_TESTNET || '',
-    }[chainId];
-    
-    return universalContract || '';
-  };
+    if (data.success && data.listings) {
+      console.log(`🏪 Found ${data.listings.length} marketplace listings`);
+      return data.listings;
+    }
+    return [];
+  } catch (error) {
+    console.warn('⚠️ Could not fetch marketplace listings:', error);
+    return [];
+  }
+}
 
-  const generateRandomPrice = (): string => {
-    const prices = ['0.05', '0.1', '0.15', '0.2', '0.3', '0.5', '0.8', '1.0'];
-    return `${prices[Math.floor(Math.random() * prices.length)]} CHZ`;
-  };
+/**
+ * Process Thirdweb NFT for marketplace display
+ */
+function processThirdwebNFT(nft: any, marketplaceListing?: any): MarketplaceNFT {
+  try {
+    const tokenId = nft.id.toString();
+    const metadata = nft.metadata;
+    const owner = nft.owner || 'Unknown';
+  
+  // Process image URL
+  const rawImage = metadata?.image || '';
+  const processedImage = rawImage ? convertIpfsToHttp(rawImage) : '';
+  
+  // Determine category from metadata
+  const category = determineNFTCategoryFromMetadata(metadata);
+  
+  // Marketplace data if listed
+  const isListed = !!marketplaceListing;
+  const price = marketplaceListing?.currencyValuePerToken?.displayValue || 'Not for sale';
+  const currency = marketplaceListing?.currencyValuePerToken?.symbol || 'MATIC';
 
-  const generateFutureDate = (): Date => {
-    const now = new Date();
-    const hours = Math.random() * 48; // 0-48 horas no futuro
-    return new Date(now.getTime() + hours * 60 * 60 * 1000);
-  };
-
-  useEffect(() => {
-    loadMarketplaceData();
-  }, [chain]);
+     console.log(`📦 Processing NFT #${tokenId}:`, {
+     name: metadata?.name || `NFT #${tokenId}`,
+     category,
+     isListed,
+     price,
+     hasImage: !!processedImage,
+     rawImage,
+     processedImage: processedImage.slice(0, 50) + '...',
+     metadata: metadata ? 'exists' : 'missing'
+   });
 
   return {
-    items,
-    stats,
-    loading,
-    error,
-    refetch: loadMarketplaceData,
-    forceRefresh: () => {
-      console.log('🔄 FORCED REFRESH OF MARKETPLACE DATA');
-      setItems([]);
-      setStats(null);
-      loadMarketplaceData();
+    id: tokenId,
+    tokenId,
+    name: metadata?.name || `NFT #${tokenId}`,
+    description: metadata?.description || '',
+    image: processedImage,
+    imageUrl: processedImage,
+    price,
+    currency,
+    owner,
+    creator: owner.slice(0, 6) + '...',
+    category,
+    type: category,
+    attributes: metadata?.attributes || [],
+    isListed,
+    isVerified: true,
+    blockchain: {
+      verified: true,
+      tokenId,
+      owner,
+      contractAddress: nft.contract?.address
     },
+    marketplace: marketplaceListing ? {
+      isListed: true,
+      listingId: marketplaceListing.id,
+      price: marketplaceListing.pricePerToken,
+      priceFormatted: price,
+      currency: marketplaceListing.currencyContractAddress,
+      currencySymbol: currency
+    } : {
+      isListed: false
+    },
+    contractAddress: nft.contract?.address || '',
+    listingId: marketplaceListing?.id,
+         isAuction: false,
+     activeOffers: 0
+   };
+   
+ } catch (error) {
+   console.error(`❌ Error in processThirdwebNFT for token ${nft.id}:`, error);
+   // Return a basic NFT object
+   return {
+     id: nft.id?.toString() || 'unknown',
+     tokenId: nft.id?.toString() || 'unknown',
+     name: `NFT #${nft.id || 'unknown'}`,
+     description: '',
+     image: '',
+     imageUrl: '',
+     price: 'Not for sale',
+     currency: 'MATIC',
+     owner: 'Unknown',
+     creator: 'Unknown',
+     category: 'nft',
+     type: 'nft',
+     attributes: [],
+     isListed: false,
+     isVerified: true,
+     blockchain: {},
+     marketplace: { isListed: false },
+     contractAddress: '',
+     isAuction: false,
+     activeOffers: 0
+   };
+ }
+}
+
+/**
+ * Determine NFT category from metadata
+ */
+function determineNFTCategoryFromMetadata(metadata: any): string {
+  if (!metadata) return 'nft';
+  
+  const name = metadata.name?.toLowerCase() || '';
+  const description = metadata.description?.toLowerCase() || '';
+  
+  if (name.includes('jersey') || description.includes('jersey')) {
+    return 'jersey';
+  }
+  if (name.includes('stadium') || description.includes('stadium')) {
+    return 'stadium';
+  }
+  if (name.includes('badge') || description.includes('badge')) {
+    return 'badge';
+  }
+  
+  return 'nft';
+}
+
+/**
+ * Categorize NFTs by type
+ */
+function categorizeNFTs(nfts: MarketplaceNFT[]) {
+  return {
+    jerseys: nfts.filter(nft => nft.type === 'jersey'),
+    stadiums: nfts.filter(nft => nft.type === 'stadium'),
+    badges: nfts.filter(nft => nft.type === 'badge')
   };
 }
 
-// Hook para dados de um NFT específico
-export function useNFTData(contractAddress: string, tokenId: string) {
-  const [nft, setNft] = useState<MarketplaceItem | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadNFTData = async () => {
-      setLoading(true);
-      setError(null);
-
-      try {
-        // TODO: Implementar chamada real para API específica do NFT
-        // Incluir dados de marketplace, ofertas, histórico, etc.
-        
-        // Mock data por enquanto
-        const mockNFT: MarketplaceItem = {
-          id: `${contractAddress}-${tokenId}`,
-          name: `NFT #${tokenId}`,
-          imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
-          tokenId,
-          contractAddress,
-          category: 'jersey',
-          owner: '0x1234567890123456789012345678901234567890',
-          creator: '0x1234567890123456789012345678901234567890',
-          isListed: true,
-          listingId: `listing-${tokenId}`,
-          price: '0.2 CHZ',
-          currency: 'CHZ',
-          isAuction: false,
-          activeOffers: 3,
-          description: 'Um NFT único gerado por IA',
-          attributes: [
-            { trait_type: 'Rarity', value: 'Epic' },
-            { trait_type: 'Style', value: 'Modern' },
-          ],
-          createdAt: new Date().toISOString(),
-        };
-
-        setNft(mockNFT);
-      } catch (error: any) {
-        console.error('❌ Erro ao carregar NFT:', error);
-        setError(error.message || 'Erro ao carregar dados do NFT');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (contractAddress && tokenId) {
-      loadNFTData();
-    }
-  }, [contractAddress, tokenId]);
-
-  return {
-    nft,
-    loading,
-    error,
-  };
+/**
+ * Select featured NFTs
+ */
+function selectFeaturedNFTs(nfts: MarketplaceNFT[]): MarketplaceNFT[] {
+  // Prioritize NFTs with images and good metadata
+  const withImages = nfts.filter(nft => 
+    nft.image && 
+    nft.name
+  );
+  
+  console.log('🌟 Featured NFTs selection:', {
+    totalNFTs: nfts.length,
+    withImages: withImages.length,
+    sampleNFT: nfts[0] ? {
+      name: nfts[0].name,
+      hasImage: !!nfts[0].image,
+      hasDescription: !!nfts[0].description
+    } : 'none'
+  });
+  
+  return withImages.slice(0, 6);
 } 

@@ -30,3 +30,29 @@ export function getTransactionUrl(txHash: string): string {
 export function getAddressUrl(address: string): string {
   return `${getExplorerUrl()}/address/${address}`;
 }
+
+/**
+ * Converts IPFS URLs to HTTP gateway URLs
+ * @param src - The IPFS URL or hash
+ * @returns HTTP gateway URL
+ */
+export function convertIpfsToHttp(src: string): string {
+  // Se já é uma URL HTTP, retornar como está
+  if (src.startsWith('http://') || src.startsWith('https://')) {
+    return src;
+  }
+  
+  // Se é uma URL IPFS, converter para gateway HTTP
+  if (src.startsWith('ipfs://')) {
+    const ipfsHash = src.replace('ipfs://', '');
+    return `https://gateway.ipfs.io/ipfs/${ipfsHash}`;
+  }
+  
+  // Se começa com Qm (hash IPFS), adicionar gateway
+  if (src.startsWith('Qm') || src.startsWith('bafy')) {
+    return `https://gateway.ipfs.io/ipfs/${src}`;
+  }
+  
+  // Fallback para URLs normais
+  return src;
+}
