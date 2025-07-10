@@ -144,6 +144,13 @@ export function useMarketplaceData() {
         });
       });
 
+      // Create contract instance for owner lookup
+      const nftContract = getContract({
+        client,
+        chain: polygonAmoy,
+        address: contractAddress,
+      });
+
       // Process NFTs with MANUAL OWNER LOOKUP + MARKETPLACE DATA
       console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
       console.log('📋 Sample NFT from Thirdweb:', nfts[0]);
@@ -156,7 +163,7 @@ export function useMarketplaceData() {
          let nftOwner = 'Unknown';
          try {
            nftOwner = await ownerOf({
-             contract,
+             contract: nftContract,
              tokenId: BigInt(tokenId)
            });
            console.log(`✅ NFT #${tokenId} owner found:`, nftOwner);
