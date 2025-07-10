@@ -549,56 +549,7 @@ export default function ProfilePage() {
           </Card>
         </div>
 
-        {/* Connected Profiles Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <ConnectedProfiles />
-          </div>
-          
-          <div className="lg:col-span-2">
-            <Card className="bg-[#14101e] border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">Account Security</CardTitle>
-                <CardDescription className="text-gray-400">
-                  Manage your wallet connections and security settings
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg cyber-border">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-gray-800">
-                      <Wallet className="h-4 w-4 text-[#A20131]" />
-                    </div>
-                    <div>
-                      <p className="text-white text-sm font-medium">Primary Wallet</p>
-                      <p className="text-gray-400 text-xs">
-                        {account.address.slice(0, 8)}...{account.address.slice(-6)}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant="secondary" className="bg-green-900 text-green-300">
-                    Connected
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center justify-between p-3 rounded-lg cyber-border">
-                  <div className="flex items-center space-x-3">
-                    <div className="p-2 rounded-lg bg-gray-800">
-                      <Settings className="h-4 w-4 text-[#A20131]" />
-                    </div>
-                    <div>
-                      <p className="text-white text-sm font-medium">Two-Factor Auth</p>
-                      <p className="text-gray-400 text-xs">Enhanced security for your account</p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" className="cyber-button">
-                    Setup
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+
 
         {/* NFT Collections Tabs */}
         <Card className="bg-[#14101e] border-gray-700">
@@ -714,31 +665,14 @@ export default function ProfilePage() {
                 <Switch defaultChecked />
               </div>
 
-              {/* Email Notifications */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-white">Email Notifications</Label>
-                  <p className="text-sm text-gray-400">Receive updates about your NFTs</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
 
-              {/* Activity Tracking */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-white">Activity Tracking</Label>
-                  <p className="text-sm text-gray-400">Track your marketplace activity</p>
-                </div>
-                <Switch defaultChecked />
-              </div>
 
-              {/* Two-Factor Authentication */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <Label className="text-white">Two-Factor Auth</Label>
-                  <p className="text-sm text-gray-400">Enable 2FA for enhanced security</p>
-                </div>
-                <Switch />
+              <Separator className="bg-gray-700" />
+
+              {/* Connected Accounts Section */}
+              <div className="space-y-4">
+                <Label className="text-white font-medium">Connected Accounts</Label>
+                <ConnectedProfiles />
               </div>
 
               <Separator className="bg-gray-700" />

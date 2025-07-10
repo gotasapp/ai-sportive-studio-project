@@ -1,60 +1,85 @@
 import { useState } from 'react';
-import { useActiveWallet, useActiveAccount } from 'thirdweb/react';
+import { useActiveWallet, useActiveAccount, useConnect } from 'thirdweb/react';
+import { inAppWallet, preAuthenticate } from 'thirdweb/wallets';
+import { createThirdwebClient } from 'thirdweb';
+
+// Thirdweb client
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
+});
 
 export type AuthProvider = 'google' | 'discord' | 'email' | 'apple' | 'facebook' | 'x';
 
 export function useAccountLinking() {
   const wallet = useActiveWallet();
   const account = useActiveAccount();
+  const { connect } = useConnect();
   const [isLinking, setIsLinking] = useState(false);
   const [linkingError, setLinkingError] = useState<string | null>(null);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
-  const linkAccount = async (provider: AuthProvider) => {
-    if (!wallet || !account) {
-      setLinkingError('No wallet connected. Please connect a wallet first.');
-      return false;
-    }
-
+  const linkAccount = async (provider: AuthProvider, email?: string, verificationCode?: string) => {
     try {
       setIsLinking(true);
       setLinkingError(null);
 
-      console.log(`Attempting to link ${provider} account for wallet: ${wallet.id}`);
+      console.log(`🔗 Attempting to link ${provider} account...`);
       
-      // Para in-app wallets, o linking é gerenciado automaticamente pela Thirdweb
-      // quando o usuário faz login com diferentes provedores
-      if (wallet.id === 'inApp') {
-        // Simular o processo de linking para in-app wallets
-        // Na prática, isso seria feito através do ConnectButton da Thirdweb
-        console.log(`In-app wallet detected. Linking ${provider} to existing account...`);
-        
-        // Simular delay de processo
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        
-        // Salvar informação de linking no localStorage ou backend
-        const linkedAccounts = JSON.parse(localStorage.getItem('linkedAccounts') || '{}');
-        const walletAddress = account.address;
-        
-        if (!linkedAccounts[walletAddress]) {
-          linkedAccounts[walletAddress] = [];
+      if (provider === 'email') {
+        if (!email) {
+          setLinkingError('Email is required for email authentication');
+          return false;
         }
-        
-        if (!linkedAccounts[walletAddress].includes(provider)) {
-          linkedAccounts[walletAddress].push(provider);
-          localStorage.setItem('linkedAccounts', JSON.stringify(linkedAccounts));
+
+        if (!verificationCode) {
+          // Step 1: Send verification code
+          console.log('📧 Sending verification code to:', email);
+          await preAuthenticate({
+            client,
+            strategy: "email",
+            email,
+          });
+          
+          setPendingEmail(email);
+          console.log('✅ Verification code sent to email');
+          return 'verification_sent';
+        } else {
+          // Step 2: Verify and connect
+          console.log('🔐 Verifying email with code...');
+          await connect(async () => {
+            const wallet = inAppWallet();
+            await wallet.connect({
+              client,
+              strategy: "email",
+              email: pendingEmail || email,
+              verificationCode,
+            });
+            return wallet;
+          });
+          
+          setPendingEmail(null);
+          console.log('✅ Email account linked successfully');
+          return true;
         }
-        
-        console.log(`Successfully linked ${provider} account to ${walletAddress}`);
-        return true;
       } else {
-        // Para wallets externas, o linking não é suportado da mesma forma
-        setLinkingError('Account linking is primarily supported for in-app wallets. External wallets manage their own authentication.');
-        return false;
+        // For social providers (Google, Discord, etc.)
+        console.log(`🔗 Connecting ${provider} account...`);
+        await connect(async () => {
+          const wallet = inAppWallet();
+          await wallet.connect({
+            client,
+            strategy: provider as any, // Google, Discord, etc.
+          });
+          return wallet;
+        });
+        
+        console.log(`✅ ${provider} account linked successfully`);
+        return true;
       }
       
-    } catch (error) {
-      console.error(`Failed to link ${provider} account:`, error);
-      setLinkingError(error instanceof Error ? error.message : `Failed to link ${provider} account`);
+    } catch (error: any) {
+      console.error(`❌ Failed to link ${provider} account:`, error);
+      setLinkingError(error?.message || `Failed to link ${provider} account`);
       return false;
     } finally {
       setIsLinking(false);
@@ -114,13 +139,32 @@ export function useAccountLinking() {
     return getLinkedAccounts().includes(provider);
   };
 
+  // Helper functions for cleaner API
+  const sendEmailVerification = async (email: string) => {
+    return await linkAccount('email', email);
+  };
+
+  const verifyEmailCode = async (email: string, code: string) => {
+    return await linkAccount('email', email, code);
+  };
+
+  const linkSocialAccount = async (provider: 'google' | 'discord' | 'x') => {
+    return await linkAccount(provider);
+  };
+
   return {
     linkAccount,
+    sendEmailVerification,
+    verifyEmailCode, 
+    linkSocialAccount,
     unlinkAccount,
     getLinkedAccounts,
     isAccountLinked,
     isLinking,
     linkingError,
+    pendingEmail,
     clearError: () => setLinkingError(null),
+    wallet,
+    account
   };
 } 
