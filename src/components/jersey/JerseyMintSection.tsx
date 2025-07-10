@@ -4,6 +4,7 @@ import React from 'react'
 import { Wallet, Zap, Upload, ExternalLink, AlertTriangle, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getTransactionUrl } from '../../lib/utils'
+import { RequireWallet } from '@/components/RequireWallet'
 
 interface JerseyMintSectionProps {
   // Wallet & Network
@@ -142,32 +143,22 @@ export default function JerseyMintSection({
         </div>
       )}
 
-      {/* Wallet Status */}
-      <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-400">Wallet Status</span>
-            <div className={`flex items-center space-x-2 ${isConnected ? 'text-green-400' : 'text-red-400'}`}>
-              <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
-              <span className="text-xs">{isConnected ? 'Connected' : 'Disconnected'}</span>
+      {/* Network Status - Show only when connected */}
+      {isConnected && (
+        <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
+          <div className="space-y-3">
+            <div className="text-xs text-gray-500 truncate">
+              {address}
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-400">Network</span>
+              <span className={`text-xs ${forceNetwork ? 'text-yellow-400' : (isOnSupportedChain ? 'text-green-400' : 'text-red-400')}`}>
+                {getChainName()}
+              </span>
             </div>
           </div>
-          
-          {isConnected && (
-            <>
-              <div className="text-xs text-gray-500 truncate">
-                {address}
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-400">Target Network</span>
-                <span className={`text-xs ${forceNetwork ? 'text-yellow-400' : (isOnSupportedChain ? 'text-green-400' : 'text-red-400')}`}>
-                  {getChainName()}
-                </span>
-              </div>
-            </>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Jersey Info */}
       <div className="bg-gray-900/30 border border-gray-700 rounded-xl p-4">
@@ -182,36 +173,42 @@ export default function JerseyMintSection({
 
       {/* IPFS Upload Section */}
       {!ipfsUrl && (
-        <div className="space-y-4">
-          <div className="flex items-center space-x-3">
-            <Upload className="w-5 h-5 text-cyan-400" />
-            <span className="text-white font-medium">Upload to IPFS</span>
-          </div>
-          
-          <Button
-            onClick={onUploadToIPFS}
-            disabled={isUploadingToIPFS}
-            className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
-          >
-            {isUploadingToIPFS ? (
-              <div className="flex items-center space-x-2">
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Uploading...</span>
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Upload className="w-4 h-4" />
-                <span>Upload to IPFS</span>
+        <RequireWallet
+          title="Connect to Upload"
+          message="Connect your wallet to upload your jersey image to IPFS storage."
+          feature="IPFS upload"
+        >
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <Upload className="w-5 h-5 text-cyan-400" />
+              <span className="text-white font-medium">Upload to IPFS</span>
+            </div>
+            
+            <Button
+              onClick={onUploadToIPFS}
+              disabled={isUploadingToIPFS}
+              className="w-full bg-cyan-600 hover:bg-cyan-700 text-white"
+            >
+              {isUploadingToIPFS ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Uploading...</span>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2">
+                  <Upload className="w-4 h-4" />
+                  <span>Upload to IPFS</span>
+                </div>
+              )}
+            </Button>
+            
+            {ipfsError && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                <div className="text-red-400 text-sm">{ipfsError}</div>
               </div>
             )}
-          </Button>
-          
-          {ipfsError && (
-            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-              <div className="text-red-400 text-sm">{ipfsError}</div>
-            </div>
-          )}
-        </div>
+          </div>
+        </RequireWallet>
       )}
 
       {/* IPFS Success */}
@@ -227,115 +224,121 @@ export default function JerseyMintSection({
 
       {/* Mint Configuration */}
       {ipfsUrl && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="block text-sm text-gray-400">Royalties (%)</label>
-              <input
-                type="number"
-                min="0"
-                max="10"
-                value={royalties}
-                onChange={(e) => setRoyalties(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
-              />
+        <RequireWallet
+          title="Connect to Mint NFT"
+          message="Connect your wallet to mint your jersey as an NFT on the blockchain."
+          feature="NFT minting"
+        >
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm text-gray-400">Royalties (%)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={royalties}
+                  onChange={(e) => setRoyalties(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-sm text-gray-400">Edition Size</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="1000"
+                  value={editionSize}
+                  onChange={(e) => setEditionSize(Number(e.target.value))}
+                  className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="block text-sm text-gray-400">Edition Size</label>
-              <input
-                type="number"
-                min="1"
-                max="1000"
-                value={editionSize}
-                onChange={(e) => setEditionSize(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg text-white text-sm focus:border-cyan-500 focus:outline-none"
-              />
-            </div>
-          </div>
 
-          {/* Mint Buttons */}
-          <div className="space-y-3">
-            {/* Legacy Mint (User Pays Gas) */}
-            <Button
-              onClick={onMintLegacy}
-              disabled={!canMintLegacy || isMinting}
-              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50"
-            >
-              {isMinting ? (
-                <div className="flex items-center space-x-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Minting...</span>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2">
-                  <Wallet className="w-4 h-4" />
-                  <span>
-                    {forceNetwork === 'polygon-amoy' 
-                      ? 'Mint on Polygon Amoy' 
-                      : 'Mint NFT (User Pays Gas)'
-                    }
+            {/* Mint Buttons */}
+            <div className="space-y-3">
+              {/* Legacy Mint (User Pays Gas) */}
+              <Button
+                onClick={onMintLegacy}
+                disabled={!canMintLegacy || isMinting}
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50"
+              >
+                {isMinting ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Minting...</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="w-4 h-4" />
+                    <span>
+                      {forceNetwork === 'polygon-amoy' 
+                        ? 'Mint on Polygon Amoy' 
+                        : 'Mint NFT (User Pays Gas)'
+                      }
+                    </span>
+                  </div>
+                )}
+              </Button>
+
+              {/* Engine Gasless Mint (Admin Only) */}
+              {isUserAdmin && canMintGasless && (
+                <Button
+                  onClick={onMintGasless}
+                  disabled={isMinting}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                >
+                  <div className="flex items-center space-x-2">
+                    <Zap className="w-4 h-4" />
+                    <span>Engine Mint (Gasless)</span>
+                  </div>
+                </Button>
+              )}
+            </div>
+
+            {/* Mint Status */}
+            {mintStatus !== 'idle' && (
+              <div className="space-y-3">
+                <div className={`flex items-center space-x-2 ${getMintStatusColor()}`}>
+                  {getMintStatusIcon()}
+                  <span className="text-sm font-medium">
+                    {mintStatus === 'pending' && 'Minting in progress...'}
+                    {mintStatus === 'success' && 'NFT minted successfully!'}
+                    {mintStatus === 'error' && 'Mint failed'}
                   </span>
                 </div>
-              )}
-            </Button>
 
-            {/* Engine Gasless Mint (Admin Only) */}
-            {isUserAdmin && canMintGasless && (
-              <Button
-                onClick={onMintGasless}
-                disabled={isMinting}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
-              >
-                <div className="flex items-center space-x-2">
-                  <Zap className="w-4 h-4" />
-                  <span>Engine Mint (Gasless)</span>
-                </div>
-              </Button>
+                {mintSuccess && (
+                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                    <div className="text-green-400 text-sm">{mintSuccess}</div>
+                    {transactionHash && (
+                      <div className="mt-2">
+                        <a
+                          href={forceNetwork === 'polygon-amoy' 
+                            ? `https://amoy.polygonscan.com/tx/${transactionHash}`
+                            : getTransactionUrl(transactionHash)
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 text-xs"
+                        >
+                          <span>View Transaction</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {mintError && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                    <div className="text-red-400 text-sm">{mintError}</div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-
-          {/* Mint Status */}
-          {mintStatus !== 'idle' && (
-            <div className="space-y-3">
-              <div className={`flex items-center space-x-2 ${getMintStatusColor()}`}>
-                {getMintStatusIcon()}
-                <span className="text-sm font-medium">
-                  {mintStatus === 'pending' && 'Minting in progress...'}
-                  {mintStatus === 'success' && 'NFT minted successfully!'}
-                  {mintStatus === 'error' && 'Mint failed'}
-                </span>
-              </div>
-
-              {mintSuccess && (
-                <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                  <div className="text-green-400 text-sm">{mintSuccess}</div>
-                  {transactionHash && (
-                    <div className="mt-2">
-                      <a
-                        href={forceNetwork === 'polygon-amoy' 
-                          ? `https://amoy.polygonscan.com/tx/${transactionHash}`
-                          : getTransactionUrl(transactionHash)
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 text-xs"
-                      >
-                        <span>View Transaction</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {mintError && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
-                  <div className="text-red-400 text-sm">{mintError}</div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        </RequireWallet>
       )}
     </div>
   )

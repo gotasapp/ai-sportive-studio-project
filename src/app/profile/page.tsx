@@ -33,6 +33,7 @@ import { useThirdwebProfiles } from '@/hooks/useThirdwebProfiles'
 import Header from '@/components/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
+import { RequireWallet } from '@/components/RequireWallet'
 
 interface UserProfile {
   id: string
@@ -123,13 +124,7 @@ export default function ProfilePage() {
   const [editedUsername, setEditedUsername] = useState('')
   const [showSettings, setShowSettings] = useState(false)
 
-  // Redirect to login if not connected
-  useEffect(() => {
-    if (!account?.address) {
-      window.location.href = '/login'
-      return
-    }
-  }, [account])
+  // No longer redirect to login - let users see the page first
 
   // Load user NFTs using Thirdweb native hooks + marketplace data
   useEffect(() => {
@@ -465,9 +460,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (!account?.address) {
-    return <div>Redirecting to login...</div>
-  }
+  // Show header for everyone, but wrap profile content in RequireWallet
 
   if (isLoading) {
     return (
@@ -490,7 +483,12 @@ export default function ProfilePage() {
     <>
       <Header />
       <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] p-4">
-        <div className="max-w-7xl mx-auto space-y-6">
+        <RequireWallet 
+          title="Connect to View Your Profile"
+          message="Connect your wallet to view and manage your NFT collection, profile settings, and marketplace activities."
+          feature="profile management"
+        >
+          <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header Section */}
         <div className="flex items-start justify-between">
@@ -749,7 +747,8 @@ export default function ProfilePage() {
             </div>
           </DialogContent>
         </Dialog>
-        </div>
+          </div>
+        </RequireWallet>
       </div>
     </>
   )

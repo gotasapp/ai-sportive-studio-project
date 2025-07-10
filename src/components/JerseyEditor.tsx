@@ -1270,11 +1270,14 @@ Design based on analysis: ${analysisText}`
     const loadTopCollectionsData = async () => {
       setMarketplaceLoading(true);
       
-      // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs
+      // FALLBACK INSTANTÂNEO - Garantir MÍNIMO 3 NFTs sempre
       const fallbackData = [
         { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
         { name: 'Jersey Collection #2', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
         { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'AI-generated stadium', price: '0.15 CHZ' },
+        { name: 'Premium Jersey #3', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'Limited edition jersey', price: '0.08 CHZ' },
+        { name: 'Classic Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'Classic stadium design', price: '0.12 CHZ' },
+        { name: 'Rare Jersey #4', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', description: 'Rare collection item', price: '0.10 CHZ' }
       ];
       setMarketplaceNFTs(fallbackData);
       setMarketplaceLoading(false);
@@ -1344,15 +1347,21 @@ Design based on analysis: ${analysisText}`
           }));
 
         // Combinar e ordenar por data de criação (mais recentes primeiro)
-        const allTopCollections = [...topJerseys, ...topStadiums, ...topBadges]
+        let allTopCollections = [...topJerseys, ...topStadiums, ...topBadges]
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 6); // Limitar a 6 itens no carrossel
 
-        console.log('✅ Top Collections compiled:', allTopCollections);
-        if (allTopCollections.length > 0) {
-          setMarketplaceNFTs(allTopCollections);
+        // GARANTIR MÍNIMO 3 NFTs - Se temos menos que 3, completar com fallback
+        if (allTopCollections.length < 3) {
+          console.log(`⚠️ Only ${allTopCollections.length} real NFTs found, padding with fallback data`);
+          const needed = 3 - allTopCollections.length;
+          const fallbackToAdd = fallbackData.slice(0, needed);
+          allTopCollections = [...allTopCollections, ...fallbackToAdd];
         }
-        // Se APIs falharem, mantém fallback
+
+        console.log('✅ Top Collections compiled (min 3 guaranteed):', allTopCollections);
+        setMarketplaceNFTs(allTopCollections);
+        // Sempre atualiza, pois agora garantimos mínimo 3
 
       } catch (error) {
         console.error('❌ Error loading top collections data:', error);
