@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const address = searchParams.get('address')
     
-    const debugInfo = {
+    const debugInfo: any = {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
       address: address || 'not provided',
