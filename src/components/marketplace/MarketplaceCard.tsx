@@ -101,10 +101,10 @@ export default function MarketplaceCard({
     });
   }
   
-  // Debug price if necessary
-  if (price !== 'Not for sale' && price !== 'N/A') {
-    debugPrice(price, `${name} Price`);
-  }
+  // Debug price if necessary (removed to avoid BigInt conversion error)
+  // if (price !== 'Not for sale' && price !== 'N/A') {
+  //   debugPrice(price, `${name} Price`);
+  // }
   
   const color = category ? categoryColors[category as keyof typeof categoryColors] || categoryColors.default : categoryColors.default;
 

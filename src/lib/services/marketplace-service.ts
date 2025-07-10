@@ -1,4 +1,5 @@
 import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract } from 'thirdweb';
+import { getAllValidListings } from 'thirdweb/extensions/marketplace';
 import { Account } from 'thirdweb/wallets';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
@@ -378,11 +379,31 @@ export class MarketplaceService {
     try {
       console.log('🔄 Atualizando listagem com parâmetros:', params);
       
-      // Primeiro buscar dados atuais da listagem
-      const currentListing = await MarketplaceService.getListing(chainId, params.listingId);
-      console.log('📋 Listagem atual:', currentListing);
-      
+      // 🔧 FIX: Usar getAllValidListings para obter dados corretos (getListing retorna dados corrompidos)
+      console.log('🔍 Buscando listagem atual via getAllValidListings...');
       const contract = getMarketplaceContract(chainId);
+      
+      const allListings = await getAllValidListings({
+        contract,
+        start: 0,
+        count: 100 // Buscar até 100 listagens
+      });
+      
+      const currentListing = allListings.find(listing => 
+        listing.id?.toString() === params.listingId
+      );
+      
+      if (!currentListing) {
+        throw new Error(`Listagem ${params.listingId} não encontrada no marketplace`);
+      }
+      
+      console.log('✅ Listagem encontrada:', {
+        id: currentListing.id?.toString(),
+        tokenId: currentListing.tokenId?.toString(),
+        currentPrice: currentListing.currencyValuePerToken?.displayValue,
+        creator: currentListing.creatorAddress
+      });
+      
       const newPrice = priceToWei(params.newPricePerToken);
       
       // Usar dados atuais como fallback para campos não especificados
@@ -395,7 +416,7 @@ export class MarketplaceService {
         params: [
           BigInt(params.listingId),
           {
-            assetContract: params.assetContract || currentListing.assetContract,
+            assetContract: params.assetContract || currentListing.assetContractAddress,
             tokenId: params.tokenId ? BigInt(params.tokenId) : currentListing.tokenId,
             quantity: params.quantity ? BigInt(params.quantity) : currentListing.quantity,
             currency: NATIVE_TOKEN_ADDRESS,

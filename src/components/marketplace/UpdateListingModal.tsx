@@ -8,7 +8,16 @@ import { Label } from '@/components/ui/label';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { toast } from 'sonner';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
+import { updateListing } from 'thirdweb/extensions/marketplace';
+import { getContract, prepareContractCall, sendTransaction } from 'thirdweb';
+import { createThirdwebClient } from 'thirdweb';
 import { Edit3 } from 'lucide-react';
+
+const client = createThirdwebClient({
+  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '',
+});
+
+const MARKETPLACE_CONTRACT_ADDRESS = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
 
 interface UpdateListingModalProps {
   isOpen: boolean;
@@ -61,14 +70,34 @@ export function UpdateListingModal({
       console.log('📋 Account:', account.address);
       console.log('📋 Chain:', chain.id);
       
-      const result = await MarketplaceService.updateListing(
+      // 🔧 FIX: Usar função nativa updateListing do Thirdweb 
+      console.log('🔄 USANDO FUNÇÃO NATIVA THIRDWEB updateListing...');
+      
+      const marketplaceContract = getContract({
+        client,
+        chain: chain,
+        address: MARKETPLACE_CONTRACT_ADDRESS,
+      });
+      
+      // Converter preço para Wei
+      const priceInWei = (parseFloat(newPrice) * Math.pow(10, 18)).toString();
+      
+      console.log('📋 Parâmetros para updateListing:', {
+        listingId: BigInt(listingId),
+        pricePerTokenWei: priceInWei,
+        newPriceEther: newPrice
+      });
+      
+      const transaction = updateListing({
+        contract: marketplaceContract,
+        listingId: BigInt(listingId),
+        pricePerTokenWei: priceInWei,
+      });
+      
+      const result = await sendTransaction({
+        transaction,
         account,
-        chain.id,
-        {
-          listingId,
-          newPricePerToken: newPrice
-        }
-      );
+      });
 
       toast.success(`Price updated to ${newPrice} MATIC! 🎉`);
       console.log('✅ Listing updated:', result.transactionHash);
