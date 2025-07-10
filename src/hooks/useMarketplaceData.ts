@@ -65,6 +65,11 @@ export function useMarketplaceData() {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
       console.log('🎯 Fetching NFTs using Thirdweb native hooks...');
+      
+      // Add timeout for production
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Request timeout after 30 seconds')), 30000);
+      });
 
              // ALWAYS use Polygon Amoy where NFTs are minted (override user's chain)
        const chainId = 80002; // Force Polygon Amoy where our NFTs exist
@@ -90,11 +95,14 @@ export function useMarketplaceData() {
 
       // Fetch all NFTs from the contract using Thirdweb's getNFTs
       console.log('📦 Fetching NFTs from contract...');
-      const nfts = await getNFTs({
-        contract,
-        start: 0,
-        count: 100, // Fetch up to 100 NFTs
-      });
+      const nfts = await Promise.race([
+        getNFTs({
+          contract,
+          start: 0,
+          count: 100, // Fetch up to 100 NFTs
+        }),
+        timeoutPromise
+      ]) as any[];
 
             console.log(`✅ Found ${nfts.length} NFTs in contract`);
 
@@ -107,19 +115,22 @@ export function useMarketplaceData() {
         address: MARKETPLACE_CONTRACT_ADDRESS,
       });
       
-      // Fetch both listings and auctions in parallel
-      const [marketplaceListings, marketplaceAuctions] = await Promise.all([
-        getAllValidListings({
-          contract: marketplaceContract,
-          start: 0,
-          count: BigInt(100), // Get up to 100 listings
-        }),
-        getAllAuctions({
-          contract: marketplaceContract,
-          start: 0,
-          count: BigInt(100), // Get up to 100 auctions
-        })
-      ]);
+      // Fetch both listings and auctions in parallel with timeout
+      const [marketplaceListings, marketplaceAuctions] = await Promise.race([
+        Promise.all([
+          getAllValidListings({
+            contract: marketplaceContract,
+            start: 0,
+            count: BigInt(100), // Get up to 100 listings
+          }),
+          getAllAuctions({
+            contract: marketplaceContract,
+            start: 0,
+            count: BigInt(100), // Get up to 100 auctions
+          })
+        ]),
+        timeoutPromise
+      ]) as any[];
       
       // Filter only listings and auctions from our NFT contract
       const ourContractListings = marketplaceListings.filter(listing => 
@@ -388,12 +399,61 @@ export function useMarketplaceData() {
 
     } catch (error) {
       console.error('❌ Error fetching NFTs from contract:', error);
+      
+      // In production, try to fetch from MongoDB API as fallback
+      if (process.env.NODE_ENV === 'production') {
+        try {
+          console.log('🔄 Trying MongoDB fallback...');
+          const fallbackData = await fetchFromMongoDB();
+          setData(prev => ({ 
+            ...prev, 
+            loading: false, 
+            error: null,
+            ...fallbackData
+          }));
+          return;
+        } catch (fallbackError) {
+          console.error('❌ MongoDB fallback also failed:', fallbackError);
+        }
+      }
+      
       setData(prev => ({
         ...prev,
         loading: false,
         error: error instanceof Error ? error.message : 'Failed to fetch NFTs from contract'
       }));
     }
+  };
+
+  // Fallback function to fetch from MongoDB
+  const fetchFromMongoDB = async () => {
+    const timestamp = Date.now();
+    const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
+      fetch(`/api/jerseys/minted?_t=${timestamp}`),
+      fetch(`/api/stadiums/minted?_t=${timestamp}`), 
+      fetch(`/api/badges/minted?_t=${timestamp}`)
+    ]);
+
+    const jerseysData = await jerseysResponse.json();
+    const stadiumsData = await stadiumsResponse.json();
+    const badgesData = await badgesResponse.json();
+
+    const jerseys = jerseysData.data || [];
+    const stadiums = stadiumsData.data || [];
+    const badges = badgesData.data || [];
+
+    const allNFTs = [...jerseys, ...stadiums, ...badges];
+    
+    return {
+      nfts: allNFTs,
+      totalCount: allNFTs.length,
+      categories: {
+        jerseys: jerseys,
+        stadiums: stadiums,
+        badges: badges
+      },
+      featuredNFTs: allNFTs.slice(0, 6)
+    };
   };
 
   return { ...data, refetch: fetchNFTsFromContract };

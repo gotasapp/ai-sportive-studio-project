@@ -97,25 +97,25 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
   const renderContent = () => {
     switch (step) {
       case 'select':
-        return (
+  return (
           <>
-            <DialogHeader>
-              <DialogTitle className="text-white">Link Additional Account</DialogTitle>
-              <DialogDescription className="text-gray-400">
-                Connect additional accounts to enhance your profile and security.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-6 py-4">
-              {linkingError && (
-                <Alert className="border-red-500/20 bg-red-500/10">
-                  <AlertDescription className="text-red-400">
-                    {linkingError}
-                  </AlertDescription>
-                </Alert>
-              )}
+        <DialogHeader>
+          <DialogTitle className="text-white">Link Additional Account</DialogTitle>
+          <DialogDescription className="text-gray-400">
+            Connect additional accounts to enhance your profile and security.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-6 py-4">
+          {linkingError && (
+            <Alert className="border-red-500/20 bg-red-500/10">
+              <AlertDescription className="text-red-400">
+                {linkingError}
+              </AlertDescription>
+            </Alert>
+          )}
 
-              <div className="space-y-3">
+          <div className="space-y-3">
                 {/* Email Button */}
                 <Button
                   variant="outline"
@@ -165,17 +165,17 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                     <p className="text-gray-400 text-xs">Link your X account</p>
                   </div>
                 </Button>
-              </div>
+          </div>
 
-              <div className="flex space-x-3 pt-4">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 border-gray-600"
-                  onClick={handleClose}
-                  disabled={isLinking}
-                >
-                  Cancel
-                </Button>
+          <div className="flex space-x-3 pt-4">
+            <Button 
+              variant="outline" 
+              className="flex-1 border-gray-600"
+              onClick={handleClose}
+              disabled={isLinking}
+            >
+              Cancel
+            </Button>
               </div>
             </div>
           </>
@@ -219,8 +219,8 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                 >
                   Back
                 </Button>
-                <Button 
-                  className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
+            <Button 
+              className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
                   onClick={handleSendVerification}
                   disabled={isLinking || !email}
                 >
@@ -269,8 +269,8 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                   variant="outline" 
                   className="flex-1 border-gray-600"
                   onClick={() => setStep('email-input')}
-                  disabled={isLinking}
-                >
+              disabled={isLinking}
+            >
                   Back
                 </Button>
                 <Button 
@@ -283,9 +283,9 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                   ) : (
                     'Verify & Link'
                   )}
-                </Button>
-              </div>
-            </div>
+            </Button>
+          </div>
+        </div>
           </>
         );
 

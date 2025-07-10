@@ -1360,7 +1360,7 @@ Design based on analysis: ${analysisText}`
         }
 
         console.log('✅ Top Collections compiled (min 3 guaranteed):', allTopCollections);
-        setMarketplaceNFTs(allTopCollections);
+          setMarketplaceNFTs(allTopCollections);
         // Sempre atualiza, pois agora garantimos mínimo 3
 
       } catch (error) {
