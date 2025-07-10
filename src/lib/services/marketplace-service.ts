@@ -456,20 +456,26 @@ export class MarketplaceService {
       assetContract: string;
       tokenId: string;
       quantity?: string;
+      currency: string;
       minimumBidAmount: string;
-      buyoutBidAmount?: string;
-      timeBufferInSeconds?: number;
-      bidBufferBps?: number;
-      startTimestamp?: Date;
-      endTimestamp?: Date;
+      buyoutBidAmount: string;
+      timeBufferInSeconds: number;
+      bidBufferBps: number;
+      startTimestamp: number;
+      endTimestamp: number;
     }
   ) {
     try {
       console.log('🎯 Criando leilão com parâmetros:', params);
       
+      // Verificar se o marketplace está aprovado para transferir o NFT
+      await MarketplaceService.checkAndApproveNFT(account, chainId, params.assetContract, params.tokenId);
+      
       const contract = getMarketplaceContract(chainId);
-      const minimumBid = priceToWei(params.minimumBidAmount);
-      const buyoutBid = params.buyoutBidAmount ? priceToWei(params.buyoutBidAmount) : minimumBid * BigInt(10);
+      
+      // Converter valores para Wei
+      const minimumBidWei = BigInt(params.minimumBidAmount); // Já vem em Wei do modal
+      const buyoutBidWei = params.buyoutBidAmount === '0' ? BigInt(0) : BigInt(params.buyoutBidAmount); // 0 = sem buyout
       
       // Validar e converter tokenId
       let numericTokenId: bigint;
@@ -478,10 +484,50 @@ export class MarketplaceService {
         if (/^\d+$/.test(params.tokenId)) {
           numericTokenId = BigInt(params.tokenId);
         } else if (params.tokenId.length === 24) {
-          // Se é um ObjectId do MongoDB (24 caracteres hex), extrair timestamp como fallback
-          const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
-          numericTokenId = BigInt(timestamp % 10000); // Usar últimos 4 dígitos como tokenId
-          console.log(`⚠️ TokenId parece ser ObjectId, usando timestamp como fallback: ${numericTokenId}`);
+          // Se é um ObjectId do MongoDB (24 caracteres hex), descobrir o tokenId real
+          const lastTokenId = await MarketplaceService.getNextTokenId(chainId, params.assetContract);
+          console.log('📋 Último tokenId mintado:', lastTokenId.toString());
+          
+          // Verificar se o usuário é dono do último token
+          const isOwner = await MarketplaceService.checkTokenOwnership(
+            chainId, 
+            params.assetContract, 
+            lastTokenId.toString(), 
+            account.address
+          );
+          
+          if (isOwner) {
+            numericTokenId = lastTokenId;
+            console.log('✅ Usuário é dono do último token mintado:', numericTokenId.toString());
+          } else {
+            // Se não é dono do último, tentar alguns anteriores
+            let found = false;
+            for (let i = 1; i <= 5; i++) {
+              const testTokenId = lastTokenId - BigInt(i);
+              if (testTokenId < 0) break;
+              
+              const isOwnerTest = await MarketplaceService.checkTokenOwnership(
+                chainId, 
+                params.assetContract, 
+                testTokenId.toString(), 
+                account.address
+              );
+              
+              if (isOwnerTest) {
+                numericTokenId = testTokenId;
+                console.log(`✅ Encontrado token do usuário: ${numericTokenId.toString()}`);
+                found = true;
+                break;
+              }
+            }
+            
+            if (!found) {
+              // Fallback para timestamp
+              const timestamp = parseInt(params.tokenId.substring(0, 8), 16);
+              numericTokenId = BigInt(timestamp % 10000);
+              console.log(`⚠️ Não encontrou token do usuário, usando fallback: ${numericTokenId.toString()}`);
+            }
+          }
         } else {
           // Tentar converter diretamente ou usar 0 como fallback
           numericTokenId = BigInt(0);
@@ -494,8 +540,30 @@ export class MarketplaceService {
       
       console.log('✅ TokenId convertido para:', numericTokenId.toString());
       
-      const now = new Date();
-      const defaultEnd = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 horas
+      // Verificar uma última vez se o usuário é dono do token
+      const finalOwnershipCheck = await MarketplaceService.checkTokenOwnership(
+        chainId, 
+        params.assetContract, 
+        numericTokenId.toString(), 
+        account.address
+      );
+      
+      if (!finalOwnershipCheck) {
+        throw new Error(`Você não é o dono do token ${numericTokenId.toString()}. Verifique se você realmente possui este NFT.`);
+      }
+      
+      console.log('🏆 Criando leilão com parâmetros finais:', {
+        assetContract: params.assetContract,
+        tokenId: numericTokenId.toString(),
+        quantity: params.quantity || '1',
+        currency: params.currency,
+        minimumBidAmount: minimumBidWei.toString(),
+        buyoutBidAmount: buyoutBidWei.toString(),
+        timeBufferInSeconds: params.timeBufferInSeconds,
+        bidBufferBps: params.bidBufferBps,
+        startTimestamp: params.startTimestamp,
+        endTimestamp: params.endTimestamp,
+      });
       
       const transaction = prepareContractCall({
         contract,
@@ -504,13 +572,13 @@ export class MarketplaceService {
           assetContract: params.assetContract,
           tokenId: numericTokenId,
           quantity: BigInt(params.quantity || '1'),
-          currency: NATIVE_TOKEN_ADDRESS,
-          minimumBidAmount: minimumBid,
-          buyoutBidAmount: buyoutBid,
-          timeBufferInSeconds: BigInt(params.timeBufferInSeconds || 300), // 5 min buffer
-          bidBufferBps: BigInt(params.bidBufferBps || 500), // 5% bid buffer
-          startTimestamp: BigInt(Math.floor((params.startTimestamp || now).getTime() / 1000)),
-          endTimestamp: BigInt(Math.floor((params.endTimestamp || defaultEnd).getTime() / 1000)),
+          currency: params.currency,
+          minimumBidAmount: minimumBidWei,
+          buyoutBidAmount: buyoutBidWei,
+          timeBufferInSeconds: BigInt(params.timeBufferInSeconds),
+          bidBufferBps: BigInt(params.bidBufferBps),
+          startTimestamp: BigInt(params.startTimestamp),
+          endTimestamp: BigInt(params.endTimestamp),
         }],
       });
 
@@ -615,6 +683,53 @@ export class MarketplaceService {
     } catch (error: any) {
       console.error('❌ Erro ao coletar NFT:', error);
       throw new Error(error?.reason || error?.message || 'Falha ao coletar NFT');
+    }
+  }
+
+  /**
+   * Cancelar leilão (apenas o criador pode cancelar)
+   */
+  static async cancelAuction(
+    account: Account,
+    chainId: number,
+    auctionId: string
+  ) {
+    try {
+      console.log('🚫 Cancelando leilão:', auctionId);
+      
+      // Verificar se o leilão existe e se o usuário é o criador
+      const auction = await MarketplaceService.getAuction(chainId, auctionId);
+      
+      if (auction.auctionCreator.toLowerCase() !== account.address.toLowerCase()) {
+        throw new Error('Apenas o criador do leilão pode cancelá-lo');
+      }
+      
+      // Verificar se o leilão não foi finalizado
+      if (auction.status === 'COMPLETED' || auction.status === 'CANCELLED') {
+        throw new Error('Este leilão já foi finalizado ou cancelado');
+      }
+      
+      const contract = getMarketplaceContract(chainId);
+      
+      const transaction = prepareContractCall({
+        contract,
+        method: "function cancelAuction(uint256 auctionId) external",
+        params: [BigInt(auctionId)]
+      });
+      
+      console.log('📋 Transação preparada para cancelAuction');
+      
+      const result = await sendTransaction({ transaction, account });
+      
+      console.log('✅ Leilão cancelado:', result.transactionHash);
+      
+      toast.success('Leilão cancelado com sucesso! O NFT foi retornado para sua carteira.');
+      return { success: true, transactionHash: result.transactionHash };
+      
+    } catch (error: any) {
+      console.error('❌ Erro ao cancelar leilão:', error);
+      toast.error(`Falha ao cancelar leilão: ${error.message}`);
+      throw new Error(error?.reason || error?.message || 'Falha ao cancelar leilão');
     }
   }
 

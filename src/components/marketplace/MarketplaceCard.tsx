@@ -12,6 +12,8 @@ import { CreateListingModal } from './CreateListingModal';
 import { UpdateListingModal } from './UpdateListingModal';
 import { CancelListingButton } from './CancelListingButton';
 import AuctionBidButton from './AuctionBidButton';
+import { CreateAuctionModal } from './CreateAuctionModal';
+import { CancelAuctionButton } from './CancelAuctionButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 
 interface MarketplaceCardProps {
@@ -61,6 +63,7 @@ export default function MarketplaceCard({
 }: MarketplaceCardProps) {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [showUpdateListing, setShowUpdateListing] = useState(false);
+  const [showCreateAuction, setShowCreateAuction] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   
   const account = useActiveAccount();
@@ -215,7 +218,7 @@ export default function MarketplaceCard({
         </div>
       );
     } else {
-      // NFT não está listado
+      // NFT não está listado nem em leilão
       return (
         <div className="space-y-2">
           {isOwner ? (
@@ -228,7 +231,19 @@ export default function MarketplaceCard({
                 List for Sale
               </Button>
               <Button
-                onClick={() => {/* TODO: Implementar modal de auction */}}
+                onClick={() => {
+                  console.log('🏆 CREATE AUCTION BUTTON CLICKED!');
+                  console.log('🔍 Debug info:', {
+                    assetContract,
+                    tokenId,
+                    name,
+                    imageUrl,
+                    hasAssetContract: !!assetContract,
+                    showCreateAuction,
+                    isOwner
+                  });
+                  setShowCreateAuction(true);
+                }}
                 variant="outline"
                 className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
               >
@@ -301,14 +316,18 @@ export default function MarketplaceCard({
 
           {/* Status badges */}
           <div className="absolute bottom-3 left-3">
-            {isListed && (
+            {isListed && !isAuction && (
               <span className="bg-green-500/20 text-green-400 text-xs px-2 py-1 rounded-full border border-green-500/50">
                 For Sale
               </span>
             )}
-            {isAuction && endTime && (
-              <span className="bg-orange-500/20 text-orange-400 text-xs px-2 py-1 rounded-full border border-orange-500/50">
-                {new Date() > endTime ? 'Ended' : 'Auction'}
+            {isAuction && (
+              <span className={`text-xs px-2 py-1 rounded-full border ${
+                endTime && new Date() > endTime 
+                  ? 'bg-red-500/20 text-red-400 border-red-500/50' 
+                  : 'bg-orange-500/20 text-orange-400 border-orange-500/50'
+              }`}>
+                {endTime && new Date() > endTime ? '🏁 Ended' : '🏆 Live Auction'}
               </span>
             )}
           </div>
@@ -320,10 +339,19 @@ export default function MarketplaceCard({
           
           {/* Price information */}
           <div className="mb-3">
-            {isAuction && currentBid ? (
+            {isAuction ? (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
-                <p className="text-sm font-medium text-[#A20131]">{currentBid}</p>
+                <p className="text-xs text-[#FDFDFD]/70">
+                  {endTime && new Date() > endTime ? 'Auction Ended' : 'Auction'}
+                </p>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-[#A20131]">{currentBid || price}</p>
+                  {endTime && new Date() <= endTime && (
+                    <p className="text-xs text-orange-400">
+                      Ends: {endTime.toLocaleDateString()} {endTime.toLocaleTimeString()}
+                    </p>
+                  )}
+                </div>
               </div>
             ) : (
               <div>
@@ -381,6 +409,30 @@ export default function MarketplaceCard({
           tokenId={tokenId}
         />
       )}
+
+      {/* Modal de criação de leilão */}
+      {showCreateAuction && assetContract && (
+        <CreateAuctionModal
+          isOpen={showCreateAuction}
+          onOpenChange={setShowCreateAuction}
+          nft={{
+            assetContractAddress: assetContract,
+            tokenId,
+            name,
+            imageUrl,
+          }}
+        />
+      )}
+
+      {/* Debug para modal de leilão */}
+      {console.log('🔍 MODAL RENDER DEBUG:', {
+        showCreateAuction,
+        hasAssetContract: !!assetContract,
+        shouldRenderModal: showCreateAuction && assetContract,
+        assetContract,
+        tokenId,
+        name
+      })}
     </>
   );
 } 

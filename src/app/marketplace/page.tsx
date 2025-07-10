@@ -164,7 +164,7 @@ export default function MarketplacePage() {
             isAuction={item.isAuction || false}
             auctionId={item.auctionId}
             currentBid={item.currentBid}
-            endTime={item.auctionEndTime}
+            endTime={item.endTime}
             // Dados de ofertas
             activeOffers={item.activeOffers || 0}
           />

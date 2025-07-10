@@ -202,6 +202,7 @@ export function useMarketplaceData() {
          let price = 'Not for sale';
          let currency = 'MATIC';
          let endTime: Date | undefined;
+         let currentBid: string | undefined;
          
          // 🔧 FIX: Proper BigInt to string conversion
          let listingIdString: string | undefined = undefined;
@@ -217,7 +218,18 @@ export function useMarketplaceData() {
            const isAuctionActive = currentTime < auctionEndTime;
            
            if (isAuctionActive) {
-             price = `Min: ${marketplaceAuction.minimumBidAmount} MATIC`;
+             // Get current highest bid or minimum bid amount
+             const minBid = marketplaceAuction.minimumBidAmount?.toString() || '0';
+             const buyoutBid = marketplaceAuction.buyoutBidAmount?.toString() || '0';
+             
+             currentBid = `${minBid} MATIC`;
+             price = `Starting: ${minBid} MATIC`;
+             
+             // If there's a buyout price, show it
+             if (buyoutBid && buyoutBid !== '0') {
+               price += ` | Buyout: ${buyoutBid} MATIC`;
+             }
+             
              currency = 'MATIC';
              endTime = new Date(auctionEndTime * 1000);
            } else {
@@ -262,9 +274,10 @@ export function useMarketplaceData() {
            blockchain: { verified: true, tokenId, owner: nft.owner },
            contractAddress: contractAddress,
            isAuction: isAuction,
-            activeOffers: 0,
+           activeOffers: 0,
            listingId: listingIdString,
            auctionId: auctionIdString,
+           currentBid: currentBid,
            endTime: endTime
          };
          

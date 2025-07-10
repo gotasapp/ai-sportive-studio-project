@@ -68,6 +68,6 @@ export interface MarketplaceNFT {
   auctionId?: string;
   isAuction?: boolean;
   currentBid?: string;
-  auctionEndTime?: string;
+  endTime?: Date;
   activeOffers?: number;
 } 
