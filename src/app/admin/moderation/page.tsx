@@ -717,7 +717,7 @@ export default function ModerationPage() {
                   <div>
                     <h4 className="text-sm font-medium text-blue-400 mb-2">Quality Settings Impact:</h4>
                     <ul className="text-sm text-gray-300 space-y-1">
-                      <li>• <strong>Default Quality:</strong> Applied when users don't have choice permission</li>
+                      <li>• <strong>Default Quality:</strong> Applied when users don&apos;t have choice permission</li>
                       <li>• <strong>User Choice:</strong> Shows quality selector in Jersey, Stadium, and Badge editors</li>
                       <li>• <strong>Cost Settings:</strong> Affects generation cost calculations and billing</li>
                       <li>• <strong>Usage Limits:</strong> Prevents excessive API usage and controls costs</li>

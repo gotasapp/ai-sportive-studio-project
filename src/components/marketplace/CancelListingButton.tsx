@@ -146,7 +146,7 @@ export function CancelListingButton({
             
             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
               <p className="text-sm text-red-300">
-                ⚠️ After canceling, your NFT will be removed from the marketplace and you'll need to create a new listing to sell it again.
+                ⚠️ After canceling, your NFT will be removed from the marketplace and you&apos;ll need to create a new listing to sell it again.
               </p>
             </div>
           </div>
