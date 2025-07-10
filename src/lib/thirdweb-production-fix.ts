@@ -42,10 +42,14 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
 
   try {
     console.log('🎯 Fetching fresh Thirdweb data...');
+    console.log('🔧 Environment:', process.env.NODE_ENV);
+    console.log('🔧 Client ID:', process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ? 'configured' : 'missing');
+    console.log('🔧 NFT Contract:', NFT_CONTRACT_ADDRESS);
+    console.log('🔧 Marketplace Contract:', MARKETPLACE_CONTRACT_ADDRESS);
     
     // Timeout aumentado para garantir dados reais em produção
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 15000); // 15s timeout
+      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 30000); // 30s timeout
     });
 
     const nftContract = getContract({
