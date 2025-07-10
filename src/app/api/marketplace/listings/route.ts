@@ -31,7 +31,7 @@ export async function GET(request: Request) {
     const validListings = await getAllValidListings({
       contract: marketplaceContract,
       start,
-      count: limit,
+      count: BigInt(limit),
     });
 
     console.log(`✅ Found ${validListings.length} valid listings`);
