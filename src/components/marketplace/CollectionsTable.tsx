@@ -63,6 +63,7 @@ interface CollectionsTableProps {
   activeTab: CollectionTab
   searchTerm: string
   onToggleWatchlist?: (collectionName: string) => void
+  marketplaceData?: any[]
 }
 
 export default function CollectionsTable({
@@ -72,41 +73,74 @@ export default function CollectionsTable({
   tokenType,
   activeTab,
   searchTerm,
-  onToggleWatchlist
+  onToggleWatchlist,
+  marketplaceData = []
 }: CollectionsTableProps) {
   const [collections, setCollections] = useState<CollectionStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const fetchCollectionData = async () => {
+    const processCollectionData = () => {
+      console.log('🚀 processCollectionData CALLED!');
+      console.log('📥 marketplaceData received:', marketplaceData);
+      console.log('📏 marketplaceData.length:', marketplaceData?.length);
+      
       setLoading(true)
       setError(null)
       
       try {
-        // Buscar dados reais das APIs
-        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-          fetch('/api/jerseys'),
-          fetch('/api/stadiums'),
-          fetch('/api/badges')
-        ])
-
-        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-          throw new Error('Failed to fetch collection data')
-        }
-
-        const jerseys: NFTData[] = await jerseysResponse.json()
-        const stadiums: NFTData[] = await stadiumsResponse.json()
-        const badges: NFTData[] = await badgesResponse.json()
+        // Usar dados do marketplace que já funcionam
+        console.log('🎯 Processing collection data from marketplace:', marketplaceData.length, 'items');
+        console.log('🔍 Marketplace data sample:', marketplaceData[0]);
+        console.log('🔍 Sample categories found:', marketplaceData.slice(0, 5).map(item => ({ name: item.name, category: item.category })));
+        
+        // Separar NFTs por categoria (com fallback baseado no nome se category não estiver definida)
+        const jerseys = marketplaceData.filter(item => {
+          if (item.category === 'jersey') return true;
+          // Fallback: detectar jersey pelo nome/descrição
+          const name = (item.name || '').toLowerCase();
+          const description = (item.description || '').toLowerCase();
+          return name.includes('jersey') || description.includes('jersey') || 
+                 name.includes('#') || description.includes('ai-generated') ||
+                 (name.includes(' ') && name.match(/\b\w+\s+\w+\s+#\d+/)); // Pattern: "Team Player #Number"
+        });
+        
+        const stadiums = marketplaceData.filter(item => {
+          if (item.category === 'stadium') return true;
+          const name = (item.name || '').toLowerCase();
+          const description = (item.description || '').toLowerCase();
+          return name.includes('stadium') || description.includes('stadium') ||
+                 name.includes('arena') || description.includes('arena');
+        });
+        
+        const badges = marketplaceData.filter(item => {
+          if (item.category === 'badge') return true;
+          const name = (item.name || '').toLowerCase();
+          const description = (item.description || '').toLowerCase();
+          return name.includes('badge') || description.includes('badge') ||
+                 name.includes('achievement') || description.includes('achievement');
+        });
+        
+        console.log('📊 Categories breakdown:', {
+          total: marketplaceData.length,
+          jerseys: jerseys.length,
+          stadiums: stadiums.length,
+          badges: badges.length
+        });
 
         // Gerar estatísticas realísticas baseadas nos dados reais
         const generateTrendData = () => 
           Array.from({ length: 7 }, () => Math.random() * 100)
 
+        console.log('🎲 About to create collections array');
         const collectionsData: CollectionStat[] = []
+        console.log('✅ Collections array created:', collectionsData);
 
         // Jersey Collection
+        console.log('👕 Checking jersey collection, count:', jerseys.length);
         if (jerseys.length > 0) {
+          console.log('👕 Creating jersey collection with image:', jerseys[0].imageUrl);
           collectionsData.push({
             rank: 1,
             name: 'Jersey Collection',
@@ -218,19 +252,21 @@ export default function CollectionsTable({
           collection.rank = index + 1
         })
 
+        console.log('✅ Final collections to display:', filteredCollections.length);
+        console.log('📋 Collections data:', filteredCollections);
         setCollections(filteredCollections)
 
       } catch (error: any) {
-        console.error('❌ Error fetching collection data:', error)
-        setError(error.message || 'Failed to load collection data')
+        console.error('❌ Error processing collection data:', error)
+        setError(error.message || 'Failed to process collection data')
         setCollections([])
       } finally {
         setLoading(false)
       }
     }
 
-    fetchCollectionData()
-  }, [timeFilter, priceSort, tokenType, activeTab, searchTerm])
+    processCollectionData()
+  }, [timeFilter, priceSort, tokenType, activeTab, searchTerm, marketplaceData])
 
   const renderChange = (change: number, showIcon = true) => {
     const isPositive = change > 0
@@ -319,7 +355,10 @@ export default function CollectionsTable({
     )
   }
 
+  console.log('🎭 RENDER STATE:', { loading, error, collectionsLength: collections.length, collections });
+
   if (collections.length === 0) {
+    console.log('❌ Showing "No Collections Found" because collections.length === 0');
     return (
       <div className="rounded-lg border border-[#FDFDFD]/10 p-6" style={{ backgroundColor: '#14101e' }}>
         <div className="flex flex-col items-center justify-center py-12 text-center">

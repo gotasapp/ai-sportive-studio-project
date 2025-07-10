@@ -226,7 +226,7 @@ export default function MarketplacePage() {
       return <MarketplaceLoading view={viewType} itemCount={8} />;
     }
 
-    // Table view - use CollectionsTable component
+    // Table view - use CollectionsTable component with marketplace data
     if (viewType === 'table') {
       return (
         <CollectionsTable
@@ -237,6 +237,7 @@ export default function MarketplacePage() {
           activeTab={activeTab}
           searchTerm={searchTerm}
           onToggleWatchlist={handleToggleWatchlist}
+          marketplaceData={marketplaceItems || []}
         />
       );
     }
