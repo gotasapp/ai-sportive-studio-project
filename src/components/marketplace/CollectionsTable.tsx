@@ -460,17 +460,17 @@ export default function CollectionsTable({
                       <div className="font-semibold text-[#FDFDFD] flex items-center gap-2">
                         {collection.name}
                         {collection.category === 'jersey' && (
-                          <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 text-xs">
+                          <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] text-xs">
                             Jersey
                           </Badge>
                         )}
                         {collection.category === 'stadium' && (
-                          <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 text-xs">
+                          <Badge variant="secondary" className="bg-[#FDFDFD]/20 text-[#FDFDFD] text-xs">
                             Stadium
                           </Badge>
                         )}
                         {collection.category === 'badge' && (
-                          <Badge variant="secondary" className="bg-green-500/20 text-green-400 text-xs">
+                          <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD]/70 text-xs">
                             Badge
                           </Badge>
                         )}

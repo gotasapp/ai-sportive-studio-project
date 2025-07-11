@@ -294,7 +294,7 @@ export default function MarketplaceDebug() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[#FDFDFD]/70">Current Network:</span>
-                <Badge className="bg-blue-500/20 text-blue-400">
+                <Badge className="bg-[#A20131]/20 text-[#A20131]">
                   {getChainName(chainId)}
                 </Badge>
               </div>
@@ -320,9 +320,9 @@ export default function MarketplaceDebug() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#FDFDFD]/70">Marketplace V3:</span>
                     {marketplaceContract ? (
-                      <CheckCircle className="h-4 w-4 text-green-400" />
+                      <CheckCircle className="h-4 w-4 text-[#A20131]" />
                     ) : (
-                      <XCircle className="h-4 w-4 text-red-400" />
+                      <XCircle className="h-4 w-4 text-[#FDFDFD]/70" />
                     )}
                   </div>
                   {marketplaceContract ? (
@@ -363,9 +363,9 @@ export default function MarketplaceDebug() {
                                      <div className="flex items-center gap-2 mb-1">
                      <span className="text-[#FDFDFD]/70">NFT Collection Universal:</span>
                      {nftContract ? (
-                       <CheckCircle className="h-4 w-4 text-green-400" />
+                       <CheckCircle className="h-4 w-4 text-[#A20131]" />
                      ) : (
-                       <XCircle className="h-4 w-4 text-red-400" />
+                       <XCircle className="h-4 w-4 text-[#FDFDFD]/70" />
                      )}
                    </div>
                    {nftContract ? (
@@ -407,7 +407,7 @@ export default function MarketplaceDebug() {
           {/* Configuration Guide */}
           <div>
             <h3 className="text-[#FDFDFD] font-medium mb-3 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertTriangle className="h-4 w-4 text-[#A20131]" />
               Configuração Necessária
             </h3>
             
