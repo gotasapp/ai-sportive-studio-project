@@ -89,7 +89,7 @@ export function NFTDetailsModal({
     }
   }
 
-  const getExplorerUrl = (chainId: number, tokenId: string) => {
+  const getExplorerUrl = (chainId: number, tokenId: string): string => {
     switch (chainId) {
       case 80002: // Polygon Amoy
         return `https://amoy.polygonscan.com/token/0xfF973a4aFc5A96DEc81366461A461824c4f80254?a=${tokenId}`
@@ -98,8 +98,12 @@ export function NFTDetailsModal({
       case 88888: // CHZ Mainnet
         return `https://scan.chiliz.com/token/0x3db78Cf4543cff5c4f514bcDA5a56c3234d5EC78?a=${tokenId}`
       default:
-        return null
+        return `https://amoy.polygonscan.com/token/0xfF973a4aFc5A96DEc81366461A461824c4f80254?a=${tokenId}` // fallback
     }
+  }
+
+  const hasExplorerSupport = (chainId: number): boolean => {
+    return [80002, 137, 88888].includes(chainId)
   }
 
   return (
@@ -140,7 +144,7 @@ export function NFTDetailsModal({
                 {copiedText === 'Token ID' ? 'Copied!' : 'Copy ID'}
               </Button>
               
-              {chain && getExplorerUrl(chain.id, tokenId) && (
+              {chain && hasExplorerSupport(chain.id) && (
                 <Button
                   variant="outline"
                   size="sm"

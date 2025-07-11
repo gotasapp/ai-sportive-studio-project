@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
@@ -60,11 +60,7 @@ export default function NFTDetailPage() {
   const [showCreateListing, setShowCreateListing] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
 
-  useEffect(() => {
-    loadNFTDetails();
-  }, [contractAddress, tokenId]);
-
-  const loadNFTDetails = async () => {
+  const loadNFTDetails = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -106,7 +102,11 @@ export default function NFTDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [contractAddress, tokenId]);
+
+  useEffect(() => {
+    loadNFTDetails();
+  }, [loadNFTDetails]);
 
   const handleBack = () => {
     router.back();

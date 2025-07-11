@@ -2,6 +2,7 @@
 
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -802,9 +803,11 @@ function NFTGrid({ nfts }: NFTGridProps) {
       {nfts.map((nft) => (
         <Card key={nft.id} className="bg-[#0b0518] border-gray-600 hover:border-[#A20131] transition-colors">
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
-            <img 
+            <Image 
               src={nft.imageUrl} 
               alt={nft.name}
+              width={300}
+              height={300}
               className="w-full h-full object-cover"
             />
             <div className="absolute top-2 right-2">

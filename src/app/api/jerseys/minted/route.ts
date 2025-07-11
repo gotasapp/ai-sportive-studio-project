@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
@@ -8,13 +8,12 @@ const COLLECTION_NAME = 'jerseys';
  * GET handler para buscar apenas jerseys que foram realmente mintados na blockchain
  * Filtra apenas NFTs com transactionHash (confirmação de mint)
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     console.log('✅ GET Minted Jerseys - Buscando apenas NFTs mintados');
     
-    const { searchParams } = new URL(request.url);
-    const owner = searchParams.get('owner');
-    const chainId = searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
+    const owner = request.nextUrl.searchParams.get('owner');
+    const chainId = request.nextUrl.searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);

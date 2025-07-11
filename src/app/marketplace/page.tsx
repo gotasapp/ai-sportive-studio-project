@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import FeaturedCarousel from '@/components/marketplace/FeaturedCarousel';
 import MarketplaceFilters, { 
@@ -250,9 +251,11 @@ export default function MarketplacePage() {
           className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-            <img 
+            <Image 
               src={item.imageUrl} 
               alt={item.name}
+              width={64}
+              height={64}
               className="w-full h-full object-cover"
             />
           </div>

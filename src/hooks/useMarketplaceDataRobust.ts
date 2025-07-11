@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getNFTs } from 'thirdweb/extensions/erc721';
@@ -48,11 +48,7 @@ export function useMarketplaceDataRobust() {
     dataSource: 'thirdweb'
   });
 
-  useEffect(() => {
-    fetchDataWithFallbacks();
-  }, []);
-
-  const fetchDataWithFallbacks = async () => {
+  const fetchDataWithFallbacks = useCallback(async () => {
     setData(prev => ({ ...prev, loading: true, error: null }));
 
     // ESTRATÉGIA 1: Thirdweb (Timeout 5s)
@@ -97,7 +93,11 @@ export function useMarketplaceDataRobust() {
       dataSource: 'fallback'
     });
     console.log('✅ Fallback SUCCESS!');
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchDataWithFallbacks();
+  }, [fetchDataWithFallbacks]);
 
   // MÉTODO 1: Thirdweb (com timeout agressivo)
   const fetchFromThirdweb = async (): Promise<Omit<MarketplaceData, 'loading' | 'error' | 'dataSource'>> => {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -209,9 +210,11 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft }: CreateAuctionM
           {/* NFT Preview */}
           <div className="bg-[#333333]/20 rounded-lg p-3 border border-[#FDFDFD]/10">
             <div className="flex items-center gap-3">
-              <img 
+              <Image 
                 src={nft.imageUrl} 
                 alt={nft.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-lg object-cover"
               />
               <div>

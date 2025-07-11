@@ -7,9 +7,8 @@ export async function GET(request: NextRequest) {
   try {
     console.log('📊 Teams Data API: Fetching detailed team data from MongoDB...');
     
-    const { searchParams } = new URL(request.url);
-    const includeStats = searchParams.get('includeStats') === 'true';
-    const includeColors = searchParams.get('includeColors') === 'true';
+    const includeStats = request.nextUrl.searchParams.get('includeStats') === 'true';
+    const includeColors = request.nextUrl.searchParams.get('includeColors') === 'true';
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);

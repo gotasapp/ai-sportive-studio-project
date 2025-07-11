@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
 
@@ -37,7 +37,7 @@ export function useAuctionData({
   });
 
   // Função para buscar dados do leilão
-  const fetchAuctionData = async () => {
+  const fetchAuctionData = useCallback(async () => {
     if (!auctionId || !isAuction || !chain) {
       return;
     }
@@ -72,7 +72,7 @@ export function useAuctionData({
         error: error.message || 'Failed to fetch auction data'
       }));
     }
-  };
+  }, [auctionId, isAuction, chain, initialBid]);
 
   // Função para atualizar manualmente (após fazer bid)
   const refetchAuctionData = () => {
@@ -84,7 +84,7 @@ export function useAuctionData({
     if (isAuction && auctionId && chain) {
       fetchAuctionData();
     }
-  }, [auctionId, isAuction, chain?.id]);
+  }, [fetchAuctionData, isAuction, auctionId, chain]);
 
   // Auto-refresh a cada intervalo
   useEffect(() => {
@@ -97,7 +97,7 @@ export function useAuctionData({
     }, refreshInterval * 1000);
 
     return () => clearInterval(interval);
-  }, [auctionId, isAuction, chain?.id, refreshInterval]);
+  }, [fetchAuctionData, isAuction, auctionId, chain, refreshInterval]);
 
   return {
     ...auctionData,

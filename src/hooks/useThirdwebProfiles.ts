@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount, useActiveWallet } from 'thirdweb/react';
 import { client } from '@/lib/ThirdwebProvider';
 
@@ -19,7 +19,7 @@ export function useThirdwebProfiles() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchProfiles = async () => {
+  const fetchProfiles = useCallback(async () => {
     if (!account || !wallet) {
       setProfiles([]);
       setLoading(false);
@@ -112,11 +112,11 @@ export function useThirdwebProfiles() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [account, wallet]);
 
   useEffect(() => {
     fetchProfiles();
-  }, [account, wallet]);
+  }, [fetchProfiles]);
 
   // Helper functions to get specific profile types
   const getEmailProfile = () => profiles.find(p => p.type === 'email');

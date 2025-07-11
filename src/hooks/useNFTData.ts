@@ -45,7 +45,7 @@ export function useNFTData(tokenId: string | null) {
     },
     enabled: !!tokenId && tokenId !== '0',
     staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
+    gcTime: 30 * 60 * 1000, // 30 minutos
     retry: 2,
     retryDelay: 1000,
   })
@@ -68,7 +68,7 @@ export function useNFTOwner(tokenId: string | null) {
     },
     enabled: !!tokenId && tokenId !== '0',
     staleTime: 2 * 60 * 1000, // 2 minutos (owner muda mais frequentemente)
-    cacheTime: 10 * 60 * 1000, // 10 minutos
+    gcTime: 10 * 60 * 1000, // 10 minutos
     retry: 2,
     retryDelay: 1000,
   })
@@ -117,7 +117,7 @@ export function useNFTBatch(tokenIds: string[]) {
     },
     enabled: tokenIds.length > 0,
     staleTime: 10 * 60 * 1000, // 10 minutos
-    cacheTime: 30 * 60 * 1000, // 30 minutos
+    gcTime: 30 * 60 * 1000, // 30 minutos
   })
 }
 

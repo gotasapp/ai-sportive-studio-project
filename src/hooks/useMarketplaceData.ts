@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { MarketplaceNFT } from '@/types';
 import { convertIpfsToHttp } from '@/lib/utils';
 import { useActiveWalletChain } from 'thirdweb/react';
@@ -58,11 +58,7 @@ export function useMarketplaceData() {
     featuredNFTs: []
   });
 
-  useEffect(() => {
-    fetchNFTsFromContract();
-  }, [chain?.id]);
-
-  const fetchNFTsFromContract = async () => {
+  const fetchNFTsFromContract = useCallback(async () => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
       console.log('🎯 Fetching NFTs using PRODUCTION-READY system...');
@@ -377,7 +373,11 @@ export function useMarketplaceData() {
         error: error instanceof Error ? error.message : 'Failed to fetch NFTs from contract'
       }));
     }
-  };
+  }, [chain]);
+
+  useEffect(() => {
+    fetchNFTsFromContract();
+  }, [fetchNFTsFromContract]);
 
   // Fallback function to fetch from MongoDB
   const fetchFromMongoDB = async () => {

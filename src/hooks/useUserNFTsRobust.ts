@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
@@ -42,15 +42,7 @@ export function useUserNFTsRobust() {
     dataSource: 'thirdweb'
   });
 
-  useEffect(() => {
-    if (account?.address) {
-      fetchUserNFTs();
-    } else {
-      setData({ nfts: [], loading: false, error: null, dataSource: 'thirdweb' });
-    }
-  }, [account?.address]);
-
-  const fetchUserNFTs = async () => {
+  const fetchUserNFTs = useCallback(async () => {
     if (!account?.address) return;
 
     setData(prev => ({ ...prev, loading: true, error: null }));
@@ -97,7 +89,15 @@ export function useUserNFTsRobust() {
       dataSource: 'fallback'
     });
     console.log('✅ Fallback user NFTs SUCCESS!');
-  };
+  }, [account?.address]);
+
+  useEffect(() => {
+    if (account?.address) {
+      fetchUserNFTs();
+    } else {
+      setData({ nfts: [], loading: false, error: null, dataSource: 'thirdweb' });
+    }
+  }, [fetchUserNFTs, account?.address]);
 
   const fetchFromThirdweb = async (): Promise<Omit<UserNFTsData, 'loading' | 'error' | 'dataSource'>> => {
     const timeoutPromise = new Promise((_, reject) => {

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
@@ -7,15 +7,14 @@ const DB_NAME = 'chz-app-db';
  * GET handler para buscar todos os NFTs mintados em formato compatível com Thirdweb Marketplace V3
  * Retorna tokenId, contractAddress, owner, metadata, etc.
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     console.log('🏪 GET Marketplace NFTs - Formato Thirdweb V3');
     
-    const { searchParams } = new URL(request.url);
-    const owner = searchParams.get('owner');
-    const chainId = searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
-    const type = searchParams.get('type'); // jersey, stadium, badge
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const owner = request.nextUrl.searchParams.get('owner');
+    const chainId = request.nextUrl.searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
+    const type = request.nextUrl.searchParams.get('type'); // jersey, stadium, badge
+    const limit = parseInt(request.nextUrl.searchParams.get('limit') || '50');
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);

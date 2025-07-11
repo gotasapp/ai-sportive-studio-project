@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
@@ -6,12 +6,11 @@ const DB_NAME = 'chz-app-db';
 /**
  * API de diagnóstico para verificar o estado atual dos NFTs e suas listagens
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     console.log('🔍 DEBUG STATUS: Starting MongoDB diagnosis...');
     
-    const url = new URL(request.url);
-    const userWallet = url.searchParams.get('wallet');
+    const userWallet = request.nextUrl.searchParams.get('wallet');
     
     // Buscar dados do MongoDB
     const dbClient = await clientPromise;

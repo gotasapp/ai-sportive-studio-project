@@ -3,6 +3,7 @@ import { getContract } from 'thirdweb'
 import { polygonAmoy } from 'thirdweb/chains'
 import { client } from '@/lib/ThirdwebProvider'
 import { connectToDatabase } from '@/lib/mongodb'
+import { getNFT, ownerOf } from 'thirdweb/extensions/erc721'
 
 // Cache TTL em minutos
 const CACHE_TTL_MINUTES = 15
@@ -50,25 +51,28 @@ async function fetchNFTFromThirdweb(tokenId: string): Promise<CachedNFT | null> 
 
     console.log(`🔍 Fetching NFT ${tokenId} from Thirdweb...`)
 
-    // Buscar dados em paralelo
-    const [tokenURI, owner] = await Promise.all([
-      // Token URI
-      contract.call('tokenURI', [BigInt(tokenId)]).catch(() => null),
+    // Buscar dados em paralelo usando extensões do Thirdweb v5
+    const [nftData, owner] = await Promise.all([
+      // NFT data (inclui metadata)
+      getNFT({
+        contract,
+        tokenId: BigInt(tokenId)
+      }).catch(() => null),
       // Owner
-      contract.call('ownerOf', [BigInt(tokenId)]).catch(() => null),
+      ownerOf({
+        contract,
+        tokenId: BigInt(tokenId)
+      }).catch(() => null),
     ])
 
-    if (!tokenURI || !owner) {
+    if (!nftData || !owner) {
       console.log(`❌ NFT ${tokenId} not found on blockchain`)
       return null
     }
 
-    // Fetch metadata
-    const metadataUrl = convertIpfsToHttp(tokenURI)
-    const metadataResponse = await fetch(metadataUrl)
-    const metadata = await metadataResponse.json()
+    const metadata = nftData.metadata || {}
 
-    const nftData: CachedNFT = {
+    const nftCacheData: CachedNFT = {
       tokenId,
       name: metadata.name || `NFT #${tokenId}`,
       description: metadata.description || '',
@@ -76,15 +80,15 @@ async function fetchNFTFromThirdweb(tokenId: string): Promise<CachedNFT | null> 
       imageHttp: convertIpfsToHttp(metadata.image || ''),
       owner: owner.toString(),
       metadata,
-      attributes: metadata.attributes || [],
+      attributes: Array.isArray(metadata.attributes) ? metadata.attributes : [],
       contractAddress,
       chainId: polygonAmoy.id,
       lastUpdated: new Date(),
       createdAt: new Date(),
     }
 
-    console.log(`✅ NFT ${tokenId} fetched from Thirdweb:`, nftData.name)
-    return nftData
+    console.log(`✅ NFT ${tokenId} fetched from Thirdweb:`, nftCacheData.name)
+    return nftCacheData
 
   } catch (error) {
     console.error(`❌ Error fetching NFT ${tokenId} from Thirdweb:`, error)
@@ -94,14 +98,28 @@ async function fetchNFTFromThirdweb(tokenId: string): Promise<CachedNFT | null> 
 
 async function getCachedNFT(tokenId: string): Promise<CachedNFT | null> {
   try {
-    const { db } = await connectToDatabase()
+    const client = await connectToDatabase()
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db')
     const collection = db.collection('nft_cache')
     
     const cached = await collection.findOne({ tokenId })
     
     if (cached) {
       console.log(`📦 Found cached NFT ${tokenId}:`, cached.name)
-      return cached as CachedNFT
+      return {
+        tokenId: cached.tokenId,
+        name: cached.name,
+        description: cached.description,
+        image: cached.image,
+        imageHttp: cached.imageHttp,
+        owner: cached.owner,
+        metadata: cached.metadata,
+        attributes: cached.attributes,
+        contractAddress: cached.contractAddress,
+        chainId: cached.chainId,
+        lastUpdated: cached.lastUpdated,
+        createdAt: cached.createdAt
+      } as CachedNFT
     }
     
     return null
@@ -113,7 +131,8 @@ async function getCachedNFT(tokenId: string): Promise<CachedNFT | null> {
 
 async function saveCachedNFT(nftData: CachedNFT): Promise<void> {
   try {
-    const { db } = await connectToDatabase()
+    const client = await connectToDatabase()
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db')
     const collection = db.collection('nft_cache')
     
     await collection.updateOne(

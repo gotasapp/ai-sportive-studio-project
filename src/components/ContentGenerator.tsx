@@ -489,7 +489,12 @@ export default function ContentGenerator() {
   }, [contentType])
 
   useEffect(() => {
-    // ... existing code ...
+    if (selectedTeam) {
+      // Reset form when team changes
+      setPlayerName('')
+      setPlayerNumber('')
+      setSelectedJerseyStyle('home')
+    }
   }, [selectedTeam]);
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { Shield, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -220,13 +221,16 @@ export default function Header() {
         )}>
           {/* Logo */}
           <div className="flex items-center space-x-3">
-            <img 
+            <Image 
               src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png" 
               alt="Chiliz Logo" 
+              width={isMobile ? 120 : 180}
+              height={isMobile ? 32 : 48}
               className={cn(
                 "object-contain",
                 isMobile ? "w-auto h-8 ml-2" : "w-auto h-12 ml-6"
               )}
+              priority
             />
           </div>
 

@@ -80,7 +80,7 @@ export async function GET(
     } catch (error) {
       clearTimeout(timeoutId)
       
-      if (error.name === 'AbortError') {
+      if (error instanceof Error && error.name === 'AbortError') {
         console.log('⏰ Profile API timeout - returning default profile')
         // Retornar perfil padrão em caso de timeout
         const defaultProfile = {

@@ -3,6 +3,7 @@ import { getContract } from 'thirdweb'
 import { polygonAmoy } from 'thirdweb/chains'
 import { client } from '@/lib/ThirdwebProvider'
 import { connectToDatabase } from '@/lib/mongodb'
+import { ownerOf } from 'thirdweb/extensions/erc721'
 
 // Cache TTL mais curto para owner (muda mais frequentemente)
 const OWNER_CACHE_TTL_MINUTES = 5
@@ -32,7 +33,10 @@ async function fetchOwnerFromThirdweb(tokenId: string): Promise<string | null> {
 
     console.log(`🔍 Fetching owner for NFT ${tokenId} from Thirdweb...`)
 
-    const owner = await contract.call('ownerOf', [BigInt(tokenId)])
+    const owner = await ownerOf({
+      contract,
+      tokenId: BigInt(tokenId)
+    })
     
     if (!owner) {
       console.log(`❌ Owner not found for NFT ${tokenId}`)
@@ -50,14 +54,19 @@ async function fetchOwnerFromThirdweb(tokenId: string): Promise<string | null> {
 
 async function getCachedOwner(tokenId: string): Promise<CachedOwner | null> {
   try {
-    const { db } = await connectToDatabase()
+    const client = await connectToDatabase()
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db')
     const collection = db.collection('nft_owners_cache')
     
     const cached = await collection.findOne({ tokenId })
     
     if (cached) {
       console.log(`📦 Found cached owner for NFT ${tokenId}:`, cached.owner)
-      return cached as CachedOwner
+      return {
+        tokenId: cached.tokenId,
+        owner: cached.owner,
+        lastUpdated: cached.lastUpdated
+      } as CachedOwner
     }
     
     return null
@@ -69,7 +78,8 @@ async function getCachedOwner(tokenId: string): Promise<CachedOwner | null> {
 
 async function saveCachedOwner(tokenId: string, owner: string): Promise<void> {
   try {
-    const { db } = await connectToDatabase()
+    const client = await connectToDatabase()
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db')
     const collection = db.collection('nft_owners_cache')
     
     const ownerData: CachedOwner = {
