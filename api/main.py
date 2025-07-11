@@ -1471,27 +1471,59 @@ async def test_connection():
     print("✅ /test-connection endpoint foi acessado com sucesso!")
     return {"message": "Conexão com o servidor Python (main.py) bem-sucedida!"}
 
-@app.post("/generate-jersey-from-reference") # Removido response_model para depuração
+@app.post("/generate-jersey-from-reference", response_model=ReferenceGenerationResponse)
 async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
     """
-    [MODO DE DEPURACÃO] Endpoint simplificado para testar o roteamento.
+    Gera uma camisa usando uma referência de time do banco de dados.
+    Busca o `teamBasePrompt` e as `referenceImages` do MongoDB.
     """
-    print("✅✅✅ [DEBUG] Rota /generate-jersey-from-reference FOI ALCANÇADA! ✅✅✅")
-    
+    print(f"✅ [DB] Rota /generate-jersey-from-reference chamada para o time: '{request.teamName}'")
+
+    if db is None:
+        print("❌ [DB] ERRO: Conexão com o banco de dados não disponível.")
+        raise HTTPException(status_code=500, detail="Database connection is not available.")
+
     try:
-        team_name = request.teamName
-        print(f"✅ [DEBUG] Time recebido: {team_name}")
+        query_name = request.teamName.strip()
+        print(f"🔍 [DB] Buscando referência para '{query_name}' na coleção 'team_references'...")
         
+        team_reference = db.team_references.find_one({"teamName": {"$regex": f"^{query_name}$", "$options": "i"}})
+
+        if not team_reference:
+            print(f"❌ [DB] ERRO: Time '{query_name}' não foi encontrado na coleção 'team_references' (busca case-insensitive).")
+            raise HTTPException(status_code=404, detail=f"Team '{query_name}' not found in database.")
+
+        print(f"✅ [DB] Referência encontrada para '{query_name}'.")
+        
+        # Corrigido para buscar o prompt dentro do objeto 'metadata'
+        metadata = team_reference.get("metadata", {})
+        team_base_prompt = metadata.get("teamBasePrompt", "")
+        
+        if not team_base_prompt:
+            print(f"⚠️ [DB] Alerta: `teamBasePrompt` está vazio ou ausente para o time '{query_name}'.")
+
+        reference_images = team_reference.get("referenceImages", [])
+        image_url_to_analyze = None
+        if reference_images and isinstance(reference_images, list) and len(reference_images) > 0:
+            image_url_to_analyze = reference_images[0].get("url")
+            print(f"🖼️ [DB] URL da imagem de referência (Fase 2): {image_url_to_analyze}")
+        else:
+            print("⚠️ [DB] Nenhuma imagem de referência (`referenceImages`) encontrada para este time.")
+
+        # FASE 1 COMPLETA: Retornar prompt real e imagem placeholder.
+        final_prompt = f"{team_base_prompt}, player {request.player_name}, number {request.player_number}"
+        
+        print(f"✅ [DB] FASE 1 COMPLETA. Retornando prompt e URL placeholder.")
         return {
             "success": True,
-            "image_url": "https://raw.githubusercontent.com/Sportheca/chz-fan-token-studio/main/api/image_references/flamengo/flamengo_1981_front.jpg", # URL de placeholder
-            "prompt": f"Debug prompt for {team_name}",
+            "image_url": "https://raw.githubusercontent.com/Sportheca/chz-fan-token-studio/main/api/image_references/flamengo/flamengo_1981_front.jpg",
+            "prompt": final_prompt,
             "error": None
         }
 
     except Exception as e:
-        print(f"❌❌❌ [DEBUG] ERRO DENTRO DA ROTA: {e} ❌❌❌")
-        raise HTTPException(status_code=500, detail=f"Erro no modo de depuração: {e}")
+        print(f"❌ [DB] ERRO CRÍTICO na rota: {e}")
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
 
 # --- PONTO DE ENTRADA DA APLICAÇÃO ---
 if __name__ == "__main__":
