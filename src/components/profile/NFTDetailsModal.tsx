@@ -286,7 +286,7 @@ export function NFTDetailsModal({
               <div className="aspect-square relative overflow-hidden rounded-lg bg-[#FDFDFD]/10">
                 {(displayData?.imageUrl || nftData?.imageUrl) ? (
                   <Image 
-                    src={convertIpfsToHttp(displayData?.imageUrl || nftData?.imageUrl || '')}
+                    src={displayData?.imageUrl || nftData?.imageUrl || ''}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
                     height={400}
