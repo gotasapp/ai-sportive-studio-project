@@ -107,14 +107,14 @@ export async function GET(request: Request) {
       mongodb: {
         found: !!mongoData,
         collection: foundInCollection,
-        name: mongoData?.name || null,
-        imageUrl: mongoData?.imageUrl || mongoData?.image || null,
-        status: mongoData?.status || null,
-        transactionHash: mongoData?.transactionHash || null,
-        tokenIdField: mongoData?.tokenId || null,
-        blockchainTokenId: mongoData?.blockchainTokenId || null
+        name: (mongoData as any)?.name || null,
+        imageUrl: (mongoData as any)?.imageUrl || (mongoData as any)?.image || null,
+        status: (mongoData as any)?.status || null,
+        transactionHash: (mongoData as any)?.transactionHash || null,
+        tokenIdField: (mongoData as any)?.tokenId || null,
+        blockchainTokenId: (mongoData as any)?.blockchainTokenId || null
       },
-      recommendations: []
+      recommendations: [] as string[]
     };
 
     // Add recommendations based on findings

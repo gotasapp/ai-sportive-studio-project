@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
@@ -80,14 +80,7 @@ export function NFTDetailsModal({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Load NFT data when modal opens
-  useEffect(() => {
-    if (isOpen && tokenId) {
-      loadNFTData()
-    }
-  }, [isOpen, tokenId])
-
-  const loadNFTData = async () => {
+  const loadNFTData = useCallback(async () => {
     if (!tokenId) return
 
     setIsLoading(true)
@@ -157,7 +150,7 @@ export function NFTDetailsModal({
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
         cached: false,
-        source: 'emergency'
+        source: 'fallback'
       }
       
       setNftData(emergencyFallback)
@@ -165,7 +158,14 @@ export function NFTDetailsModal({
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [tokenId, nft])
+
+  // Load NFT data when modal opens
+  useEffect(() => {
+    if (isOpen && tokenId) {
+      loadNFTData()
+    }
+  }, [isOpen, tokenId, loadNFTData])
 
   const copyToClipboard = async (text: string, label: string) => {
     try {
@@ -240,7 +240,7 @@ export function NFTDetailsModal({
       <DialogContent className="bg-[#14101e] border-[#FDFDFD]/20 text-[#FDFDFD] max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-[#FDFDFD] flex items-center gap-2">
-            {displayData && getCollectionIcon(displayData.collection || 'jerseys')}
+            {displayData && getCollectionIcon((displayData as any).collection || 'jerseys')}
             {displayData?.name || `NFT #${tokenId}`}
             {nftData?.cached && (
               <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30 text-xs">
@@ -299,9 +299,9 @@ export function NFTDetailsModal({
                     </div>
                   </div>
                 )}
-                {displayData?.status && (
+                {(displayData as any)?.status && (
                   <div className="absolute top-3 right-3">
-                    {getStatusBadge(displayData.status)}
+                    {getStatusBadge((displayData as any).status)}
                   </div>
                 )}
               </div>
@@ -359,23 +359,23 @@ export function NFTDetailsModal({
                       </span>
                     </div>
 
-                    {displayData?.collection && (
+                    {(displayData as any)?.collection && (
                       <div className="flex items-center justify-between">
                         <span className="text-[#FDFDFD]/70 flex items-center gap-2">
                           <Tag className="h-4 w-4" />
                           Collection
                         </span>
-                        <span className="text-[#FDFDFD] capitalize">{displayData.collection}</span>
+                        <span className="text-[#FDFDFD] capitalize">{(displayData as any).collection}</span>
                       </div>
                     )}
 
-                    {displayData?.price && (
+                    {(displayData as any)?.price && (
                       <div className="flex items-center justify-between">
                         <span className="text-[#FDFDFD]/70 flex items-center gap-2">
                           <DollarSign className="h-4 w-4" />
                           Price
                         </span>
-                        <span className="text-[#A20131] font-semibold">{displayData.price}</span>
+                        <span className="text-[#A20131] font-semibold">{(displayData as any).price}</span>
                       </div>
                     )}
 

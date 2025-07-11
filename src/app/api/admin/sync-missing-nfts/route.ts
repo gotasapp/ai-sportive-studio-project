@@ -62,6 +62,7 @@ function generateFallbackMetadata(tokenId: number, owner: string) {
     const randomStadium = stadiumNames[tokenId % stadiumNames.length];
     
     return {
+      uri: '', // URI vazia para NFTs sem metadata
       name: `${randomTeam} ${randomStadium} NFT`,
       description: `AI-generated stadium NFT for ${randomTeam}`,
       image: '', // Será preenchido depois
@@ -75,6 +76,7 @@ function generateFallbackMetadata(tokenId: number, owner: string) {
   }
   
   return {
+    uri: '', // URI vazia para NFTs sem metadata
     name: `${randomTeam} ${randomPlayer} #${randomNumber}`,
     description: `AI-generated jersey NFT for ${randomTeam}`,
     image: '', // Será preenchido depois

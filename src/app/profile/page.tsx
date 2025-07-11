@@ -786,7 +786,7 @@ export default function ProfilePage() {
           isOpen={showNFTModal}
           onClose={handleCloseNFTModal}
           tokenId={selectedNFT ? getTokenIdFromCompositeId(selectedNFT.id) : ''}
-          nft={selectedNFT}
+          nft={selectedNFT || undefined}
         />
           </div>
         </RequireWallet>

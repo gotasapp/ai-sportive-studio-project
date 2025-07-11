@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Header from '@/components/Header'
@@ -121,7 +121,7 @@ export default function CollectionPage() {
     applyFilters()
   }, [nfts, searchQuery, statusFilter, priceRange, sortBy])
 
-  const loadCollectionData = async () => {
+  const loadCollectionData = useCallback(async () => {
     setIsLoading(true)
     setError(null)
 
@@ -164,7 +164,7 @@ export default function CollectionPage() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [contractAddress])
 
   const calculateFloorPrice = (nfts: CollectionNFT[]): string => {
     const listedNfts = nfts.filter(nft => nft.price && nft.status === 'listed')
@@ -184,7 +184,7 @@ export default function CollectionPage() {
     return `${avgPrice.toFixed(2)} MATIC`
   }
 
-  const applyFilters = () => {
+  const applyFilters = useCallback(() => {
     let filtered = [...nfts]
 
     // Search filter
@@ -239,7 +239,7 @@ export default function CollectionPage() {
     }
 
     setFilteredNfts(filtered)
-  }
+  }, [nfts, searchQuery, statusFilter, priceRange, sortBy])
 
   const handleNFTClick = (nft: CollectionNFT) => {
     setSelectedNFT(nft)

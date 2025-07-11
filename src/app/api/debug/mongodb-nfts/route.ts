@@ -43,7 +43,7 @@ export async function GET(request: Request) {
     console.log(`📊 Total NFTs in MongoDB: ${allNFTs.length}`);
 
     // Filtrar NFTs mintadas
-    const mintedNFTs = allNFTs.filter(nft => 
+    const mintedNFTs = allNFTs.filter((nft: any) => 
       nft.status === 'minted' || 
       nft.status === 'Approved' ||
       nft.isMinted ||
@@ -56,7 +56,7 @@ export async function GET(request: Request) {
     // Se foi especificado um usuário, filtrar por ele
     let userNFTs = mintedNFTs;
     if (userAddress) {
-      userNFTs = mintedNFTs.filter(nft => 
+      userNFTs = mintedNFTs.filter((nft: any) => 
         nft.ownerAddress?.toLowerCase() === userAddress.toLowerCase() ||
         nft.creator?.wallet?.toLowerCase() === userAddress.toLowerCase() ||
         nft.creatorWallet?.toLowerCase() === userAddress.toLowerCase()
@@ -81,7 +81,7 @@ export async function GET(request: Request) {
           badges: mintedNFTs.filter(n => n.collection === 'badges').length
         }
       },
-      nfts: (userAddress ? userNFTs : mintedNFTs).slice(0, 10).map(nft => ({
+      nfts: (userAddress ? userNFTs : mintedNFTs).slice(0, 10).map((nft: any) => ({
         id: nft._id?.toString(),
         name: nft.name,
         collection: nft.collection,
@@ -96,9 +96,9 @@ export async function GET(request: Request) {
       })),
       userFilters: userAddress ? {
         address: userAddress,
-        foundByOwnerAddress: mintedNFTs.filter(n => n.ownerAddress?.toLowerCase() === userAddress.toLowerCase()).length,
-        foundByCreatorWallet: mintedNFTs.filter(n => n.creator?.wallet?.toLowerCase() === userAddress.toLowerCase()).length,
-        foundByCreatorField: mintedNFTs.filter(n => n.creatorWallet?.toLowerCase() === userAddress.toLowerCase()).length
+        foundByOwnerAddress: mintedNFTs.filter((n: any) => n.ownerAddress?.toLowerCase() === userAddress.toLowerCase()).length,
+        foundByCreatorWallet: mintedNFTs.filter((n: any) => n.creator?.wallet?.toLowerCase() === userAddress.toLowerCase()).length,
+        foundByCreatorField: mintedNFTs.filter((n: any) => n.creatorWallet?.toLowerCase() === userAddress.toLowerCase()).length
       } : null
     };
 
