@@ -154,12 +154,12 @@ export default function MarketplaceDashboard() {
 
   const getTransactionIcon = (type: Transaction['type']) => {
     switch (type) {
-      case 'buy': return <ShoppingBag className="h-4 w-4 text-blue-400" />;
-      case 'sell': return <TrendingUp className="h-4 w-4 text-green-400" />;
-      case 'listing': return <Tag className="h-4 w-4 text-purple-400" />;
-      case 'bid': return <Gavel className="h-4 w-4 text-orange-400" />;
-      case 'offer': return <HandHeart className="h-4 w-4 text-pink-400" />;
-      default: return <Wallet className="h-4 w-4 text-gray-400" />;
+              case 'buy': return <ShoppingBag className="h-4 w-4 text-[#FDFDFD]" />;
+        case 'sell': return <TrendingUp className="h-4 w-4 text-[#FDFDFD]" />;
+        case 'listing': return <Tag className="h-4 w-4 text-[#FDFDFD]" />;
+        case 'bid': return <Gavel className="h-4 w-4 text-[#FDFDFD]" />;
+        case 'offer': return <HandHeart className="h-4 w-4 text-[#FDFDFD]" />;
+        default: return <Wallet className="h-4 w-4 text-[#FDFDFD]" />;
     }
   };
 
@@ -220,10 +220,10 @@ export default function MarketplaceDashboard() {
             <Card className="cyber-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">Total Earnings</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-400" />
+                                  <TrendingUp className="h-4 w-4 text-[#A20131]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-green-400">{stats.totalEarnings}</div>
+                <div className="text-2xl font-bold text-[#FDFDFD]">{stats.totalEarnings}</div>
                 <p className="text-xs text-[#FDFDFD]/50">From all sales</p>
               </CardContent>
             </Card>
@@ -231,10 +231,10 @@ export default function MarketplaceDashboard() {
             <Card className="cyber-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">Total Spent</CardTitle>
-                <TrendingDown className="h-4 w-4 text-red-400" />
+                                  <TrendingDown className="h-4 w-4 text-[#A20131]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-red-400">{stats.totalSpent}</div>
+                <div className="text-2xl font-bold text-[#FDFDFD]">{stats.totalSpent}</div>
                 <p className="text-xs text-[#FDFDFD]/50">On all purchases</p>
               </CardContent>
             </Card>

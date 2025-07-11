@@ -41,12 +41,12 @@ interface MarketplaceCardProps {
   activeOffers?: number;
 }
 
-const categoryColors = {
-    jersey: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
-    stadium: 'bg-green-500/20 text-green-400 border-green-500/50',
-    badge: 'bg-purple-500/20 text-purple-400 border-purple-500/50',
-    default: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
-};
+  const categoryColors = {
+    jersey: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
+    stadium: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
+    badge: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
+    default: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
+  };
 
 export default function MarketplaceCard({ 
   name, 
