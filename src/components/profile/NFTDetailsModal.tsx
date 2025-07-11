@@ -97,7 +97,11 @@ export function NFTDetailsModal({
         console.log(`✅ NFT data loaded from API (source: ${result.source})`)
         
         // Mapear campos de imagem da API para o formato esperado pelo modal
-        const imageUrl = result.data.imageHttp || result.data.image || result.data.imageUrl || ''
+        let imageUrl = result.data.imageHttp || result.data.image || result.data.imageUrl || ''
+        
+        // USAR A MESMA LÓGICA DO MARKETPLACE: sempre usar o imageUrl diretamente
+        // O marketplace funciona, então vamos usar a mesma estratégia
+        
         const mappedData = {
           ...result.data,
           imageUrl: imageUrl
@@ -282,7 +286,7 @@ export function NFTDetailsModal({
               <div className="aspect-square relative overflow-hidden rounded-lg bg-[#FDFDFD]/10">
                 {(displayData?.imageUrl || nftData?.imageUrl) ? (
                   <Image 
-                    src={displayData?.imageUrl || nftData?.imageUrl || ''}
+                    src={convertIpfsToHttp(displayData?.imageUrl || nftData?.imageUrl || '')}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
                     height={400}

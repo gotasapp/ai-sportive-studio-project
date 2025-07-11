@@ -218,4 +218,95 @@ export async function GET(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     }, { status: 500 });
   }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { action, tokenId, contractAddress } = body;
+
+    if (action === 'fallback_image' && tokenId !== undefined) {
+      console.log(`🔍 [FALLBACK] Buscando image fallback para contrato ${contractAddress || 'padrão'} token ${tokenId}...`);
+
+      const targetContract = contractAddress || NFT_CONTRACT_ADDRESS;
+
+      // Conectar ao MongoDB
+      const mongoClient = new MongoClient(MONGODB_URI);
+      await mongoClient.connect();
+      const db = mongoClient.db(DB_NAME);
+
+      // Buscar em todas as coleções por contractAddress + tokenId
+      const collections = ['jerseys', 'stadiums', 'badges'];
+      let foundImage = null;
+      let foundCollection = null;
+
+      for (const collectionName of collections) {
+        try {
+          const collection = db.collection(collectionName);
+          
+          // Buscar por contractAddress + tokenId
+          const query = {
+            tokenId: tokenId,
+            $or: [
+              { contractAddress: targetContract },
+              { 'blockchain.contractAddress': targetContract },
+              { contract: targetContract }
+            ]
+          };
+          
+          const nft = await collection.findOne(query);
+          
+          if (nft) {
+            // Tentar diferentes campos de imagem
+            const imageUrl = nft.imageHttp || nft.imageUrl || nft.image || nft.generatedImageUrl;
+            
+            if (imageUrl) {
+              foundImage = imageUrl;
+              foundCollection = collectionName;
+              console.log(`✅ [FALLBACK] Image encontrada na coleção ${collectionName}: ${imageUrl}`);
+              break;
+            } else {
+              console.log(`⚠️ [FALLBACK] NFT encontrada na coleção ${collectionName} mas sem imageUrl`);
+            }
+          }
+        } catch (collectionError) {
+          console.log(`⚠️ [FALLBACK] Erro na coleção ${collectionName}:`, collectionError);
+        }
+      }
+
+      await mongoClient.close();
+
+      if (foundImage) {
+        return NextResponse.json({
+          success: true,
+          imageUrl: foundImage,
+          source: 'mongodb_fallback',
+          collection: foundCollection,
+          tokenId,
+          contractAddress: targetContract
+        });
+      } else {
+        console.log(`❌ [FALLBACK] Nenhuma image encontrada para contrato ${targetContract} token ${tokenId}`);
+        return NextResponse.json({
+          success: false,
+          message: `Nenhuma image encontrada para contrato ${targetContract} token ${tokenId}`,
+          tokenId,
+          contractAddress: targetContract
+        });
+      }
+    }
+
+    return NextResponse.json({
+      success: false,
+      error: 'Invalid action or missing parameters'
+    }, { status: 400 });
+
+  } catch (error) {
+    console.error('❌ [FALLBACK] Error in POST handler:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Internal server error',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
+  }
 } 
