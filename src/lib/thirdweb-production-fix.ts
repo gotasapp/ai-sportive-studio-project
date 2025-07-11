@@ -28,7 +28,7 @@ interface ThirdwebDataCache {
 
 // Cache global para evitar múltiplas chamadas
 let globalCache: ThirdwebDataCache | null = null;
-const CACHE_DURATION = 1 * 60 * 1000; // 1 minuto - mais frequente para dados dinâmicos
+const CACHE_DURATION = 30 * 1000; // 30 segundos - dados ultra dinâmicos
 
 /**
  * FUNÇÃO PRINCIPAL: Busca dados da Thirdweb com fallback
@@ -47,9 +47,9 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
     console.log('🔧 NFT Contract:', NFT_CONTRACT_ADDRESS);
     console.log('🔧 Marketplace Contract:', MARKETPLACE_CONTRACT_ADDRESS);
     
-    // Timeout aumentado para garantir dados reais em produção
+    // Timeout otimizado - sabemos que Thirdweb funciona em ~3-5s
     const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 30000); // 30s timeout
+      setTimeout(() => reject(new Error('Thirdweb timeout in production')), 8000); // 8s timeout
     });
 
     const nftContract = getContract({
@@ -82,16 +82,18 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
       timestamp: Date.now()
     };
 
-    console.log('✅ Thirdweb data fetched successfully:', {
+    console.log('🚀 THIRDWEB SUCCESS! Real blockchain data:', {
       nfts: nfts.length,
       listings: listings.length,
-      auctions: auctions.length
+      auctions: auctions.length,
+      source: 'THIRDWEB_BLOCKCHAIN'
     });
 
     return globalCache;
 
   } catch (error) {
-    console.warn('⚠️ Thirdweb failed, using MongoDB fallback:', error);
+    console.warn('⚠️ THIRDWEB FAILED - Using MongoDB fallback:', error);
+    console.warn('📊 This means marketplace will show limited/static data');
     
     // Fallback: buscar dados do MongoDB
     return await getMongoDBFallbackData();
@@ -174,10 +176,11 @@ async function getMongoDBFallbackData(): Promise<ThirdwebDataCache> {
     // Atualizar cache
     globalCache = fallbackData;
 
-    console.log('✅ MongoDB fallback data prepared:', {
+    console.log('📊 MONGODB FALLBACK - Limited data:', {
       nfts: nfts.length,
       listings: listings.length,
-      auctions: auctions.length
+      auctions: auctions.length,
+      source: 'MONGODB_FALLBACK'
     });
 
     return fallbackData;

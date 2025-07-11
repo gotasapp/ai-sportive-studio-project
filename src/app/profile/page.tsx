@@ -130,7 +130,7 @@ export default function ProfilePage() {
   const [editedUsername, setEditedUsername] = useState('')
   const [showSettings, setShowSettings] = useState(false)
 
-  // Load user NFTs using robust fallback system
+  // Load user NFTs using dedicated API
   useEffect(() => {
     const fetchUserNFTs = async () => {
       if (!account?.address) return
@@ -142,128 +142,32 @@ export default function ProfilePage() {
       try {
         console.log('🎯 Fetching user NFTs for:', account.address)
 
-        // Use robust fallback system instead of direct Thirdweb calls
-        const thirdwebData = await getThirdwebDataWithFallback()
-        
-        // Determine data source for user feedback
-        const isThirdwebData = thirdwebData.timestamp > Date.now() - 10000
-        setDataSource(isThirdwebData ? 'thirdweb' : 'fallback')
+        // Use dedicated API for user NFTs with proper ownership check
+        const response = await fetch(`/api/profile/user-nfts?address=${account.address}`)
+        const result = await response.json()
 
-        const { nfts: allNFTs, listings: marketplaceListings, auctions: marketplaceAuctions } = thirdwebData
-
-        console.log(`✅ Found ${allNFTs.length} total NFTs`)
-        console.log(`✅ Found ${marketplaceListings.length} marketplace listings`)
-        console.log(`✅ Found ${marketplaceAuctions.length} marketplace auctions`)
-
-        // Filter marketplace data for our contract only
-        const ourContractListings = marketplaceListings.filter(listing => 
-          listing.assetContractAddress?.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
-        )
-        
-        const ourContractAuctions = marketplaceAuctions.filter(auction => 
-          auction.assetContractAddress?.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
-        )
-
-        // Create lookup maps by tokenId
-        const listingsByTokenId = new Map()
-        const auctionsByTokenId = new Map()
-        
-        ourContractListings.forEach(listing => {
-          const tokenId = listing.tokenId?.toString()
-          if (tokenId) {
-            listingsByTokenId.set(tokenId, listing)
-          }
-        })
-        
-        ourContractAuctions.forEach(auction => {
-          const tokenId = auction.tokenId?.toString()
-          if (tokenId) {
-            auctionsByTokenId.set(tokenId, auction)
-          }
-        })
-
-        console.log(`📋 Found ${ourContractListings.length} listings and ${ourContractAuctions.length} auctions from our contract`)
-
-        // Process user NFTs with marketplace status
-        const userOwnedNFTs: NFTItem[] = []
-
-        for (const nft of allNFTs) {
-          try {
-            const tokenId = nft.id?.toString()
-            if (!tokenId) continue
-            
-            // For fallback data, we'll simulate ownership check
-            let isUserOwned = false
-            let isUserListed = false
-            let nftStatus: 'owned' | 'listed' | 'created' = 'owned'
-            let nftPrice: string | undefined = undefined
-
-            // Check if user owns this NFT (simplified for fallback)
-            if (nft.owner?.toLowerCase() === account.address.toLowerCase()) {
-              isUserOwned = true
-            }
-
-            // Check if user listed this NFT
-            const listing = listingsByTokenId.get(tokenId)
-            if (listing && listing.creatorAddress?.toLowerCase() === account.address.toLowerCase()) {
-              isUserListed = true
-              nftStatus = 'listed'
-              nftPrice = listing.currencyValuePerToken?.displayValue || 
-                        `${(Number(listing.pricePerToken || 0) / 1e18).toFixed(2)} MATIC`
-              console.log(`📋 User has listing: NFT ${tokenId} for ${nftPrice}`)
-            }
-
-            // Check if user has this NFT in auction
-            const auction = auctionsByTokenId.get(tokenId)
-            if (auction && auction.creatorAddress?.toLowerCase() === account.address.toLowerCase()) {
-              isUserListed = true
-              nftStatus = 'listed'
-              const minBidWei = auction.minimumBidAmount || BigInt(0)
-              const minBidMatic = Number(minBidWei) / Math.pow(10, 18)
-              nftPrice = `${minBidMatic.toFixed(2)} MATIC`
-              console.log(`🏆 User has auction: NFT ${tokenId} with min bid ${nftPrice}`)
-            }
-
-            // For demonstration, include some NFTs for the user
-            // In production, this would be based on actual ownership
-            if (isUserOwned || isUserListed || Math.random() < 0.1) {
-              const metadata = nft.metadata || {}
-              const category = determineCategory(metadata)
-              
-              // Check if user created this NFT
-              const isCreatedByUser = 
-                (metadata.creator as any)?.toLowerCase() === account.address.toLowerCase() ||
-                (metadata.minted_by as any)?.toLowerCase() === account.address.toLowerCase() ||
-                (Array.isArray(metadata.attributes) && metadata.attributes.some((attr: any) => 
-                  (attr.trait_type?.toLowerCase() === 'creator' || 
-                   attr.trait_type?.toLowerCase() === 'minted_by') &&
-                  attr.value?.toLowerCase() === account.address.toLowerCase()
-                ))
-              
-              if (isCreatedByUser) {
-                nftStatus = 'created'
-              }
-              
-              const nftItem: NFTItem = {
-                id: `${NFT_CONTRACT_ADDRESS}-${tokenId}`,
-                name: metadata.name || `NFT #${tokenId}`,
-                imageUrl: convertIpfsToHttp(metadata.image || ''),
-                price: nftPrice,
-                status: nftStatus,
-                createdAt: new Date().toISOString(),
-                collection: category
-              }
-
-              userOwnedNFTs.push(nftItem)
-              console.log(`✅ Added user NFT: ${nftItem.name} (Token ID: ${tokenId}, Status: ${nftStatus})`)
-            }
-          } catch (error) {
-            console.warn(`⚠️ Could not process NFT ${nft.id}:`, error)
-          }
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to fetch user NFTs')
         }
 
-        console.log(`🎉 Found ${userOwnedNFTs.length} NFTs for user`)
-        setUserNFTs(userOwnedNFTs)
+        const { data } = result
+        setDataSource('thirdweb')
+
+        console.log(`✅ Found ${data.totalNFTs} NFTs for user`)
+        console.log(`📊 Breakdown: ${data.owned} owned, ${data.listed} listed, ${data.created} created`)
+
+        // Convert API response to NFTItem format
+        const userNFTs: NFTItem[] = data.nfts.map((nft: any) => ({
+          id: nft.id,
+          name: nft.name,
+          imageUrl: nft.imageUrl,
+          price: nft.price,
+          status: nft.status,
+          createdAt: nft.createdAt,
+          collection: nft.collection
+        }))
+
+        setUserNFTs(userNFTs)
 
       } catch (error) {
         console.error('❌ Error fetching user NFTs:', error)
