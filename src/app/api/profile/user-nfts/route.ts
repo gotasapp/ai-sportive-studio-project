@@ -6,6 +6,7 @@ import { polygonAmoy } from 'thirdweb/chains';
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 import { convertIpfsToHttp } from '@/lib/utils';
+import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 
 const MONGODB_URI = process.env.MONGODB_URI!;
 const DB_NAME = process.env.MONGODB_DB_NAME || 'chz-app-db';
@@ -71,6 +72,157 @@ function determineCategory(metadata: any): 'jerseys' | 'stadiums' | 'badges' {
   return 'jerseys';
 }
 
+// PRODUCTION-READY function using the same logic as marketplace
+async function fetchUserNFTsProductionReady(userAddress: string) {
+  console.log('🚀 Using PRODUCTION-READY marketplace logic for:', userAddress);
+
+  try {
+    // 🚀 Use the same robust system as marketplace
+    const thirdwebData = await getThirdwebDataWithFallback();
+    const { nfts, listings: marketplaceListings, auctions: marketplaceAuctions } = thirdwebData;
+
+    console.log(`✅ Found ${nfts.length} NFTs in contract using PRODUCTION system`);
+    console.log(`📋 Found ${marketplaceListings.length} total listings`);
+    console.log(`🏆 Found ${marketplaceAuctions.length} total auctions`);
+
+    // Filter only listings and auctions from our NFT contract
+    const ourContractListings = marketplaceListings.filter((listing: any) =>
+      listing.assetContractAddress?.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
+    );
+    
+    const ourContractAuctions = marketplaceAuctions.filter((auction: any) => 
+      auction.assetContractAddress?.toLowerCase() === NFT_CONTRACT_ADDRESS.toLowerCase()
+    );
+
+    // Create lookup maps for quick access
+    const listingsByTokenId = new Map();
+    const auctionsByTokenId = new Map();
+    
+    ourContractListings.forEach((listing: any) => {
+      const tokenId = listing.tokenId?.toString();
+      if (tokenId) {
+        listingsByTokenId.set(tokenId, listing);
+      }
+    });
+    
+    ourContractAuctions.forEach((auction: any) => {
+      const tokenId = auction.tokenId?.toString();
+      if (tokenId) {
+        auctionsByTokenId.set(tokenId, auction);
+      }
+    });
+
+    // Create contract instance for owner lookup (same as marketplace)
+    const nftContract = getContract({
+      client,
+      chain: polygonAmoy,
+      address: NFT_CONTRACT_ADDRESS,
+    });
+
+    // Process NFTs with MANUAL OWNER LOOKUP + MARKETPLACE DATA (same logic as marketplace)
+    console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
+    
+    const userNFTs = [];
+
+    for (const nft of nfts) {
+      try {
+        const tokenId = nft.id.toString();
+        const metadata = nft.metadata || {};
+
+        // MANUALLY FETCH OWNER using ownerOf function (same as marketplace)
+        let nftOwner = 'Unknown';
+        try {
+          nftOwner = await ownerOf({
+            contract: nftContract,
+            tokenId: BigInt(tokenId)
+          });
+        } catch (error) {
+          console.warn(`⚠️ Could not fetch owner for NFT #${tokenId}:`, error);
+          nftOwner = 'Unknown';
+        }
+
+        // Check if this user owns, listed, or auctioned this NFT
+        const isOwned = nftOwner.toLowerCase() === userAddress.toLowerCase();
+        
+        const marketplaceListing = listingsByTokenId.get(tokenId);
+        const isListed = marketplaceListing && marketplaceListing.creatorAddress?.toLowerCase() === userAddress.toLowerCase();
+        
+        const marketplaceAuction = auctionsByTokenId.get(tokenId);
+        const isAuctioned = marketplaceAuction && marketplaceAuction.creatorAddress?.toLowerCase() === userAddress.toLowerCase();
+
+        // Include NFT if user owns it, listed it, or has it in auction
+        if (isOwned || isListed || isAuctioned) {
+          let status = 'owned';
+          let price = undefined;
+          
+          if (isListed) {
+            status = 'listed';
+            price = marketplaceListing.currencyValuePerToken?.displayValue || 'Not for sale';
+          } else if (isAuctioned) {
+            status = 'listed';
+            const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
+            const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
+            price = `${minBidMatic.toFixed(2)} MATIC`;
+          }
+
+          // Check if user created this NFT
+          const isCreatedByUser = 
+            (metadata.creator as any)?.toLowerCase() === userAddress.toLowerCase() ||
+            (metadata.minted_by as any)?.toLowerCase() === userAddress.toLowerCase() ||
+            (Array.isArray(metadata.attributes) && metadata.attributes.some((attr: any) => 
+              (attr.trait_type?.toLowerCase() === 'creator' || 
+               attr.trait_type?.toLowerCase() === 'minted_by') &&
+              attr.value?.toLowerCase() === userAddress.toLowerCase()
+            ));
+          
+          if (isCreatedByUser) {
+            status = 'created';
+          }
+
+          userNFTs.push({
+            id: `${NFT_CONTRACT_ADDRESS}-${tokenId}`,
+            tokenId,
+            name: metadata.name || `NFT #${tokenId}`,
+            imageUrl: convertIpfsToHttp(metadata.image || ''),
+            price,
+            status,
+            createdAt: new Date().toISOString(),
+            collection: determineCategory(metadata),
+            owner: nftOwner,
+            isOwned,
+            isListed,
+            isAuctioned
+          });
+
+          console.log(`✅ User NFT found: ${metadata.name} (Token ID: ${tokenId}, Status: ${status})`);
+        }
+      } catch (error) {
+        console.warn(`⚠️ Error processing NFT ${nft.id}:`, error);
+      }
+    }
+
+    return {
+      userAddress,
+      nfts: userNFTs,
+      totalNFTs: userNFTs.length,
+      owned: userNFTs.filter(nft => nft.status === 'owned').length,
+      listed: userNFTs.filter(nft => nft.status === 'listed').length,
+      created: userNFTs.filter(nft => nft.status === 'created').length,
+      contractStats: {
+        totalNFTsInContract: nfts.length,
+        totalListings: ourContractListings.length,
+        totalAuctions: ourContractAuctions.length
+      },
+      source: 'production'
+    };
+
+  } catch (error) {
+    console.error('❌ Production fetch failed:', error);
+    throw error;
+  }
+}
+
+// Original Thirdweb-only function (kept as fallback)
 async function fetchUserNFTsFromThirdweb(userAddress: string) {
   console.log('🔄 Fetching fresh NFT data from Thirdweb for:', userAddress);
 
@@ -255,11 +407,11 @@ export async function GET(request: Request) {
       });
     }
 
-    console.log('⚠️ Cache miss - fetching from Thirdweb');
+    console.log('⚠️ Cache miss - fetching fresh data');
     
     try {
-      // Buscar dados frescos do Thirdweb
-      const freshData = await fetchUserNFTsFromThirdweb(userAddress);
+      // Use production-ready approach (same as marketplace)
+      const freshData = await fetchUserNFTsProductionReady(userAddress);
       
       // Salvar no cache
       const cacheDoc = {
@@ -280,48 +432,63 @@ export async function GET(request: Request) {
       return NextResponse.json({
         success: true,
         data: freshData,
-        source: 'thirdweb',
+        source: freshData.source || 'hybrid',
         cachedAt: new Date()
       });
 
-    } catch (thirdwebError) {
-      console.error('❌ Thirdweb error:', thirdwebError);
+    } catch (productionError) {
+      console.error('❌ Production fetch error:', productionError);
       
-      // Tentar cache expirado como fallback
-      const expiredCache = await cacheCollection.findOne({ key: cacheKey });
-      
-      if (expiredCache) {
-        console.log('🔄 Using expired cache as fallback');
+      // Fallback to Thirdweb-only approach
+      try {
+        console.log('🔄 Falling back to Thirdweb-only approach');
+        const thirdwebData = await fetchUserNFTsFromThirdweb(userAddress);
+        
         return NextResponse.json({
           success: true,
-          data: expiredCache.data,
-          source: 'expired_cache',
-          cachedAt: expiredCache.createdAt,
-          warning: 'Data may be outdated'
+          data: thirdwebData,
+          source: 'thirdweb_fallback',
+          warning: 'Using fallback method'
+        });
+      } catch (thirdwebError) {
+        console.error('❌ Thirdweb fallback also failed:', thirdwebError);
+        
+        // Try expired cache as last resort
+        const expiredCache = await cacheCollection.findOne({ key: cacheKey });
+        
+        if (expiredCache) {
+          console.log('🔄 Using expired cache as last resort');
+          return NextResponse.json({
+            success: true,
+            data: expiredCache.data,
+            source: 'expired_cache',
+            cachedAt: expiredCache.createdAt,
+            warning: 'Data may be outdated'
+          });
+        }
+
+        // Return empty result if everything fails
+        const emptyResult = {
+          userAddress,
+          nfts: [],
+          totalNFTs: 0,
+          owned: 0,
+          listed: 0,
+          created: 0,
+          contractStats: {
+            totalNFTsInContract: 0,
+            totalListings: 0,
+            totalAuctions: 0
+          }
+        };
+
+        return NextResponse.json({
+          success: true,
+          data: emptyResult,
+          source: 'error_fallback',
+          error: thirdwebError instanceof Error ? thirdwebError.message : 'Unknown error'
         });
       }
-
-      // Retornar resultado vazio se tudo falhar
-      const emptyResult = {
-        userAddress,
-        nfts: [],
-        totalNFTs: 0,
-        owned: 0,
-        listed: 0,
-        created: 0,
-        contractStats: {
-          totalNFTsInContract: 0,
-          totalListings: 0,
-          totalAuctions: 0
-        }
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: emptyResult,
-        source: 'error_fallback',
-        error: thirdwebError instanceof Error ? thirdwebError.message : 'Unknown error'
-      });
     }
 
   } catch (error) {
@@ -366,7 +533,7 @@ export async function POST(request: Request) {
 
     console.log('🔄 Populating cache for user:', userAddress);
 
-    const freshData = await fetchUserNFTsFromThirdweb(userAddress);
+    const freshData = await fetchUserNFTsProductionReady(userAddress);
     
     const client = await connectToDatabase();
     const db = client.db(DB_NAME);

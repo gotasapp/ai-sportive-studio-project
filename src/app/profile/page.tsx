@@ -25,6 +25,7 @@ import {
 } from 'lucide-react'
 import { AccountName } from '@/components/ui/account-name'
 import { ConnectedProfiles } from '@/components/profile/ConnectedProfiles'
+import { NFTDetailsModal } from '@/components/profile/NFTDetailsModal'
 import { useThirdwebProfiles } from '@/hooks/useThirdwebProfiles'
 import Header from '@/components/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -115,6 +116,10 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [editedUsername, setEditedUsername] = useState('')
   const [showSettings, setShowSettings] = useState(false)
+
+  // NFT Modal states
+  const [selectedNFT, setSelectedNFT] = useState<NFTItem | null>(null)
+  const [showNFTModal, setShowNFTModal] = useState(false)
 
   // REATIVANDO - Load user profile data com timeout
   useEffect(() => {
@@ -231,20 +236,20 @@ export default function ProfilePage() {
   /*
   useEffect(() => {
     if (account?.address) {
-      const defaultProfile: UserProfile = {
-        id: account.address,
+          const defaultProfile: UserProfile = {
+            id: account.address,
         username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
-        avatar: '',
-        walletAddress: account.address,
+            avatar: '',
+            walletAddress: account.address,
         joinedDate: new Date().toISOString(),
         totalNFTs: 0,
         totalSales: 0,
         totalPurchases: 0,
         balance: '0'
-      }
-      setUserProfile(defaultProfile)
-      setEditedUsername(defaultProfile.username)
-    }
+          }
+          setUserProfile(defaultProfile)
+          setEditedUsername(defaultProfile.username)
+        }
   }, [account?.address])
   */
 
@@ -356,6 +361,24 @@ export default function ProfilePage() {
     } catch (error) {
       console.error('Error resetting profile:', error)
     }
+  }
+
+  // NFT Modal handlers
+  const handleNFTClick = (nft: NFTItem) => {
+    console.log('🎯 NFT clicked:', nft.name, 'Token ID:', nft.id)
+    setSelectedNFT(nft)
+    setShowNFTModal(true)
+  }
+
+  // Extract tokenId from the composite ID (contractAddress-tokenId)
+  const getTokenIdFromCompositeId = (compositeId: string): string => {
+    const parts = compositeId.split('-')
+    return parts[parts.length - 1] // Get the last part (tokenId)
+  }
+
+  const handleCloseNFTModal = () => {
+    setShowNFTModal(false)
+    setSelectedNFT(null)
   }
 
   const getStatusBadge = (status: string) => {
@@ -584,7 +607,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <NFTGrid nfts={userNFTs} />
+                  <NFTGrid nfts={userNFTs} onNFTClick={handleNFTClick} />
                 )}
               </TabsContent>
               
@@ -623,7 +646,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <NFTGrid nfts={listedNFTs} />
+                  <NFTGrid nfts={listedNFTs} onNFTClick={handleNFTClick} />
                 )}
               </TabsContent>
               
@@ -662,7 +685,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
                 ) : (
-                  <NFTGrid nfts={createdNFTs} />
+                  <NFTGrid nfts={createdNFTs} onNFTClick={handleNFTClick} />
                 )}
               </TabsContent>
               
@@ -757,6 +780,14 @@ export default function ProfilePage() {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* NFT Details Modal */}
+        <NFTDetailsModal
+          isOpen={showNFTModal}
+          onClose={handleCloseNFTModal}
+          tokenId={selectedNFT ? getTokenIdFromCompositeId(selectedNFT.id) : ''}
+          nft={selectedNFT}
+        />
           </div>
         </RequireWallet>
       </div>
@@ -766,9 +797,10 @@ export default function ProfilePage() {
 
 interface NFTGridProps {
   nfts: NFTItem[]
+  onNFTClick?: (nft: NFTItem) => void
 }
 
-function NFTGrid({ nfts }: NFTGridProps) {
+function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       owned: "default",
@@ -801,15 +833,26 @@ function NFTGrid({ nfts }: NFTGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {nfts.map((nft) => (
-        <Card key={nft.id} className="bg-[#0b0518] border-gray-600 hover:border-[#A20131] transition-colors">
+        <Card 
+          key={nft.id} 
+          className="bg-[#0b0518] border-gray-600 hover:border-[#A20131] transition-colors cursor-pointer"
+          onClick={() => onNFTClick?.(nft)}
+        >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
-            <Image 
+            {nft.imageUrl ? (
+              <Image 
               src={nft.imageUrl} 
               alt={nft.name}
-              width={300}
-              height={300}
+                width={300}
+                height={300}
               className="w-full h-full object-cover"
             />
+            ) : (
+              <div className="w-full h-full bg-[#14101e] flex items-center justify-center">
+                {getCollectionIcon(nft.collection)}
+                <span className="ml-2 text-[#FDFDFD]/60 text-sm">No Image</span>
+              </div>
+            )}
             <div className="absolute top-2 right-2">
               {getStatusBadge(nft.status)}
             </div>

@@ -251,9 +251,11 @@ export default function ProfessionalBadgeCanvas({
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
             }}
           >
-            <img
+            <Image
               src={referenceImage}
               alt="Reference"
+              width={400}
+              height={600}
               className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#A20131]/50 rounded-lg"
             />
           </div>
@@ -266,10 +268,12 @@ export default function ProfessionalBadgeCanvas({
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`
           }}
         >
-          <img
+          <Image
             ref={imageRef}
             src={generatedImage || ''}
             alt="Generated Badge"
+            width={400}
+            height={600}
             className="max-w-full max-h-full object-contain rounded-lg shadow-2xl border border-[#333333]"
             draggable={false}
           />

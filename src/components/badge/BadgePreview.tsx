@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Award, Loader2 } from 'lucide-react'
@@ -46,9 +47,11 @@ export function BadgePreview({
                 </div>
               ) : imageUrl ? (
                 <div className="space-y-4">
-                  <img
+                  <Image
                     src={imageUrl}
                     alt={`Badge ${badgeName} #${badgeNumber} - ${teamName}`}
+                    width={400}
+                    height={600}
                     className="w-full h-full object-cover rounded-md cyber-glow"
                   />
                 </div>
