@@ -15,6 +15,7 @@ import os
 from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from pathlib import Path
+from datetime import datetime
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
@@ -99,6 +100,21 @@ class StadiumResponse(BaseModel):
     error: Optional[str] = None
     cost_usd: Optional[float] = None
     prompt_used: Optional[str] = None
+
+# --- MODELOS DE DADOS PARA REFERÊNCIA ---
+class GenerateFromReferenceRequest(BaseModel):
+    teamName: str
+    player_name: str
+    player_number: str
+    quality: str = "standard"
+    sport: str = "soccer"
+    view: str = "back"
+
+class ReferenceGenerationResponse(BaseModel):
+    success: bool
+    image_url: Optional[str] = None
+    prompt: Optional[str] = None
+    error: Optional[str] = None
 
 # --- GERADOR DE JERSEYS ---
 class JerseyGenerator:
@@ -591,6 +607,69 @@ async def health_check():
         health_status["badge_generator"] = "not_available"
     
     return health_status
+
+# NOVO ENDPOINT DE GERAÇÃO POR REFERÊNCIA
+@app.post("/generate-jersey-from-reference", response_model=ReferenceGenerationResponse)
+async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
+    """
+    Gera uma jersey usando uma referência de time pelo nome.
+    Esta é a nova rota padrão para a geração via UI.
+    """
+    try:
+        print(f"✅ [REFERENCE FLOW] Received request for team: {request.teamName}")
+        
+        # O model_id aqui é derivado do teamName para reutilizar a lógica existente
+        # Ex: "Flamengo" -> "flamengo_classic_2024" (um ID de modelo hipotético)
+        # A lógica em JerseyGenerator._get_team_name_from_model_id extrai "flamengo"
+        model_id_simulado = f"{request.teamName.lower().replace(' ', '')}_ref"
+        
+        generator = JerseyGenerator()
+        
+        # Reutilizando a classe ImageGenerationRequest da rota /generate
+        gen_request = ImageGenerationRequest(
+            model_id=model_id_simulado,
+            player_name=request.player_name,
+            player_number=request.player_number,
+            quality=request.quality
+        )
+        
+        # A função generate_image agora retorna a imagem em base64, mas a original retornava URL
+        # Para manter a consistência com o que a ponte espera, vamos adaptar a lógica
+        # (Idealmente, JerseyGenerator.generate_image seria refatorado para retornar um dict)
+        
+        team_name = generator._get_team_name_from_model_id(gen_request.model_id)
+        if team_name not in generator.team_prompts:
+            raise ValueError(f"Time '{team_name}' não tem prompt configurado")
+        
+        prompt_template = generator.team_prompts[team_name]
+        final_prompt = prompt_template.format(
+            PLAYER_NAME=gen_request.player_name.upper(),
+            PLAYER_NUMBER=gen_request.player_number
+        )
+        
+        print(f"INFO: [REFERENCE FLOW] Generating {team_name} with prompt: {final_prompt[:100]}...")
+        
+        generation_response = generator.client.images.generate(
+            model="dall-e-3",
+            prompt=final_prompt,
+            size="1024x1024",
+            quality=gen_request.quality,
+            n=1
+        )
+        
+        image_url = generation_response.data[0].url
+        print(f"✅ [REFERENCE FLOW] Image generated successfully: {image_url}")
+        
+        return ReferenceGenerationResponse(
+            success=True,
+            image_url=image_url,
+            prompt=final_prompt
+        )
+
+    except Exception as e:
+        print(f"❌ [REFERENCE FLOW] Error: {str(e)}")
+        return ReferenceGenerationResponse(success=False, error=str(e))
+
 
 if __name__ == "__main__":
     import uvicorn

@@ -7,190 +7,377 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
-  Building, Search, Filter, MoreHorizontal, Download, RefreshCw 
+  Building, Search, Filter, MoreHorizontal, Download, RefreshCw, Loader2,
+  Plus, Upload, Edit, Settings, ImageIcon, X
 } from 'lucide-react'
+import { 
+  Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger 
+} from '@/components/ui/dialog'
+import { 
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
+} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-// Definindo o tipo de Stadium com base na API
+// Interfaces para Team References (reutilizáveis)
+interface ReferenceImage {
+  id: string;
+  url: string;
+  filename: string;
+  uploadedAt: Date;
+  description?: string;
+  isPrimary?: boolean;
+  metadata?: object;
+}
+
+interface TeamReference {
+  _id?: string;
+  teamName: string;
+  category: 'jersey' | 'stadium' | 'badge';
+  referenceImages: ReferenceImage[];
+  teamBasePrompt: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Adaptação para uma lista de Stadiums genérica, pode ser expandido depois
 interface Stadium {
   id: string;
   name: string;
-  creator?: {
-    name: string;
-    wallet: string;
-  };
   createdAt: string;
-  status: 'Minted' | 'Pending' | 'Error';
   imageUrl: string;
-  mintCount: number;
-  editionSize: number;
-}
-
-const statusColors: { [key in Stadium['status']]: string } = {
-  Minted: 'bg-green-500/20 text-green-400 border-green-500/30',
-  Pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  Error: 'bg-red-500/20 text-red-400 border-red-500/30'
 }
 
 export default function StadiumsPage() {
+  // Estados para lista principal (pode ser usado para stadiums gerados no futuro)
   const [stadiums, setStadiums] = useState<Stadium[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
+  
+  // Estados para Team References
+  const [teamReferences, setTeamReferences] = useState<TeamReference[]>([]);
+  const [referencesLoading, setReferencesLoading] = useState(true);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showUploadImageDialog, setShowUploadImageDialog] = useState(false);
+  const [selectedForUpload, setSelectedForUpload] = useState<string>('');
+  const [newName, setNewName] = useState('');
+  const [newPrompt, setNewPrompt] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  // Estados para Edit Dialog
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingItem, setEditingItem] = useState<TeamReference | null>(null);
+  const [editedPrompt, setEditedPrompt] = useState('');
+
+  const API_ENDPOINT = '/api/admin/stadiums/references';
 
   useEffect(() => {
-    const fetchStadiums = async () => {
-      setLoading(true);
-      setError(null);
+    const fetchTeamReferences = async () => {
+      setReferencesLoading(true);
       try {
-        const response = await fetch('/api/admin/stadiums');
+        const response = await fetch(API_ENDPOINT);
         if (!response.ok) {
-          throw new Error('Failed to fetch stadiums');
+          throw new Error('Failed to fetch stadium references');
         }
-        const data: Stadium[] = await response.json();
-        setStadiums(data);
+        const data = await response.json();
+        setTeamReferences(data.data || []);
       } catch (err: any) {
-        setError(err.message);
+        console.error('Error fetching stadium references:', err);
       } finally {
-        setLoading(false);
+        setReferencesLoading(false);
       }
     };
 
-    fetchStadiums();
+    fetchTeamReferences();
+    // A busca de stadiums gerados pode ser implementada aqui quando a API estiver pronta
+    setLoading(false); 
   }, []);
 
-  const filteredStadiums = stadiums.filter(stadium => {
-    const matchesSearch = stadium.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (stadium.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (stadium.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || stadium.status === filterStatus
-    
-    return matchesSearch && matchesStatus;
-  })
+  const refreshReferences = async () => {
+    setReferencesLoading(true);
+    try {
+      const response = await fetch(API_ENDPOINT);
+      const data = await response.json();
+      setTeamReferences(data.data || []);
+    } finally {
+      setReferencesLoading(false);
+    }
+  };
 
-  const renderSkeleton = () => (
-    Array.from({ length: 4 }).map((_, i) => (
-       <tr key={`skel-${i}`} className="border-b border-gray-800">
-         <td className="p-4"><div className="h-10 w-10 bg-gray-700 rounded-md animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-40 bg-gray-700 rounded animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-32 bg-gray-700 rounded animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-24 bg-gray-700 rounded animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-16 bg-gray-700 rounded animate-pulse"></div></td>
-       </tr>
-    ))
-  );
+  const handleCreate = async () => {
+    if (!newName.trim() || !newPrompt.trim()) {
+      alert('Please fill in all fields');
+      return;
+    }
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teamName: newName.trim(),
+          teamBasePrompt: newPrompt.trim(),
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create stadium reference');
+      }
+
+      await refreshReferences();
+      setNewName('');
+      setNewPrompt('');
+      setShowCreateDialog(false);
+      alert('Stadium reference created successfully!');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
+
+  const handleUploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !selectedForUpload) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('teamName', selectedForUpload);
+      formData.append('description', `Reference image for ${selectedForUpload}`);
+
+      const response = await fetch(`${API_ENDPOINT}?action=add-image`, {
+        method: 'PATCH',
+        body: formData
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload image');
+      }
+
+      await refreshReferences();
+      setShowUploadImageDialog(false);
+      setSelectedForUpload('');
+      alert('Image uploaded successfully!');
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleOpenEditDialog = (item: TeamReference) => {
+    setEditingItem(item);
+    setEditedPrompt(item.teamBasePrompt);
+    setShowEditDialog(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!editingItem || !editedPrompt.trim()) {
+      alert('Prompt cannot be empty');
+      return;
+    }
+
+    try {
+      const response = await fetch(API_ENDPOINT, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          teamId: editingItem._id,
+          teamBasePrompt: editedPrompt.trim()
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update stadium reference');
+      }
+
+      await refreshReferences();
+      setShowEditDialog(false);
+      setEditingItem(null);
+      setEditedPrompt('');
+      alert('Stadium reference updated successfully!');
+    } catch (error: any) {
+      alert(error.message);
+    }
+  };
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-200">Stadium Management</h1>
-          <p className="text-gray-400 mt-2">Browse, review, and manage all generated stadiums.</p>
+          <p className="text-gray-400 mt-2">Manage stadium references, base prompts, and reference images.</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" className="border-cyan-500/30">
-            <Download className="w-4 h-4 mr-2" />
-            Export Data
-          </Button>
-          <Button className="cyber-button" onClick={() => window.location.reload()}>
+        <Button className="cyber-button" onClick={refreshReferences}>
             <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
+          Refresh Data
           </Button>
-        </div>
       </div>
       
-      {/* Filters */}
       <Card className="cyber-card border-cyan-500/30">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search by name, creator, or wallet..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
-              </div>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-gray-200 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Stadium References
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Manage references for Vision Generation
+              </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="h-4 w-4 text-gray-400" />
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input">
-                <option value="all">All Statuses</option>
-                <option value="Minted">Minted</option>
-                <option value="Pending">Pending</option>
-                <option value="Error">Error</option>
-              </select>
+            <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+              <DialogTrigger asChild>
+                <Button className="cyber-button">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Stadium
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-gray-200">Create New Stadium Reference</DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Add a new stadium with a base prompt for generation.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="newName" className="text-gray-200">Stadium Name</Label>
+                    <Input id="newName" value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="e.g., Maracanã" className="cyber-input" />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="newPrompt" className="text-gray-200">Base Prompt</Label>
+                    <Textarea id="newPrompt" value={newPrompt} onChange={(e) => setNewPrompt(e.target.value)} placeholder="Base prompt for this stadium..." className="cyber-input min-h-[100px]" />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+                  <Button onClick={handleCreate} className="cyber-button">Create</Button>
             </div>
+              </DialogContent>
+            </Dialog>
           </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="references" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+              <TabsTrigger value="references" className="data-[state=active]:bg-cyan-500/20">Stadiums</TabsTrigger>
+              <TabsTrigger value="images" className="data-[state=active]:bg-cyan-500/20">Images</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="references" className="space-y-4 pt-4">
+              {referencesLoading ? (
+                <div className="flex items-center justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-cyan-400" /><span className="ml-2 text-gray-400">Loading...</span></div>
+              ) : (
+                <div className="grid gap-4">
+                  {teamReferences.map((item) => (
+                    <Card key={item._id} className="cyber-card border-gray-700">
+                      <CardContent className="pt-6">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-gray-200">{item.teamName}</h3>
+                              <Badge variant="outline" className="text-xs">{item.referenceImages.length} images</Badge>
+                            </div>
+                            <p className="text-sm text-gray-400 mb-3">{item.teamBasePrompt}</p>
+                            <div className="flex flex-wrap gap-2">
+                              {item.referenceImages.slice(0, 5).map((img) => (
+                                <div key={img.id} className="relative w-12 h-12 rounded-md overflow-hidden"><Image src={img.url} alt={img.filename} fill className="object-cover" /></div>
+                              ))}
+                              {item.referenceImages.length > 5 && (
+                                <div className="w-12 h-12 rounded-md bg-gray-700 flex items-center justify-center"><span className="text-xs text-gray-400">+{item.referenceImages.length - 5}</span></div>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={() => { setSelectedForUpload(item.teamName); setShowUploadImageDialog(true); }}>
+                              <Upload className="w-4 h-4" />
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(item)}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="images" className="space-y-4 pt-4">
+               <Dialog open={showUploadImageDialog} onOpenChange={setShowUploadImageDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="cyber-button w-full">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload New Image
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
+                    <DialogHeader>
+                      <DialogTitle className="text-gray-200">Upload Reference Image</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="teamSelect" className="text-gray-200">Select Stadium</Label>
+                        <Select value={selectedForUpload} onValueChange={setSelectedForUpload}>
+                          <SelectTrigger className="cyber-input"><SelectValue placeholder="Choose a stadium" /></SelectTrigger>
+                          <SelectContent className="bg-gray-900 border-gray-700">
+                            {teamReferences.map((team) => (<SelectItem key={team._id} value={team.teamName}>{team.teamName}</SelectItem>))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="imageFile" className="text-gray-200">Image File</Label>
+                        <Input id="imageFile" type="file" accept="image/*" onChange={handleUploadImage} className="cyber-input" disabled={uploadingImage} />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowUploadImageDialog(false)}>Cancel</Button>
+                      <Button disabled={!selectedForUpload || uploadingImage} className="cyber-button">
+                        {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {teamReferences.flatMap(team => team.referenceImages.map(img => (
+                  <Card key={img.id} className="cyber-card border-gray-700">
+                    <CardContent className="p-2">
+                      <div className="relative aspect-square rounded-md overflow-hidden mb-2"><Image src={img.url} alt={img.filename} fill className="object-cover" /></div>
+                      <p className="text-xs font-medium text-gray-200 truncate">{team.teamName}</p>
+                    </CardContent>
+                  </Card>
+                )))}
+          </div>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
-      {/* Stadiums Table */}
-      <Card className="cyber-card border-cyan-500/30">
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-800 text-gray-400">
-                  <th className="p-4 font-medium">Preview</th>
-                  <th className="p-4 font-medium">NFT Name</th>
-                  <th className="p-4 font-medium">Creator</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Mint Progress</th>
-                  <th className="p-4 font-medium">Created At</th>
-                  <th className="p-4 font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading ? renderSkeleton() : filteredStadiums.map(stadium => (
-                   <tr key={stadium.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                     <td className="p-4">
-                       <Image src={stadium.imageUrl} alt={stadium.name} width={40} height={40} className="rounded-md" />
-                     </td>
-                     <td className="p-4 font-medium text-white">{stadium.name}</td>
-                     <td className="p-4">
-                       <div className="text-white">{stadium.creator?.name || 'Unknown'}</div>
-                       <div className="text-gray-400 text-xs">{stadium.creator?.wallet || 'Unknown'}</div>
-                     </td>
-                     <td className="p-4">
-                       <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>{stadium.status}</Badge>
-                     </td>
-                     <td className="p-4">
-                        <div className="text-white">{stadium.mintCount} / {stadium.editionSize}</div>
-                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-                            <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(stadium.mintCount / stadium.editionSize) * 100}%`}}></div>
-                        </div>
-                     </td>
-                     <td className="p-4 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
-                     <td className="p-4">
-                       <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
-                     </td>
-                   </tr>
-                ))}
-              </tbody>
-            </table>
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-gray-200">Edit: {editingItem?.teamName}</DialogTitle>
+            <DialogDescription className="text-gray-400">Update the base prompt.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="editPrompt" className="text-gray-200">Base Prompt</Label>
+              <Textarea id="editPrompt" value={editedPrompt} onChange={(e) => setEditedPrompt(e.target.value)} className="cyber-input min-h-[150px]" />
+            </div>
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowEditDialog(false)}>Cancel</Button>
+            <Button onClick={handleUpdate} className="cyber-button">Save Changes</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
-
-// Adicionando media queries para responsividade
-;<style jsx>{`
-  @media (max-width: 768px) {
-    .flex-col {
-      flex-direction: column;
-    }
-    .text-3xl {
-      font-size: 1.5rem;
-    }
-    .p-4 {
-      padding: 1rem;
-    }
-    .space-y-8 > :not([hidden]) ~ :not([hidden]) {
-      --tw-space-y-reverse: 0;
-      margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
-      margin-bottom: calc(2rem * var(--tw-space-y-reverse));
-    }
-  }
-`}</style>

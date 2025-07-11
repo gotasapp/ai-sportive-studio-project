@@ -344,8 +344,7 @@ export default function JerseyEditor() {
         type: typeof finalResult,
         isObject: typeof finalResult === 'object',
         hasData: !!finalResult,
-        preview: typeof finalResult === 'object' ? JSON.stringify(finalResult).substring(0, 100) + '...' : String(finalResult).substring(0, 100) + '...',
-        backupStored: true
+        preview: typeof finalResult === 'object' ? JSON.stringify(finalResult).substring(0, 100) + '...' : String(finalResult).substring(0, 100) + '...'
       })
 
     } catch (error: any) {
@@ -1071,63 +1070,46 @@ Design based on analysis: ${analysisText}`
         console.log('🎉 [VISION GENERATION] Complete vision-test flow completed successfully!')
         
       } else {
-        // ==================================================================
-        // AQUI ESTÁ A MUDANÇA: USAR A NOVA API DE REFERÊNCIA
-        // ==================================================================
-        console.log('✅ [STANDARD FLOW] Starting standard generation using an existing team reference...');
+        console.log('🎨 STANDARD MODE: Using original system')
         
-        const response = await fetch('/api/generate-from-reference', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            teamName: selectedTeam,
-            player_name: playerName,
-            player_number: playerNumber,
-            quality: quality,
-            // Estes são valores padrão, pois a UI do modo standard não os possui.
-            // A API Python pode ou não usá-los, mas a "ponte" espera por eles.
-            sport: 'soccer',
-            view: 'back'
-          }),
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate content');
-        }
-
-        const data = await response.json();
+        // Original system request
+        const request = {
+          model_id: selectedTeam,
+          player_name: playerName,
+          player_number: playerNumber,
+          quality: quality,
+        };
         
-        // A rota /generate-from-reference retorna a URL da imagem diretamente.
-        // Precisamos buscar a imagem e convertê-la para base64 para consistência na UI.
-        if (data.success && data.image_url) {
-          console.log('[STANDARD FLOW] Image URL received:', data.image_url);
-          console.log('[STANDARD FLOW] Fetching image to convert to base64...');
-          const imageResponse = await fetch(data.image_url);
-          if (!imageResponse.ok) {
-            throw new Error('Failed to download the generated image from URL.');
-          }
-          const imageBlob = await imageResponse.blob();
+        console.log('Generating image with request data:', request)
+        const result = await Dalle3Service.generateImage(request)
+        console.log('DALL-E 3 Result:', result)
+        
+        if (result.success && result.image_base64) {
+          setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
           
-          const reader = new FileReader();
-          reader.readAsDataURL(imageBlob);
-          reader.onloadend = () => {
-            const base64data = reader.result as string;
-            setGeneratedImage(base64data.split(',')[1]); // Remove o prefixo "data:..."
-          };
+          const response = await fetch(`data:image/png;base64,${result.image_base64}`)
+          const blob = await response.blob()
+          setGeneratedImageBlob(blob);
 
-          setGeneratedImageBlob(imageBlob);
-          // O custo não é retornado por esta rota, então o definimos como o padrão.
-          setGenerationCost(quality === 'hd' ? 0.08 : 0.04); 
+          // Save to DB with standard metadata
+          await saveJerseyToDB({
+            name: `${selectedTeam} ${playerName} #${playerNumber}`,
+            prompt: JSON.stringify(request),
+            imageUrl: `data:image/png;base64,${result.image_base64}`,
+            creatorWallet: address || "N/A",
+            tags: [selectedTeam, selectedStyle],
+            metadata: {
+              generationMode: 'standard'
+            }
+          }, blob);
+
         } else {
-          throw new Error(data.error || 'Unknown error during image generation.');
+          throw new Error(result.error || 'Image generation failed, no image data returned from API.')
         }
       }
     } catch (err: any) {
-      console.error('❌ Generation Error:', err)
-      setError(err.message || 'An unknown error occurred during generation.')
+      console.error('Generation failed:', err)
+      setError(err.message || 'An unexpected error occurred.')
     } finally {
       setIsLoading(false)
     }
@@ -1267,29 +1249,13 @@ Design based on analysis: ${analysisText}`
   useEffect(() => {
     const loadTeams = async () => {
       try {
-        // CORREÇÃO: Chamar a nova API de referências do banco de dados
-        console.log('🔄 Loading teams from new reference API...');
-        const response = await fetch('/api/admin/jerseys/references');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch teams: ${response.statusText}`);
-        }
-        const data = await response.json();
-
-        // A API retorna { success: true, data: [...] }
-        // Extrair apenas os nomes dos times do array 'data'
-        if (data.success && Array.isArray(data.data)) {
-          const teamNames = data.data.map((team: any) => team.teamName);
-          console.log(`✅ Loaded ${teamNames.length} teams from DB references.`);
-          setAvailableTeams(teamNames);
-          if (teamNames.length > 0) {
-            setSelectedTeam(teamNames[0]);
-          }
-        } else {
-           throw new Error('Invalid data structure from teams API.');
+        const teams = await Dalle3Service.getAvailableTeams();
+        if (teams.length > 0) {
+          setAvailableTeams(teams);
+          setSelectedTeam(teams[0] || '');
         }
       } catch (err: any) {
-        console.error('❌ Error loading teams from new API:', err);
-        // Manter o fallback em caso de erro na API
+        console.error('Error loading teams:', err);
         const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
         setAvailableTeams(defaultTeams);
         setSelectedTeam(defaultTeams[0]);
