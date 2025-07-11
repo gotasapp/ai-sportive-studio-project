@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Summary statistics
-    const summary = {
+    const summary: any = {
       totalNFTs: debugResults.length,
       nftsWithImages: debugResults.filter(nft => nft.hasImage).length,
       ipfsImages: debugResults.filter(nft => nft.isIpfs).length,
