@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 from datetime import datetime
+import pymongo
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
@@ -30,6 +31,26 @@ except ImportError as e:
     BADGES_AVAILABLE = False
 
 load_dotenv()
+
+# --- Conexão MongoDB ---
+DB_NAME = "chz-app-db" # Nome do banco de dados principal
+MONGO_URI = os.getenv("MONGODB_URI_PROD")
+db_client = None
+db = None
+
+try:
+    if not MONGO_URI:
+        print("⚠️ MONGODB_URI_PROD não encontrada no .env. As operações de banco de dados estarão desativadas.")
+    else:
+        print("⚙️ Conectando ao MongoDB...")
+        db_client = pymongo.MongoClient(MONGO_URI)
+        # Testa a conexão para garantir que está funcionando
+        db_client.admin.command('ping')
+        db = db_client[DB_NAME]
+        print(f"✅ Conexão com o MongoDB estabelecida com sucesso ao banco '{DB_NAME}'.")
+except Exception as e:
+    print(f"❌ Falha na conexão com o MongoDB: {e}")
+    db = None # Garante que 'db' é None se a conexão falhar
 
 # Configurações
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
@@ -608,57 +629,55 @@ async def health_check():
     
     return health_status
 
-# NOVO ENDPOINT DE GERAÇÃO POR REFERÊNCIA
+# ENDPOINT DE GERAÇÃO POR REFERÊNCIA ATUALIZADO
 @app.post("/generate-jersey-from-reference", response_model=ReferenceGenerationResponse)
 async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
     """
-    Gera uma jersey usando uma referência de time pelo nome.
-    Esta é a nova rota padrão para a geração via UI.
+    Gera uma jersey usando uma referência de time do MongoDB.
     """
     try:
-        print(f"✅ [REFERENCE FLOW] Received request for team: {request.teamName}")
+        print(f"✅ [DB FLOW] Received request for team: {request.teamName}")
+
+        if not db:
+            raise HTTPException(status_code=500, detail="A conexão com o banco de dados não está disponível.")
+
+        # 1. Buscar a referência do time no MongoDB
+        print(f"🔍 [DB FLOW] Buscando referência para '{request.teamName}' no MongoDB...")
+        references_collection = db["team_references"]
         
-        # O model_id aqui é derivado do teamName para reutilizar a lógica existente
-        # Ex: "Flamengo" -> "flamengo_classic_2024" (um ID de modelo hipotético)
-        # A lógica em JerseyGenerator._get_team_name_from_model_id extrai "flamengo"
-        model_id_simulado = f"{request.teamName.lower().replace(' ', '')}_ref"
-        
-        generator = JerseyGenerator()
-        
-        # Reutilizando a classe ImageGenerationRequest da rota /generate
-        gen_request = ImageGenerationRequest(
-            model_id=model_id_simulado,
-            player_name=request.player_name,
-            player_number=request.player_number,
-            quality=request.quality
-        )
-        
-        # A função generate_image agora retorna a imagem em base64, mas a original retornava URL
-        # Para manter a consistência com o que a ponte espera, vamos adaptar a lógica
-        # (Idealmente, JerseyGenerator.generate_image seria refatorado para retornar um dict)
-        
-        team_name = generator._get_team_name_from_model_id(gen_request.model_id)
-        if team_name not in generator.team_prompts:
-            raise ValueError(f"Time '{team_name}' não tem prompt configurado")
-        
-        prompt_template = generator.team_prompts[team_name]
+        # Usando 'teamName' para corresponder ao schema do Next.js
+        team_reference = references_collection.find_one({"teamName": request.teamName})
+
+        if not team_reference:
+            raise HTTPException(status_code=404, detail=f"Referência para o time '{request.teamName}' não encontrada no banco de dados.")
+
+        prompt_template = team_reference.get("teamBasePrompt")
+        if not prompt_template:
+            raise HTTPException(status_code=404, detail=f"O 'teamBasePrompt' para o time '{request.teamName}' está vazio ou não foi encontrado.")
+
+        print("✅ [DB FLOW] Referência encontrada. Usando teamBasePrompt do banco de dados.")
+
+        # 2. Preparar e gerar a imagem com o prompt do DB
         final_prompt = prompt_template.format(
-            PLAYER_NAME=gen_request.player_name.upper(),
-            PLAYER_NUMBER=gen_request.player_number
+            PLAYER_NAME=request.player_name.upper(),
+            PLAYER_NUMBER=request.player_number
         )
         
-        print(f"INFO: [REFERENCE FLOW] Generating {team_name} with prompt: {final_prompt[:100]}...")
+        print(f"INFO: [DB FLOW] Generating image with prompt: {final_prompt[:100]}...")
         
-        generation_response = generator.client.images.generate(
+        # Reutilizando a lógica do OpenAI client (pode ser instanciado uma vez no topo)
+        openai_client = OpenAI(api_key=OPENAI_API_KEY)
+        
+        generation_response = openai_client.images.generate(
             model="dall-e-3",
             prompt=final_prompt,
             size="1024x1024",
-            quality=gen_request.quality,
+            quality=request.quality,
             n=1
         )
         
         image_url = generation_response.data[0].url
-        print(f"✅ [REFERENCE FLOW] Image generated successfully: {image_url}")
+        print(f"✅ [DB FLOW] Image generated successfully: {image_url}")
         
         return ReferenceGenerationResponse(
             success=True,
@@ -667,8 +686,10 @@ async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
         )
 
     except Exception as e:
-        print(f"❌ [REFERENCE FLOW] Error: {str(e)}")
-        return ReferenceGenerationResponse(success=False, error=str(e))
+        print(f"❌ [DB FLOW] Error: {str(e)}")
+        # Extrair a mensagem do HTTPException se for o caso
+        error_detail = getattr(e, 'detail', str(e))
+        return ReferenceGenerationResponse(success=False, error=error_detail)
 
 
 if __name__ == "__main__":

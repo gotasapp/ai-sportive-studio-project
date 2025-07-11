@@ -16,6 +16,8 @@ from dotenv import load_dotenv
 from typing import Optional, Dict, Any, List
 from pathlib import Path
 import json
+import pymongo # Adicionar import
+from datetime import datetime # Adicionar import
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
@@ -27,6 +29,25 @@ from generate_image import router as generate_image_router
 from vision_prompts.base_prompts import compose_vision_enhanced_prompt
 
 load_dotenv()
+
+# --- Conexão MongoDB ---
+DB_NAME = "chz-app-db" # Nome do banco de dados principal
+MONGO_URI = os.getenv("MONGODB_URI") # CORRIGIDO para o nome da sua variável
+db_client = None
+db = None
+
+try:
+    if not MONGO_URI:
+        print("⚠️ MONGODB_URI não encontrada no .env. As operações de banco de dados estarão desativadas.")
+    else:
+        print("⚙️ Conectando ao MongoDB...")
+        db_client = pymongo.MongoClient(MONGO_URI)
+        db_client.admin.command('ping')
+        db = db_client[DB_NAME]
+        print(f"✅ Conexão com o MongoDB estabelecida com sucesso ao banco '{DB_NAME}'.")
+except Exception as e:
+    print(f"❌ Falha na conexão com o MongoDB: {e}")
+    db = None
 
 # --- FUNÇÃO PARA GERAR PROMPTS DALLE-3 OTIMIZADOS ---
 def generate_dalle_prompt_from_analysis(analysis_result: dict, player_name: str, player_number: str) -> str:
@@ -271,6 +292,20 @@ class VisionEnhancedGenerationRequest(BaseModel):
     quality: str = "standard"
     generation_mode: str = "vision_enhanced"
     vision_analysis: Optional[Dict[str, Any]] = None
+
+class GenerateFromReferenceRequest(BaseModel):
+    teamName: str
+    player_name: str
+    player_number: str
+    quality: str = "standard"
+    sport: str = "soccer"
+    view: str = "back"
+
+class ReferenceGenerationResponse(BaseModel):
+    success: bool
+    image_url: Optional[str] = None
+    prompt: Optional[str] = None
+    error: Optional[str] = None
 
 class CompleteVisionFlowRequest(BaseModel):
     image_base64: str
@@ -1428,15 +1463,37 @@ async def analyze_image_endpoint(request: VisionAnalysisRequest):
 # --- HEALTH CHECK ---
 @app.get("/health")
 async def health_check():
-    return {
-        "status": "ok",
-        "jersey_generator": "operational",
-        "stadium_generator": "operational",
-        "vision_analysis": "operational",
-        "openai": "connected",
-        "openrouter": "connected" if OPENROUTER_API_KEY else "not_configured"
-    }
+    return {"status": "ok", "timestamp": datetime.now()}
 
+@app.get("/test-connection")
+async def test_connection():
+    """Endpoint de teste para verificar a conexão do servidor."""
+    print("✅ /test-connection endpoint foi acessado com sucesso!")
+    return {"message": "Conexão com o servidor Python (main.py) bem-sucedida!"}
+
+@app.post("/generate-jersey-from-reference") # Removido response_model para depuração
+async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
+    """
+    [MODO DE DEPURACÃO] Endpoint simplificado para testar o roteamento.
+    """
+    print("✅✅✅ [DEBUG] Rota /generate-jersey-from-reference FOI ALCANÇADA! ✅✅✅")
+    
+    try:
+        team_name = request.teamName
+        print(f"✅ [DEBUG] Time recebido: {team_name}")
+        
+        return {
+            "success": True,
+            "image_url": "https://raw.githubusercontent.com/Sportheca/chz-fan-token-studio/main/api/image_references/flamengo/flamengo_1981_front.jpg", # URL de placeholder
+            "prompt": f"Debug prompt for {team_name}",
+            "error": None
+        }
+
+    except Exception as e:
+        print(f"❌❌❌ [DEBUG] ERRO DENTRO DA ROTA: {e} ❌❌❌")
+        raise HTTPException(status_code=500, detail=f"Erro no modo de depuração: {e}")
+
+# --- PONTO DE ENTRADA DA APLICAÇÃO ---
 if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Unified API (Jerseys + Stadiums) on port 8000")
