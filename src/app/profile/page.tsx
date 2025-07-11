@@ -2,11 +2,6 @@
 
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useState, useEffect } from 'react'
-import { useReadContract } from 'thirdweb/react'
-import { getContract, createThirdwebClient } from 'thirdweb'
-import { polygonAmoy } from 'thirdweb/chains'
-import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721'
-import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -34,7 +29,6 @@ import Header from '@/components/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { RequireWallet } from '@/components/RequireWallet'
-import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix'
 
 interface UserProfile {
   id: string
@@ -57,15 +51,6 @@ interface NFTItem {
   createdAt: string
   collection: 'jerseys' | 'stadiums' | 'badges'
 }
-
-// Thirdweb client
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
-});
-
-// Contract setup
-const NFT_CONTRACT_ADDRESS = '0xfF973a4aFc5A96DEc81366461A461824c4f80254'; // Polygon Amoy
-const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET!;
 
 // Helper functions
 function convertIpfsToHttp(ipfsUrl: string): string {
@@ -118,19 +103,77 @@ export default function ProfilePage() {
   const chain = useActiveWalletChain()
   const { primaryEmail, primaryPhone, hasEmail, hasPhone } = useThirdwebProfiles()
   
-  // NFT states
+  // NFT states - TEMPORARIAMENTE DESABILITADOS
   const [userNFTs, setUserNFTs] = useState<NFTItem[]>([])
-  const [nftsLoading, setNftsLoading] = useState(true)
+  const [nftsLoading, setNftsLoading] = useState(false) // Mudado para false
   const [nftsError, setNftsError] = useState<string | null>(null)
-  const [dataSource, setDataSource] = useState<string>('loading')
+  const [dataSource, setDataSource] = useState<string>('static')
   
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false) // Mudado para false
   const [isEditing, setIsEditing] = useState(false)
   const [editedUsername, setEditedUsername] = useState('')
   const [showSettings, setShowSettings] = useState(false)
 
-  // Load user NFTs using dedicated API
+  // REATIVANDO - Load user profile data com timeout
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!account?.address) return
+
+      setIsLoading(true)
+      try {
+        console.log('🔄 Loading user profile for:', account.address)
+
+        // Usar API otimizada com timeout
+        const profileResponse = await fetch(`/api/users/${account.address}`)
+        
+        if (profileResponse.ok) {
+          const profileData = await profileResponse.json()
+          console.log('✅ Profile loaded successfully:', profileData)
+          setUserProfile(profileData)
+          setEditedUsername(profileData.username || '')
+        } else {
+          console.warn('⚠️ Profile API returned error, using default')
+          // Usar perfil padrão se API falhar
+          const defaultProfile: UserProfile = {
+            id: account.address,
+            username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
+            avatar: '',
+            walletAddress: account.address,
+            joinedDate: new Date().toISOString(),
+            totalNFTs: 0,
+            totalSales: 0,
+            totalPurchases: 0,
+            balance: '0'
+          }
+          setUserProfile(defaultProfile)
+          setEditedUsername(defaultProfile.username)
+        }
+      } catch (error) {
+        console.error('❌ Error loading profile:', error)
+        // Sempre usar perfil padrão em caso de erro
+        const defaultProfile: UserProfile = {
+          id: account.address,
+          username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
+          avatar: '',
+          walletAddress: account.address,
+          joinedDate: new Date().toISOString(),
+          totalNFTs: 0,
+          totalSales: 0,
+          totalPurchases: 0,
+          balance: '0'
+        }
+        setUserProfile(defaultProfile)
+        setEditedUsername(defaultProfile.username)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadUserProfile()
+  }, [account?.address])
+
+  // REATIVANDO - Load user NFTs com cache otimizado
   useEffect(() => {
     const fetchUserNFTs = async () => {
       if (!account?.address) return
@@ -140,9 +183,9 @@ export default function ProfilePage() {
       setDataSource('loading')
 
       try {
-        console.log('🎯 Fetching user NFTs for:', account.address)
+        console.log('🔄 Fetching user NFTs for:', account.address)
 
-        // Use dedicated API for user NFTs with proper ownership check
+        // Usar API otimizada com cache
         const response = await fetch(`/api/profile/user-nfts?address=${account.address}`)
         const result = await response.json()
 
@@ -150,13 +193,13 @@ export default function ProfilePage() {
           throw new Error(result.error || 'Failed to fetch user NFTs')
         }
 
-        const { data } = result
-        setDataSource('thirdweb')
+        const { data, source } = result
+        setDataSource(source || 'api')
 
-        console.log(`✅ Found ${data.totalNFTs} NFTs for user`)
+        console.log(`✅ NFTs loaded: ${data.totalNFTs} total (Source: ${source})`)
         console.log(`📊 Breakdown: ${data.owned} owned, ${data.listed} listed, ${data.created} created`)
 
-        // Convert API response to NFTItem format
+        // Converter API response para NFTItem format
         const userNFTs: NFTItem[] = data.nfts.map((nft: any) => ({
           id: nft.id,
           name: nft.name,
@@ -173,6 +216,8 @@ export default function ProfilePage() {
         console.error('❌ Error fetching user NFTs:', error)
         setNftsError(error instanceof Error ? error.message : 'Failed to fetch NFTs')
         setDataSource('error')
+        // Não quebrar a página - manter NFTs vazios
+        setUserNFTs([])
       } finally {
         setNftsLoading(false)
       }
@@ -181,59 +226,26 @@ export default function ProfilePage() {
     fetchUserNFTs()
   }, [account?.address])
 
-  // Load user profile data
+  // REMOVER - Dados estáticos temporários (não precisamos mais)
+  /*
   useEffect(() => {
-    const loadUserProfile = async () => {
-      if (!account?.address) return
-
-      setIsLoading(true)
-      try {
-        // Add timeout to prevent infinite loading
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
-
-        // Load user profile from API
-        const profileResponse = await fetch(`/api/users/${account.address}`, {
-          signal: controller.signal
-        })
-        
-        clearTimeout(timeoutId)
-        
-        if (profileResponse.ok) {
-          const profile = await profileResponse.json()
-          setUserProfile(profile)
-          setEditedUsername(profile.username || '')
-        } else {
-          // Create default profile if doesn't exist
-          const defaultProfile: UserProfile = {
-            id: account.address,
-            username: `User ${account.address.slice(0, 6)}...${account.address.slice(-4)}`,
-            avatar: '',
-            walletAddress: account.address,
-            joinedDate: new Date().toISOString()
-          }
-          setUserProfile(defaultProfile)
-          setEditedUsername(defaultProfile.username)
-        }
-      } catch (error) {
-        console.error('Error loading profile:', error)
-        // Always create a default profile to prevent infinite loading
-        const defaultProfile: UserProfile = {
-          id: account.address,
-          username: `User ${account.address.slice(0, 6)}...${account.address.slice(-4)}`,
-          avatar: '',
-          walletAddress: account.address,
-          joinedDate: new Date().toISOString()
-        }
-        setUserProfile(defaultProfile)
-        setEditedUsername(defaultProfile.username)
-      } finally {
-        setIsLoading(false)
+    if (account?.address) {
+      const defaultProfile: UserProfile = {
+        id: account.address,
+        username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
+        avatar: '',
+        walletAddress: account.address,
+        joinedDate: new Date().toISOString(),
+        totalNFTs: 0,
+        totalSales: 0,
+        totalPurchases: 0,
+        balance: '0'
       }
+      setUserProfile(defaultProfile)
+      setEditedUsername(defaultProfile.username)
     }
-
-    loadUserProfile()
   }, [account?.address])
+  */
 
   const handleSaveProfile = async () => {
     if (!account?.address || !userProfile) return
