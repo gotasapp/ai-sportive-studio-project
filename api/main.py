@@ -56,6 +56,43 @@ except Exception as e:
     print(f"❌ Falha na conexão com o MongoDB: {e}")
     db = None
 
+
+# --- Função de composição de prompt para BADGES/EMBLEMS ---
+def compose_badge_vision_prompt(analysis_text: str, style: str = "modern") -> str:
+    """
+    Gera um prompt DALL-E 3 robusto para BADGES e EMBLEMS.
+    Usa a mesma estrutura de alta qualidade para consistência visual, focada em design gráfico.
+    """
+    style_description = {
+        "modern": "modern vector art",
+        "classic": "classic sports emblem",
+        "retro": "retro badge design",
+        "urban": "urban street style",
+        "premium": "luxury premium badge",
+        "vintage": "vintage emblem"
+    }.get(style, "modern vector art")
+
+    prompt_final = f"""
+Create a high-resolution, professional emblem or badge with a {style_description} style.
+
+**1. GRAPHIC DESIGN INSTRUCTIONS:**
+The emblem's design must be faithfully based on the following description of its shapes, symbols, and color palette:
+---
+{analysis_text}
+---
+
+**2. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+- Background: Plain, neutral white background to isolate the emblem.
+- Display: The emblem must be shown flat, centered, and rendered with sharp, clean lines like a vector graphic.
+- Prohibited Elements: Absolutely NO text (unless specified in the design), NO shadows, NO realistic textures (like metal or fabric), NO extra objects.
+- Quality: Render in 4K, with bold, vibrant colors and a clean, minimalist aesthetic.
+
+**3. GOLDEN RULE:**
+The most important requirement is to create a clean, professional, and visually appealing emblem based on the design instructions.
+""".strip()
+    return prompt_final
+
+
 # --- FUNÇÃO PARA GERAR PROMPTS DALLE-3 OTIMIZADOS ---
 def generate_dalle_prompt_from_analysis(analysis_result: dict, player_name: str, player_number: str) -> str:
     """
@@ -1762,37 +1799,3 @@ if __name__ == "__main__":
     print("🚀 Starting Unified API (Jerseys + Stadiums) on port 8000")
     uvicorn.run(app, host="0.0.0.0", port=8000) 
 
-# --- Função de composição de prompt para BADGES/EMBLEMS ---
-def compose_badge_vision_prompt(analysis_text: str, style: str = "modern") -> str:
-    """
-    Gera um prompt DALL-E 3 robusto para BADGES e EMBLEMS.
-    Usa a mesma estrutura de alta qualidade para consistência visual, focada em design gráfico.
-    """
-    style_description = {
-        "modern": "modern vector art",
-        "classic": "classic sports emblem",
-        "retro": "retro badge design",
-        "urban": "urban street style",
-        "premium": "luxury premium badge",
-        "vintage": "vintage emblem"
-    }.get(style, "modern vector art")
-
-    prompt_final = f"""
-Create a high-resolution, professional emblem or badge with a {style_description} style.
-
-**1. GRAPHIC DESIGN INSTRUCTIONS:**
-The emblem's design must be faithfully based on the following description of its shapes, symbols, and color palette:
----
-{analysis_text}
----
-
-**2. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
-- Background: Plain, neutral white background to isolate the emblem.
-- Display: The emblem must be shown flat, centered, and rendered with sharp, clean lines like a vector graphic.
-- Prohibited Elements: Absolutely NO text (unless specified in the design), NO shadows, NO realistic textures (like metal or fabric), NO extra objects.
-- Quality: Render in 4K, with bold, vibrant colors and a clean, minimalist aesthetic.
-
-**3. GOLDEN RULE:**
-The most important requirement is to create a clean, professional, and visually appealing emblem based on the design instructions.
-""".strip()
-    return prompt_final
