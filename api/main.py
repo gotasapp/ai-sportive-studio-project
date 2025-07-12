@@ -1680,12 +1680,36 @@ async def generate_badge_from_reference(request: GenerateFromReferenceRequest):
             )
             cloudinary_url = upload_result.get("secure_url")
             print(f"✅ [CLOUDINARY] Upload do emblema concluído: {cloudinary_url}")
+
+            # --- UPLOAD PARA PINATA/IPFS ---
+            print("📤 [IPFS] Iniciando upload do emblema para o Pinata...")
+            pinata_api_key = os.getenv("PINATA_API_KEY")
+            pinata_secret_api_key = os.getenv("PINATA_SECRET_API_KEY")
+            ipfs_url = None
+            if pinata_api_key and pinata_secret_api_key:
+                pinata_endpoint = "https://api.pinata.cloud/pinning/pinFileToIPFS"
+                files = {'file': (f"{query_name}_{int(time.time())}.png", base64.b64decode(image_base64), 'image/png')}
+                headers = {
+                    'pinata_api_key': pinata_api_key,
+                    'pinata_secret_api_key': pinata_secret_api_key
+                }
+                response = requests.post(pinata_endpoint, files=files, headers=headers)
+                if response.status_code == 200:
+                    ipfs_hash = response.json()["IpfsHash"]
+                    ipfs_url = f"https://gateway.pinata.cloud/ipfs/{ipfs_hash}"
+                    print(f"✅ [IPFS] Upload do emblema concluído: {ipfs_url}")
+                else:
+                    print(f"⚠️ [IPFS] Falha no upload para o Pinata: {response.text}")
+            else:
+                print("⚠️ [IPFS] PINATA_API_KEY ou PINATA_SECRET_API_KEY não configurados no .env!")
+
             print("💾 [DB] Salvando o novo emblema na coleção 'badges'...")
             badges_collection = db["badges"]
             new_badge_doc = {
                 "name": badge_reference.get("name", query_name.replace('_', ' ').title()),
                 "description": f"AI-generated {query_name} badge. Style: {request.quality}.",
-                "imageUrl": cloudinary_url,
+                "imageUrl": ipfs_url if ipfs_url else cloudinary_url,  # IPFS principal, fallback Cloudinary
+                "cloudinaryUrl": cloudinary_url,
                 "badgeId": query_name,
                 "style": request.quality,
                 "generationType": "vision_reference",
