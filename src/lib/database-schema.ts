@@ -44,12 +44,12 @@ export interface VisionAnalysisCache {
 
 // Database collections names
 export const COLLECTIONS = {
-  TEAM_REFERENCES: 'team_references',
+  TEAM_REFERENCES: 'team_references', // Jerseys
+  STADIUM_REFERENCES: 'stadium_references',
+  BADGE_REFERENCES: 'badge_references',
   VISION_ANALYSIS_CACHE: 'vision_analysis_cache',
-  // Existing collections
   JERSEYS: 'jerseys',
-  STADIUMS: 'stadiums',
-  BADGES: 'badges'
+  // Removido: STADIUMS, BADGES (se não usados diretamente)
 } as const
 
 // Database name

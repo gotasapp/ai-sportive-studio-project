@@ -195,26 +195,35 @@ export default function BadgeEditor() {
   useEffect(() => {
     const loadAvailableBadges = async () => {
       try {
-        console.log('🔄 Loading available badges from DB...');
-        const response = await fetch('/api/badges');
+        console.log('🔄 Loading available badge references from DB...');
+        const response = await fetch('/api/admin/badges/references');
         if (!response.ok) {
-          throw new Error(`Failed to fetch badges: ${response.statusText}`);
+          throw new Error(`Failed to fetch badge references: ${response.statusText}`);
         }
-        const badges: ApiBadge[] = await response.json();
+        const data = await response.json();
+        // data.data é o array de badge references
+        const badges: ApiBadge[] = (data.data || []).map((ref: any) => ({
+          id: ref._id, // sempre o _id do MongoDB
+          name: ref.teamName || 'Unnamed Badge',
+          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
+        }));
         setAvailableBadges(badges);
         if (badges.length > 0) {
-          // You might want to default to custom instead of the first one
-          // setSelectedBadge(badges[0].id); 
+          // Você pode definir o badge selecionado aqui se quiser
+          // setSelectedBadge(badges[0].id);
         }
-        console.log(`✅ Loaded ${badges.length} badges from DB.`);
+        console.log(`✅ Loaded ${badges.length} badge references from DB.`);
       } catch (error) {
-        console.error('❌ Error loading badges:', error);
+        console.error('❌ Error loading badge references:', error);
         setAvailableBadges([]);
       }
     };
 
     loadAvailableBadges();
   }, []);
+
+  // LOG DE DEPURAÇÃO: badges disponíveis para o select
+  console.log('DEBUG availableBadges:', availableBadges);
 
   const generateContent = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
@@ -700,6 +709,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
       showTitle={true}
       sidebar={
         <ProfessionalBadgeSidebar
+          availableBadges={availableBadges}
+          selectedBadge={selectedBadge}
+          setSelectedBadge={setSelectedBadge}
           badgeName={badgeName}
           setBadgeName={setBadgeName}
           selectedStyle={selectedStyle}

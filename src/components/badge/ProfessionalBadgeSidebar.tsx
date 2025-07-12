@@ -64,7 +64,7 @@ interface ProfessionalBadgeSidebarProps {
 }
 
 export default function ProfessionalBadgeSidebar({
-  availableBadges,
+  availableBadges = [], // Default para array vazio
   selectedBadge,
   setSelectedBadge,
   badgeName,
@@ -172,7 +172,7 @@ export default function ProfessionalBadgeSidebar({
               <Select
                 value={selectedBadge}
                 onValueChange={setSelectedBadge}
-                disabled={availableBadges.length === 0}
+                disabled={!availableBadges || availableBadges.length === 0}
               >
                 <SelectTrigger className="w-full bg-transparent border-[#333333] text-[#FDFDFD]">
                   <SelectValue placeholder="Select a badge template..." />
@@ -181,7 +181,7 @@ export default function ProfessionalBadgeSidebar({
                   <SelectItem value="custom_only" className="focus:bg-[#A20131]/20">
                     No Template (Custom Generation)
                   </SelectItem>
-                  {availableBadges.map((badge) => (
+                  {(availableBadges || []).map((badge) => (
                     <SelectItem key={badge.id} value={badge.id} className="focus:bg-[#A20131]/20">
                       {badge.name}
                     </SelectItem>

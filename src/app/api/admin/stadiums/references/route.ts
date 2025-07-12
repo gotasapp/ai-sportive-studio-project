@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.STADIUM_REFERENCES);
 
     // Buscar apenas referências de stadiums
     const references = await collection
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.STADIUM_REFERENCES);
 
     // Verificar se já existe
     const existing = await collection.findOne({ 
@@ -118,7 +118,7 @@ export async function PATCH(request: NextRequest) {
       
       const client = await clientPromise;
       const db = client.db(DB_NAME);
-      const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+      const collection = db.collection<TeamReference>(COLLECTIONS.STADIUM_REFERENCES);
 
       const result = await collection.updateOne(
         { _id: new ObjectId(teamId), category: 'stadium' },
@@ -158,7 +158,7 @@ export async function PATCH(request: NextRequest) {
 
       const client = await clientPromise;
       const db = client.db(DB_NAME);
-      const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+      const collection = db.collection<TeamReference>(COLLECTIONS.STADIUM_REFERENCES);
 
       const newImage = {
         id: `img_${Date.now()}`,
@@ -203,7 +203,7 @@ export async function DELETE(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.STADIUM_REFERENCES);
 
     const result = await collection.deleteOne({ _id: new ObjectId(id), category: 'stadium' });
 

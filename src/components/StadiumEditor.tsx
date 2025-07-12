@@ -218,19 +218,25 @@ export default function StadiumEditor() {
   useEffect(() => {
     const loadAvailableStadiums = async () => {
       try {
-        console.log('🔄 Loading available stadiums from DB...');
-        const response = await fetch('/api/stadiums');
+        console.log('🔄 Loading available stadium references from DB...');
+        const response = await fetch('/api/admin/stadiums/references');
         if (!response.ok) {
-          throw new Error(`Failed to fetch stadiums: ${response.statusText}`);
+          throw new Error(`Failed to fetch stadium references: ${response.statusText}`);
         }
-        const stadiums: ApiStadium[] = await response.json();
-        setAvailableStadiums(stadiums as any); // Casting to any to avoid type conflicts with old StadiumInfo
+        const data = await response.json();
+        // data.data é o array de stadium references
+        const stadiums: ApiStadium[] = (data.data || []).map((ref: any) => ({
+          id: ref.teamName || ref.stadiumId || ref._id,
+          name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
+          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
+        }));
+        setAvailableStadiums(stadiums);
         if (stadiums.length > 0) {
           setSelectedStadium(stadiums[0].id);
         }
-        console.log(`✅ Loaded ${stadiums.length} stadiums from DB.`);
+        console.log(`✅ Loaded ${stadiums.length} stadium references from DB.`);
       } catch (error) {
-        console.error('❌ Error loading stadiums:', error);
+        console.error('❌ Error loading stadium references:', error);
         setAvailableStadiums([]);
         setSelectedStadium('custom_only');
       }

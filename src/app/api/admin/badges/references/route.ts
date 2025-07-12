@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.BADGE_REFERENCES);
 
     const references = await collection
       .find({ category: 'badge' })
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.BADGE_REFERENCES);
 
     const existing = await collection.findOne({ 
       teamName: teamName.trim(), 
@@ -102,7 +102,7 @@ export async function PATCH(request: NextRequest) {
       
       const client = await clientPromise;
       const db = client.db(DB_NAME);
-      const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+      const collection = db.collection<TeamReference>(COLLECTIONS.BADGE_REFERENCES);
 
       const result = await collection.updateOne(
         { _id: new ObjectId(teamId), category: 'badge' },
@@ -140,7 +140,7 @@ export async function PATCH(request: NextRequest) {
 
       const client = await clientPromise;
       const db = client.db(DB_NAME);
-      const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+      const collection = db.collection<TeamReference>(COLLECTIONS.BADGE_REFERENCES);
 
       const newImage = {
         id: `img_${Date.now()}`,
@@ -185,7 +185,7 @@ export async function DELETE(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db(DB_NAME);
-    const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
+    const collection = db.collection<TeamReference>(COLLECTIONS.BADGE_REFERENCES);
 
     const result = await collection.deleteOne({ _id: new ObjectId(id), category: 'badge' });
 
