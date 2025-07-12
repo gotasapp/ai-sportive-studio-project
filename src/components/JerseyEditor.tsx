@@ -1076,54 +1076,64 @@ Design based on analysis: ${analysisText}`
         // ==================================================================
         console.log('✅ [STANDARD FLOW] Starting standard generation using an existing team reference...');
         
+        const requestBody = {
+          teamName: selectedTeam,
+          player_name: playerName,
+          player_number: playerNumber,
+          quality: quality,
+          // Estes são valores padrão, pois a UI do modo standard não os possui.
+          // A API Python pode ou não usá-los, mas a "ponte" espera por eles.
+          sport: 'soccer',
+          view: 'back'
+        };
+
         const response = await fetch('/api/generate-from-reference', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            teamName: selectedTeam,
-            player_name: playerName,
-            player_number: playerNumber,
-            quality: quality,
-            // Estes são valores padrão, pois a UI do modo standard não os possui.
-            // A API Python pode ou não usá-los, mas a "ponte" espera por eles.
-            sport: 'soccer',
-            view: 'back'
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to generate content');
-        }
-
+        // Leia o corpo da resposta APENAS UMA VEZ.
         const data = await response.json();
-        
-        // A rota /generate-from-reference retorna a URL da imagem diretamente.
-        // Precisamos buscar a imagem e convertê-la para base64 para consistência na UI.
-        if (data.success && data.image_url) {
-          console.log('[STANDARD FLOW] Image URL received:', data.image_url);
-          console.log('[STANDARD FLOW] Fetching image to convert to base64...');
-          const imageResponse = await fetch(data.image_url);
-          if (!imageResponse.ok) {
-            throw new Error('Failed to download the generated image from URL.');
-          }
-          const imageBlob = await imageResponse.blob();
-          
-          const reader = new FileReader();
-          reader.readAsDataURL(imageBlob);
-          reader.onloadend = () => {
-            const base64data = reader.result as string;
-            setGeneratedImage(base64data.split(',')[1]); // Remove o prefixo "data:..."
-          };
 
-          setGeneratedImageBlob(imageBlob);
-          // O custo não é retornado por esta rota, então o definimos como o padrão.
-          setGenerationCost(quality === 'hd' ? 0.08 : 0.04); 
-        } else {
-          throw new Error(data.error || 'Unknown error during image generation.');
+        // Agora verifique se a resposta está OK e se os dados são de sucesso.
+        if (!response.ok || !data.success) {
+          const errorMessage = data.detail || data.error || 'An unknown error occurred.';
+          console.error('❌ Generation Error from backend:', errorMessage);
+          throw new Error(errorMessage);
         }
+        
+        console.log('[STANDARD FLOW] Base64 image data received.');
+          
+        // ADICIONADO: Validação robusta e limpeza do dado base64
+        if (typeof data.image_base64 !== 'string' || data.image_base64.trim() === '') {
+          console.error('❌ [DATA VALIDATION] `image_base64` is not a valid string or is empty.', { received: data.image_base64 });
+          console.log('🔬 [DATA VALIDATION] Full response object for debugging:', data);
+          throw new Error('Invalid image data received from server. Generation failed.');
+        }
+
+        // LIMPEZA: Remover qualquer prefixo de data URL que possa ter sido adicionado por engano
+        const pureBase64 = data.image_base64.split(',').pop();
+
+        if (!pureBase64) { // Checagem extra de segurança
+          throw new Error('Base64 data is empty after trying to clean it.');
+        }
+
+        // Set image for display using data URL
+        setGeneratedImage(`data:image/png;base64,${pureBase64}`);
+
+        // Convert base64 back to Blob for IPFS/saving functionality
+        const byteCharacters = atob(pureBase64);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const imageBlob = new Blob([byteArray], { type: 'image/png' });
+
+        setGeneratedImageBlob(imageBlob);
+        setIpfsUrl(null); // Clear any old IPFS URL
+
       }
     } catch (err: any) {
       console.error('❌ Generation Error:', err)

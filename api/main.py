@@ -6,7 +6,7 @@ Combina as funcionalidades de geração de jerseys e estádios em uma única API
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from openai import OpenAI
+from openai import OpenAI, AsyncOpenAI # Importar o cliente Async
 import requests
 import base64
 from io import BytesIO
@@ -18,6 +18,11 @@ from pathlib import Path
 import json
 import pymongo # Adicionar import
 from datetime import datetime # Adicionar import
+import io # Para manipulação de bytes da imagem
+import time # Adicionar import para medir tempo de análise
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
@@ -279,6 +284,18 @@ OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 STADIUM_REFERENCES_PATH = Path("stadium_references")
 
+# --- Configuração do Cloudinary ---
+try:
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True,
+    )
+    print("✅ Cloudinary configurado com sucesso.")
+except Exception as e:
+    print(f"⚠️ Alerta: Configuração do Cloudinary falhou. Uploads estarão desabilitados. Erro: {e}")
+
 # --- MODELOS DE DADOS PARA JERSEYS ---
 class ImageGenerationRequest(BaseModel):
     model_id: str
@@ -301,9 +318,10 @@ class GenerateFromReferenceRequest(BaseModel):
     sport: str = "soccer"
     view: str = "back"
 
+# RESPOSTA DA GERAÇÃO POR REFERÊNCIA - CORRIGIDO
 class ReferenceGenerationResponse(BaseModel):
     success: bool
-    image_url: Optional[str] = None
+    image_base64: Optional[str] = None # CORRIGIDO: Deve ser image_base64
     prompt: Optional[str] = None
     error: Optional[str] = None
 
@@ -741,408 +759,69 @@ Provide a detailed architectural description for NFT generation."""
 
 # --- SISTEMA DE ANÁLISE DE IMAGEM (Vision Analysis) ---
 class VisionAnalysisSystem:
-    """Sistema unificado de análise de imagem para integração na API principal"""
-    
+    """
+    Sistema para análise de imagens usando modelos Vision (OpenRouter/OpenAI).
+    Modificado para aceitar diretamente URLs de imagem.
+    """
     def __init__(self):
-        self.openai_client = OpenAI(api_key=OPENAI_API_KEY)
-        
-        # Configuração OpenRouter
-        self.openrouter_url = "https://openrouter.ai/api/v1/chat/completions"
-        self.openrouter_key = OPENROUTER_API_KEY
-        
-        if not self.openrouter_key:
-            print("⚠️ OPENROUTER_API_KEY not found, using fallback analysis")
-    
-    def analyze_image_with_vision(self, image_base64: str, prompt: str, model: str = "openai/gpt-4o-mini") -> Dict[str, Any]:
-        """Analisa imagem usando vision models com fallback para OpenAI"""
+        # Tenta carregar a chave da API do OpenRouter, com fallback para OpenAI
+        self.api_key = os.getenv("OPENROUTER_API_KEY", os.getenv("OPENAI_API_KEY"))
+        self.api_base = os.getenv("OPENROUTER_API_BASE", "https://openrouter.ai/api/v1")
+        # CORRIGIDO: Usar o cliente AsyncOpenAI para chamadas 'await'
+        self.client = AsyncOpenAI(api_key=self.api_key, base_url=self.api_base)
+        print("✅ Vision Analysis System initialized.")
+
+    async def analyze_image_with_vision(self, image_url: str, prompt: str, model: str = "openai/gpt-4o-mini") -> Dict[str, Any]:
+        """
+        Analisa uma imagem a partir de uma URL usando um modelo de visão.
+        """
+        print(f"👁️  [VISION] Iniciando análise com o modelo '{model}' para a URL: {image_url}")
         try:
-            print(f"🔍 [VISION ANALYSIS] Starting analysis with model: {model}")
-            print(f"🔑 [VISION ANALYSIS] OpenRouter key available: {bool(self.openrouter_key)}")
-            print(f"📊 [VISION ANALYSIS] Image size: {len(image_base64)} chars")
-            print(f"📊 [VISION ANALYSIS] Prompt size: {len(prompt)} chars")
-            
-            # Se temos OpenRouter, tentar usar vision model
-            if self.openrouter_key and model.startswith("openai/"):
-                print("🌐 [VISION ANALYSIS] Attempting OpenRouter analysis...")
-                try:
-                    result = self._analyze_with_openrouter(image_base64, prompt, model)
-                    print(f"✅ [VISION ANALYSIS] OpenRouter success: {result.get('success', False)}")
-                    return result
-                except Exception as openrouter_error:
-                    print(f"⚠️ [VISION ANALYSIS] OpenRouter failed: {openrouter_error}")
-                    print(f"🔄 [VISION ANALYSIS] Falling back to enhanced fallback...")
-                    # Se OpenRouter falhar, usar fallback inteligente
-                    return self._analyze_with_fallback(prompt, model)
-            else:
-                print("🔄 [VISION ANALYSIS] No OpenRouter key or non-OpenAI model, using fallback...")
-            
-            # Fallback: análise textual baseada na imagem
-            return self._analyze_with_fallback(prompt, model)
-            
+            # Chama o método principal de análise, agora passando a URL
+            return await self._analyze_with_provider(image_url=image_url, prompt=prompt, model=model)
         except Exception as e:
-            print(f"❌ [VISION ANALYSIS] General error: {e}")
-            # Mesmo em caso de erro geral, tentar fallback
-            try:
-                return self._analyze_with_fallback(prompt, model)
-            except fallback_error:
-                print(f"❌ [VISION ANALYSIS] Fallback also failed: {fallback_error}")
-                return {
-                    "success": False,
-                    "error": str(e)
-                }
-    
-    def _analyze_with_openrouter(self, image_base64: str, prompt: str, model: str) -> Dict[str, Any]:
-        """Análise via OpenRouter vision model"""
-        print(f"🌐 [OPENROUTER] Attempting analysis with model: {model}")
-        
-        # Limpar prefixo data:image se já existir
-        if image_base64.startswith('data:image'):
-            image_base64 = image_base64.split(',')[1]
-        
-        headers = {
-            "Authorization": f"Bearer {self.openrouter_key}",
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://jersey-generator-ai2.vercel.app",
-            "X-Title": "CHZ Jersey Generator"
-        }
-        
-        # Usar modelo funcional testado
-        working_model = "openai/gpt-4o-mini" if model.startswith("openai/") else "anthropic/claude-3-haiku"
-        
-        payload = {
-            "model": working_model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/jpeg;base64,{image_base64}"}
-                        }
-                    ]
-                }
-            ],
-            "max_tokens": 1000,
-            "temperature": 0.7
-        }
-        
-        print(f"🔄 [OPENROUTER] Making request to {self.openrouter_url}")
-        print(f"📊 [OPENROUTER] Payload size: {len(str(payload))} chars")
-        print(f"📊 [OPENROUTER] Image size: {len(image_base64)} chars")
-        print(f"📊 [OPENROUTER] Prompt length: {len(prompt)} chars")
-        print(f"📊 [OPENROUTER] Model: {working_model}")
-        print(f"📊 [OPENROUTER] Max tokens: {payload['max_tokens']}")
-        
+            print(f"❌ [VISION] Erro inesperado na análise da imagem: {e}")
+            return {"success": False, "error": str(e)}
+
+    async def _analyze_with_provider(self, image_url: str, prompt: str, model: str) -> Dict[str, Any]:
+        """
+        Lógica central que interage com a API (OpenAI/OpenRouter) usando uma URL de imagem.
+        """
+        start_time = time.time()
         try:
-            response = requests.post(self.openrouter_url, headers=headers, json=payload, timeout=60)
-            
-            print(f"📥 [OPENROUTER] Response: {response.status_code}")
-            
-            if response.status_code == 200:
-                result = response.json()
-                content = result["choices"][0]["message"]["content"].strip()
-                
-                print(f"✅ [OPENROUTER] Analysis successful, length: {len(content)}")
-                
-                # ✅ VALIDAÇÃO JSON ROBUSTA
-                if "return ONLY a valid JSON object" in prompt:
-                    print("🔍 [JSON VALIDATION] Attempting to parse JSON response...")
-                    
-                    # Remove markdown code blocks se houver
-                    if content.startswith("```json"):
-                        content = content[7:]
-                    if content.endswith("```"):
-                        content = content[:-3]
-                    content = content.strip()
-                    
-                    try:
-                        parsed_analysis = json.loads(content)
-                        
-                        # ✅ VALIDAÇÃO ESPECÍFICA: Verifica campos obrigatórios
-                        required_fields = ["dominantColors", "pattern", "style"]
-                        missing_fields = []
-                        for field in required_fields:
-                            if field not in parsed_analysis:
-                                missing_fields.append(field)
-                        
-                        if missing_fields:
-                            print(f"⚠️ [JSON VALIDATION] Campos obrigatórios não encontrados: {missing_fields}")
-                            print(f"🔄 [JSON VALIDATION] Usando fallback inteligente...")
-                            # Detectar sport e view do prompt
-                            sport = "soccer"
-                            view = "back"
-                            if "basketball" in prompt.lower():
-                                sport = "basketball"
-                            elif "nfl" in prompt.lower():
-                                sport = "nfl"
-                            if "front" in prompt.lower():
-                                view = "front"
-                            
-                            return _generate_intelligent_fallback(sport, view, prompt)
-                        
-                        print(f"✅ [JSON VALIDATION] JSON válido com todos os campos obrigatórios")
-                        return {
-                            "success": True,
-                            "analysis": parsed_analysis,  # ✅ JSON já validado
-                            "model_used": working_model,
-                            "cost_estimate": 0.01,
-                            "validation": "json_validated"
-                        }
-                        
-                    except json.JSONDecodeError as e:
-                        print(f"❌ [JSON VALIDATION] JSON inválido retornado pelo modelo: {e}")
-                        print(f"🔄 [JSON VALIDATION] Conteúdo recebido: {content[:200]}...")
-                        
-                        # Detectar sport e view do prompt para fallback
-                        sport = "soccer"
-                        view = "back"
-                        if "basketball" in prompt.lower():
-                            sport = "basketball"
-                        elif "nfl" in prompt.lower():
-                            sport = "nfl"
-                        if "front" in prompt.lower():
-                            view = "front"
-                        
-                        return _generate_intelligent_fallback(sport, view, prompt)
-                else:
-                    # Para prompts não-JSON, retornar texto como antes
-                    return {
-                        "success": True,
-                        "analysis": content,
-                        "model_used": working_model,
-                        "cost_estimate": 0.01
+            chat_completion = await self.client.chat.completions.create(
+                model=model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": image_url, # Passa a URL diretamente
+                                },
+                            },
+                        ],
                     }
-            else:
-                error_text = response.text
-                print(f"❌ [OPENROUTER] Error {response.status_code}: {error_text}")
-                print(f"❌ [OPENROUTER] Request headers: {headers}")
-                print(f"❌ [OPENROUTER] Request model: {working_model}")
-                print(f"❌ [OPENROUTER] Payload keys: {list(payload.keys())}")
-                
-                # RETORNAR O ERRO REAL, não fallback
-                raise Exception(f"OpenRouter API error {response.status_code}: {error_text}")
-                
+                ],
+                max_tokens=500,
+            )
+            
+            end_time = time.time()
+            duration = end_time - start_time
+            
+            analysis_content = chat_completion.choices[0].message.content
+            print(f"✅ [VISION] Análise recebida em {duration:.2f} segundos.")
+            
+            return {
+                "success": True,
+                "analysis": analysis_content,
+                "model_used": model,
+            }
         except Exception as e:
-            print(f"❌ [OPENROUTER] Request failed: {str(e)}")
-            # RETORNAR O ERRO REAL para debug
-            raise e
-    
-    def _analyze_with_fallback(self, prompt: str, model: str) -> Dict[str, Any]:
-        """Fallback inteligente que cria análise estruturada baseada no prompt e contexto"""
-        print("🔄 [ENHANCED FALLBACK] Creating intelligent analysis for jersey generation")
-        print(f"🔍 [FALLBACK] Prompt preview: {prompt[:200]}...")
-        print(f"🔍 [FALLBACK] Is JSON prompt: {'return ONLY a valid JSON object' in prompt}")
-        print(f"🔍 [FALLBACK] Is jersey prompt: {'jersey' in prompt.lower()}")
-        
-        # Detectar se é um prompt estruturado para JSON
-        if "return ONLY a valid JSON object" in prompt and "jersey" in prompt.lower():
-            print("✅ [ENHANCED FALLBACK] Using intelligent JSON fallback for jersey analysis")
-            
-            # ANÁLISE INTELIGENTE baseada no contexto do prompt
-            # Detectar sport, view e style do prompt
-            sport = "soccer"
-            view = "front"
-            if "basketball" in prompt.lower():
-                sport = "basketball"
-            elif "nfl" in prompt.lower():
-                sport = "nfl"
-            
-            if "back" in prompt.lower():
-                view = "back"
-            
-            # Cores dinâmicas baseadas no contexto (em vez de Palmeiras fixo)
-            if "Lakers" in prompt:
-                primary_color = "#FDB927"  # Lakers Yellow
-                secondary_color = "#552583"  # Lakers Purple
-                accent_color = "#FFFFFF"
-                team_context = "Lakers yellow and purple basketball jersey"
-            elif "Real Madrid" in prompt:
-                primary_color = "#FFFFFF"
-                secondary_color = "#000000"
-                accent_color = "#FFD700"
-                team_context = "Real Madrid white home football jersey"
-            elif "Barcelona" in prompt:
-                primary_color = "#A50044"
-                secondary_color = "#004D98"
-                accent_color = "#FFCB00"
-                team_context = "Barcelona blue and red football jersey"
-            else:
-                # Análise genérica inteligente para cores comuns
-                primary_color = "#FFFFFF"
-                secondary_color = "#000000"
-                accent_color = "#FF0000"
-                team_context = "modern sports jersey with clean design"
-            
-            # Estrutura JSON específica para cada sport
-            if sport == "soccer":
-                if view == "back":
-                    fallback_analysis = f"""{{
-  "dominantColors": {{
-    "primary": "{primary_color}",
-    "secondary": "{secondary_color}",
-    "accent": "{accent_color}",
-    "colorDescription": "Professional {team_context} with high contrast colors"
-  }},
-  "visualPattern": {{
-    "type": "solid",
-    "description": "Clean solid color design with minimal pattern elements",
-    "patternColors": ["{primary_color}", "{secondary_color}"],
-    "patternWidth": "no pattern - solid design"
-  }},
-  "playerArea": {{
-    "namePosition": "top-center back area",
-    "nameFont": "bold sans-serif athletic font",
-    "nameColor": "{secondary_color}",
-    "numberPosition": "center-back below name",
-    "numberFont": "large bold athletic numbers",
-    "numberColor": "{secondary_color}",
-    "nameNumberSpacing": "appropriate spacing for professional jersey"
-  }},
-  "fabricAndTexture": {{
-    "material": "lightweight athletic polyester mesh",
-    "finish": "smooth professional finish",
-    "quality": "professional grade sports jersey"
-  }},
-  "designElements": {{
-    "backDesign": "clean back with name and number area",
-    "shoulderDetails": "minimal shoulder detailing",
-    "sponsorBack": "potential sponsor area below number",
-    "trimDetails": "subtle trim matching team colors"
-  }},
-  "styleCategory": "modern",
-  "keyVisualFeatures": "clean professional design with name/number focus",
-  "reproductionNotes": "Focus on exact color matching and proper name/number positioning for authentic {team_context}"
-}}"""
-                else:  # front view
-                    fallback_analysis = f"""{{
-  "dominantColors": {{
-    "primary": "{primary_color}",
-    "secondary": "{secondary_color}",
-    "accent": "{accent_color}",
-    "colorDescription": "Professional {team_context} with authentic team colors"
-  }},
-  "visualPattern": {{
-    "type": "solid",
-    "description": "Clean team color design with subtle pattern elements",
-    "patternColors": ["{primary_color}", "{secondary_color}"],
-    "patternWidth": "solid base with accent details"
-  }},
-  "teamElements": {{
-    "teamBadge": "team logo positioned on chest area",
-    "sponsor": "sponsor logo placement on front",
-    "teamName": "subtle team identification elements"
-  }},
-  "fabricAndTexture": {{
-    "material": "high-performance athletic fabric",
-    "finish": "professional sport jersey finish",
-    "quality": "authentic professional grade"
-  }},
-  "designElements": {{
-    "neckline": "crew neck with team color trim",
-    "sleeves": "short sleeves with color accents",
-    "frontDesign": "clean front with logo and sponsor areas",
-    "logoPlacement": "traditional chest placement for team elements"
-  }},
-  "styleCategory": "modern",
-  "keyVisualFeatures": "authentic team colors with professional sport design",
-  "reproductionNotes": "Critical focus on exact color reproduction and authentic {team_context} appearance"
-}}"""
-                    
-            elif sport == "basketball":
-                fallback_analysis = f"""{{
-  "dominantColors": {{
-    "primary": "{primary_color}",
-    "secondary": "{secondary_color}",
-    "accent": "{accent_color}",
-    "colorDescription": "Professional {team_context} with team authentic colors"
-  }},
-  "visualPattern": {{
-    "type": "solid",
-    "description": "Basketball jersey design with side panels",
-    "patternColors": ["{primary_color}", "{secondary_color}"]
-  }},
-  "teamElements": {{
-    "teamLogo": "team logo on chest area",
-    "teamName": "team name across front",
-    "frontNumber": "large front number if visible"
-  }},
-  "fabricAndTexture": {{
-    "material": "lightweight basketball mesh fabric",
-    "finish": "breathable athletic finish",
-    "breathability": "mesh ventilation areas"
-  }},
-  "designElements": {{
-    "armholes": "wide basketball armholes",
-    "neckline": "basketball crew neck style",
-    "sidePanels": "contrasting side panel design",
-    "frontCut": "loose basketball jersey fit"
-  }},
-  "styleCategory": "modern",
-  "keyVisualFeatures": "distinctive basketball jersey with team colors",
-  "reproductionNotes": "Focus on authentic {team_context} with proper basketball jersey proportions"
-}}"""
-            
-            else:  # NFL
-                fallback_analysis = f"""{{
-  "dominantColors": {{
-    "primary": "{primary_color}",
-    "secondary": "{secondary_color}",
-    "accent": "{accent_color}",
-    "colorDescription": "Professional {team_context} with NFL team colors"
-  }},
-  "visualPattern": {{
-    "type": "solid",
-    "description": "NFL jersey with shoulder and side accents",
-    "patternColors": ["{primary_color}", "{secondary_color}", "{accent_color}"]
-  }},
-  "teamElements": {{
-    "teamLogo": "team logo on chest and sleeves",
-    "frontNumber": "large front number",
-    "teamName": "team name elements"
-  }},
-  "fabricAndTexture": {{
-    "material": "durable NFL game jersey fabric",
-    "finish": "professional NFL finish",
-    "durability": "heavy-duty athletic construction"
-  }},
-  "designElements": {{
-    "shoulderPads": "shoulder area designed for pads",
-    "neckline": "NFL crew neck collar",
-    "sleeves": "fitted NFL sleeves",
-    "frontCut": "NFL jersey front design"
-  }},
-  "styleCategory": "modern",
-  "keyVisualFeatures": "authentic NFL jersey design with team identity",
-  "reproductionNotes": "Critical accuracy for {team_context} with NFL standard proportions"
-}}"""
-
-        else:
-            print("✅ [ENHANCED FALLBACK] Using enhanced textual fallback analysis")
-            # Análise textual melhorada baseada no contexto
-            fallback_analysis = f"""Enhanced Image Analysis: The uploaded image shows a professional sports jersey with the following characteristics:
-
-COLORS: Primary color appears to be {primary_color}, with secondary accents in {secondary_color} and {accent_color}. The color scheme suggests {team_context}.
-
-DESIGN: The jersey features a clean, modern athletic design typical of professional sports apparel. The fabric appears to be lightweight, moisture-wicking material suitable for athletic performance.
-
-STRUCTURE: This appears to be a {sport} jersey designed for the {view} view. The cut and proportions are consistent with professional sporting goods standards.
-
-VISUAL ELEMENTS: The jersey displays professional branding elements and maintains the authentic appearance of official team merchandise.
-
-REPRODUCTION NOTES: For faithful reproduction, focus on exact color matching ({primary_color}, {secondary_color}, {accent_color}) and maintaining the professional athletic aesthetic typical of {team_context}."""
-        
-        print(f"✅ [ENHANCED FALLBACK] Generated enhanced analysis: {len(fallback_analysis)} chars")
-        print(f"📋 [ENHANCED FALLBACK] Analysis preview: {fallback_analysis[:150]}...")
-        
-        return {
-            "success": True,
-            "analysis": fallback_analysis,
-            "model_used": f"{model} (enhanced_intelligent_fallback)",
-            "cost_estimate": 0,
-            "fallback": True,
-            "enhancement_level": "INTELLIGENT_CONTEXT_AWARE"
-        }
+            print(f"❌ [VISION] Falha na chamada da API para o modelo '{model}': {e}")
+            return {"success": False, "error": f"API call failed: {e}"}
 
 # --- CONFIGURAÇÃO DA API FASTAPI ---
 app = FastAPI(title="Unified API - Jerseys + Stadiums", version="1.0.0")
@@ -1296,7 +975,7 @@ A resposta deve ser clara e separada por tópicos, sem formato de JSON.
         
         # ETAPA 1: Análise Vision
         print(f"🔍 [COMPLETE FLOW] Step 1: Vision Analysis")
-        vision_result = vision_analysis_system.analyze_image_with_vision(
+        vision_result = await vision_analysis_system.analyze_image_with_vision(
             request.image_base64,
             analysis_prompt,
             request.model
@@ -1432,7 +1111,7 @@ async def analyze_image_endpoint(request: VisionAnalysisRequest):
     try:
         print(f"🔍 [VISION ANALYSIS] Received request: model={request.model}, prompt_length={len(request.prompt)}")
         
-        result = vision_analysis_system.analyze_image_with_vision(
+        result = await vision_analysis_system.analyze_image_with_vision(
             request.image_base64,
             request.prompt,
             request.model
@@ -1495,34 +1174,125 @@ async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
 
         print(f"✅ [DB] Referência encontrada para '{query_name}'.")
         
-        # Corrigido para buscar o prompt dentro do objeto 'metadata'
         metadata = team_reference.get("metadata", {})
         team_base_prompt = metadata.get("teamBasePrompt", "")
         
         if not team_base_prompt:
             print(f"⚠️ [DB] Alerta: `teamBasePrompt` está vazio ou ausente para o time '{query_name}'.")
 
+        # --- INÍCIO DA LÓGICA DA FASE 2 ---
         reference_images = team_reference.get("referenceImages", [])
         image_url_to_analyze = None
         if reference_images and isinstance(reference_images, list) and len(reference_images) > 0:
             image_url_to_analyze = reference_images[0].get("url")
-            print(f"🖼️ [DB] URL da imagem de referência (Fase 2): {image_url_to_analyze}")
-        else:
-            print("⚠️ [DB] Nenhuma imagem de referência (`referenceImages`) encontrada para este time.")
-
-        # FASE 1 COMPLETA: Retornar prompt real e imagem placeholder.
-        final_prompt = f"{team_base_prompt}, player {request.player_name}, number {request.player_number}"
         
-        print(f"✅ [DB] FASE 1 COMPLETA. Retornando prompt e URL placeholder.")
-        return {
-            "success": True,
-            "image_url": "https://raw.githubusercontent.com/Sportheca/chz-fan-token-studio/main/api/image_references/flamengo/flamengo_1981_front.jpg",
-            "prompt": final_prompt,
-            "error": None
-        }
+        if not image_url_to_analyze:
+            print("❌ [VISION] ERRO: Nenhuma URL de imagem de referência encontrada. Abortando análise Vision.")
+            raise HTTPException(status_code=400, detail="Reference image URL is missing.")
+
+        print(f"🖼️ [VISION] Iniciando análise para a imagem: {image_url_to_analyze}")
+        
+        # 1. Chamar o sistema de análise Vision (agora passando a URL diretamente)
+        vision_analyzer = VisionAnalysisSystem()
+        analysis_prompt = "Analyze this soccer jersey image. Describe its main colors, pattern (stripes, solid, etc.), collar style, and any other relevant visual details. Be descriptive and concise."
+        
+        vision_result = await vision_analyzer.analyze_image_with_vision(
+            image_url=image_url_to_analyze, # Passa a URL
+            prompt=analysis_prompt
+        )
+
+        if not vision_result.get("success"):
+            error_msg = vision_result.get("error", "Unknown vision analysis error.")
+            print(f"❌ [VISION] ERRO na análise: {error_msg}")
+            raise HTTPException(status_code=500, detail=f"Vision analysis failed: {error_msg}")
+
+        analysis_text = vision_result["analysis"]
+        print(f"✅ [VISION] Análise concluída com sucesso:\n{analysis_text}")
+
+        # 3. Combinar os prompts
+        # Corrigido: `base_prompt` não é um argumento esperado. A função usa sport/view.
+        final_prompt = compose_vision_enhanced_prompt(
+            analysis_text=analysis_text,
+            player_name=request.player_name,
+            player_number=request.player_number,
+            sport=request.sport,
+            view=request.view,
+            style=request.quality # 'quality' na UI pode mapear para 'style' aqui
+        )
+        print("✅ [PROMPT] Super-prompt combinado gerado com sucesso.")
+
+        # --- ETAPA FINAL: GERAÇÃO COM DALL-E 3 ---
+        print("🤖 [DALL-E] Iniciando a geração final da imagem...")
+        dalle_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        try:
+            generation_response = dalle_client.images.generate(
+                model="dall-e-3",
+                prompt=final_prompt,
+                size="1024x1024",
+                quality=request.quality,
+                n=1,
+                response_format="url"
+            )
+            
+            generated_image_url = generation_response.data[0].url
+            print(f"✅ [DALL-E] Imagem gerada com sucesso. Baixando para processamento...")
+
+            # Etapa extra para resolver CORS: O backend baixa a imagem e converte
+            image_response = requests.get(generated_image_url)
+            image_response.raise_for_status() # Garante que o download foi bem sucedido
+            
+            image_base64 = base64.b64encode(image_response.content).decode("utf-8")
+            print("✅ [PROCESS] Imagem convertida para base64.")
+
+            # --- ETAPA DE UPLOAD E SALVAMENTO NO DB ---
+            try:
+                print("📤 [CLOUDINARY] Iniciando upload...")
+                upload_result = cloudinary.uploader.upload(
+                    f"data:image/png;base64,{image_base64}",
+                    folder="jerseys_generated",
+                    public_id=f"{request.teamName.replace(' ', '_')}_{request.player_name}_{int(time.time())}"
+                )
+                cloudinary_url = upload_result.get("secure_url")
+                print(f"✅ [CLOUDINARY] Upload concluído: {cloudinary_url}")
+
+                print("💾 [DB] Salvando a nova camisa na coleção 'jerseys'...")
+                jerseys_collection = db["jerseys"]
+                new_jersey_doc = {
+                    "name": f"{request.teamName} - {request.player_name} #{request.player_number}",
+                    "description": f"AI-generated {request.teamName} jersey for {request.player_name} #{request.player_number}. Style: {request.quality}. Based on Vision analysis.",
+                    "imageUrl": cloudinary_url,
+                    "teamName": request.teamName,
+                    "playerName": request.player_name,
+                    "playerNumber": request.player_number,
+                    "style": request.quality,
+                    "generationType": "vision_reference",
+                    "promptUsed": final_prompt,
+                    "createdAt": datetime.utcnow(),
+                    "createdBy": "system_vision_flow"
+                }
+                jerseys_collection.insert_one(new_jersey_doc)
+                print("✅ [DB] Nova camisa salva com sucesso no MongoDB.")
+
+            except Exception as post_processing_error:
+                # Opcional: Se o upload ou o salvamento falharem, não quebramos a experiência do usuário.
+                # A imagem ainda é retornada. Apenas registramos o erro no log do servidor.
+                print(f"⚠️ [POST-PROCESS] Alerta: Falha no upload para Cloudinary ou salvamento no DB: {post_processing_error}")
+                print("⚠️ [POST-PROCESS] A imagem gerada ainda será retornada para o usuário.")
+
+            # Retorna a imagem em base64 para o frontend, independentemente do sucesso do post-processing
+            return ReferenceGenerationResponse(
+                success=True,
+                image_base64=image_base64,
+                prompt=final_prompt
+            )
+
+        except Exception as dalle_error:
+            print(f"❌ [DALL-E] Erro durante a geração ou download: {dalle_error}")
+            raise HTTPException(status_code=500, detail=f"DALL-E process failed: {dalle_error}")
 
     except Exception as e:
-        print(f"❌ [DB] ERRO CRÍTICO na rota: {e}")
+        print(f"❌ [CRITICAL] Erro crítico na rota: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
 
 # --- PONTO DE ENTRADA DA APLICAÇÃO ---
