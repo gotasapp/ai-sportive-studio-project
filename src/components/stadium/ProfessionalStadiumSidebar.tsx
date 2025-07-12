@@ -10,7 +10,14 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { StadiumInfo } from '@/lib/services/stadium-service'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// NEW TYPE: Aligning with the data structure from the parent component
+interface ApiStadium {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
 
 const SPORTS_OPTIONS = [
   { id: 'soccer', name: 'Soccer', description: 'Soccer stadium' },
@@ -54,7 +61,7 @@ const WEATHER_OPTIONS = [
 ]
 
 interface ProfessionalStadiumSidebarProps {
-  availableStadiums: StadiumInfo[]
+  availableStadiums: ApiStadium[] // Use the new type here
   selectedStadium: string
   setSelectedStadium: (stadium: string) => void
   generationStyle: string
@@ -185,6 +192,44 @@ export default function ProfessionalStadiumSidebar({
           </div>
         )}
 
+        {/* NEW: Stadium Template Selection */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Select Template" 
+              section="template" 
+              icon={Building}
+              required
+            />
+          </CardHeader>
+          {expandedSections.template && (
+            <CardContent className="p-3 pt-2">
+              <Select
+                value={selectedStadium}
+                onValueChange={setSelectedStadium}
+                disabled={availableStadiums.length === 0}
+              >
+                <SelectTrigger className="w-full bg-transparent border-[#333333] text-[#FDFDFD]">
+                  <SelectValue placeholder="Select a stadium template..." />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1C1C1C] border-[#333333] text-[#FDFDFD]">
+                  {availableStadiums.length > 0 ? (
+                    availableStadiums.map((stadium) => (
+                      <SelectItem key={stadium.id} value={stadium.id} className="focus:bg-[#A20131]/20">
+                        {stadium.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="loading" disabled>
+                      Loading stadiums...
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          )}
+        </Card>
+
         {/* Upload Image */}
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
@@ -313,54 +358,6 @@ export default function ProfessionalStadiumSidebar({
                   </span>
                 </div>
               </div>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Stadium Template */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Template" 
-              section="template" 
-              icon={Building}
-              required={!isVisionMode}
-              badge={selectedStadium || undefined}
-            />
-          </CardHeader>
-          {expandedSections.template && (
-            <CardContent className="p-4 pt-0">
-              <select
-                value={selectedStadium}
-                onChange={(e) => setSelectedStadium(e.target.value)}
-                disabled={isVisionMode}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm",
-                  "transition-colors",
-                  "pointer-events-auto relative",
-                  selectedStadium && selectedStadium !== "custom_only" ? "text-[#707070]" : "text-[#FDFDFD]",
-                  isVisionMode && "opacity-50 cursor-not-allowed"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                <option value="custom_only" className="bg-[#14101e] text-[#FDFDFD]">
-                  {isVisionMode ? 'Template disabled (Vision Mode)' : 'No Template (Custom)'}
-                </option>
-                {availableStadiums.map((stadium) => (
-                  <option key={stadium.id} value={stadium.id} className="bg-[#14101e] text-[#FDFDFD]">
-                    {stadium.name}
-                  </option>
-                ))}
-              </select>
-              {isVisionMode && (
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Template auto-detected from reference image
-                </p>
-              )}
             </CardContent>
           )}
         </Card>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
-import { StadiumService, StadiumInfo, StadiumResponse } from '@/lib/services/stadium-service';
+// import { StadiumService, StadiumInfo } from '@/lib/services/stadium-service'; // REMOVED OLD SERVICE
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
@@ -16,6 +16,13 @@ import ProfessionalStadiumSidebar from '@/components/stadium/ProfessionalStadium
 import ProfessionalStadiumCanvas from '@/components/stadium/ProfessionalStadiumCanvas'
 import ProfessionalStadiumActionBar from '@/components/stadium/ProfessionalStadiumActionBar'
 import ProfessionalMarketplace from '@/components/editor/ProfessionalMarketplace'
+
+// NEW TYPE DEFINITION for stadiums from our API
+interface ApiStadium {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
 
 // Marketplace data will be loaded from JSON
 interface MarketplaceNFT {
@@ -53,7 +60,7 @@ export default function StadiumEditor() {
   } = useEngine()
 
   // Stadium reference state
-  const [availableStadiums, setAvailableStadiums] = useState<StadiumInfo[]>([]);
+  const [availableStadiums, setAvailableStadiums] = useState<ApiStadium[]>([]);
   const [selectedStadium, setSelectedStadium] = useState('custom_only');
   
   // Generation parameters
@@ -72,7 +79,7 @@ export default function StadiumEditor() {
   const [generatedImage, setGeneratedImage] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState('');
-  const [result, setResult] = useState<StadiumResponse | null>(null);
+  const [result, setResult] = useState<any | null>(null); // Changed to any as StadiumResponse is removed
   const [generationCost, setGenerationCost] = useState<number | null>(null);
 
   // IPFS state
@@ -207,17 +214,23 @@ export default function StadiumEditor() {
     loadTopCollectionsData();
   }, []);
 
-  // Load available stadiums
+  // Load available stadiums from our new DB-driven endpoint
   useEffect(() => {
-  const loadAvailableStadiums = async () => {
-    try {
-      const stadiums = await StadiumService.getAvailableStadiums();
-      setAvailableStadiums(stadiums);
-      if (stadiums.length > 0) {
-        setSelectedStadium(stadiums[0].id);
-      }
-    } catch (error) {
-      console.error('Error loading stadiums:', error);
+    const loadAvailableStadiums = async () => {
+      try {
+        console.log('🔄 Loading available stadiums from DB...');
+        const response = await fetch('/api/stadiums');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stadiums: ${response.statusText}`);
+        }
+        const stadiums: ApiStadium[] = await response.json();
+        setAvailableStadiums(stadiums as any); // Casting to any to avoid type conflicts with old StadiumInfo
+        if (stadiums.length > 0) {
+          setSelectedStadium(stadiums[0].id);
+        }
+        console.log(`✅ Loaded ${stadiums.length} stadiums from DB.`);
+      } catch (error) {
+        console.error('❌ Error loading stadiums:', error);
         setAvailableStadiums([]);
         setSelectedStadium('custom_only');
       }
@@ -271,99 +284,61 @@ export default function StadiumEditor() {
   }
 
   const generateStadium = async () => {
-    if (!isConnected) {
-      setError('🔒 Please connect your wallet to generate stadiums')
-      return
-    }
-
+    if (isGenerating) return;
     setIsGenerating(true);
     setError('');
+    setGeneratedImage('');
+    setResult(null);
 
     try {
-      if (isVisionMode && referenceImageBlob) {
-        // Vision-enhanced generation
-        console.log('🎨 Starting Vision-enhanced stadium generation...')
-            setIsAnalyzing(true)
-            
-        // Convert to base64
-              const reader = new FileReader()
-        reader.onload = async () => {
-          try {
-            const base64Data = reader.result as string
-            
-            // Call vision analysis API
-            const visionResponse = await fetch('/api/vision-generate', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                imageData: base64Data,
-                sport: 'stadium',
-              view: selectedView,
-                customPrompt: customPrompt
-              })
-            })
-
-            if (!visionResponse.ok) {
-              throw new Error(`Vision analysis failed: ${visionResponse.status}`)
-            }
-
-            const visionResult = await visionResponse.json()
-            setIsAnalyzing(false)
-            
-            if (visionResult.imageUrl) {
-              setGeneratedImage(visionResult.imageUrl)
-              
-              // Convert to blob for minting
-              const imageResponse = await fetch(visionResult.imageUrl)
-              const blob = await imageResponse.blob()
-              setGeneratedImageBlob(blob)
-              
-              console.log('✅ Vision-enhanced stadium generated successfully')
-            }
-            
-          } catch (error: any) {
-            setIsAnalyzing(false)
-            setError(error.message || 'Vision analysis failed')
-          }
-        }
-        reader.readAsDataURL(referenceImageBlob)
-
-      } else {
-        // Standard generation
-        const response = await StadiumService.generateStadium({
-          stadiumId: selectedStadium !== 'custom_only' ? selectedStadium : undefined,
-            style: generationStyle,
-          perspective: perspective,
-          atmosphere: atmosphere,
-          timeOfDay: timeOfDay,
-          weather: weather,
-          customPrompt: customPrompt
+      // Use the new reference generation flow
+      if (selectedStadium !== 'custom_only') {
+        console.log(`🚀 Starting reference generation for stadium: ${selectedStadium}`);
+        const response = await fetch('/api/generate-stadium-from-reference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teamName: selectedStadium, // The API expects the ID in the 'teamName' field
+            quality: quality,
+            sport: 'soccer', // Default values, can be customized later
+            view: 'external',
+          }),
         });
 
-        if (response.imageUrl) {
-          setGeneratedImage(response.imageUrl);
-          
-          // Convert to blob for minting
-          const imageResponse = await fetch(response.imageUrl);
-          const blob = await imageResponse.blob();
-          setGeneratedImageBlob(blob);
-          
-          setResult(response);
-          console.log('✅ Stadium generated successfully');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Failed to generate stadium from reference.');
         }
-      }
 
-    } catch (error: any) {
-      console.error('❌ Stadium generation error:', error);
-      setError(error.message || 'Failed to generate stadium');
+        const data = await response.json();
+        
+        if (data.image_base64) {
+          const imageUrl = `data:image/png;base64,${data.image_base64}`;
+          setGeneratedImage(imageUrl);
+          
+          // Convert base64 to Blob for potential future use (like minting)
+          const fetchRes = await fetch(imageUrl);
+          const blob = await fetchRes.blob();
+          setGeneratedImageBlob(blob);
+        }
+        console.log('✅ Stadium generated successfully from reference.');
+
+      } else {
+        // This is the old logic for custom prompts/uploads, should be preserved
+        // For now, we show an error if custom mode is selected without a proper implementation
+        console.log('CUSTOM MODE - NOT IMPLEMENTED IN THIS FLOW');
+        throw new Error('Custom generation (from prompt or upload) is not yet connected in this UI. Please select a reference stadium.');
+      }
+    } catch (err: any) {
+      console.error('❌ Generation Error:', err);
+      setError(err.message || 'An unknown error occurred during generation.');
     } finally {
-          setIsGenerating(false);
-      setIsAnalyzing(false);
+      setIsGenerating(false);
     }
   };
 
   const handleMintNFT = async (isGasless: boolean) => {
-    if (!generatedImageBlob || !address) {
+    if (!generatedImageBlob) {
       setMintError('Missing required data for minting');
       return;
     }

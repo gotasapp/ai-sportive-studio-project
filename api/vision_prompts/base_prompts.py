@@ -148,6 +148,70 @@ The most important requirement is to show the **back of the jersey** with the na
     return prompt_final
 
 # ============================================================================
+# NOVA FUNÇÃO DE COMPOSIÇÃO PARA STADIUMS
+# ============================================================================
+
+def compose_stadium_vision_prompt(analysis_text: str, style: str = "realistic") -> str:
+    """
+    Gera um prompt DALL-E 3 robusto para STADIUMS.
+    Usa a mesma estrutura de alta qualidade das jerseys para garantir consistência visual.
+    """
+    style_description = STYLE_THEMES.get(style, "realistic architectural")
+
+    prompt_final = f"""
+Create a photorealistic image of a professional sports stadium, with a {style_description} style.
+
+**1. ARCHITECTURAL DESIGN INSTRUCTIONS:**
+The stadium's design must be faithfully based on the following description of its architectural and atmospheric elements:
+---
+{analysis_text}
+---
+
+**2. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+- Background: A clean, neutral background, or a subtle sky appropriate for the time of day.
+- Display: The stadium must be shown as the main subject, well-lit and centered.
+- Prohibited Elements: Absolutely NO people, NO crowds, NO cars, NO unrelated objects, NO brand logos or text overlays.
+- Quality: Render in 4K, hyper-realistic quality, with professional architectural lighting and attention to materials and textures.
+
+**3. GOLDEN RULE:**
+The most important requirement is to create a clean, high-impact, professional architectural visualization of the stadium based on the design instructions.
+""".strip()
+    
+    return prompt_final
+
+# ============================================================================
+# NOVA FUNÇÃO DE COMPOSIÇÃO PARA BADGES/EMBLEMS
+# ============================================================================
+
+def compose_badge_vision_prompt(analysis_text: str, style: str = "modern") -> str:
+    """
+    Gera um prompt DALL-E 3 robusto para BADGES e EMBLEMS.
+    Usa a mesma estrutura de alta qualidade para consistência visual, focada em design gráfico.
+    """
+    style_description = STYLE_THEMES.get(style, "modern vector art")
+
+    prompt_final = f"""
+Create a high-resolution, professional emblem or badge with a {style_description} style.
+
+**1. GRAPHIC DESIGN INSTRUCTIONS:**
+The emblem's design must be faithfully based on the following description of its shapes, symbols, and color palette:
+---
+{analysis_text}
+---
+
+**2. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+- Background: Plain, neutral white background to isolate the emblem.
+- Display: The emblem must be shown flat, centered, and rendered with sharp, clean lines like a vector graphic.
+- Prohibited Elements: Absolutely NO text (unless specified in the design), NO shadows, NO realistic textures (like metal or fabric), NO extra objects.
+- Quality: Render in 4K, with bold, vibrant colors and a clean, minimalist aesthetic.
+
+**3. GOLDEN RULE:**
+The most important requirement is to create a clean, professional, and visually appealing emblem based on the design instructions.
+""".strip()
+    
+    return prompt_final
+
+# ============================================================================
 # UTILITY FUNCTIONS
 # ============================================================================
 

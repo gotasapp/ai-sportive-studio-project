@@ -29,6 +29,13 @@ const STYLE_FILTERS = [
   { id: 'classic', label: 'Classic', icon: Crown }
 ]
 
+// NEW TYPE DEFINITION for badges from our API
+interface ApiBadge {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
+
 interface MarketplaceNFT {
   name: string;
   imageUrl: string; // CORRIGIDO: sem underscore para ser consistente
@@ -78,6 +85,10 @@ export default function BadgeEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  
+  // NEW: State for reference generation
+  const [availableBadges, setAvailableBadges] = useState<ApiBadge[]>([]);
+  const [selectedBadge, setSelectedBadge] = useState<string>('custom_only');
   
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
@@ -180,6 +191,31 @@ export default function BadgeEditor() {
     }
   }
 
+  // NEW: useEffect to load available badges from the API
+  useEffect(() => {
+    const loadAvailableBadges = async () => {
+      try {
+        console.log('🔄 Loading available badges from DB...');
+        const response = await fetch('/api/badges');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch badges: ${response.statusText}`);
+        }
+        const badges: ApiBadge[] = await response.json();
+        setAvailableBadges(badges);
+        if (badges.length > 0) {
+          // You might want to default to custom instead of the first one
+          // setSelectedBadge(badges[0].id); 
+        }
+        console.log(`✅ Loaded ${badges.length} badges from DB.`);
+      } catch (error) {
+        console.error('❌ Error loading badges:', error);
+        setAvailableBadges([]);
+      }
+    };
+
+    loadAvailableBadges();
+  }, []);
+
   const generateContent = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
     if (!isConnected) {
@@ -193,8 +229,44 @@ export default function BadgeEditor() {
     }
     setIsLoading(true)
     setError(null)
+    setGeneratedImage(null);
 
     try {
+      // NEW: Check if reference generation mode is active
+      if (selectedBadge !== 'custom_only') {
+        console.log(`🚀 Starting reference generation for badge: ${selectedBadge}`);
+        const response = await fetch('/api/generate-badge-from-reference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            teamName: selectedBadge, // API expects the ID in the 'teamName' field
+            quality: quality,
+            sport: 'badge', // Context for the API
+            view: 'default',
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Failed to generate badge from reference.');
+        }
+
+        const data = await response.json();
+        
+        if (data.image_base64) {
+          const imageUrl = `data:image/png;base64,${data.image_base64}`;
+          setGeneratedImage(imageUrl);
+          
+          const fetchRes = await fetch(imageUrl);
+          const blob = await fetchRes.blob();
+          setGeneratedImageBlob(blob);
+        }
+        console.log('✅ Badge generated successfully from reference.');
+        setIsLoading(false);
+        return; // End execution here for reference mode
+      }
+
+      // If not in reference mode, continue with the existing vision/upload flow
       if (isVisionMode && referenceImageBlob) {
         // Vision-enhanced generation flow
         console.log('🎨 Starting Vision-enhanced badge generation...')

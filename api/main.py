@@ -5,7 +5,7 @@ Combina as funcionalidades de geração de jerseys e estádios em uma única API
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from openai import OpenAI, AsyncOpenAI # Importar o cliente Async
 import requests
 import base64
@@ -23,6 +23,7 @@ import time # Adicionar import para medir tempo de análise
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from bson import ObjectId
 
 # Importar sistema de prompts premium para stadiums
 from stadium_base_prompts import build_enhanced_stadium_prompt, STADIUM_NFT_BASE_PROMPT
@@ -365,7 +366,7 @@ class CustomStadiumRequest(BaseModel):
 class StadiumInfo(BaseModel):
     id: str
     name: str
-    available_references: List[str]
+    previewImage: Optional[str] = None
 
 class StadiumResponse(BaseModel):
     success: bool
@@ -376,6 +377,21 @@ class StadiumResponse(BaseModel):
     error: Optional[str] = None
     cost_usd: Optional[float] = None
     prompt_used: Optional[str] = None
+
+# --- MODELOS PARA ADMIN CRUD ---
+class StadiumReference(BaseModel):
+    id: Optional[str] = Field(None, alias='_id')
+    name: str
+    stadiumId: str
+    stadiumBasePrompt: str
+    referenceImages: List[Dict[str, str]]
+
+class BadgeReference(BaseModel):
+    id: Optional[str] = Field(None, alias='_id')
+    name: str
+    badgeId: str
+    badgeBasePrompt: str
+    referenceImages: List[Dict[str, str]]
 
 # --- MODELOS PARA VISION ANALYSIS ---
 class VisionAnalysisRequest(BaseModel):
@@ -390,6 +406,12 @@ class VisionAnalysisResponse(BaseModel):
     model_used: Optional[str] = None
     cost_estimate: Optional[float] = None
     error: Optional[str] = None
+
+# --- MODELO PARA BADGES ---
+class BadgeInfo(BaseModel):
+    id: str
+    name: str
+    previewImage: Optional[str] = None
 
 # --- GERADOR DE JERSEYS ---
 class JerseyGenerator:
@@ -1076,15 +1098,91 @@ async def get_available_teams():
     
     return sorted(teams)
 
+@app.get("/badges", response_model=List[BadgeInfo])
+async def list_badges_from_db():
+    """Lists available badges for reference generation from MongoDB."""
+    print("\n--- [DEBUG] Rota GET /badges foi chamada ---")
+    if db is None:
+        print("[DEBUG] ERRO: Conexão com o banco de dados é nula.")
+        raise HTTPException(status_code=500, detail="Database connection is not available.")
+    
+    badges = []
+    try:
+        collection_name = "badge_references"
+        print(f"[DEBUG] Acessando a coleção: '{collection_name}'")
+        collection = db[collection_name]
+        
+        count = collection.count_documents({})
+        print(f"[DEBUG] Documentos encontrados na coleção: {count}")
+        
+        if count == 0:
+            print("[DEBUG] Nenhum documento encontrado. Retornando lista vazia.")
+            return []
+            
+        cursor = collection.find({}, {"name": 1, "badgeId": 1, "referenceImages": 1})
+        
+        # Log do primeiro documento para verificar a estrutura
+        first_doc = db[collection_name].find_one({}, {"name": 1, "badgeId": 1, "referenceImages": 1})
+        print(f"[DEBUG] Estrutura do primeiro documento encontrado: {first_doc}")
+
+        for doc in cursor:
+            preview_image = None
+            if doc.get("referenceImages") and len(doc["referenceImages"]) > 0:
+                preview_image = doc["referenceImages"][0].get("url")
+            
+            badges.append(BadgeInfo(
+                id=doc.get("badgeId"),
+                name=doc.get("name"),
+                previewImage=preview_image
+            ))
+        print(f"✅ [DB] Sucesso! {len(badges)} emblemas de referência processados.")
+        return badges
+    except Exception as e:
+        print(f"❌ [DB] CRÍTICO: Falha ao buscar emblemas no MongoDB: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch badges from database: {e}")
+
 # --- ENDPOINTS DE STADIUMS ---
 @app.get("/stadiums", response_model=List[StadiumInfo])
-async def list_stadiums():
-    """Lista estádios disponíveis"""
+async def list_stadiums_from_db():
+    """Lista estádios disponíveis para geração por referência a partir do MongoDB."""
+    print("\n--- [DEBUG] Rota GET /stadiums foi chamada ---")
+    if db is None:
+        print("[DEBUG] ERRO: Conexão com o banco de dados é nula.")
+        raise HTTPException(status_code=500, detail="Database connection is not available.")
+    
+    stadiums = []
     try:
-        stadiums = stadium_generator.get_available_stadiums()
+        collection_name = "stadium_references"
+        print(f"[DEBUG] Acessando a coleção: '{collection_name}'")
+        collection = db[collection_name]
+
+        count = collection.count_documents({})
+        print(f"[DEBUG] Documentos encontrados na coleção: {count}")
+
+        if count == 0:
+            print("[DEBUG] Nenhum documento encontrado. Retornando lista vazia.")
+            return []
+
+        # Log do primeiro documento para verificar a estrutura
+        first_doc = db[collection_name].find_one({}, {"name": 1, "stadiumId": 1, "referenceImages": 1})
+        print(f"[DEBUG] Estrutura do primeiro documento encontrado: {first_doc}")
+
+        cursor = collection.find({}, {"name": 1, "stadiumId": 1, "referenceImages": 1})
+        for doc in cursor:
+            preview_image = None
+            if doc.get("referenceImages") and len(doc["referenceImages"]) > 0:
+                preview_image = doc["referenceImages"][0].get("url")
+            
+            stadiums.append(StadiumInfo(
+                id=doc.get("stadiumId"),
+                name=doc.get("name"),
+                previewImage=preview_image
+            ))
+        print(f"✅ [DB] Sucesso! {len(stadiums)} estádios de referência processados.")
         return stadiums
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ [DB] CRÍTICO: Falha ao buscar estádios no MongoDB: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch stadiums from database: {e}")
 
 @app.post("/generate-from-reference", response_model=StadiumResponse)
 async def generate_stadium_from_reference(request: StadiumReferenceRequest):
@@ -1330,6 +1428,309 @@ Seja extremamente técnico, descritivo e preciso. Não invente detalhes, apenas 
     except Exception as e:
         print(f"❌ [CRITICAL] Erro crítico na rota: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
+
+@app.post("/generate-stadium-from-reference", response_model=ReferenceGenerationResponse)
+async def generate_stadium_from_reference(request: GenerateFromReferenceRequest):
+    """
+    Gera um estádio usando uma referência de time do banco de dados.
+    Busca o `stadiumBasePrompt` e as `referenceImages` do MongoDB.
+    """
+    print(f"✅ [DB] Rota /generate-stadium-from-reference chamada para o estádio: '{request.teamName}'") # Usamos teamName como ID
+
+    if db is None:
+        print("❌ [DB] ERRO: Conexão com o banco de dados não disponível.")
+        raise HTTPException(status_code=500, detail="Database connection is not available.")
+
+    try:
+        query_name = request.teamName.strip() # teamName aqui é o ID do estádio, ex: "maracana"
+        print(f"🔍 [DB] Buscando referência para '{query_name}' na coleção 'stadium_references'...")
+        
+        stadium_reference = db.stadium_references.find_one({"stadiumId": {"$regex": f"^{query_name}$", "$options": "i"}})
+
+        if not stadium_reference:
+            print(f"❌ [DB] ERRO: Estádio '{query_name}' não foi encontrado na coleção 'stadium_references'.")
+            raise HTTPException(status_code=404, detail=f"Stadium '{query_name}' not found in database.")
+
+        print(f"✅ [DB] Referência encontrada para '{query_name}'.")
+        
+        metadata = stadium_reference.get("metadata", {})
+        stadium_base_prompt = metadata.get("stadiumBasePrompt", "")
+        
+        if not stadium_base_prompt:
+            print(f"⚠️ [DB] Alerta: `stadiumBasePrompt` está vazio para '{query_name}'.")
+
+        reference_images = stadium_reference.get("referenceImages", [])
+        image_url_to_analyze = reference_images[0].get("url") if reference_images else None
+        
+        if not image_url_to_analyze:
+            print("❌ [VISION] ERRO: Nenhuma URL de imagem de referência encontrada.")
+            raise HTTPException(status_code=400, detail="Reference image URL is missing.")
+
+        print(f"🖼️ [VISION] Iniciando análise para a imagem: {image_url_to_analyze}")
+        
+        vision_analyzer = VisionAnalysisSystem()
+        analysis_prompt = "Analyze this stadium image. Describe its key architectural features, materials, roof design, shape, and overall atmosphere. Be descriptive and concise for an AI art prompt."
+        
+        vision_result = await vision_analyzer.analyze_image_with_vision(
+            image_url=image_url_to_analyze,
+            prompt=analysis_prompt
+        )
+
+        if not vision_result.get("success"):
+            error_msg = vision_result.get("error", "Unknown vision analysis error.")
+            print(f"❌ [VISION] ERRO na análise: {error_msg}")
+            raise HTTPException(status_code=500, detail=f"Vision analysis failed: {error_msg}")
+
+        analysis_text = vision_result["analysis"]
+        print(f"✅ [VISION] Análise concluída com sucesso.")
+
+        final_analysis_text = analysis_text
+        if stadium_base_prompt:
+            final_analysis_text = f"**Primary Design Directive:**\n{stadium_base_prompt}\n\n**Additional Details from Visual Analysis:**\n{analysis_text}"
+        
+        final_prompt = compose_stadium_vision_prompt(
+            analysis_text=final_analysis_text,
+            style=request.quality
+        )
+
+        print("🤖 [DALL-E] Iniciando a geração final da imagem do estádio...")
+        dalle_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        generation_response = dalle_client.images.generate(
+            model="dall-e-3", prompt=final_prompt, size="1024x1024",
+            quality=request.quality, n=1, response_format="url"
+        )
+        
+        generated_image_url = generation_response.data[0].url
+        print(f"✅ [DALL-E] Imagem gerada com sucesso. Baixando...")
+
+        image_response = requests.get(generated_image_url)
+        image_response.raise_for_status()
+        image_base64 = base64.b64encode(image_response.content).decode("utf-8")
+        print("✅ [PROCESS] Imagem convertida para base64.")
+
+        try:
+            print("📤 [CLOUDINARY] Iniciando upload...")
+            upload_result = cloudinary.uploader.upload(
+                f"data:image/png;base64,{image_base64}",
+                folder="stadiums_generated",
+                public_id=f"{query_name}_{int(time.time())}"
+            )
+            cloudinary_url = upload_result.get("secure_url")
+            print(f"✅ [CLOUDINARY] Upload concluído: {cloudinary_url}")
+
+            print("💾 [DB] Salvando o novo estádio na coleção 'stadiums'...")
+            stadiums_collection = db["stadiums"]
+            new_stadium_doc = {
+                "name": stadium_reference.get("name", query_name.replace('_', ' ').title()),
+                "description": f"AI-generated {query_name} stadium. Style: {request.quality}.",
+                "imageUrl": cloudinary_url,
+                "stadiumId": query_name,
+                "style": request.quality,
+                "generationType": "vision_reference",
+                "promptUsed": final_prompt,
+                "createdAt": datetime.utcnow(),
+                "createdBy": "system_vision_flow"
+            }
+            stadiums_collection.insert_one(new_stadium_doc)
+            print("✅ [DB] Novo estádio salvo com sucesso.")
+
+        except Exception as post_processing_error:
+            print(f"⚠️ [POST-PROCESS] Alerta: Falha no upload/salvamento: {post_processing_error}")
+
+        return ReferenceGenerationResponse(
+            success=True, image_base64=image_base64, prompt=final_prompt
+        )
+
+    except Exception as e:
+        print(f"❌ [CRITICAL] Erro crítico na rota de estádios: {e}")
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
+
+@app.post("/generate-badge-from-reference", response_model=ReferenceGenerationResponse)
+async def generate_badge_from_reference(request: GenerateFromReferenceRequest):
+    """
+    Gera um emblema (badge) usando uma referência do banco de dados.
+    """
+    print(f"✅ [DB] Rota /generate-badge-from-reference chamada para o emblema: '{request.teamName}'") # Usamos teamName como ID
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection is not available.")
+
+    try:
+        query_name = request.teamName.strip() # ID do emblema, ex: "flamengo_retro"
+        print(f"🔍 [DB] Buscando referência para '{query_name}' na coleção 'badge_references'...")
+        
+        badge_reference = db.badge_references.find_one({"badgeId": {"$regex": f"^{query_name}$", "$options": "i"}})
+
+        if not badge_reference:
+            raise HTTPException(status_code=404, detail=f"Badge '{query_name}' not found in database.")
+
+        print(f"✅ [DB] Referência encontrada para '{query_name}'.")
+        
+        metadata = badge_reference.get("metadata", {})
+        badge_base_prompt = metadata.get("badgeBasePrompt", "")
+        
+        reference_images = badge_reference.get("referenceImages", [])
+        image_url_to_analyze = reference_images[0].get("url") if reference_images else None
+        
+        if not image_url_to_analyze:
+            raise HTTPException(status_code=400, detail="Reference image URL is missing.")
+
+        print(f"🖼️ [VISION] Iniciando análise da imagem do emblema...")
+        
+        vision_analyzer = VisionAnalysisSystem()
+        analysis_prompt = "Analyze this emblem/badge. Describe its shape, main symbols, color palette, and style (e.g., modern, classic, minimalist). Focus on elements for a graphic design recreation."
+        
+        vision_result = await vision_analyzer.analyze_image_with_vision(image_url=image_url_to_analyze, prompt=analysis_prompt)
+
+        if not vision_result.get("success"):
+            raise HTTPException(status_code=500, detail=f"Vision analysis failed: {vision_result.get('error')}")
+
+        analysis_text = vision_result["analysis"]
+        print(f"✅ [VISION] Análise do emblema concluída.")
+
+        final_analysis_text = analysis_text
+        if badge_base_prompt:
+            final_analysis_text = f"**Primary Design Directive:**\n{badge_base_prompt}\n\n**Additional Details from Visual Analysis:**\n{analysis_text}"
+        
+        final_prompt = compose_badge_vision_prompt(
+            analysis_text=final_analysis_text,
+            style=request.quality
+        )
+
+        print("🤖 [DALL-E] Iniciando a geração final do emblema...")
+        dalle_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+        generation_response = dalle_client.images.generate(
+            model="dall-e-3", prompt=final_prompt, size="1024x1024",
+            quality=request.quality, n=1, response_format="url"
+        )
+        
+        generated_image_url = generation_response.data[0].url
+        image_response = requests.get(generated_image_url)
+        image_response.raise_for_status()
+        image_base64 = base64.b64encode(image_response.content).decode("utf-8")
+        print("✅ [PROCESS] Imagem do emblema convertida para base64.")
+
+        try:
+            print("📤 [CLOUDINARY] Iniciando upload do emblema...")
+            upload_result = cloudinary.uploader.upload(
+                f"data:image/png;base64,{image_base64}",
+                folder="badges_generated",
+                public_id=f"{query_name}_{int(time.time())}"
+            )
+            cloudinary_url = upload_result.get("secure_url")
+            print(f"✅ [CLOUDINARY] Upload do emblema concluído: {cloudinary_url}")
+
+            print("💾 [DB] Salvando o novo emblema na coleção 'badges'...")
+            badges_collection = db["badges"]
+            new_badge_doc = {
+                "name": badge_reference.get("name", query_name.replace('_', ' ').title()),
+                "description": f"AI-generated {query_name} badge. Style: {request.quality}.",
+                "imageUrl": cloudinary_url,
+                "badgeId": query_name,
+                "style": request.quality,
+                "generationType": "vision_reference",
+                "promptUsed": final_prompt,
+                "createdAt": datetime.utcnow(),
+                "createdBy": "system_vision_flow"
+            }
+            badges_collection.insert_one(new_badge_doc)
+            print("✅ [DB] Novo emblema salvo com sucesso.")
+
+        except Exception as post_processing_error:
+            print(f"⚠️ [POST-PROCESS] Alerta: Falha no upload/salvamento do emblema: {post_processing_error}")
+
+        return ReferenceGenerationResponse(
+            success=True, image_base64=image_base64, prompt=final_prompt
+        )
+
+    except Exception as e:
+        print(f"❌ [CRITICAL] Erro crítico na rota de emblemas: {e}")
+        raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
+
+# --- ADMIN ENDPOINTS ---
+@app.post("/api/admin/stadiums")
+async def create_stadium_reference(stadium: StadiumReference):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    try:
+        print(f"✅ [ADMIN] Recebida requisição para criar referência de estádio: {stadium.name}")
+        db.stadium_references.insert_one(stadium.dict())
+        return {"status": "success", "message": f"Stadium reference '{stadium.name}' created."}
+    except Exception as e:
+        print(f"❌ [ADMIN] Erro ao criar referência de estádio: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/admin/badges")
+async def create_badge_reference(badge: BadgeReference):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    try:
+        print(f"✅ [ADMIN] Recebida requisição para criar referência de emblema: {badge.name}")
+        db.badge_references.insert_one(badge.dict())
+        return {"status": "success", "message": f"Badge reference '{badge.name}' created."}
+    except Exception as e:
+        print(f"❌ [ADMIN] Erro ao criar referência de emblema: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/admin/stadiums/{stadium_id}")
+async def get_stadium_reference(stadium_id: str):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    stadium = db.stadium_references.find_one({"stadiumId": stadium_id})
+    if stadium:
+        stadium["_id"] = str(stadium["_id"])
+        return stadium
+    raise HTTPException(status_code=404, detail="Stadium reference not found")
+
+@app.put("/api/admin/stadiums/{stadium_id}")
+async def update_stadium_reference(stadium_id: str, stadium: StadiumReference):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    update_data = stadium.dict(exclude_unset=True, exclude={'id'})
+    result = db.stadium_references.update_one({"stadiumId": stadium_id}, {"$set": update_data})
+    if result.matched_count:
+        return {"status": "success", "message": f"Stadium reference '{stadium.name}' updated."}
+    raise HTTPException(status_code=404, detail="Stadium reference not found")
+
+@app.delete("/api/admin/stadiums/{stadium_id}")
+async def delete_stadium_reference(stadium_id: str):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    result = db.stadium_references.delete_one({"stadiumId": stadium_id})
+    if result.deleted_count:
+        return {"status": "success", "message": "Stadium reference deleted."}
+    raise HTTPException(status_code=404, detail="Stadium reference not found")
+
+@app.get("/api/admin/badges/{badge_id}")
+async def get_badge_reference(badge_id: str):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    badge = db.badge_references.find_one({"badgeId": badge_id})
+    if badge:
+        badge["_id"] = str(badge["_id"])
+        return badge
+    raise HTTPException(status_code=404, detail="Badge reference not found")
+
+@app.put("/api/admin/badges/{badge_id}")
+async def update_badge_reference(badge_id: str, badge: BadgeReference):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    update_data = badge.dict(exclude_unset=True, exclude={'id'})
+    result = db.badge_references.update_one({"badgeId": badge_id}, {"$set": update_data})
+    if result.matched_count:
+        return {"status": "success", "message": f"Badge reference '{badge.name}' updated."}
+    raise HTTPException(status_code=404, detail="Badge reference not found")
+
+@app.delete("/api/admin/badges/{badge_id}")
+async def delete_badge_reference(badge_id: str):
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database connection not available.")
+    result = db.badge_references.delete_one({"badgeId": badge_id})
+    if result.deleted_count:
+        return {"status": "success", "message": "Badge reference deleted."}
+    raise HTTPException(status_code=404, detail="Badge reference not found")
 
 # --- PONTO DE ENTRADA DA APLICAÇÃO ---
 if __name__ == "__main__":

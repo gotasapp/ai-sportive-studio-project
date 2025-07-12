@@ -3,13 +3,21 @@
 import React, { useRef } from 'react'
 import { 
   Upload, X, Zap, Gamepad2, Globe, Crown, Palette,
-  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, User, Hash
+  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, User, Hash, Award
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// NEW TYPE DEFINITION
+interface ApiBadge {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
 
 const SPORTS_OPTIONS = [
   { id: 'soccer', name: 'Soccer', description: 'Soccer badge' },
@@ -31,6 +39,9 @@ const STYLE_FILTERS = [
 ]
 
 interface ProfessionalBadgeSidebarProps {
+  availableBadges: ApiBadge[];
+  selectedBadge: string;
+  setSelectedBadge: (badge: string) => void;
   badgeName: string
   setBadgeName: (name: string) => void
   selectedStyle: string
@@ -53,6 +64,9 @@ interface ProfessionalBadgeSidebarProps {
 }
 
 export default function ProfessionalBadgeSidebar({
+  availableBadges,
+  selectedBadge,
+  setSelectedBadge,
   badgeName,
   setBadgeName,
   selectedStyle,
@@ -142,6 +156,41 @@ export default function ProfessionalBadgeSidebar({
             </div>
           </div>
         )}
+
+        {/* NEW: Badge Template Selection */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Select Template" 
+              section="details" 
+              icon={Award}
+              required
+            />
+          </CardHeader>
+          {expandedSections.details && (
+            <CardContent className="p-3 pt-2">
+              <Select
+                value={selectedBadge}
+                onValueChange={setSelectedBadge}
+                disabled={availableBadges.length === 0}
+              >
+                <SelectTrigger className="w-full bg-transparent border-[#333333] text-[#FDFDFD]">
+                  <SelectValue placeholder="Select a badge template..." />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1C1C1C] border-[#333333] text-[#FDFDFD]">
+                  <SelectItem value="custom_only" className="focus:bg-[#A20131]/20">
+                    No Template (Custom Generation)
+                  </SelectItem>
+                  {availableBadges.map((badge) => (
+                    <SelectItem key={badge.id} value={badge.id} className="focus:bg-[#A20131]/20">
+                      {badge.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          )}
+        </Card>
 
         {/* Upload Image */}
         <Card className="cyber-card-upload-badge border-[#333333] shadow-lg">
