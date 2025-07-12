@@ -203,7 +203,7 @@ export default function BadgeEditor() {
         const data = await response.json();
         // data.data é o array de badge references
         const badges: ApiBadge[] = (data.data || []).map((ref: any) => ({
-          id: ref._id, // sempre o _id do MongoDB
+          id: ref.teamName, // agora o id é o teamName
           name: ref.teamName || 'Unnamed Badge',
           previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
         }));
@@ -243,16 +243,22 @@ export default function BadgeEditor() {
     try {
       // NEW: Check if reference generation mode is active
       if (selectedBadge !== 'custom_only') {
-        console.log(`🚀 Starting reference generation for badge: ${selectedBadge}`);
-        const response = await fetch('/api/generate-badge-from-reference', {
+        const payload = {
+          teamName: selectedBadge,
+          quality: quality,
+          sport: 'badge',
+          view: 'default',
+          style: selectedStyle,
+          customPrompt: customPrompt || undefined,
+          prompt: undefined, // Se quiser montar prompt no frontend, preencha aqui
+          analysis: analysisResult || undefined // Se houver análise vision
+        };
+        // Log detalhado do payload enviado
+        console.log('[BADGE GENERATION] Payload enviado para /api/generate-from-reference:', payload);
+        const response = await fetch('/api/generate-from-reference', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            teamName: selectedBadge, // API expects the ID in the 'teamName' field
-            quality: quality,
-            sport: 'badge', // Context for the API
-            view: 'default',
-          }),
+          body: JSON.stringify(payload),
         });
 
         if (!response.ok) {

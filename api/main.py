@@ -314,8 +314,8 @@ class VisionEnhancedGenerationRequest(BaseModel):
 
 class GenerateFromReferenceRequest(BaseModel):
     teamName: str
-    player_name: str
-    player_number: str
+    player_name: Optional[str] = None  # Agora opcional
+    player_number: Optional[str] = None  # Agora opcional
     quality: str = "standard"
     sport: str = "soccer"
     view: str = "back"
@@ -1576,67 +1576,64 @@ async def generate_badge_from_reference(request: GenerateFromReferenceRequest):
     """
     Gera um emblema (badge) usando uma referência do banco de dados.
     """
-    print(f"✅ [DB] Rota /generate-badge-from-reference chamada para o emblema: '{request.teamName}'") # Usamos teamName como ID
-
+    print(f"✅ [DB] Rota /generate-badge-from-reference chamada para o emblema: '{request.teamName}'")
+    # Log completo do payload recebido
+    print(f"[BADGE GENERATION] Payload recebido: {request.dict()}")
     if db is None:
         raise HTTPException(status_code=500, detail="Database connection is not available.")
-
     try:
-        query_name = request.teamName.strip() # ID do emblema, ex: "flamengo_retro"
+        query_name = request.teamName.strip()
         print(f"🔍 [DB] Buscando referência para '{query_name}' na coleção 'badge_references'...")
-        
-        badge_reference = db.badge_references.find_one({"badgeId": {"$regex": f"^{query_name}$", "$options": "i"}})
-
+        badge_reference = db.badge_references.find_one({
+            "$or": [
+                {"badgeId": {"$regex": f"^{query_name}$", "$options": "i"}},
+                {"teamName": {"$regex": f"^{query_name}$", "$options": "i"}}
+            ]
+        })
         if not badge_reference:
             raise HTTPException(status_code=404, detail=f"Badge '{query_name}' not found in database.")
-
         print(f"✅ [DB] Referência encontrada para '{query_name}'.")
-        
         metadata = badge_reference.get("metadata", {})
-        badge_base_prompt = metadata.get("badgeBasePrompt", "")
-        
+        badge_base_prompt = (
+            metadata.get("badgeBasePrompt")
+            or badge_reference.get("badgeBasePrompt")
+            or badge_reference.get("teamBasePrompt")
+            or ""
+        )
         reference_images = badge_reference.get("referenceImages", [])
         image_url_to_analyze = reference_images[0].get("url") if reference_images else None
-        
         if not image_url_to_analyze:
             raise HTTPException(status_code=400, detail="Reference image URL is missing.")
-
         print(f"🖼️ [VISION] Iniciando análise da imagem do emblema...")
-        
         vision_analyzer = VisionAnalysisSystem()
-        analysis_prompt = "Analyze this emblem/badge. Describe its shape, main symbols, color palette, and style (e.g., modern, classic, minimalist). Focus on elements for a graphic design recreation."
-        
+        analysis_prompt = (
+            "Analyze this emblem/badge. Describe its shape, main symbols, color palette, and style (e.g., modern, classic, minimalist). "
+            "Focus on elements for a graphic design recreation."
+        )
         vision_result = await vision_analyzer.analyze_image_with_vision(image_url=image_url_to_analyze, prompt=analysis_prompt)
-
         if not vision_result.get("success"):
             raise HTTPException(status_code=500, detail=f"Vision analysis failed: {vision_result.get('error')}")
-
         analysis_text = vision_result["analysis"]
         print(f"✅ [VISION] Análise do emblema concluída.")
-
         final_analysis_text = analysis_text
         if badge_base_prompt:
             final_analysis_text = f"**Primary Design Directive:**\n{badge_base_prompt}\n\n**Additional Details from Visual Analysis:**\n{analysis_text}"
-        
+        # Montar prompt final para badge
         final_prompt = compose_badge_vision_prompt(
             analysis_text=final_analysis_text,
             style=request.quality
         )
-
         print("🤖 [DALL-E] Iniciando a geração final do emblema...")
         dalle_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-
         generation_response = dalle_client.images.generate(
             model="dall-e-3", prompt=final_prompt, size="1024x1024",
             quality=request.quality, n=1, response_format="url"
         )
-        
         generated_image_url = generation_response.data[0].url
         image_response = requests.get(generated_image_url)
         image_response.raise_for_status()
         image_base64 = base64.b64encode(image_response.content).decode("utf-8")
         print("✅ [PROCESS] Imagem do emblema convertida para base64.")
-
         try:
             print("📤 [CLOUDINARY] Iniciando upload do emblema...")
             upload_result = cloudinary.uploader.upload(
@@ -1646,7 +1643,6 @@ async def generate_badge_from_reference(request: GenerateFromReferenceRequest):
             )
             cloudinary_url = upload_result.get("secure_url")
             print(f"✅ [CLOUDINARY] Upload do emblema concluído: {cloudinary_url}")
-
             print("💾 [DB] Salvando o novo emblema na coleção 'badges'...")
             badges_collection = db["badges"]
             new_badge_doc = {
@@ -1662,14 +1658,17 @@ async def generate_badge_from_reference(request: GenerateFromReferenceRequest):
             }
             badges_collection.insert_one(new_badge_doc)
             print("✅ [DB] Novo emblema salvo com sucesso.")
-
         except Exception as post_processing_error:
             print(f"⚠️ [POST-PROCESS] Alerta: Falha no upload/salvamento do emblema: {post_processing_error}")
-
+        # Log dos campos não utilizados explicitamente
+        used_fields = {"teamName", "quality", "sport", "view"}
+        received_fields = set(request.dict().keys())
+        unused_fields = received_fields - used_fields
+        if unused_fields:
+            print(f"[BADGE GENERATION] Campos recebidos mas não utilizados explicitamente: {unused_fields}")
         return ReferenceGenerationResponse(
             success=True, image_base64=image_base64, prompt=final_prompt
         )
-
     except Exception as e:
         print(f"❌ [CRITICAL] Erro crítico na rota de emblemas: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
@@ -1762,3 +1761,38 @@ if __name__ == "__main__":
     import uvicorn
     print("🚀 Starting Unified API (Jerseys + Stadiums) on port 8000")
     uvicorn.run(app, host="0.0.0.0", port=8000) 
+
+# --- Função de composição de prompt para BADGES/EMBLEMS ---
+def compose_badge_vision_prompt(analysis_text: str, style: str = "modern") -> str:
+    """
+    Gera um prompt DALL-E 3 robusto para BADGES e EMBLEMS.
+    Usa a mesma estrutura de alta qualidade para consistência visual, focada em design gráfico.
+    """
+    style_description = {
+        "modern": "modern vector art",
+        "classic": "classic sports emblem",
+        "retro": "retro badge design",
+        "urban": "urban street style",
+        "premium": "luxury premium badge",
+        "vintage": "vintage emblem"
+    }.get(style, "modern vector art")
+
+    prompt_final = f"""
+Create a high-resolution, professional emblem or badge with a {style_description} style.
+
+**1. GRAPHIC DESIGN INSTRUCTIONS:**
+The emblem's design must be faithfully based on the following description of its shapes, symbols, and color palette:
+---
+{analysis_text}
+---
+
+**2. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+- Background: Plain, neutral white background to isolate the emblem.
+- Display: The emblem must be shown flat, centered, and rendered with sharp, clean lines like a vector graphic.
+- Prohibited Elements: Absolutely NO text (unless specified in the design), NO shadows, NO realistic textures (like metal or fabric), NO extra objects.
+- Quality: Render in 4K, with bold, vibrant colors and a clean, minimalist aesthetic.
+
+**3. GOLDEN RULE:**
+The most important requirement is to create a clean, professional, and visually appealing emblem based on the design instructions.
+""".strip()
+    return prompt_final
