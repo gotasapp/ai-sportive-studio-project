@@ -113,54 +113,36 @@ STYLE_THEMES = {
 # ============================================================================
 
 def compose_vision_enhanced_prompt(sport: str, view: str, player_name: str, player_number: str, 
-                                 analysis_text: str, style: str = "classic", 
-                                 team_base_prompt: Optional[str] = None) -> str:
+                                 analysis_text: str, style: str = "classic") -> str:
     """
-    VERSÃO 3 - OTIMIZADA E CORRIGIDA
-    Gera um prompt DALL-E 3 robusto.
-    - Usa um prompt base de time para regras de design inquebráveis.
-    - Usa a análise da visão para detalhes adicionais.
-    - Centraliza todas as regras de renderização aqui para consistência.
+    Gera um prompt DALL-E 3 robusto. Esta é a versão padrão e consistente
+    usada em toda a aplicação para garantir a mesma qualidade de renderização.
     """
     style_description = STYLE_THEMES.get(style, "professional sports")
-    
-    # Constrói a seção de design
-    design_section = ""
-    if team_base_prompt:
-        design_section = f"""
-**1. PRIMARY DESIGN DIRECTIVE (MUST BE FOLLOWED):**
-{team_base_prompt}
-
-**2. ADDITIONAL DETAILS FROM VISUAL ANALYSIS (ENHANCEMENTS):**
-{analysis_text}
-"""
-    else:
-        design_section = f"""
-**1. VISUAL BASE (FROM IMAGE ANALYSIS):**
-The jersey's design must be faithfully based on the following description of its visual elements:
----
-{analysis_text}
----
-"""
 
     prompt_final = f"""
 Create a photorealistic image of a {sport} jersey, **viewed ONLY from the back**. The final image must clearly show the player's name and number on the back.
 
-{design_section.strip()}
+**1. VISUAL DESIGN INSTRUCTIONS:**
+The jersey's design must be faithfully based on the following description of its visual elements:
+---
+{analysis_text}
+---
 
-**CRITICAL CUSTOMIZATION (MANDATORY FOR BACK VIEW):**
+**2. CRITICAL CUSTOMIZATION (MANDATORY FOR BACK VIEW):**
 You MUST apply the following player details to the **back of the jersey**. This is not optional.
 - Player Name: **{player_name.upper()}**
 - Player Number: **{player_number}**
 - Placement: The name "{player_name.upper()}" must be at the top-back. The number "{player_number}" must be on the center-back, below the name. Use a bold, clear font that contrasts with the jersey's main color for maximum visibility.
 
-**RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+**3. RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
 - Background: Plain, neutral white studio background.
 - Display: The jersey must be shown flat, centered, and completely isolated.
 - Prohibited Elements: Absolutely NO human models, NO mannequins, NO body parts (arms, torso), NO brand logos (Nike, Adidas), and NO team emblems.
 - Quality: Render in 4K, hyper-realistic quality, with professional studio lighting and attention to fabric texture.
 
-**GOLDEN RULE:** The most important requirement is to show the **back of the jersey** with the name **{player_name.upper()}** and number **{player_number}** clearly visible.
+**4. GOLDEN RULE:**
+The most important requirement is to show the **back of the jersey** with the name **{player_name.upper()}** and number **{player_number}** clearly visible.
 """.strip()
     
     return prompt_final

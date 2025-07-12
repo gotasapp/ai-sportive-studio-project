@@ -1221,18 +1221,33 @@ Seja extremamente técnico, descritivo e preciso. Não invente detalhes, apenas 
         analysis_text = vision_result["analysis"]
         print(f"✅ [VISION] Análise concluída com sucesso:\n{analysis_text}")
 
-        # ETAPA 3: Gerar prompt final usando a lógica centralizada
-        print("🔧 [PROMPT] Gerando prompt final com lógica centralizada...")
+        # ETAPA 2.5: Preparar o texto final para o prompt, combinando o prompt base com a análise
+        final_analysis_text = analysis_text # Começa com a análise da visão
+        if team_base_prompt:
+            print("🔧 [PROMPT] Combinando prompt base do time com a análise da visão...")
+            # Prepara um texto combinado, colocando as regras do time como prioridade
+            final_analysis_text = f"""
+**Primary Design Directive (Must be followed):**
+{team_base_prompt}
+
+**Additional Details from Visual Analysis (Enhancements):**
+{analysis_text}
+"""
+            print("✅ [PROMPT] Texto descritivo combinado criado com sucesso.")
+        else:
+            print("⚠️ [PROMPT] Nenhum prompt base encontrado. Usando apenas a análise da visão.")
+
+        # ETAPA 3: Chamar o molde de prompt padrão com o texto finalizado
+        print("🔧 [PROMPT] Gerando prompt final com o molde padrão e consistente...")
         final_prompt = compose_vision_enhanced_prompt(
-            analysis_text=analysis_text,
+            analysis_text=final_analysis_text, # Passa o texto já combinado
             player_name=request.player_name,
             player_number=request.player_number,
             sport=request.sport,
             view=request.view,
-            style=request.quality,
-            team_base_prompt=team_base_prompt # Passa o prompt base como argumento separado
+            style=request.quality
         )
-        print("✅ [PROMPT] Super-prompt combinado gerado com sucesso.")
+        print("✅ [PROMPT] Super-prompt final gerado com sucesso.")
         # =====================================================================
         # DEBUG: Imprimir o prompt final para verificação
         # =====================================================================
