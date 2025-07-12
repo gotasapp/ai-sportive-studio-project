@@ -22,6 +22,7 @@ interface ApiStadium {
   id: string;
   name: string;
   previewImage: string | null;
+  basePrompt?: string; // NOVO: prompt base do stadium
 }
 
 // Marketplace data will be loaded from JSON
@@ -228,7 +229,8 @@ export default function StadiumEditor() {
         const stadiums: ApiStadium[] = (data.data || []).map((ref: any) => ({
           id: ref.teamName || ref.stadiumId || ref._id,
           name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
-          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
+          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null,
+          basePrompt: ref.teamBasePrompt || '' // NOVO: prompt base do stadium
         }));
         setAvailableStadiums(stadiums);
         if (stadiums.length > 0) {
@@ -300,14 +302,33 @@ export default function StadiumEditor() {
       // Use the new reference generation flow
       if (selectedStadium !== 'custom_only') {
         console.log(`🚀 Starting reference generation for stadium: ${selectedStadium}`);
-        const response = await fetch('/api/generate-stadium-from-reference', {
+        // Prompt base geral para stadiums
+        const generalBasePrompt =
+          'A professional football stadium, modern architecture, high-capacity seating, realistic lighting, clean background, ultra-high resolution, photorealistic rendering, premium sports venue, championship atmosphere.';
+        // Buscar prompt base do stadium selecionado (se disponível)
+        const stadiumRef = availableStadiums.find(s => s.id === selectedStadium);
+        const stadiumBasePrompt = stadiumRef && stadiumRef.basePrompt ? `\n${stadiumRef.basePrompt}` : '';
+        // Montar prompt final
+        const prompt = [
+          generalBasePrompt,
+          stadiumBasePrompt,
+          `Atmosphere: ${atmosphere}, Time of day: ${timeOfDay}, Weather: ${weather}, Style: ${generationStyle}, Perspective: ${perspective}.`,
+          customPrompt ? `Custom instructions: ${customPrompt}` : ''
+        ].filter(Boolean).join('\n');
+        const response = await fetch('/api/generate-from-reference', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            teamName: selectedStadium, // The API expects the ID in the 'teamName' field
+            teamName: selectedStadium,
             quality: quality,
-            sport: 'soccer', // Default values, can be customized later
-            view: 'external',
+            sport: 'stadium',
+            style: generationStyle,
+            perspective: perspective,
+            atmosphere: atmosphere,
+            timeOfDay: timeOfDay,
+            weather: weather,
+            view: perspective, // pode ser ajustado conforme o backend espera
+            prompt // NOVO: prompt base geral + stadium + parâmetros + custom
           }),
         });
 
@@ -340,6 +361,60 @@ export default function StadiumEditor() {
       setError(err.message || 'An unknown error occurred during generation.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  // Função para análise vision de stadiums
+  const analyzeStadiumReferenceImage = async () => {
+    if (!referenceImageBlob) return;
+    setIsAnalyzing(true);
+    setError('');
+    try {
+      // Prompt de análise fornecido pelo usuário
+      const analysisPrompt = `Analyze this image of a soccer stadium and return ONLY a valid JSON object with the following structure:
+
+{
+  "stadiumName": "if visible or inferable",
+  "dominantColors": ["color1", "color2", "color3"],
+  "architectureStyle": "brief description (e.g. modern, classic, futuristic, retro)",
+  "roofDesign": "open, retractable, fully covered, or none",
+  "seatingPattern": "describe colors, arrangement, and shape",
+  "fieldView": "describe field perspective, center lines, visible logos or patterns",
+  "crowdPresence": "yes or no",
+  "lighting": "natural, stadium floodlights, day/night, shadows, reflections",
+  "uniqueFeatures": "e.g. large screen, team symbols, tunnel position, banners",
+  "weatherConditions": "clear, cloudy, sunset, rain, night, etc."
+}
+
+This description will be used to generate a new version of the stadium with slight visual changes based on user filters (like style or lighting). Ensure the JSON is accurate, compact, and does not include any explanation or extra text. Return only the JSON.`;
+      // Converter imagem para base64
+      const imageBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(referenceImageBlob);
+      });
+      // Chamar vision-test/analysis
+      const response = await fetch('/api/vision-prompts/analysis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sport: 'stadium',
+          view: perspective,
+          prompt: analysisPrompt,
+          image_base64: imageBase64
+        })
+      });
+      if (!response.ok) {
+        throw new Error('Failed to analyze stadium image');
+      }
+      const analysisData = await response.json();
+      // Aqui você pode salvar o resultado ou usar como preferir
+      console.log('✅ Stadium analysis result:', analysisData);
+      setIsAnalyzing(false);
+      return analysisData;
+    } catch (error: any) {
+      setIsAnalyzing(false);
+      setError(error.message || 'Failed to analyze stadium image');
     }
   };
 

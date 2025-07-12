@@ -33,6 +33,7 @@ from generate_image import router as generate_image_router
 
 # Importar nova função de composição vision-enhanced
 from vision_prompts.base_prompts import compose_vision_enhanced_prompt
+from vision_prompts.base_prompts import compose_stadium_vision_prompt
 
 load_dotenv()
 
@@ -1429,8 +1430,22 @@ Seja extremamente técnico, descritivo e preciso. Não invente detalhes, apenas 
         print(f"❌ [CRITICAL] Erro crítico na rota: {e}")
         raise HTTPException(status_code=500, detail=f"An internal server error occurred: {e}")
 
+class StadiumFromReferenceRequest(BaseModel):
+    teamName: str
+    quality: str = "standard"
+    sport: str = "stadium"
+    view: str = "external"
+    style: Optional[str] = None
+    perspective: Optional[str] = None
+    atmosphere: Optional[str] = None
+    timeOfDay: Optional[str] = None
+    weather: Optional[str] = None
+    prompt: Optional[str] = None
+    customPrompt: Optional[str] = None
+    analysis: Optional[dict] = None
+
 @app.post("/generate-stadium-from-reference", response_model=ReferenceGenerationResponse)
-async def generate_stadium_from_reference(request: GenerateFromReferenceRequest):
+async def generate_stadium_from_reference(request: StadiumFromReferenceRequest):
     """
     Gera um estádio usando uma referência de time do banco de dados.
     Busca o `stadiumBasePrompt` e as `referenceImages` do MongoDB.
@@ -1442,10 +1457,15 @@ async def generate_stadium_from_reference(request: GenerateFromReferenceRequest)
         raise HTTPException(status_code=500, detail="Database connection is not available.")
 
     try:
-        query_name = request.teamName.strip() # teamName aqui é o ID do estádio, ex: "maracana"
+        query_name = request.teamName.strip() # teamName aqui é o ID ou nome do estádio
         print(f"🔍 [DB] Buscando referência para '{query_name}' na coleção 'stadium_references'...")
         
-        stadium_reference = db.stadium_references.find_one({"stadiumId": {"$regex": f"^{query_name}$", "$options": "i"}})
+        stadium_reference = db.stadium_references.find_one({
+            "$or": [
+                {"stadiumId": {"$regex": f"^{query_name}$", "$options": "i"}},
+                {"teamName": {"$regex": f"^{query_name}$", "$options": "i"}}
+            ]
+        })
 
         if not stadium_reference:
             print(f"❌ [DB] ERRO: Estádio '{query_name}' não foi encontrado na coleção 'stadium_references'.")
