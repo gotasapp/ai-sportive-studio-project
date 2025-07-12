@@ -1081,9 +1081,8 @@ Design based on analysis: ${analysisText}`
           player_name: playerName,
           player_number: playerNumber,
           quality: quality,
-          // Estes são valores padrão, pois a UI do modo standard não os possui.
-          // A API Python pode ou não usá-los, mas a "ponte" espera por eles.
-          sport: 'soccer',
+          // Corrigido: sport deve ser 'jersey' para o backend aceitar
+          sport: 'jersey',
           view: 'back'
         };
 

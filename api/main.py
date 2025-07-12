@@ -1474,7 +1474,12 @@ async def generate_stadium_from_reference(request: StadiumFromReferenceRequest):
         print(f"✅ [DB] Referência encontrada para '{query_name}'.")
         
         metadata = stadium_reference.get("metadata", {})
-        stadium_base_prompt = metadata.get("stadiumBasePrompt", "")
+        stadium_base_prompt = (
+            metadata.get("stadiumBasePrompt")
+            or stadium_reference.get("stadiumBasePrompt")
+            or stadium_reference.get("teamBasePrompt")
+            or ""
+        )
         
         if not stadium_base_prompt:
             print(f"⚠️ [DB] Alerta: `stadiumBasePrompt` está vazio para '{query_name}'.")
