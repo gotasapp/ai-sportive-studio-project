@@ -4,6 +4,8 @@ Vision Test - Prompts Base para Múltiplos Esportes
 Organização de prompts por esporte e perspectiva (frente/costas)
 """
 
+from typing import Optional
+
 # ============================================================================
 # SOCCER (FUTEBOL) PROMPTS
 # ============================================================================
@@ -111,56 +113,55 @@ STYLE_THEMES = {
 # ============================================================================
 
 def compose_vision_enhanced_prompt(sport: str, view: str, player_name: str, player_number: str, 
-                                 analysis_text: str, style: str = "classic") -> str:
+                                 analysis_text: str, style: str = "classic", 
+                                 team_base_prompt: Optional[str] = None) -> str:
     """
-    NOVA FÓRMULA DE COMPOSIÇÃO - Usa prompt base do esporte + análise vision
-    
-    Fórmula:
-    prompt_final = ESPORTIVO_PROMPT_BASE + ANALYSIS_REFERENCE + CUSTOMIZATION + RENDERING_INSTRUCTIONS
-    
-    Args:
-        sport: "soccer", "basketball", "nfl"
-        view: "front", "back"
-        player_name: Nome do jogador
-        player_number: Número do jogador  
-        analysis_text: Texto da análise vision (formato bullet-point)
-        style: Tema de estilo
-    
-    Returns:
-        Prompt final composto seguindo a nova fórmula
+    VERSÃO 3 - OTIMIZADA E CORRIGIDA
+    Gera um prompt DALL-E 3 robusto.
+    - Usa um prompt base de time para regras de design inquebráveis.
+    - Usa a análise da visão para detalhes adicionais.
+    - Centraliza todas as regras de renderização aqui para consistência.
     """
-    # 1. Obter prompt base específico do esporte (sem formatação de placeholders)
-    if sport not in VISION_PROMPTS:
-        raise ValueError(f"Sport '{sport}' not supported. Available: {list(VISION_PROMPTS.keys())}")
+    style_description = STYLE_THEMES.get(style, "professional sports")
     
-    if view not in VISION_PROMPTS[sport]:
-        raise ValueError(f"View '{view}' not available for {sport}. Available: {list(VISION_PROMPTS[sport].keys())}")
-    
-    # Obter prompt base RAW (sem substituir placeholders ainda)
-    base_prompt_template = VISION_PROMPTS[sport][view]
-    style_description = STYLE_THEMES.get(style, style)
-    
-    # Formatar o prompt base com os valores atuais
-    formatted_base_prompt = base_prompt_template.format(
-        PLAYER_NAME=player_name.upper(),
-        PLAYER_NUMBER=player_number,
-        STYLE=style_description
-    ).strip()
-    
-    # 2. Compor prompt final seguindo a fórmula definida
-    prompt_final = f"""{formatted_base_prompt}
+    # Constrói a seção de design
+    design_section = ""
+    if team_base_prompt:
+        design_section = f"""
+**1. PRIMARY DESIGN DIRECTIVE (MUST BE FOLLOWED):**
+{team_base_prompt}
 
-ANALYSIS REFERENCE:
+**2. ADDITIONAL DETAILS FROM VISUAL ANALYSIS (ENHANCEMENTS):**
 {analysis_text}
+"""
+    else:
+        design_section = f"""
+**1. VISUAL BASE (FROM IMAGE ANALYSIS):**
+The jersey's design must be faithfully based on the following description of its visual elements:
+---
+{analysis_text}
+---
+"""
 
-CUSTOMIZATION:
-- Player name: "{player_name.upper()}" (override any previous name)
-- Player number: "{player_number}" (override any previous number)
+    prompt_final = f"""
+Create a photorealistic image of a {sport} jersey, **viewed ONLY from the back**. The final image must clearly show the player's name and number on the back.
 
-RENDERING INSTRUCTIONS:
-- Keep jersey centered, floating, clean white background
-- No humans, mannequins, shadows, or brand logos
-- 4K photorealistic quality, realistic fabric texture and light"""
+{design_section.strip()}
+
+**CRITICAL CUSTOMIZATION (MANDATORY FOR BACK VIEW):**
+You MUST apply the following player details to the **back of the jersey**. This is not optional.
+- Player Name: **{player_name.upper()}**
+- Player Number: **{player_number}**
+- Placement: The name "{player_name.upper()}" must be at the top-back. The number "{player_number}" must be on the center-back, below the name. Use a bold, clear font that contrasts with the jersey's main color for maximum visibility.
+
+**RENDERING REQUIREMENTS (NON-NEGOTIABLE):**
+- Background: Plain, neutral white studio background.
+- Display: The jersey must be shown flat, centered, and completely isolated.
+- Prohibited Elements: Absolutely NO human models, NO mannequins, NO body parts (arms, torso), NO brand logos (Nike, Adidas), and NO team emblems.
+- Quality: Render in 4K, hyper-realistic quality, with professional studio lighting and attention to fabric texture.
+
+**GOLDEN RULE:** The most important requirement is to show the **back of the jersey** with the name **{player_name.upper()}** and number **{player_number}** clearly visible.
+""".strip()
     
     return prompt_final
 

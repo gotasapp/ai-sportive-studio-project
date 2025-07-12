@@ -792,12 +792,12 @@ class VisionAnalysisSystem:
             chat_completion = await self.client.chat.completions.create(
                 model=model,
                 messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url",
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {
+                            "type": "image_url",
                                 "image_url": {
                                     "url": image_url, # Passa a URL diretamente
                                 },
@@ -1194,7 +1194,19 @@ async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
         
         # 1. Chamar o sistema de análise Vision (agora passando a URL diretamente)
         vision_analyzer = VisionAnalysisSystem()
-        analysis_prompt = "Analyze this soccer jersey image. Describe its main colors, pattern (stripes, solid, etc.), collar style, and any other relevant visual details. Be descriptive and concise."
+        # CORREÇÃO: Usar prompt de análise detalhado e em português para maior precisão
+        analysis_prompt = """
+Você é um especialista em design de camisas de futebol. Observe a imagem da jersey cuidadosamente e descreva em detalhes todos os elementos visuais e estilísticos presentes.
+
+Inclua:
+- Cores dominantes e secundárias.
+- Padrões visuais (ex: faixas horizontais/verticais, diagonais, símbolos, gradientes).
+- Estilo e posição do nome e número (se visível).
+- Formato da gola, tipo das mangas e texturas do tecido.
+- Qualquer detalhe adicional como brasões, inscrições ou costuras visíveis.
+
+Seja extremamente técnico, descritivo e preciso. Não invente detalhes, apenas descreva o que está visivelmente presente na imagem. A resposta deve ser uma descrição técnica para recriação.
+"""
         
         vision_result = await vision_analyzer.analyze_image_with_vision(
             image_url=image_url_to_analyze, # Passa a URL
@@ -1209,17 +1221,26 @@ async def generate_jersey_from_reference(request: GenerateFromReferenceRequest):
         analysis_text = vision_result["analysis"]
         print(f"✅ [VISION] Análise concluída com sucesso:\n{analysis_text}")
 
-        # 3. Combinar os prompts
-        # Corrigido: `base_prompt` não é um argumento esperado. A função usa sport/view.
+        # ETAPA 3: Gerar prompt final usando a lógica centralizada
+        print("🔧 [PROMPT] Gerando prompt final com lógica centralizada...")
         final_prompt = compose_vision_enhanced_prompt(
             analysis_text=analysis_text,
             player_name=request.player_name,
             player_number=request.player_number,
             sport=request.sport,
             view=request.view,
-            style=request.quality # 'quality' na UI pode mapear para 'style' aqui
+            style=request.quality,
+            team_base_prompt=team_base_prompt # Passa o prompt base como argumento separado
         )
         print("✅ [PROMPT] Super-prompt combinado gerado com sucesso.")
+        # =====================================================================
+        # DEBUG: Imprimir o prompt final para verificação
+        # =====================================================================
+        print("\n" + "="*80)
+        print("🔵 [DEBUG] PROMPT FINAL ENVIADO PARA O DALL-E 3:")
+        print(final_prompt)
+        print("="*80 + "\n")
+        # =====================================================================
 
         # --- ETAPA FINAL: GERAÇÃO COM DALL-E 3 ---
         print("🤖 [DALL-E] Iniciando a geração final da imagem...")

@@ -6,4 +6,5 @@ python-dotenv==1.0.0
 Pillow
 requests==2.31.0
 httpx>=0.25.0 
-pymongo[srv] 
+pymongo[srv]
+cloudinary==1.44.1 
