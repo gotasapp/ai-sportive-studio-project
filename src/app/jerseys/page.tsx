@@ -5,14 +5,14 @@ import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useRouter } from 'next/navigation'
 
-import { Dalle3Service } from '../lib/services/dalle3-service'
-import { IPFSService } from '../lib/services/ipfs-service'
-import { useWeb3 } from '../lib/useWeb3'
-import { useEngine } from '../lib/useEngine'
-import { ImageGenerationRequest } from '../types'
-import { getTransactionUrl } from '../lib/utils'
+import { Dalle3Service } from '../../lib/services/dalle3-service'
+import { IPFSService } from '../../lib/services/ipfs-service'
+import { useWeb3 } from '../../lib/useWeb3'
+import { useEngine } from '../../lib/useEngine'
+import { ImageGenerationRequest } from '../../types'
+import { getTransactionUrl } from '../../lib/utils'
 import { Button } from '@/components/ui/button'
-import { isAdmin } from '../lib/admin-config'
+import { isAdmin } from '../../lib/admin-config'
 
 // Importando os novos componentes profissionais
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
