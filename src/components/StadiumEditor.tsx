@@ -433,6 +433,9 @@ This description will be used to generate a new version of the stadium with slig
       const nftDescription = `AI-generated stadium. Style: ${generationStyle}, Perspective: ${perspective}, Atmosphere: ${atmosphere}.`;
 
       if (isGasless && isUserAdmin) {
+        if (!address) {
+          throw new Error("Wallet address is required for minting.");
+        }
         // Engine gasless mint
         const ipfsResult = await IPFSService.uploadComplete(
           generatedImageBlob,
