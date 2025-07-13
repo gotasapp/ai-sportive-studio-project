@@ -57,22 +57,7 @@ interface RecentSale {
 }
 
 // Dados fallback otimizados
-const FALLBACK_OVERVIEW = {
-  totalNFTs: 247,
-  totalUsers: 89,
-  totalRevenue: 1250.75,
-  avgGenerationTime: 8.2,
-  successRate: 95.1,
-  growth: { nfts: 14.2, users: 9.1, revenue: 27.3 }
-};
-
-const FALLBACK_TEAMS = [
-  { name: 'Flamengo', count: 45, percentage: 25.5, color: '#ff0000' },
-  { name: 'Palmeiras', count: 38, percentage: 21.6, color: '#00aa00' },
-  { name: 'Corinthians', count: 32, percentage: 18.2, color: '#000000' },
-  { name: 'São Paulo', count: 28, percentage: 15.9, color: '#ff0000' },
-  { name: 'Vasco', count: 21, percentage: 11.9, color: '#000000' }
-];
+// Remover FALLBACK_OVERVIEW e FALLBACK_TEAMS
 
 // Chart data interfaces
 interface ChartData {
@@ -86,15 +71,16 @@ interface ChartData {
 export default function AdminDashboard() {
   const [refreshTime, setRefreshTime] = useState(new Date().toLocaleTimeString());
   
-  // Estados para dados reais (opcionais)
-  const [overviewData, setOverviewData] = useState<OverviewData>(FALLBACK_OVERVIEW);
-  const [popularTeamsData, setPopularTeamsData] = useState<PopularTeam[]>(FALLBACK_TEAMS);
+  // Estados para dados reais
+  const [overviewData, setOverviewData] = useState<OverviewData | null>(null);
+  const [popularTeamsData, setPopularTeamsData] = useState<PopularTeam[]>([]);
   const [recentSalesData, setRecentSalesData] = useState<RecentSale[]>([]);
   const [chartData, setChartData] = useState<ChartData>({
     monthlyNFTs: [],
     teamDistribution: [],
     userGrowth: []
   });
+  const [error, setError] = useState<string | null>(null);
   
   // Estados de loading premium
   const { isLoading: loadingOverview, startLoading: startOverview, stopLoading: stopOverview } = useLoadingState();
@@ -107,24 +93,27 @@ export default function AdminDashboard() {
   // Função para buscar dados reais (com timeout rápido)
   const fetchOverviewData = useCallback(async () => {
     startOverview();
-    
+    setError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
       const response = await fetch('/api/admin/analytics?metric=overview', {
         signal: controller.signal,
         cache: 'no-store'
       });
-      
       clearTimeout(timeoutId);
-      
       if (response.ok) {
         const data = await response.json();
         setOverviewData(data);
+      } else {
+        setOverviewData(null);
+        setError('Erro ao buscar dados de overview.');
+        console.error('Erro ao buscar overview:', response.statusText);
       }
     } catch (error) {
-      console.log('Using fallback overview data');
+      setOverviewData(null);
+      setError('Erro ao buscar dados de overview.');
+      console.error('Erro ao buscar overview:', error);
     } finally {
       stopOverview();
     }
@@ -132,24 +121,27 @@ export default function AdminDashboard() {
 
   const fetchPopularTeamsData = useCallback(async () => {
     startTeams();
-    
+    setError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
       const response = await fetch('/api/admin/analytics?metric=popularTeams', {
         signal: controller.signal,
         cache: 'no-store'
       });
-      
       clearTimeout(timeoutId);
-      
       if (response.ok) {
         const data = await response.json();
         setPopularTeamsData(data);
+      } else {
+        setPopularTeamsData([]);
+        setError('Erro ao buscar dados de times populares.');
+        console.error('Erro ao buscar popularTeams:', response.statusText);
       }
     } catch (error) {
-      console.log('Using fallback teams data');
+      setPopularTeamsData([]);
+      setError('Erro ao buscar dados de times populares.');
+      console.error('Erro ao buscar popularTeams:', error);
     } finally {
       stopTeams();
     }
@@ -157,66 +149,56 @@ export default function AdminDashboard() {
 
   const fetchRecentSalesData = useCallback(async () => {
     startSales();
-    
+    setError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
-      
       const response = await fetch('/api/admin/analytics?metric=recentSales', {
         signal: controller.signal,
         cache: 'no-store'
       });
-      
       clearTimeout(timeoutId);
-      
       if (response.ok) {
         const data = await response.json();
         setRecentSalesData(data);
+      } else {
+        setRecentSalesData([]);
+        setError('Erro ao buscar dados de vendas recentes.');
+        console.error('Erro ao buscar recentSales:', response.statusText);
       }
     } catch (error) {
-      console.log('Recent sales data not available');
       setRecentSalesData([]);
+      setError('Erro ao buscar dados de vendas recentes.');
+      console.error('Erro ao buscar recentSales:', error);
     } finally {
       stopSales();
     }
   }, [startSales, stopSales]);
 
   const fetchChartData = useCallback(async () => {
+    setError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-      
       const response = await fetch('/api/admin/analytics?metric=chartData', {
         signal: controller.signal,
         cache: 'no-store'
       });
-      
       clearTimeout(timeoutId);
-      
       if (response.ok) {
         const data = await response.json();
         setChartData(data);
+      } else {
+        setChartData({ monthlyNFTs: [], teamDistribution: [], userGrowth: [] });
+        setError('Erro ao buscar dados de gráficos.');
+        console.error('Erro ao buscar chartData:', response.statusText);
       }
     } catch (error) {
-      console.log('Using fallback chart data');
-      // Fallback com dados básicos
-      setChartData({
-        monthlyNFTs: [
-          { name: 'Jan', value: 15 }, { name: 'Fev', value: 22 },
-          { name: 'Mar', value: 18 }, { name: 'Abr', value: 31 },
-          { name: 'Mai', value: 25 }, { name: 'Jun', value: 37 }
-        ],
-        teamDistribution: popularTeamsData.map(team => ({
-          name: team.name, value: team.count
-        })),
-        userGrowth: [
-          { name: 'Sem 1', value: 12 }, { name: 'Sem 2', value: 18 },
-          { name: 'Sem 3', value: 15 }, { name: 'Sem 4', value: 23 },
-          { name: 'Sem 5', value: 19 }, { name: 'Sem 6', value: 31 }
-        ]
-      });
+      setChartData({ monthlyNFTs: [], teamDistribution: [], userGrowth: [] });
+      setError('Erro ao buscar dados de gráficos.');
+      console.error('Erro ao buscar chartData:', error);
     }
-  }, [popularTeamsData]);
+  }, []);
 
   // Lazy loading - não bloqueia carregamento inicial
   useEffect(() => {
@@ -249,24 +231,24 @@ export default function AdminDashboard() {
   const mainMetrics = [
     {
       title: 'Total NFTs',
-      value: overviewData.totalNFTs.toLocaleString(),
+      value: overviewData?.totalNFTs.toLocaleString() || 'N/A',
       description: 'NFTs criados no total',
       icon: Image,
       trend: {
-        value: overviewData.growth.nfts,
-        isPositive: overviewData.growth.nfts > 0,
+        value: overviewData?.growth.nfts || 0,
+        isPositive: (overviewData?.growth.nfts || 0) > 0,
         label: 'vs mês anterior'
       },
       additionalInfo: 'Inclui jerseys, stadiums e badges gerados pela plataforma'
     },
     {
       title: 'Usuários Ativos',
-      value: overviewData.totalUsers.toLocaleString(),
+      value: overviewData?.totalUsers.toLocaleString() || 'N/A',
       description: 'Usuários registrados',
       icon: Users,
       trend: {
-        value: overviewData.growth.users,
-        isPositive: overviewData.growth.users > 0,
+        value: overviewData?.growth.users || 0,
+        isPositive: (overviewData?.growth.users || 0) > 0,
         label: 'vs mês anterior'
       },
       additionalInfo: 'Usuários únicos que fizeram login nos últimos 30 dias'
@@ -274,11 +256,11 @@ export default function AdminDashboard() {
 
     {
       title: 'Taxa de Sucesso',
-      value: `${overviewData.successRate}%`,
+      value: `${overviewData?.successRate || 0}%`,
       description: 'Gerações bem-sucedidas',
       icon: CheckCircle,
       trend: {
-        value: Math.round((overviewData.successRate - 93) * 10) / 10, // Simular crescimento baseado na taxa atual
+        value: Math.round(((overviewData?.successRate || 0) - 93) * 10) / 10 || 0, // Simular crescimento baseado na taxa atual
         isPositive: true,
         label: 'vs mês anterior'
       },
@@ -289,6 +271,15 @@ export default function AdminDashboard() {
   // Mostrar loading completo na primeira carga
   if (initialLoading) {
     return <AdminDashboardLoadingSkeleton />;
+  }
+
+  // Renderização condicional para dados reais
+  if (error) {
+    return <div className="text-red-500 text-center mt-10">{error}</div>;
+  }
+
+  if (!overviewData) {
+    return <div className="text-yellow-500 text-center mt-10">Nenhum dado real encontrado para o dashboard admin.</div>;
   }
 
   return (
