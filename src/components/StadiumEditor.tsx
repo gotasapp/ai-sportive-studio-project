@@ -23,6 +23,7 @@ interface ApiStadium {
   name: string;
   previewImage: string | null;
   basePrompt?: string; // NOVO: prompt base do stadium
+  available_references: string[];
 }
 
 // Marketplace data will be loaded from JSON
