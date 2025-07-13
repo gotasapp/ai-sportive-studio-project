@@ -403,7 +403,7 @@ export async function DELETE(request: NextRequest) {
     const collection = db.collection<TeamReference>(COLLECTIONS.TEAM_REFERENCES);
 
     const result = await collection.deleteOne({ 
-      _id: id, 
+      _id: new ObjectId(id), 
       category: 'jersey' 
     });
 
