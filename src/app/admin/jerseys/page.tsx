@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import React from 'react'; // Adicionado para React.Fragment
 
 // Definindo o tipo de Jersey com base na API
 interface Jersey {
@@ -92,7 +92,7 @@ export default function JerseysPage() {
   const [editingTeam, setEditingTeam] = useState<TeamReference | null>(null);
   const [editedTeamPrompt, setEditedTeamPrompt] = useState('');
 
-  // Estado para controlar linhas recolhidas
+  // Estado para controlar linhas expandidas
   const [openRow, setOpenRow] = useState<string | null>(null);
 
   useEffect(() => {
@@ -337,7 +337,7 @@ export default function JerseysPage() {
               </thead>
               <tbody>
                 {loading ? renderSkeleton() : filteredJerseys.map(jersey => (
-                  <Collapsible key={jersey.id} open={openRow === jersey.id} onOpenChange={open => setOpenRow(open ? jersey.id : null)}>
+                  <React.Fragment key={jersey.id}>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4">
                         <Image src={jersey.imageUrl} alt={jersey.name} width={40} height={40} className="rounded-md" />
@@ -358,14 +358,12 @@ export default function JerseysPage() {
                       </td>
                       <td className="p-4 text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
                       <td className="p-4">
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            {openRow === jersey.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
-                          </Button>
-                        </CollapsibleTrigger>
+                        <Button variant="ghost" size="sm" onClick={() => setOpenRow(openRow === jersey.id ? null : jersey.id)}>
+                          {openRow === jersey.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
+                        </Button>
                       </td>
                     </tr>
-                    <CollapsibleContent asChild>
+                    {openRow === jersey.id && (
                       <tr className="bg-gray-900/80 border-b border-gray-800">
                         <td colSpan={7} className="p-6">
                           {/* Conteúdo expandido: detalhes, atributos, ações extras */}
@@ -382,8 +380,8 @@ export default function JerseysPage() {
                           </div>
                         </td>
                       </tr>
-                    </CollapsibleContent>
-                  </Collapsible>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>
