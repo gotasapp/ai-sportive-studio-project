@@ -230,7 +230,8 @@ export default function StadiumEditor() {
           id: ref.teamName || ref.stadiumId || ref._id,
           name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
           previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null,
-          basePrompt: ref.teamBasePrompt || '' // NOVO: prompt base do stadium
+          basePrompt: ref.teamBasePrompt || '', // NOVO: prompt base do stadium
+          available_references: ref.available_references || [],
         }));
         setAvailableStadiums(stadiums);
         if (stadiums.length > 0) {
