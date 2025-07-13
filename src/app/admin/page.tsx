@@ -448,9 +448,6 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-white font-medium">
-                      {sale.value.toFixed(3)} CHZ
-                    </div>
                     <div className="text-xs text-gray-400">
                       {new Date(sale.timestamp).toLocaleDateString('pt-BR')}
                     </div>
