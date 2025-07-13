@@ -454,31 +454,31 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
       } else {
         // Standard generation flow
         const request = {
-          team_name: 'Custom',
+          model_id: 'Custom',
           badge_name: badgeName,
           badge_number: '',
-          custom_prompt: customPrompt || '',
           style: selectedStyle,
           quality: quality,
+          type: 'badge',
         };
-        
-        console.log('Generating badge with request data:', request)
-        
-        const response = await fetch('/api/badges/generate', {
+
+        console.log('Generating badge with unified /api/generate request:', request);
+
+        const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(request)
         });
-        
-        const result = await response.json()
-        console.log('DALL-E 3 Result:', result)
 
-        if (result.success && result.optimized_image) {
+        const result = await response.json();
+        console.log('Unified /api/generate result:', result);
+
+        if (result.success && result.image_base64) {
           console.log('✅ Badge generation successful!');
-          setGeneratedImage(`data:image/png;base64,${result.optimized_image}`);
-          
-          const response = await fetch(`data:image/png;base64,${result.optimized_image}`)
-          const blob = await response.blob()
+          setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+
+          const response = await fetch(`data:image/png;base64,${result.image_base64}`);
+          const blob = await response.blob();
           setGeneratedImageBlob(blob);
 
           await saveBadgeToDB({
