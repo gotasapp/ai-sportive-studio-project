@@ -36,10 +36,16 @@ export async function GET() {
 
     const allJerseys = await jerseys.find({}).sort({ createdAt: -1 }).toArray();
 
-    // O MongoDB retorna _id como um objeto. Para o frontend, é melhor convertê-lo para string.
+    // O MongoDB retorna _id como um objeto. Para o frontend, é melhor converter e padronizar os campos.
     const sanitizedJerseys = allJerseys.map(jersey => ({
-        ...jersey,
-        _id: jersey._id.toString(),
+        id: jersey._id?.toString() || '',
+        name: jersey.name || 'Unnamed',
+        creator: jersey.creator || { name: '', wallet: '' },
+        createdAt: jersey.createdAt || '',
+        status: jersey.status || 'Minted',
+        imageUrl: jersey.imageUrl || jersey.image || '',
+        mintCount: jersey.mintCount || jersey.mintedCount || 0,
+        editionSize: jersey.editionSize || jersey.edition_size || 1
     }));
 
     return NextResponse.json(sanitizedJerseys);

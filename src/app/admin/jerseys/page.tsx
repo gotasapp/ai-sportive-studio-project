@@ -20,6 +20,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 // Definindo o tipo de Jersey com base na API
 interface Jersey {
@@ -91,6 +92,9 @@ export default function JerseysPage() {
   const [editingTeam, setEditingTeam] = useState<TeamReference | null>(null);
   const [editedTeamPrompt, setEditedTeamPrompt] = useState('');
 
+  // Estado para controlar linhas recolhidas
+  const [openRow, setOpenRow] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchJerseys = async () => {
       setLoading(true);
@@ -129,14 +133,17 @@ export default function JerseysPage() {
     fetchTeamReferences();
   }, []);
 
+  // Filtros aprimorados para dados reais
   const filteredJerseys = jerseys.filter(jersey => {
-    const matchesSearch = jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (jersey.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         (jersey.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus
-    
+    // Busca por nome, creator, ou wallet
+    const matchesSearch =
+      jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (jersey.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (jersey.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
+    // Filtro por status
+    const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus;
     return matchesSearch && matchesStatus;
-  })
+  });
 
   // Funções para Team References
   const handleCreateTeam = async () => {
@@ -330,29 +337,53 @@ export default function JerseysPage() {
               </thead>
               <tbody>
                 {loading ? renderSkeleton() : filteredJerseys.map(jersey => (
-                   <tr key={jersey.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                     <td className="p-4">
-                       <Image src={jersey.imageUrl} alt={jersey.name} width={40} height={40} className="rounded-md" />
-                     </td>
-                     <td className="p-4 font-medium text-white">{jersey.name}</td>
-                     <td className="p-4">
-                       <div className="text-white">{jersey.creator?.name || 'Unknown'}</div>
-                       <div className="text-gray-400 text-xs">{jersey.creator?.wallet || 'Unknown'}</div>
-                     </td>
-                     <td className="p-4">
-                       <Badge className={statusColors[jersey.status]}>{jersey.status}</Badge>
-                     </td>
-                     <td className="p-4">
+                  <Collapsible key={jersey.id} open={openRow === jersey.id} onOpenChange={open => setOpenRow(open ? jersey.id : null)}>
+                    <tr className="border-b border-gray-800 hover:bg-gray-800/50">
+                      <td className="p-4">
+                        <Image src={jersey.imageUrl} alt={jersey.name} width={40} height={40} className="rounded-md" />
+                      </td>
+                      <td className="p-4 font-medium text-white">{jersey.name}</td>
+                      <td className="p-4">
+                        <div className="text-white">{jersey.creator?.name || 'Unknown'}</div>
+                        <div className="text-gray-400 text-xs">{jersey.creator?.wallet || 'Unknown'}</div>
+                      </td>
+                      <td className="p-4">
+                        <Badge className={statusColors[jersey.status]}>{jersey.status}</Badge>
+                      </td>
+                      <td className="p-4">
                         <div className="text-white">{jersey.mintCount} / {jersey.editionSize}</div>
                         <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-                            <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(jersey.mintCount / jersey.editionSize) * 100}%`}}></div>
+                          <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(jersey.mintCount / jersey.editionSize) * 100}%`}}></div>
                         </div>
-                     </td>
-                     <td className="p-4 text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
-                     <td className="p-4">
-                       <Button variant="ghost" size="sm"><MoreHorizontal className="w-4 h-4" /></Button>
-                     </td>
-                   </tr>
+                      </td>
+                      <td className="p-4 text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
+                      <td className="p-4">
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            {openRow === jersey.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
+                          </Button>
+                        </CollapsibleTrigger>
+                      </td>
+                    </tr>
+                    <CollapsibleContent asChild>
+                      <tr className="bg-gray-900/80 border-b border-gray-800">
+                        <td colSpan={7} className="p-6">
+                          {/* Conteúdo expandido: detalhes, atributos, ações extras */}
+                          <div className="flex flex-col md:flex-row gap-6">
+                            <div className="flex-1">
+                              <h4 className="text-lg font-semibold text-cyan-400 mb-2">Detalhes da Jersey</h4>
+                              <div className="text-gray-300 text-sm mb-2">ID: {jersey.id}</div>
+                              <div className="text-gray-300 text-sm mb-2">Criador: {jersey.creator?.name || 'Unknown'} ({jersey.creator?.wallet || 'Unknown'})</div>
+                              <div className="text-gray-300 text-sm mb-2">Status: {jersey.status}</div>
+                              <div className="text-gray-300 text-sm mb-2">Criada em: {new Date(jersey.createdAt).toLocaleString()}</div>
+                              <div className="text-gray-300 text-sm mb-2">Edição: {jersey.mintCount} / {jersey.editionSize}</div>
+                            </div>
+                            {/* Espaço para ações extras, preview maior, etc */}
+                          </div>
+                        </td>
+                      </tr>
+                    </CollapsibleContent>
+                  </Collapsible>
                 ))}
               </tbody>
             </table>
