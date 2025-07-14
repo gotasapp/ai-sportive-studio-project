@@ -54,10 +54,15 @@ export async function POST(request: NextRequest) {
           body: JSON.stringify({
             receiver: to,
             metadata: {
-              name: 'Generated NFT',
-              description: 'AI Generated Sports NFT',
-              image: metadataUri.startsWith('ipfs://') ? metadataUri : `ipfs://${metadataUri}`,
-            },
+              name: `Generated NFT #${i + 1}`,
+              description: 'AI Generated Sports NFT from CHZ Fan Token Studio',
+              image: metadataUri || 'https://gateway.ipfscdn.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o/0',
+              attributes: [
+                { trait_type: 'Generator', value: 'AI Sports NFT' },
+                { trait_type: 'Collection', value: collection || 'jerseys' },
+                { trait_type: 'Batch Mint', value: 'true' }
+              ]
+            }
           }),
         });
 
