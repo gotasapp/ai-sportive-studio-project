@@ -154,9 +154,9 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
+        <TabsList className="grid w-full grid-cols-3 cyber-card border-cyan-500/30">
           <TabsTrigger value="general"><Settings className="w-4 h-4 mr-2" />General</TabsTrigger>
-          <TabsTrigger value="api"><Key className="w-4 h-4 mr-2" />API Keys</TabsTrigger>
+          {/* <TabsTrigger value="api"><Key className="w-4 h-4 mr-2" />API Keys</TabsTrigger> */}
           <TabsTrigger value="features"><ToggleLeft className="w-4 h-4 mr-2" />Features</TabsTrigger>
           <TabsTrigger value="defaults"><Coins className="w-4 h-4 mr-2" />Defaults</TabsTrigger>
         </TabsList>
@@ -177,7 +177,7 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="api">
+        {/* <TabsContent value="api">
             <Card className="cyber-card border-cyan-500/30">
                 <CardHeader><CardTitle>API Keys</CardTitle><CardDescription>Leave blank to keep existing key.</CardDescription></CardHeader>
                 <CardContent className="space-y-4">
@@ -189,7 +189,7 @@ export default function SettingsPage() {
                     ))}
                 </CardContent>
             </Card>
-        </TabsContent>
+        </TabsContent> */}
 
         <TabsContent value="features">
             <Card className="cyber-card border-cyan-500/30">

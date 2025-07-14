@@ -51,12 +51,6 @@ const navigation = [
     description: 'Badge Management'
   },
   {
-    name: 'Logos',
-    href: '/admin/logos',
-    icon: Trophy,
-    description: 'Logo Management'
-  },
-  {
     name: 'Moderation',
     href: '/admin/moderation',
     icon: Shield,
@@ -73,12 +67,6 @@ const navigation = [
     href: '/admin/users',
     icon: Users,
     description: 'User Management'
-  },
-  {
-    name: 'Logs',
-    href: '/admin/logs',
-    icon: FileText,
-    description: 'System Logs'
   },
   {
     name: 'Settings',
