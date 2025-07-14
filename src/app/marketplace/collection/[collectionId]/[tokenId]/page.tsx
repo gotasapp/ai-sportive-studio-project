@@ -29,7 +29,8 @@ async function fetchNFTsByCollection(collectionId: string) {
     );
     if (!res.ok) return [];
     const data = await res.json();
-    return data || [];
+    // Corrigir: garantir que sempre retorna um array
+    return Array.isArray(data) ? data : (data.data || []);
   } catch (e) {
     console.error('fetchNFTsByCollection error:', e);
     return [];
