@@ -309,29 +309,29 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
       <Header />
       
       <main className="container mx-auto px-3 py-6">
-        {/* Stats Cards no Topo */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-3 mb-4 lg:mb-6">
-                      <Card className="cyber-card">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 lg:p-3 pb-1">
-                <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
-                  Floor Price
-                </CardTitle>
-                <div className="p-1 rounded bg-[#A20131]/20">
-                  <BarChart3 className="h-3 w-3 text-[#A20131]" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-2 lg:p-3 pt-0">
-                <div className="text-base lg:text-xl font-bold text-[#FDFDFD]">
-                  {marketplaceStats.floorPrice}
-                </div>
-                <p className="text-xs text-[#FDFDFD]/50">
-                  Current floor
-                </p>
-              </CardContent>
-            </Card>
+                {/* Stats Cards no Topo - Mesmo tamanho do marketplace */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6 lg:mb-8">
+          <Card className="cyber-card">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
+              <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
+                Floor Price
+              </CardTitle>
+              <div className="p-1 rounded bg-[#A20131]/20">
+                <BarChart3 className="h-3 w-3 text-[#A20131]" />
+              </div>
+            </CardHeader>
+            <CardContent className="p-2 pt-0">
+              <div className="text-sm font-bold text-[#FDFDFD] mb-0.5">
+                {marketplaceStats.floorPrice}
+              </div>
+              <p className="text-xs text-[#FDFDFD]/50">
+                Current floor
+              </p>
+            </CardContent>
+          </Card>
 
           <Card className="cyber-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 lg:p-3 pb-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Total Volume
               </CardTitle>
@@ -339,8 +339,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 <DollarSign className="h-3 w-3 text-[#A20131]" />
               </div>
             </CardHeader>
-            <CardContent className="p-2 lg:p-3 pt-0">
-              <div className="text-base lg:text-xl font-bold text-[#FDFDFD]">
+            <CardContent className="p-2 pt-0">
+              <div className="text-sm font-bold text-[#FDFDFD] mb-0.5">
                 {marketplaceStats.totalVolume}
               </div>
               <p className="text-xs text-[#FDFDFD]/50">
@@ -350,7 +350,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           </Card>
 
           <Card className="cyber-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 lg:p-3 pb-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Total Supply
               </CardTitle>
@@ -358,8 +358,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 <Eye className="h-3 w-3 text-[#A20131]" />
               </div>
             </CardHeader>
-            <CardContent className="p-2 lg:p-3 pt-0">
-              <div className="text-base lg:text-xl font-bold text-[#FDFDFD]">
+            <CardContent className="p-2 pt-0">
+              <div className="text-sm font-bold text-[#FDFDFD] mb-0.5">
                 {marketplaceStats.mintedNFTs || totalCount}
               </div>
               <p className="text-xs text-[#FDFDFD]/50">
@@ -369,7 +369,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           </Card>
 
           <Card className="cyber-card">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 lg:p-3 pb-1">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 p-2 pb-1">
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Listings
               </CardTitle>
@@ -377,8 +377,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 <Tag className="h-3 w-3 text-[#A20131]" />
               </div>
             </CardHeader>
-            <CardContent className="p-2 lg:p-3 pt-0">
-              <div className="text-base lg:text-xl font-bold text-[#FDFDFD]">
+            <CardContent className="p-2 pt-0">
+              <div className="text-sm font-bold text-[#FDFDFD] mb-0.5">
                 {marketplaceStats.totalListings}
               </div>
               <p className="text-xs text-[#FDFDFD]/50">
@@ -389,13 +389,13 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         </div>
 
         {/* Layout Principal: NFT à esquerda, Traits e Compra à direita */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 mb-4 lg:mb-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
           {/* NFT Image + Chart */}
-          <div className="space-y-3 lg:space-y-4">
-            {/* NFT Image */}
+          <div className="space-y-4 lg:space-y-6">
+            {/* NFT Image - 30% menor */}
             <Card className="cyber-card">
-              <CardContent className="p-3 lg:p-4">
-                <div className="aspect-square relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10">
+              <CardContent className="p-2 lg:p-3">
+                <div className="aspect-square relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 max-w-[70%] mx-auto">
                   {displayData.imageUrl ? (
                     <Image
                       src={displayData.imageUrl}
@@ -415,7 +415,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 </div>
                 
                 {/* NFT Info */}
-                <div className="mt-3 lg:mt-4">
+                <div className="mt-2 lg:mt-3">
                   <div className="flex items-center justify-between mb-2">
                     <Badge variant="outline" className="text-[#A20131] border-[#A20131] text-xs">
                       {displayData.collection}
@@ -433,12 +433,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                     </div>
                   </div>
                   
-                  <h1 className="text-lg lg:text-xl font-bold text-[#FDFDFD] mb-2">
+                  <h1 className="text-base lg:text-lg font-bold text-[#FDFDFD] mb-2">
                     {displayData.name}
                   </h1>
                   
                   {displayData.description && (
-                    <p className="text-[#FDFDFD]/70 text-sm">
+                    <p className="text-[#FDFDFD]/70 text-xs">
                       {displayData.description}
                     </p>
                   )}
@@ -545,16 +545,16 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           </div>
 
           {/* Traits e Purchase Section */}
-          <div className="space-y-3 lg:space-y-4">
-            {/* Purchase Section */}
+          <div className="space-y-4 lg:space-y-6">
+            {/* Purchase Section - 20% menor */}
             <Card className="cyber-card">
-              <CardHeader className="p-3 lg:p-4 pb-2">
+              <CardHeader className="p-2 lg:p-3 pb-1">
                 <div className="flex items-start justify-between">
                   <div>
-                    <CardTitle className="text-[#FDFDFD] text-sm">
+                    <CardTitle className="text-[#FDFDFD] text-xs">
                       {displayData.isListed ? 'Listed Price' : displayData.isAuction ? 'Auction Price' : 'Last Sale'}
                     </CardTitle>
-                    <div className="text-xl lg:text-2xl font-bold text-[#FDFDFD] mt-1">
+                    <div className="text-lg lg:text-xl font-bold text-[#FDFDFD] mt-1">
                       {displayData.price} {displayData.currency}
                     </div>
                     <p className="text-[#FDFDFD]/50 text-xs">
@@ -575,20 +575,20 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="p-3 lg:p-4 pt-0">
+              <CardContent className="p-2 lg:p-3 pt-0">
                 {account ? (
                   displayData.isListed || displayData.isAuction ? (
                     <Button 
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-2"
-                      size="default"
+                      className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-1.5"
+                      size="sm"
                     >
-                      <ShoppingBag className="h-4 w-4 mr-2" />
+                      <ShoppingBag className="h-3 w-3 mr-2" />
                       {displayData.isAuction ? 'Place Bid' : 'Buy Now'}
                     </Button>
                   ) : (
                     <Button 
-                      className="w-full bg-[#FDFDFD]/10 text-[#FDFDFD] font-medium py-2 cursor-not-allowed border-[#FDFDFD]/20"
-                      size="default"
+                      className="w-full bg-[#FDFDFD]/10 text-[#FDFDFD] font-medium py-1.5 cursor-not-allowed border-[#FDFDFD]/20"
+                      size="sm"
                       disabled
                     >
                       Not for Sale
@@ -596,83 +596,83 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                   )
                 ) : (
                   <Button 
-                    className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-2"
-                    size="default"
+                    className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-1.5"
+                    size="sm"
                   >
-                    <Wallet className="h-4 w-4 mr-2" />
+                    <Wallet className="h-3 w-3 mr-2" />
                     Connect Wallet
                   </Button>
                 )}
                 
                 {account && (displayData.isListed || displayData.isAuction) && (
-                  <div className="mt-2 lg:mt-3 grid grid-cols-2 gap-2">
-                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-2">
+                  <div className="mt-2 grid grid-cols-2 gap-1">
+                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-1">
                       <Gavel className="h-3 w-3 mr-1" />
-                      Make Offer
+                      Offer
                     </Button>
-                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-2">
+                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-1">
                       <Activity className="h-3 w-3 mr-1" />
-                      View Bids
+                      Bids
                     </Button>
                   </div>
                 )}
               </CardContent>
             </Card>
 
-            {/* Traits Section */}
+            {/* Traits Section - 20% menor */}
             <Card className="cyber-card">
-              <CardHeader className="p-3 lg:p-4 pb-2">
-                <CardTitle className="text-[#FDFDFD] flex items-center text-sm">
-                  <Tag className="h-4 w-4 mr-2 text-[#A20131]" />
+              <CardHeader className="p-2 lg:p-3 pb-1">
+                <CardTitle className="text-[#FDFDFD] flex items-center text-xs">
+                  <Tag className="h-3 w-3 mr-2 text-[#A20131]" />
                   Traits ({displayData.traits?.length || 0})
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-3 lg:p-4 pt-0">
+              <CardContent className="p-2 lg:p-3 pt-0">
                 {displayData.traits && displayData.traits.length > 0 ? (
-                                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                      <div className="grid grid-cols-2 gap-1">
                       {displayData.traits.map((trait, index) => (
-                        <div key={index} className="p-2 rounded-lg bg-[#14101e] border border-[#FDFDFD]/10">
+                        <div key={index} className="p-1.5 rounded bg-[#14101e] border border-[#FDFDFD]/10">
                           <div className="text-xs text-[#FDFDFD]/50 uppercase tracking-wider">
                             {trait.trait_type}
                           </div>
-                          <div className="text-xs font-medium text-[#FDFDFD] mt-1">
+                          <div className="text-xs font-medium text-[#FDFDFD] mt-0.5">
                             {trait.value}
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-4 lg:py-6">
-                      <Tag className="h-6 w-6 lg:h-8 lg:w-8 mx-auto text-[#FDFDFD]/30 mb-2" />
-                      <p className="text-[#FDFDFD]/50 text-sm">No traits available</p>
+                    <div className="text-center py-3">
+                      <Tag className="h-5 w-5 mx-auto text-[#FDFDFD]/30 mb-2" />
+                      <p className="text-[#FDFDFD]/50 text-xs">No traits available</p>
                     </div>
                   )}
               </CardContent>
             </Card>
 
-            {/* Details Section */}
+            {/* Details Section - 20% menor */}
             <Card className="cyber-card">
-              <CardHeader className="p-3 lg:p-4 pb-2">
-                <CardTitle className="text-[#FDFDFD] text-sm">Details</CardTitle>
+              <CardHeader className="p-2 lg:p-3 pb-1">
+                <CardTitle className="text-[#FDFDFD] text-xs">Details</CardTitle>
               </CardHeader>
-              <CardContent className="p-3 lg:p-4 pt-0 space-y-2">
+              <CardContent className="p-2 lg:p-3 pt-0 space-y-1.5">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#FDFDFD]/70 text-sm">Token ID</span>
-                  <span className="text-[#FDFDFD] font-mono text-sm">#{displayData.tokenId}</span>
+                  <span className="text-[#FDFDFD]/70 text-xs">Token ID</span>
+                  <span className="text-[#FDFDFD] font-mono text-xs">#{displayData.tokenId}</span>
                 </div>
                 <Separator className="bg-[#FDFDFD]/10" />
                 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#FDFDFD]/70 text-sm">Collection</span>
-                  <span className="text-[#FDFDFD] capitalize text-sm">{displayData.collection}</span>
+                  <span className="text-[#FDFDFD]/70 text-xs">Collection</span>
+                  <span className="text-[#FDFDFD] capitalize text-xs">{displayData.collection}</span>
                 </div>
                 <Separator className="bg-[#FDFDFD]/10" />
                 
                 {displayData.creator && (
                   <>
                     <div className="flex justify-between items-center">
-                      <span className="text-[#FDFDFD]/70 text-sm">Creator</span>
-                      <span className="text-[#FDFDFD] font-mono text-xs lg:text-sm">
+                      <span className="text-[#FDFDFD]/70 text-xs">Creator</span>
+                      <span className="text-[#FDFDFD] font-mono text-xs">
                         {displayData.creator.slice(0, 6)}...{displayData.creator.slice(-4)}
                       </span>
                     </div>
@@ -682,8 +682,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 
                 {displayData.owner && (
                   <div className="flex justify-between items-center">
-                    <span className="text-[#FDFDFD]/70 text-sm">Owner</span>
-                    <span className="text-[#FDFDFD] font-mono text-xs lg:text-sm">
+                    <span className="text-[#FDFDFD]/70 text-xs">Owner</span>
+                    <span className="text-[#FDFDFD] font-mono text-xs">
                       {displayData.owner.slice(0, 6)}...{displayData.owner.slice(-4)}
                     </span>
                   </div>
@@ -693,29 +693,29 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           </div>
         </div>
 
-        {/* Activity/Sales History */}
+        {/* Activity/Sales History - 40% menor */}
         <Card className="cyber-card">
-          <CardHeader className="p-3 lg:p-4 pb-2">
-            <CardTitle className="text-[#FDFDFD] flex items-center text-sm">
-              <Activity className="h-4 w-4 mr-2 text-[#A20131]" />
+          <CardHeader className="p-2 pb-1">
+            <CardTitle className="text-[#FDFDFD] flex items-center text-xs">
+              <Activity className="h-3 w-3 mr-1 text-[#A20131]" />
               Activity
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3 lg:p-4 pt-0">
+          <CardContent className="p-2 pt-0">
             {activityData.length > 0 ? (
-              <div className="space-y-2">
-                {activityData.slice(0, 6).map((activity, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-[#14101e] border border-[#FDFDFD]/10">
-                    <div className="flex items-center space-x-2">
-                      <div className="p-1 rounded bg-[#A20131]/20">
-                        {activity.type === 'sale' && <ShoppingBag className="h-3 w-3 text-[#A20131]" />}
-                        {activity.type === 'listing' && <Tag className="h-3 w-3 text-[#A20131]" />}
-                        {activity.type === 'bid' && <TrendingUp className="h-3 w-3 text-[#A20131]" />}
-                        {activity.type === 'transfer' && <ArrowRight className="h-3 w-3 text-[#A20131]" />}
-                        {activity.type === 'mint' && <Sparkles className="h-3 w-3 text-[#A20131]" />}
+              <div className="space-y-1">
+                {activityData.slice(0, 4).map((activity, index) => (
+                  <div key={index} className="flex items-center justify-between p-1.5 rounded bg-[#14101e] border border-[#FDFDFD]/10">
+                    <div className="flex items-center space-x-1.5">
+                      <div className="p-0.5 rounded bg-[#A20131]/20">
+                        {activity.type === 'sale' && <ShoppingBag className="h-2.5 w-2.5 text-[#A20131]" />}
+                        {activity.type === 'listing' && <Tag className="h-2.5 w-2.5 text-[#A20131]" />}
+                        {activity.type === 'bid' && <TrendingUp className="h-2.5 w-2.5 text-[#A20131]" />}
+                        {activity.type === 'transfer' && <ArrowRight className="h-2.5 w-2.5 text-[#A20131]" />}
+                        {activity.type === 'mint' && <Sparkles className="h-2.5 w-2.5 text-[#A20131]" />}
                       </div>
                       <div>
-                        <div className="text-[#FDFDFD] font-medium capitalize text-sm">
+                        <div className="text-[#FDFDFD] font-medium capitalize text-xs">
                           {activity.type === 'mint' ? 'Minted' : 
                            activity.type === 'listing' ? 'Listed' :
                            activity.type === 'bid' ? 'Bid Placed' :
@@ -726,36 +726,36 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                     </div>
                     <div className="text-right">
                       {activity.price && (
-                        <div className="text-[#FDFDFD] font-bold">{activity.price}</div>
+                        <div className="text-[#FDFDFD] font-bold text-xs">{activity.price}</div>
                       )}
                       {activity.from && activity.to && (
                         <div className="text-[#FDFDFD]/50 text-xs">
-                          {activity.from.slice(0, 6)}...{activity.from.slice(-4)} 
-                          <ArrowRight className="h-3 w-3 inline mx-1" />
-                          {activity.to.slice(0, 6)}...{activity.to.slice(-4)}
+                          {activity.from.slice(0, 4)}...{activity.from.slice(-2)} 
+                          <ArrowRight className="h-2 w-2 inline mx-1" />
+                          {activity.to.slice(0, 4)}...{activity.to.slice(-2)}
                         </div>
                       )}
                       {activity.to && !activity.from && (
                         <div className="text-[#FDFDFD]/50 text-xs">
-                          to {activity.to.slice(0, 6)}...{activity.to.slice(-4)}
+                          to {activity.to.slice(0, 4)}...{activity.to.slice(-2)}
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
-                {activityData.length > 6 && (
-                  <div className="text-center pt-2">
-                    <Button variant="ghost" size="sm" className="text-[#A20131] hover:text-[#A20131]/80">
-                      <span className="text-xs">View All Activity</span>
-                      <ArrowRight className="ml-1 h-3 w-3" />
+                {activityData.length > 4 && (
+                  <div className="text-center pt-1">
+                    <Button variant="ghost" size="sm" className="text-[#A20131] hover:text-[#A20131]/80 p-1">
+                      <span className="text-xs">View All</span>
+                      <ArrowRight className="ml-1 h-2.5 w-2.5" />
                     </Button>
                   </div>
                 )}
               </div>
             ) : (
-              <div className="text-center py-6">
-                <Activity className="h-8 w-8 mx-auto text-[#FDFDFD]/30 mb-3" />
-                <p className="text-[#FDFDFD]/50">No activity yet</p>
+              <div className="text-center py-4">
+                <Activity className="h-6 w-6 mx-auto text-[#FDFDFD]/30 mb-2" />
+                <p className="text-[#FDFDFD]/50 text-xs">No activity yet</p>
               </div>
             )}
           </CardContent>
