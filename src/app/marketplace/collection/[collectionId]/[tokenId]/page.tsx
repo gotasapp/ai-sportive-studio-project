@@ -59,6 +59,23 @@ async function fetchSales(collectionId: string, tokenId: string) {
 
 const PriceHistoryChart = dynamic(() => import("@/components/marketplace/PriceHistoryChart"), { ssr: false, loading: () => <div className='w-full h-40 bg-gray-900 rounded animate-pulse' /> });
 
+function serializeBigInt(obj: any): any {
+  if (typeof obj === "bigint") {
+    return obj.toString();
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(serializeBigInt);
+  }
+  if (obj && typeof obj === "object") {
+    const newObj: any = {};
+    for (const key in obj) {
+      newObj[key] = serializeBigInt(obj[key]);
+    }
+    return newObj;
+  }
+  return obj;
+}
+
 export default async function NFTDetailPage({ params }: { params: { collectionId: string, tokenId: string } }) {
   try {
     // Buscar dados reais do NFT e owner via Thirdweb
@@ -95,13 +112,15 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
     }));
     const recentActivity = sales.slice(0, 5);
 
+    const safeMintedNFT = serializeBigInt(mintedNFT);
+
     return (
       <div className="max-w-5xl mx-auto py-10 px-4">
         {/* DEBUG PANEL: show raw data for troubleshooting */}
         <div style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8, marginBottom: 24 }}>
           <strong>DEBUG DATA</strong>
           <div style={{ fontSize: 12, marginTop: 8 }}>
-            <div><b>mintedNFT:</b> <pre>{JSON.stringify(mintedNFT, null, 2)}</pre></div>
+            <div><b>mintedNFT:</b> <pre>{JSON.stringify(safeMintedNFT, null, 2)}</pre></div>
             <div><b>realOwner:</b> <pre>{JSON.stringify(realOwner, null, 2)}</pre></div>
             <div><b>sales:</b> <pre>{JSON.stringify(sales, null, 2)}</pre></div>
           </div>
