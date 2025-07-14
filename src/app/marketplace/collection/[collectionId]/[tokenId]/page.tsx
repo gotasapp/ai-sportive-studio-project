@@ -32,10 +32,25 @@ async function fetchNFTsByCollection(collectionId: string) {
   }
 }
 
+async function fetchSales(collectionId: string, tokenId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/sales?collection=${collectionId}&tokenId=${tokenId}`,
+      { next: { revalidate: 30 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.sales || [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function NFTDetailPage({ params }: { params: { collectionId: string, tokenId: string } }) {
-  const [nftDetail, nftsByCollection] = await Promise.all([
+  const [nftDetail, nftsByCollection, sales] = await Promise.all([
     fetchNFTDetail(params.tokenId),
-    fetchNFTsByCollection(params.collectionId)
+    fetchNFTsByCollection(params.collectionId),
+    fetchSales(params.collectionId, params.tokenId)
   ]);
   if (!nftDetail || !nftDetail.success || !nftDetail.nft) return notFound();
   const nft = nftDetail.nft;
@@ -46,6 +61,19 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
   const mintedNFTs = (nftsByCollection || []).filter((item: any) => String(item.tokenId) === String(params.tokenId));
   const supply = mintedNFTs.length;
   const owners = [...new Set(mintedNFTs.map((item: any) => item.owner))].filter(Boolean);
+
+  // Volume e transações reais
+  const volume = sales.reduce((sum: number, sale: any) => sum + (Number(sale.price) || 0), 0);
+  const transactions = sales.length;
+
+  // Preparar histórico de preço (data, valor)
+  const priceHistory = sales.map((sale: any) => ({
+    date: sale.timestamp || sale.date || sale.createdAt,
+    price: Number(sale.price) || 0
+  }));
+
+  // Atividade recente (últimos eventos)
+  const recentActivity = sales.slice(0, 5);
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -95,7 +123,7 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
 
       <Separator className="my-8 bg-secondary/10" />
 
-      {/* Supply e Owners reais */}
+      {/* Supply, Owners, Volume, Transações reais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
@@ -109,46 +137,46 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
             <div className="text-xs text-secondary/70">Owners</div>
           </CardContent>
         </Card>
-        {/* Placeholders para volume/transações */}
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{volume}</div>
             <div className="text-xs text-secondary/70">Volume</div>
           </CardContent>
         </Card>
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{transactions}</div>
             <div className="text-xs text-secondary/70">Transações</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Histórico de preço (placeholder) */}
+      {/* Histórico de preço (placeholder para gráfico) */}
       <Card className="mb-8 bg-transparent border-secondary/20">
         <CardHeader>
           <CardTitle className="text-secondary text-lg">Histórico de Preço</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Aqui pode ser integrado um gráfico real usando priceHistory */}
           <Skeleton className="w-full h-40 rounded" />
         </CardContent>
       </Card>
 
-      {/* Atividade recente (placeholder) */}
+      {/* Atividade recente (eventos reais) */}
       <Card className="bg-transparent border-secondary/20">
         <CardHeader>
           <CardTitle className="text-secondary text-lg">Atividade Recente</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
-            <div className="flex justify-between text-secondary/80">
-              <span>Usuário X comprou NFT</span>
-              <span>há 2h</span>
-            </div>
-            <div className="flex justify-between text-secondary/80">
-              <span>Usuário Y listou NFT</span>
-              <span>há 5h</span>
-            </div>
+            {recentActivity.length > 0 ? recentActivity.map((event: any, idx: number) => (
+              <div key={idx} className="flex justify-between text-secondary/80">
+                <span>{event.buyer || event.seller || 'Usuário'} {event.type || 'comprou'} NFT</span>
+                <span>{event.timestamp ? new Date(event.timestamp).toLocaleString() : ''}</span>
+              </div>
+            )) : (
+              <span className="text-secondary/60 text-sm">Sem atividade recente.</span>
+            )}
           </div>
         </CardContent>
       </Card>
