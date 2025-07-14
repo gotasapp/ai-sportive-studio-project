@@ -203,12 +203,10 @@ export default function AdminDashboard() {
   // Lazy loading - não bloqueia carregamento inicial
   useEffect(() => {
     const timer = setTimeout(() => {
-      setInitialLoading(false);
       fetchOverviewData();
       fetchPopularTeamsData();
       fetchRecentSalesData();
     }, 1000);
-
     return () => clearTimeout(timer);
   }, [fetchOverviewData, fetchPopularTeamsData, fetchRecentSalesData]);
 
@@ -218,6 +216,20 @@ export default function AdminDashboard() {
       fetchChartData();
     }
   }, [popularTeamsData, fetchChartData]);
+
+  // Loader global: só some quando todos os dados principais estiverem carregados
+  useEffect(() => {
+    if (
+      overviewData &&
+      popularTeamsData.length > 0 &&
+      recentSalesData.length > 0 &&
+      chartData.monthlyNFTs.length > 0 &&
+      chartData.teamDistribution.length > 0 &&
+      chartData.userGrowth.length > 0
+    ) {
+      setInitialLoading(false);
+    }
+  }, [overviewData, popularTeamsData, recentSalesData, chartData]);
 
   const handleRefresh = () => {
     setRefreshTime(new Date().toLocaleTimeString());
