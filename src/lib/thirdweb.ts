@@ -7,6 +7,6 @@ if (!clientId) {
   throw new Error("Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID environment variable");
 }
 
-export const client = createThirdwebClient({
+export const thirdwebClient = createThirdwebClient({
   clientId: clientId,
 }); 
