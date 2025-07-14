@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { getContract, readContract } from 'thirdweb';
+import { client } from '@/lib/thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 
 // Mapear endereço do contrato por coleção
@@ -28,7 +29,8 @@ export async function GET(request: NextRequest) {
       try {
         const contract = getContract({
           address: contractAddress,
-          chain: polygonAmoy
+          chain: polygonAmoy,
+          client: client
         });
         const supply = await readContract({
           contract,
