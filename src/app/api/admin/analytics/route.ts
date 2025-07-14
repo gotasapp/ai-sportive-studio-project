@@ -100,28 +100,27 @@ const getPopularTeamsData = async () => {
     const db = client.db('chz-app-db');
     const collections = ['jerseys', 'badges', 'stadiums'];
     const teamCounts: { [key: string]: number } = {};
-    const aggregationPromises = collections.map(async (collectionName) => {
+    for (const collectionName of collections) {
       const collection = db.collection(collectionName);
-      const pipeline = [
-        { $match: { tokenId: { $exists: true, $ne: null } } },
-        { $unwind: '$tags' },
-        { $group: { _id: '$tags', count: { $sum: 1 } } },
-        { $sort: { count: -1 } },
-        { $limit: 10 }
-      ];
-      return withTimeout(collection.aggregate(pipeline).toArray(), 2000);
-    });
-    const results = await Promise.allSettled(aggregationPromises);
-    results.forEach((result) => {
-      if (result.status === 'fulfilled') {
-        result.value.forEach((item: any) => {
-          const team = item._id;
+      // Buscar todos NFTs mintados
+      const nfts = await collection.find({ tokenId: { $exists: true, $ne: null } }, { projection: { tags: 1, metadata: 1 } }).toArray();
+      nfts.forEach(nft => {
+        // Preferir campo tags (array de times)
+        if (Array.isArray(nft.tags)) {
+          nft.tags.forEach((tag: string) => {
+            if (tag && typeof tag === 'string') {
+              teamCounts[tag] = (teamCounts[tag] || 0) + 1;
+            }
+          });
+        } else if (nft.metadata && nft.metadata.team) {
+          // Fallback: metadado team
+          const team = nft.metadata.team;
           if (team && typeof team === 'string') {
-            teamCounts[team] = (teamCounts[team] || 0) + item.count;
+            teamCounts[team] = (teamCounts[team] || 0) + 1;
           }
-        });
-      }
-    });
+        }
+      });
+    }
     // Processar e filtrar times válidos
     const sortedTeams = Object.entries(teamCounts)
       .map(([name, count]) => ({ name, count }))
@@ -263,9 +262,26 @@ const getChartData = async () => {
 };
 
 const getMonthlyStatsFromDB = async (items: any[]) => {
-  // TODO: Implementar lógica real baseada em createdAt de NFTs mintadas
-  // Por enquanto, retorna vazio se não houver dados
-  return [];
+  // Agrupar NFTs mintadas por mês (últimos 6 meses)
+  if (!items || items.length === 0) return [];
+  const now = new Date();
+  // Array de labels dos últimos 6 meses
+  const months = Array.from({ length: 6 }).map((_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    return { label: `${d.toLocaleString('default', { month: 'short' })}/${d.getFullYear()}`, start: d };
+  });
+  // Contar NFTs por mês
+  const monthlyCounts = months.map((m, idx) => {
+    const start = m.start;
+    const end = idx < months.length - 1 ? months[idx + 1].start : new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const count = items.filter(item => {
+      if (!item.createdAt) return false;
+      const date = new Date(item.createdAt);
+      return date >= start && date < end;
+    }).length;
+    return { name: m.label, value: count };
+  });
+  return monthlyCounts;
 };
 
 const getUserGrowthStatsFromDB = (items: any[]) => {
