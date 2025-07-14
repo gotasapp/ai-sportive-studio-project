@@ -47,11 +47,16 @@ async function fetchSales(collectionId: string, tokenId: string) {
 }
 
 export default async function NFTDetailPage({ params }: { params: { collectionId: string, tokenId: string } }) {
+  // Debug logs para diagnóstico de 404
+  console.log('NFTDetailPage params:', params);
   const [nftDetail, nftsByCollection, sales] = await Promise.all([
     fetchNFTDetail(params.tokenId),
     fetchNFTsByCollection(params.collectionId),
     fetchSales(params.collectionId, params.tokenId)
   ]);
+  console.log('nftDetail:', nftDetail);
+  console.log('nftsByCollection:', nftsByCollection);
+  console.log('sales:', sales);
   if (!nftDetail || !nftDetail.success || !nftDetail.nft) return notFound();
   const nft = nftDetail.nft;
   const metadata = nft.metadata || {};
