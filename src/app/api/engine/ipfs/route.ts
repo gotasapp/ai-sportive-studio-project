@@ -5,8 +5,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     
     // Configuração do Engine API
-    const THIRDWEB_ENGINE_URL = process.env.THIRDWEB_ENGINE_URL
-    const THIRDWEB_ACCESS_TOKEN = process.env.THIRDWEB_ACCESS_TOKEN
+    const THIRDWEB_ENGINE_URL = process.env.ENGINE_URL
+const THIRDWEB_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN
     
     if (!THIRDWEB_ENGINE_URL || !THIRDWEB_ACCESS_TOKEN) {
       throw new Error('Engine configuration missing')

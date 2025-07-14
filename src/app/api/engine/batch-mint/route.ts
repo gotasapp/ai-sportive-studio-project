@@ -9,7 +9,7 @@ interface BatchMintApiRequest {
 
 // Engine Configuration
 const ENGINE_URL = process.env.ENGINE_URL || 'http://localhost:3005';
-const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN;
+const ENGINE_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
   // Debug das variáveis de ambiente
   console.log('🔧 Environment Variables Check:', {
     ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
-    ENGINE_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing',
+    VAULT_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing',
     CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
     BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
   });
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
       error: 'Server configuration error.',
       details: {
         ENGINE_URL: !!ENGINE_URL,
-        ENGINE_ACCESS_TOKEN: !!ENGINE_ACCESS_TOKEN,
+        VAULT_ACCESS_TOKEN: !!ENGINE_ACCESS_TOKEN,
         CONTRACT_ADDRESS: !!CONTRACT_ADDRESS,
         BACKEND_WALLET_ADDRESS: !!BACKEND_WALLET_ADDRESS
       }
@@ -169,7 +169,7 @@ export async function GET() {
     status: 'Batch Mint API is working',
     config: {
       ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
-      ENGINE_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing', 
+      VAULT_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing', 
       CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
       BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
     },
