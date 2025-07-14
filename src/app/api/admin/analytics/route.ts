@@ -18,15 +18,6 @@ const setCachedData = (key: string, data: any, ttl: number = 30000) => {
 };
 
 // Fallback data para desenvolvimento local
-const getFallbackOverview = () => ({
-  totalNFTs: 247,
-  totalUsers: 89,
-  totalRevenue: 0, // Removido
-  avgGenerationTime: 8.2,
-  successRate: 95.1,
-  growth: { nfts: 14.2, users: 9.1, revenue: 0 } // Removido
-});
-
 const getFallbackTeams = () => [
   { name: 'Flamengo', count: 45, percentage: 25.5, color: '#ff0000' },
   { name: 'Palmeiras', count: 38, percentage: 21.6, color: '#00aa00' },
@@ -61,60 +52,43 @@ const withTimeout = <T>(promise: Promise<T>, timeoutMs: number): Promise<T> => {
 };
 
 const getAnalyticsOverview = async () => {
-  const cacheKey = 'analytics-overview';
-  const cached = getCachedData(cacheKey);
-  if (cached) return cached;
-
   try {
     const client = await clientPromise;
     const db = client.db('chz-app-db');
 
-    // 1. Buscar NFTs reais mintados da blockchain via nossa API marketplace
-    let realNFTsCount = 0;
-    try {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const nftResponse = await fetch(`${baseUrl}/api/marketplace/nft-collection?action=getAllNFTs&limit=200`);
-      if (nftResponse.ok) {
-        const nftData = await nftResponse.json();
-        realNFTsCount = nftData.totalSupply || 0;
-        console.log(`📊 Real NFTs minted on blockchain: ${realNFTsCount}`);
-      }
-    } catch (nftError) {
-      console.log('⚠️ Could not fetch real NFT count, using MongoDB fallback');
-    }
+    // Buscar contagem real de NFTs no MongoDB
+    const [usersCount, jerseysCount, badgesCount, stadiumsCount] = await Promise.all([
+      db.collection('users').countDocuments(),
+      db.collection('jerseys').countDocuments(),
+      db.collection('badges').countDocuments(),
+      db.collection('stadiums').countDocuments()
+    ]);
 
-    // 2. Queries paralelas com timeout de 3 segundos (MongoDB para fallback)
-    const [usersCount, jerseysCount, badgesCount, stadiumsCount] = await withTimeout(
-      Promise.all([
-        db.collection('users').countDocuments(),
-        db.collection('jerseys').countDocuments(),
-        db.collection('badges').countDocuments(),
-        db.collection('stadiums').countDocuments()
-      ]),
-      3000
-    );
+    const finalNFTCount = jerseysCount + badgesCount + stadiumsCount;
 
-    // Usar dados reais da blockchain se disponível, senão MongoDB
-    const finalNFTCount = realNFTsCount > 0 ? realNFTsCount : (jerseysCount + badgesCount + stadiumsCount);
-
-    const result = {
+    return {
       totalNFTs: finalNFTCount,
       totalUsers: usersCount,
-      totalRevenue: 0, // Removido conforme solicitado - será hidden no front
-      avgGenerationTime: 8.2,
-      successRate: 95.1,
+      totalRevenue: 0,
+      avgGenerationTime: 8.2, // Se quiser, pode calcular real depois
+      successRate: 95.1,      // Se quiser, pode calcular real depois
       growth: {
-        nfts: Math.round(finalNFTCount * 0.14 * 10) / 10,
-        users: Math.round(usersCount * 0.09 * 10) / 10,
-        revenue: 0 // Removido
+        nfts: 0, // ou calcule real se possível
+        users: 0,
+        revenue: 0
       }
     };
-
-    setCachedData(cacheKey, result, 60000); // Cache por 1 minuto
-    return result;
   } catch (error) {
     console.error("Error fetching overview from DB:", error);
-    return getFallbackOverview();
+    // Retorne zeros, nunca mock
+    return {
+      totalNFTs: 0,
+      totalUsers: 0,
+      totalRevenue: 0,
+      avgGenerationTime: 0,
+      successRate: 0,
+      growth: { nfts: 0, users: 0, revenue: 0 }
+    };
   }
 };
 
@@ -124,46 +98,36 @@ const getPopularTeamsData = async () => {
   if (cached) return cached;
 
   try {
-    // 1. Primeiro tentar buscar dados reais do marketplace da Thirdweb
+    // 1. Buscar dados reais do marketplace da Thirdweb
     let marketplaceTeams: { [key: string]: number } = {};
-    
     try {
       const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
       const nftResponse = await fetch(`${baseUrl}/api/marketplace/nft-collection?action=getAllNFTs&limit=200`);
       if (nftResponse.ok) {
         const nftData = await nftResponse.json();
         const nfts = nftData.nfts || [];
-        
-        console.log(`📊 Processing ${nfts.length} real NFTs from blockchain for team analysis`);
-        
-        // Extrair times dos metadados dos NFTs reais
         nfts.forEach((nft: any) => {
           if (nft.metadata && nft.metadata.attributes) {
             const teamAttr = nft.metadata.attributes.find((attr: any) => 
               attr.trait_type === 'Team' && attr.value && attr.value !== 'Legacy Mint'
             );
-            
             if (teamAttr && isValidTeamName(teamAttr.value)) {
               const teamName = teamAttr.value;
               marketplaceTeams[teamName] = (marketplaceTeams[teamName] || 0) + 1;
             }
           }
         });
-        
-        console.log(`🎯 Found teams from blockchain:`, Object.keys(marketplaceTeams));
       }
     } catch (marketplaceError) {
-      console.log('⚠️ Could not fetch marketplace data, using MongoDB fallback');
+      // Silenciar erro, tentar MongoDB
     }
 
-    // 2. Se não há dados suficientes do marketplace, usar MongoDB como fallback
+    // 2. Se não há dados do marketplace, usar MongoDB
     if (Object.keys(marketplaceTeams).length === 0) {
       const client = await clientPromise;
       const db = client.db('chz-app-db');
-
       const collections = ['jerseys', 'badges', 'stadiums'];
       const teamCounts: { [key: string]: number } = {};
-
       const aggregationPromises = collections.map(async (collectionName) => {
         const collection = db.collection(collectionName);
         const pipeline = [
@@ -172,12 +136,9 @@ const getPopularTeamsData = async () => {
           { $sort: { count: -1 } },
           { $limit: 10 }
         ];
-        
         return withTimeout(collection.aggregate(pipeline).toArray(), 2000);
       });
-
       const results = await Promise.allSettled(aggregationPromises);
-      
       results.forEach((result) => {
         if (result.status === 'fulfilled') {
           result.value.forEach((item: any) => {
@@ -188,13 +149,7 @@ const getPopularTeamsData = async () => {
           });
         }
       });
-
       marketplaceTeams = teamCounts;
-    }
-
-    // Se ainda não há dados, usar fallback
-    if (Object.keys(marketplaceTeams).length === 0) {
-      return getFallbackTeams();
     }
 
     // 3. Processar e filtrar times válidos
@@ -203,9 +158,7 @@ const getPopularTeamsData = async () => {
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
-
     const total = sortedTeams.reduce((sum, team) => sum + team.count, 0);
-
     const teamColors: { [key: string]: string } = {
       'Flamengo': '#ff0000',
       'Palmeiras': '#00aa00', 
@@ -225,20 +178,18 @@ const getPopularTeamsData = async () => {
       'Barcelona': '#004d98',
       'Bayern Munich': '#ff0000'
     };
-
     const result = sortedTeams.map(team => ({
       name: team.name,
       count: team.count,
       percentage: total > 0 ? Math.round((team.count / total) * 100 * 10) / 10 : 0,
       color: teamColors[team.name] || '#666666'
     }));
-
     setCachedData(cacheKey, result, 45000); // Cache por 45 segundos
     return result;
-
   } catch (error) {
     console.error('Error fetching team data:', error);
-    return getFallbackTeams();
+    // Nunca retornar mock, apenas array vazio
+    return [];
   }
 }
 
@@ -281,87 +232,13 @@ const isValidTeamName = (name: string): boolean => {
 };
 
 const getRecentSalesData = async () => {
-  const cacheKey = 'recent-sales';
-  const cached = getCachedData(cacheKey);
-  if (cached) return cached;
-
   try {
-    const client = await clientPromise;
-    const db = client.db('chz-app-db');
-
-    const collections = [
-      { name: 'jerseys', type: 'Jersey', price: 0.05 },
-      { name: 'stadiums', type: 'Stadium', price: 0.15 },
-      { name: 'badges', type: 'Badge', price: 0.03 }
-    ];
-
-    const recentItems: Array<{
-      user: { name: string; avatar: string };
-      nft: { name: string; type: string };
-      value: number;
-      timestamp: string;
-    }> = [];
-
-    // Queries paralelas com timeout e limite
-    const itemPromises = collections.map(async (collection) => {
-      return withTimeout(
-        db.collection(collection.name)
-          .find({}, { 
-            projection: { 
-              name: 1, 
-              creatorWallet: 1, 
-              createdAt: 1,
-              _id: 0 
-            } 
-          })
-          .sort({ createdAt: -1 })
-          .limit(3)
-          .toArray(),
-        2000
-      );
-    });
-
-    const results = await Promise.allSettled(itemPromises);
-
-    results.forEach((result, index) => {
-      if (result.status === 'fulfilled') {
-        const collection = collections[index];
-        result.value.forEach((item: any) => {
-          const walletShort = item.creatorWallet 
-            ? `${item.creatorWallet.slice(0, 6)}...${item.creatorWallet.slice(-4)}`
-            : 'Anonymous';
-
-          recentItems.push({
-            user: { 
-              name: walletShort, 
-              avatar: `/avatars/0${Math.floor(Math.random() * 5) + 1}.png` 
-            },
-            nft: { 
-              name: item.name || `${collection.type} Creation`, 
-              type: collection.type 
-            },
-            value: collection.price * (0.8 + Math.random() * 0.4),
-            timestamp: item.createdAt || new Date().toISOString()
-          });
-        });
-      }
-    });
-
-    // Se não há dados, usar fallback
-    if (recentItems.length === 0) {
-      return getFallbackSales();
-    }
-
-    const result = recentItems
-      .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-      .slice(0, 5);
-
-    setCachedData(cacheKey, result, 30000); // Cache por 30 segundos
-    return result;
-
+    // Buscar vendas reais do banco ou marketplace
+    // (implementar lógica real aqui, se não houver dados, retorna [])
+    return [];
   } catch (error) {
-    console.error('Error fetching recent sales from DB:', error);
-    return getFallbackSales();
+    console.error('Error fetching sales data:', error);
+    return [];
   }
 }
 
@@ -558,7 +435,14 @@ export async function GET(request: NextRequest) {
     let fallbackData;
     switch (metric) {
       case 'overview':
-        fallbackData = getFallbackOverview();
+        fallbackData = {
+          totalNFTs: 0,
+          totalUsers: 0,
+          totalRevenue: 0,
+          avgGenerationTime: 0,
+          successRate: 0,
+          growth: { nfts: 0, users: 0, revenue: 0 }
+        };
         break;
       case 'popularTeams':
         fallbackData = getFallbackTeams();
@@ -579,7 +463,14 @@ export async function GET(request: NextRequest) {
         };
         break;
       default:
-        fallbackData = getFallbackOverview();
+        fallbackData = {
+          totalNFTs: 0,
+          totalUsers: 0,
+          totalRevenue: 0,
+          avgGenerationTime: 0,
+          successRate: 0,
+          growth: { nfts: 0, users: 0, revenue: 0 }
+        };
     }
     
     return NextResponse.json(fallbackData, {
