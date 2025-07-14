@@ -3,12 +3,13 @@
 import React from 'react'
 import { 
   Zap, Wallet, Rocket, Clock, CheckCircle, AlertCircle, 
-  ExternalLink, Loader2
+  ExternalLink, Loader2, Hash
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Progress } from '@/components/ui/progress'
+import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
 import { cn } from '@/lib/utils'
 
 interface ProfessionalActionBarProps {
@@ -28,6 +29,12 @@ interface ProfessionalActionBarProps {
   mintSuccess: string | null
   mintError: string | null
   transactionHash: string | null
+
+  // Batch Minting
+  nftName?: string
+  metadataUri?: string
+  walletAddress?: string
+  collection?: 'jerseys' | 'stadiums' | 'badges'
 
   // Wallet
   isConnected: boolean
@@ -56,6 +63,10 @@ export default function ProfessionalActionBar({
   mintSuccess,
   mintError,
   transactionHash,
+  nftName,
+  metadataUri,
+  walletAddress,
+  collection,
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
@@ -152,6 +163,35 @@ export default function ProfessionalActionBar({
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
+      )}
+
+      {/* Batch Mint - Admin Only */}
+      {isUserAdmin && metadataUri && walletAddress && nftName && (
+        <BatchMintDialog
+          trigger={
+            <Button
+              disabled={!canMintGasless || isMinting}
+              variant="outline"
+              className={cn(
+                "h-12 px-6 text-base font-medium transition-all duration-200",
+                "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                // Mobile responsiveness
+                "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
+              )}
+            >
+              <div className="flex items-center gap-2 max-lg:gap-1.5">
+                <Hash className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                <span>Batch Mint</span>
+              </div>
+            </Button>
+          }
+          to={walletAddress}
+          metadataUri={metadataUri}
+          nftName={nftName}
+          collection={collection}
+          disabled={!canMintGasless || isMinting}
+        />
       )}
     </div>
   )

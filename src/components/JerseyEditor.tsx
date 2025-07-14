@@ -1478,6 +1478,10 @@ Design based on analysis: ${analysisText}`
           isConnected={isConnected}
           isOnSupportedChain={isOnSupportedChain}
           isUserAdmin={isUserAdmin}
+          nftName={selectedTeam && playerName && playerNumber ? `${selectedTeam} ${playerName} #${playerNumber}` : undefined}
+          metadataUri={ipfsUrl || undefined}
+          walletAddress={address || undefined}
+          collection="jerseys"
           getTransactionUrl={getTransactionUrl}
         />
       }
