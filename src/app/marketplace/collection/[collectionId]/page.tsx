@@ -5,12 +5,22 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notFound } from 'next/navigation';
 
-// TODO: importar hooks e endpoints reais
+async function fetchCollectionStats(collectionId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/nft-collection/stats?collection=${collectionId}`,
+      { next: { revalidate: 30 } }
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
 
 export default async function CollectionDetailPage({ params }: { params: { collectionId: string } }) {
-  // TODO: buscar dados reais da coleção/NFT usando params.collectionId
-  // const data = await fetchData(params.collectionId);
-  // if (!data) return notFound();
+  const stats = await fetchCollectionStats(params.collectionId);
+  if (!stats) return notFound();
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -25,7 +35,7 @@ export default async function CollectionDetailPage({ params }: { params: { colle
             <CardTitle className="text-2xl text-secondary">Nome da Coleção</CardTitle>
             <CardDescription className="text-secondary/80">Descrição curta da coleção ou NFT.</CardDescription>
             <div className="flex gap-2">
-              <Badge variant="secondary">Tipo</Badge>
+              <Badge variant="secondary">{params.collectionId}</Badge>
               <Badge variant="secondary">Status</Badge>
             </div>
             {/* Botão de ação */}
@@ -38,25 +48,25 @@ export default async function CollectionDetailPage({ params }: { params: { colle
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{stats.totalSupply ?? 0}</div>
             <div className="text-xs text-secondary/70">Total Supply</div>
           </CardContent>
         </Card>
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{stats.mintedNFTs ?? 0}</div>
             <div className="text-xs text-secondary/70">Mintados</div>
           </CardContent>
         </Card>
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{stats.activity?.salesVolume ?? 0}</div>
             <div className="text-xs text-secondary/70">Volume</div>
           </CardContent>
         </Card>
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0</div>
+            <div className="text-2xl font-bold text-secondary">{stats.activity?.transactions ?? 0}</div>
             <div className="text-xs text-secondary/70">Transações</div>
           </CardContent>
         </Card>
