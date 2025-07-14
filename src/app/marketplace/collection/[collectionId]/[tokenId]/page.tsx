@@ -29,7 +29,9 @@ import {
   Crown,
   Zap,
   Wallet,
-  ImageIcon
+  ImageIcon,
+  ArrowRight,
+  Sparkles
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { convertIpfsToHttp } from '@/lib/utils';
@@ -73,6 +75,41 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
+// Function to generate enhanced mock data for price history
+function getEnhancedMockData(): PriceData[] {
+  const now = new Date();
+  const mockData: PriceData[] = [];
+  
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - i * 5);
+    
+    // Simulate price fluctuation with some randomness but trending upward
+    const basePrice = 0.025 + (6 - i) * 0.003;
+    const variation = (Math.random() - 0.5) * 0.01;
+    const price = Math.max(0.01, basePrice + variation);
+    
+    mockData.push({
+      date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      price: parseFloat(price.toFixed(4)),
+      volume: parseFloat((1 + Math.random() * 3).toFixed(1))
+    });
+  }
+  
+  return mockData;
+}
+
+// Enhanced activity types
+interface ActivityItem {
+  type: 'sale' | 'listing' | 'bid' | 'transfer' | 'mint';
+  price?: string;
+  from?: string;
+  to?: string;
+  date: string;
+  timestamp: number;
+  txHash?: string;
+}
+
 export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
@@ -106,6 +143,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   
   // Estados locais
   const [salesData, setSalesData] = useState<SaleData[]>([]);
+  const [activityData, setActivityData] = useState<ActivityItem[]>([]);
   const [priceHistory, setPriceHistory] = useState<PriceData[]>([]);
   const [marketplaceStats, setMarketplaceStats] = useState<MarketplaceStats>({
     totalListings: 0,
@@ -144,25 +182,71 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           if (salesResult.success && salesResult.data) {
             setSalesData(salesResult.data);
             
-            // Gerar price history baseado em vendas reais ou dados mock
-            if (salesResult.data.length > 0) {
-              const realPriceHistory = salesResult.data.map((sale: any, index: number) => ({
-                date: new Date(sale.timestamp || sale.date).toLocaleDateString(),
-                price: parseFloat(sale.price) || 0.025 + (index * 0.005),
-                volume: parseFloat(sale.volume) || 1.0 + (index * 0.5)
-              }));
-              setPriceHistory(realPriceHistory);
-            } else {
-              // Mock data se não houver vendas
-              const mockPriceHistory: PriceData[] = [
-                { date: "Dec 30", price: 0.025, volume: 2.1 },
-                { date: "Jan 5", price: 0.032, volume: 3.2 },
-                { date: "Jan 10", price: 0.028, volume: 1.8 },
-                { date: "Jan 15", price: 0.045, volume: 4.5 },
-                { date: "Jan 20", price: 0.038, volume: 2.9 },
-                { date: "Jan 25", price: 0.041, volume: 3.1 }
+            // Gerar activity data com tipos diferentes de eventos
+            const enhancedActivity: ActivityItem[] = salesResult.data.map((sale: any) => ({
+              type: 'sale' as const,
+              price: `${parseFloat(sale.price).toFixed(4)} CHZ`,
+              from: sale.seller || '0x0000...0000',
+              to: sale.buyer || '0x0000...0000',
+              date: new Date(sale.timestamp || sale.date).toLocaleDateString(),
+              timestamp: new Date(sale.timestamp || sale.date).getTime(),
+              txHash: sale.transactionHash
+            }));
+
+            // Adicionar eventos mock se não houver dados suficientes
+            if (enhancedActivity.length < 3) {
+              const mockActivity: ActivityItem[] = [
+                {
+                  type: 'mint',
+                  date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                  timestamp: Date.now() - 7 * 24 * 60 * 60 * 1000,
+                  to: nftResponse?.data?.owner || '0x1234...5678'
+                },
+                {
+                  type: 'listing',
+                  price: '0.035 CHZ',
+                  from: nftResponse?.data?.owner || '0x1234...5678',
+                  date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                  timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000
+                },
+                {
+                  type: 'bid',
+                  price: '0.032 CHZ',
+                  from: '0x9876...4321',
+                  date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toLocaleDateString(),
+                  timestamp: Date.now() - 2 * 24 * 60 * 60 * 1000
+                }
               ];
-              setPriceHistory(mockPriceHistory);
+              setActivityData([...enhancedActivity, ...mockActivity].sort((a, b) => b.timestamp - a.timestamp));
+            } else {
+              setActivityData(enhancedActivity.sort((a, b) => b.timestamp - a.timestamp));
+            }
+            
+            // Gerar price history baseado em vendas reais ou dados mock melhorados
+            if (salesResult.data.length > 0) {
+              // Organizar dados reais por data e calcular médias de preço
+              const salesByDate = salesResult.data.reduce((acc: any, sale: any) => {
+                const dateKey = new Date(sale.timestamp || sale.date).toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric' 
+                });
+                if (!acc[dateKey]) {
+                  acc[dateKey] = { prices: [], volumes: [] };
+                }
+                acc[dateKey].prices.push(parseFloat(sale.price) || 0);
+                acc[dateKey].volumes.push(parseFloat(sale.volume) || 1);
+                return acc;
+              }, {});
+
+              const realPriceHistory = Object.entries(salesByDate).map(([date, data]: [string, any]) => ({
+                date,
+                price: data.prices.reduce((sum: number, price: number) => sum + price, 0) / data.prices.length,
+                volume: data.volumes.reduce((sum: number, vol: number) => sum + vol, 0)
+              })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+              setPriceHistory(realPriceHistory.length > 0 ? realPriceHistory : getEnhancedMockData());
+            } else {
+              setPriceHistory(getEnhancedMockData());
             }
           }
         }
@@ -395,55 +479,96 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 lg:p-6 pt-0">
-                <ChartContainer config={chartConfig} className="h-[160px] lg:h-[200px] w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={priceHistory}>
-                      <defs>
-                        <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
-                          <stop
-                            offset="5%"
-                            stopColor="#A20131"
-                            stopOpacity={0.3}
+                {priceHistory.length > 0 ? (
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="text-xs lg:text-sm text-[#FDFDFD]/50">
+                        {priceHistory.length > 1 && (
+                          <span className="flex items-center">
+                            {priceHistory[priceHistory.length - 1].price > priceHistory[0].price ? (
+                              <>
+                                <TrendingUp className="h-3 w-3 mr-1 text-green-500" />
+                                <span className="text-green-500">+{(((priceHistory[priceHistory.length - 1].price - priceHistory[0].price) / priceHistory[0].price) * 100).toFixed(1)}%</span>
+                              </>
+                            ) : (
+                              <>
+                                <TrendingDown className="h-3 w-3 mr-1 text-red-500" />
+                                <span className="text-red-500">{(((priceHistory[priceHistory.length - 1].price - priceHistory[0].price) / priceHistory[0].price) * 100).toFixed(1)}%</span>
+                              </>
+                            )}
+                            <span className="ml-1">vs first sale</span>
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs lg:text-sm text-[#FDFDFD]/50">
+                        Last 30 days
+                      </div>
+                    </div>
+                    <ChartContainer config={chartConfig} className="h-[160px] lg:h-[200px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={priceHistory} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                          <defs>
+                            <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
+                              <stop
+                                offset="5%"
+                                stopColor="#A20131"
+                                stopOpacity={0.4}
+                              />
+                              <stop
+                                offset="95%"
+                                stopColor="#A20131"
+                                stopOpacity={0.05}
+                              />
+                            </linearGradient>
+                          </defs>
+                          <XAxis 
+                            dataKey="date" 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#FDFDFD', fontSize: 10 }}
+                            tickMargin={8}
                           />
-                          <stop
-                            offset="95%"
-                            stopColor="#A20131"
-                            stopOpacity={0.1}
+                          <YAxis 
+                            axisLine={false}
+                            tickLine={false}
+                            tick={{ fill: '#FDFDFD', fontSize: 10 }}
+                            tickMargin={8}
+                            tickFormatter={(value) => `${value}`}
                           />
-                        </linearGradient>
-                      </defs>
-                      <XAxis 
-                        dataKey="date" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#FDFDFD', fontSize: 10 }}
-                      />
-                      <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fill: '#FDFDFD', fontSize: 10 }}
-                      />
-                      <Tooltip 
-                        contentStyle={{
-                          backgroundColor: '#14101e',
-                          border: '1px solid rgba(253, 253, 253, 0.1)',
-                          borderRadius: '8px',
-                          color: '#FDFDFD',
-                          fontSize: '12px'
-                        }}
-                        formatter={(value) => [`${value} CHZ`, 'Price']}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="price"
-                        stroke="#A20131"
-                        strokeWidth={2}
-                        fillOpacity={1}
-                        fill="url(#fillPrice)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
+                          <Tooltip 
+                            contentStyle={{
+                              backgroundColor: '#0a0a0a',
+                              border: '1px solid rgba(162, 1, 49, 0.3)',
+                              borderRadius: '8px',
+                              color: '#FDFDFD',
+                              fontSize: '12px',
+                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+                            }}
+                            formatter={(value: any) => [`${parseFloat(value).toFixed(4)} CHZ`, 'Price']}
+                            labelFormatter={(label) => `Date: ${label}`}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="price"
+                            stroke="#A20131"
+                            strokeWidth={2}
+                            fillOpacity={1}
+                            fill="url(#fillPrice)"
+                            dot={{ fill: '#A20131', strokeWidth: 2, r: 3 }}
+                            activeDot={{ r: 4, fill: '#A20131', strokeWidth: 2, stroke: '#FDFDFD' }}
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                  </>
+                ) : (
+                  <div className="h-[200px] flex items-center justify-center">
+                    <div className="text-center">
+                      <TrendingUp className="h-12 w-12 mx-auto text-[#FDFDFD]/30 mb-4" />
+                      <p className="text-[#FDFDFD]/50">No price history available</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -606,29 +731,54 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {salesData.length > 0 ? (
+            {activityData.length > 0 ? (
               <div className="space-y-3">
-                {salesData.map((sale, index) => (
+                {activityData.slice(0, 6).map((activity, index) => (
                   <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-[#14101e] border border-[#FDFDFD]/10">
                     <div className="flex items-center space-x-3">
                       <div className="p-2 rounded bg-[#A20131]/20">
-                        <ShoppingBag className="h-4 w-4 text-[#A20131]" />
+                        {activity.type === 'sale' && <ShoppingBag className="h-4 w-4 text-[#A20131]" />}
+                        {activity.type === 'listing' && <Tag className="h-4 w-4 text-[#A20131]" />}
+                        {activity.type === 'bid' && <TrendingUp className="h-4 w-4 text-[#A20131]" />}
+                        {activity.type === 'transfer' && <ArrowRight className="h-4 w-4 text-[#A20131]" />}
+                        {activity.type === 'mint' && <Sparkles className="h-4 w-4 text-[#A20131]" />}
                       </div>
                       <div>
-                        <div className="text-[#FDFDFD] font-medium">Sale</div>
-                        <div className="text-[#FDFDFD]/50 text-sm">{sale.date}</div>
+                        <div className="text-[#FDFDFD] font-medium capitalize">
+                          {activity.type === 'mint' ? 'Minted' : 
+                           activity.type === 'listing' ? 'Listed' :
+                           activity.type === 'bid' ? 'Bid Placed' :
+                           activity.type === 'transfer' ? 'Transferred' : 'Sale'}
+                        </div>
+                        <div className="text-[#FDFDFD]/50 text-sm">{activity.date}</div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-[#FDFDFD] font-bold">{sale.price} CHZ</div>
-                      {sale.buyer && (
-                        <div className="text-[#FDFDFD]/50 text-sm">
-                          {sale.buyer.slice(0, 6)}...{sale.buyer.slice(-4)}
+                      {activity.price && (
+                        <div className="text-[#FDFDFD] font-bold">{activity.price}</div>
+                      )}
+                      {activity.from && activity.to && (
+                        <div className="text-[#FDFDFD]/50 text-xs">
+                          {activity.from.slice(0, 6)}...{activity.from.slice(-4)} 
+                          <ArrowRight className="h-3 w-3 inline mx-1" />
+                          {activity.to.slice(0, 6)}...{activity.to.slice(-4)}
+                        </div>
+                      )}
+                      {activity.to && !activity.from && (
+                        <div className="text-[#FDFDFD]/50 text-xs">
+                          to {activity.to.slice(0, 6)}...{activity.to.slice(-4)}
                         </div>
                       )}
                     </div>
                   </div>
                 ))}
+                {activityData.length > 6 && (
+                  <div className="text-center pt-2">
+                    <Button variant="ghost" size="sm" className="text-[#A20131] hover:text-[#A20131]/80">
+                      View All Activity
+                    </Button>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-8">
