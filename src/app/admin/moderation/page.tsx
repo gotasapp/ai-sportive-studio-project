@@ -540,7 +540,23 @@ export default function ModerationPage() {
                 </div>
               </div>
 
-
+              {/* Custom Prompts List */}
+<div className="space-y-2">
+  {contentFilters.customPrompts.map((prompt, index) => (
+    <div key={index} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg border border-gray-700">
+      <span className="text-sm text-gray-300">{prompt}</span>
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => removeCustomPrompt(prompt)}
+        disabled={filtersLoading}
+        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
+      >
+        <X className="w-4 h-4" />
+      </Button>
+    </div>
+  ))}
+</div>
                 {/* Add New Custom Prompt */}
                 <div className="flex gap-2">
                   <Input
