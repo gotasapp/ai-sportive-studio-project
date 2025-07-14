@@ -394,7 +394,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           <div className="space-y-4">
             <Card className="cyber-card w-full">
               <CardContent className="p-2 lg:p-3">
-                <div className="h-[600px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
+                <div className="h-[480px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
                   {displayData.imageUrl ? (
                     <Image
                       src={displayData.imageUrl}
