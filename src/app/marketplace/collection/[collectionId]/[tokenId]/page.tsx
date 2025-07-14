@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notFound } from 'next/navigation';
+import { ChartContainer } from '@/components/ui/chart';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://jersey-generator-ai2.vercel.app';
 
@@ -122,109 +124,138 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
 
     return (
       <div className="max-w-5xl mx-auto py-10 px-4">
-        {/* Imagem principal */}
-        <Card className="mb-8 bg-transparent border-secondary/20">
-          <CardContent className="flex flex-col md:flex-row gap-8 items-center">
-            <div className="w-64 h-64 bg-[#14101e] rounded-lg flex items-center justify-center overflow-hidden">
-              {metadata.image ? (
-                <img src={metadata.image} alt={metadata.name} className="w-60 h-60 object-cover rounded-lg" />
-              ) : (
-                <Skeleton className="w-60 h-60 rounded-lg" />
-              )}
-            </div>
-            <div className="flex-1 space-y-4">
-              <CardTitle className="text-2xl text-secondary">{metadata.name || `NFT #${nft.tokenId}`}</CardTitle>
-              <CardDescription className="text-secondary/80">{metadata.description || 'Sem descrição.'}</CardDescription>
-              <div className="flex gap-2 flex-wrap">
-                <Badge variant="secondary">{params.collectionId}</Badge>
-                <Badge variant="secondary">Token ID: {nft.tokenId}</Badge>
-                <Badge variant="secondary">Owner: {nft.owner?.slice(0, 8)}...</Badge>
+        {/* DEBUG PANEL: show raw data for troubleshooting */}
+        <div style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8, marginBottom: 24 }}>
+          <strong>DEBUG DATA</strong>
+          <div style={{ fontSize: 12, marginTop: 8 }}>
+            <div><b>nftsByCollection:</b> <pre>{JSON.stringify(nftsByCollection, null, 2)}</pre></div>
+            <div><b>sales:</b> <pre>{JSON.stringify(sales, null, 2)}</pre></div>
+          </div>
+        </div>
+        {/* Main content */}
+        <div className="max-w-5xl mx-auto py-10 px-4">
+          {/* Main Image */}
+          <Card className="mb-8 bg-transparent border-secondary/20">
+            <CardContent className="flex flex-col md:flex-row gap-8 items-center">
+              <div className="w-64 h-64 bg-[#14101e] rounded-lg flex items-center justify-center overflow-hidden">
+                {metadata.image ? (
+                  <img src={metadata.image} alt={metadata.name} className="w-60 h-60 object-cover rounded-lg" />
+                ) : (
+                  <Skeleton className="w-60 h-60 rounded-lg" />
+                )}
               </div>
-              {/* Botão de ação */}
-              <Button className="cyber-button bg-[#A20131] text-white">Comprar</Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="flex-1 space-y-4">
+                <CardTitle className="text-2xl text-secondary">{metadata.name || `NFT #${nft.tokenId}`}</CardTitle>
+                <CardDescription className="text-secondary/80">{metadata.description || 'No description.'}</CardDescription>
+                <div className="flex gap-2 flex-wrap">
+                  <Badge variant="secondary">{params.collectionId}</Badge>
+                  <Badge variant="secondary">Token ID: {nft.tokenId}</Badge>
+                  <Badge variant="secondary">Owner: {nft.owner?.slice(0, 8)}...</Badge>
+                </div>
+                {/* Action Button */}
+                <Button className="cyber-button bg-[#A20131] text-white">Buy</Button>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Traits/Atributos */}
-        <Card className="mb-8 bg-transparent border-secondary/20">
-          <CardHeader>
-            <CardTitle className="text-secondary text-lg">Traits / Atributos</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
-              {attributes.length > 0 ? (
-                attributes.map((attr: any, idx: number) => (
-                  <Badge key={idx} variant="secondary">
-                    {attr.trait_type ? `${attr.trait_type}: ` : ''}{attr.value}
-                  </Badge>
-                ))
+          {/* Traits/Attributes */}
+          <Card className="mb-8 bg-transparent border-secondary/20">
+            <CardHeader>
+              <CardTitle className="text-secondary text-lg">Traits / Attributes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-3">
+                {attributes.length > 0 ? (
+                  attributes.map((attr: any, idx: number) => (
+                    <Badge key={idx} variant="secondary">
+                      {attr.trait_type ? `${attr.trait_type}: ` : ''}{attr.value}
+                    </Badge>
+                  ))
+                ) : (
+                  <span className="text-secondary/60 text-sm">No attributes.</span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Separator className="my-8 bg-secondary/10" />
+
+          {/* Supply, Owners, Volume, Transactions */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <Card className="bg-transparent border-secondary/20">
+              <CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-secondary">{supply}</div>
+                <div className="text-xs text-secondary/70">Supply (minted)</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-transparent border-secondary/20">
+              <CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-secondary">{owners.length}</div>
+                <div className="text-xs text-secondary/70">Owners</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-transparent border-secondary/20">
+              <CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-secondary">{volume}</div>
+                <div className="text-xs text-secondary/70">Volume</div>
+              </CardContent>
+            </Card>
+            <Card className="bg-transparent border-secondary/20">
+              <CardContent className="py-4 text-center">
+                <div className="text-2xl font-bold text-secondary">{transactions}</div>
+                <div className="text-xs text-secondary/70">Transactions</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Price History (chart) */}
+          <Card className="mb-8 bg-transparent border-secondary/20">
+            <CardHeader>
+              <CardTitle className="text-secondary text-lg">Price History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {priceHistory && priceHistory.length > 0 ? (
+                <div style={{ width: '100%', height: 200 }}>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={priceHistory} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#A20131" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#A20131" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="date" tick={false} axisLine={false} />
+                      <YAxis tick={{ fill: '#FDFDFD', fontSize: 12 }} axisLine={false} width={40} />
+                      <Tooltip contentStyle={{ background: '#14101e', border: 'none', color: '#FDFDFD' }} labelFormatter={v => `Date: ${v}`}/>
+                      <Area type="monotone" dataKey="price" stroke="#A20131" fillOpacity={1} fill="url(#colorPrice)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
               ) : (
-                <span className="text-secondary/60 text-sm">Sem atributos.</span>
+                <Skeleton className="w-full h-40 rounded" />
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Separator className="my-8 bg-secondary/10" />
-
-        {/* Supply, Owners, Volume, Transações reais */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          {/* Recent Activity (real events) */}
           <Card className="bg-transparent border-secondary/20">
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-secondary">{supply}</div>
-              <div className="text-xs text-secondary/70">Supply (mintados)</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent border-secondary/20">
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-secondary">{owners.length}</div>
-              <div className="text-xs text-secondary/70">Owners</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent border-secondary/20">
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-secondary">{volume}</div>
-              <div className="text-xs text-secondary/70">Volume</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-transparent border-secondary/20">
-            <CardContent className="py-4 text-center">
-              <div className="text-2xl font-bold text-secondary">{transactions}</div>
-              <div className="text-xs text-secondary/70">Transações</div>
+            <CardHeader>
+              <CardTitle className="text-secondary text-lg">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {recentActivity.length > 0 ? recentActivity.map((event: any, idx: number) => (
+                  <div key={idx} className="flex justify-between text-secondary/80">
+                    <span>{event.buyer || event.seller || 'User'} {event.type || 'bought'} NFT</span>
+                    <span>{event.timestamp ? new Date(event.timestamp).toLocaleString() : ''}</span>
+                  </div>
+                )) : (
+                  <span className="text-secondary/60 text-sm">No recent activity.</span>
+                )}
+              </div>
             </CardContent>
           </Card>
         </div>
-
-        {/* Histórico de preço (placeholder para gráfico) */}
-        <Card className="mb-8 bg-transparent border-secondary/20">
-          <CardHeader>
-            <CardTitle className="text-secondary text-lg">Histórico de Preço</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {/* Aqui pode ser integrado um gráfico real usando priceHistory */}
-            <Skeleton className="w-full h-40 rounded" />
-          </CardContent>
-        </Card>
-
-        {/* Atividade recente (eventos reais) */}
-        <Card className="bg-transparent border-secondary/20">
-          <CardHeader>
-            <CardTitle className="text-secondary text-lg">Atividade Recente</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {recentActivity.length > 0 ? recentActivity.map((event: any, idx: number) => (
-                <div key={idx} className="flex justify-between text-secondary/80">
-                  <span>{event.buyer || event.seller || 'Usuário'} {event.type || 'comprou'} NFT</span>
-                  <span>{event.timestamp ? new Date(event.timestamp).toLocaleString() : ''}</span>
-                </div>
-              )) : (
-                <span className="text-secondary/60 text-sm">Sem atividade recente.</span>
-              )}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   } catch (err) {
