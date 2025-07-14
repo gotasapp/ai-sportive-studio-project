@@ -193,10 +193,10 @@ export default function NFTDetailPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Imagem do NFT */}
           <div className="space-y-4">
-            <div className="relative aspect-square bg-[#333333]/20 rounded-xl overflow-hidden border border-[#FDFDFD]/10">
+            <div className="relative aspect-square bg-[#333333]/20 rounded-xl overflow-hidden border border-[#FDFDFD]/10 max-w-md mx-auto lg:mx-0">
               <Image
                 src={nft.imageUrl}
                 alt={nft.name}
@@ -239,7 +239,7 @@ export default function NFTDetailPage() {
           </div>
 
           {/* Detalhes e ações */}
-          <div className="space-y-6">
+          <div className="lg:col-span-2 space-y-6">
             {/* Informações de preço */}
             {nft.isListed && (
               <div className="cyber-card p-6">
