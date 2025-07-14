@@ -390,10 +390,10 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
 
         {/* Layout Principal: NFT à esquerda, Traits e Compra à direita */}
         <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-6 lg:gap-8 mb-6 lg:mb-8 justify-center">
-          {/* NFT Image + Chart - Container 75% menor na largura */}
-          <div className="space-y-4 lg:space-y-6 w-[25%] mx-auto lg:w-full">
+          {/* NFT Image + Chart - Container muito menor */}
+          <div className="space-y-4 lg:space-y-6 w-[30%] mx-auto">
             {/* NFT Image */}
-            <Card className="cyber-card">
+            <Card className="cyber-card w-[50%] mx-auto">
               <CardContent className="p-2 lg:p-3">
                 <div className="aspect-square relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
                   {displayData.imageUrl ? (
