@@ -18,12 +18,34 @@ async function fetchNFTDetail(tokenId: string) {
   }
 }
 
+async function fetchNFTsByCollection(collectionId: string) {
+  try {
+    const res = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/nfts?type=${collectionId}`,
+      { next: { revalidate: 30 } }
+    );
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data || [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function NFTDetailPage({ params }: { params: { collectionId: string, tokenId: string } }) {
-  const data = await fetchNFTDetail(params.tokenId);
-  if (!data || !data.success || !data.nft) return notFound();
-  const nft = data.nft;
+  const [nftDetail, nftsByCollection] = await Promise.all([
+    fetchNFTDetail(params.tokenId),
+    fetchNFTsByCollection(params.collectionId)
+  ]);
+  if (!nftDetail || !nftDetail.success || !nftDetail.nft) return notFound();
+  const nft = nftDetail.nft;
   const metadata = nft.metadata || {};
   const attributes = metadata.attributes || [];
+
+  // Filtrar todas as instâncias mintadas desse tokenId
+  const mintedNFTs = (nftsByCollection || []).filter((item: any) => String(item.tokenId) === String(params.tokenId));
+  const supply = mintedNFTs.length;
+  const owners = [...new Set(mintedNFTs.map((item: any) => item.owner))].filter(Boolean);
 
   return (
     <div className="max-w-5xl mx-auto py-10 px-4">
@@ -73,17 +95,17 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
 
       <Separator className="my-8 bg-secondary/10" />
 
-      {/* Supply e Owners (futuro: múltiplos exemplares) */}
+      {/* Supply e Owners reais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">1</div>
+            <div className="text-2xl font-bold text-secondary">{supply}</div>
             <div className="text-xs text-secondary/70">Supply (mintados)</div>
           </CardContent>
         </Card>
         <Card className="bg-transparent border-secondary/20">
           <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">1</div>
+            <div className="text-2xl font-bold text-secondary">{owners.length}</div>
             <div className="text-xs text-secondary/70">Owners</div>
           </CardContent>
         </Card>
