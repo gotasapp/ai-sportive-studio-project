@@ -542,11 +542,6 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                         <div className="text-xs lg:text-sm font-medium text-[#FDFDFD] mt-1">
                           {trait.value}
                         </div>
-                        {trait.rarity && (
-                          <div className="text-xs text-[#A20131] mt-1">
-                            {trait.rarity}
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>
