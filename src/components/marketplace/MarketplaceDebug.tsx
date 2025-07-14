@@ -537,7 +537,7 @@ export default function MarketplaceDebug() {
                     
                     // Fetch native balance using thirdweb v5 RPC method
                     const { eth_getBalance, getRpcClient } = await import('thirdweb/rpc');
-                    const { client } = await import('@/lib/thirdweb');
+                    const { thirdwebClient: client } = await import('@/lib/thirdweb');
                     
                     const rpcRequest = getRpcClient({ client, chain: activeChain });
                     const balance = await eth_getBalance(rpcRequest, {
