@@ -85,9 +85,9 @@ export default function MarketplacePage() {
     // Usar dados do marketplace em vez de allNfts legacy
     // Garantir que marketplaceItems não seja undefined
     const items = marketplaceItems || [];
-    const collections = new Set(items.map(item => item.category).filter(Boolean));
+    const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
     setCounters({
-      total: collections.size,
+      total: collections.length,
       watchlist: watchlist.length,
       owned: ownedCollections.length
     });

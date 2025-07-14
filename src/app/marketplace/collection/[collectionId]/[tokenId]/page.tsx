@@ -60,7 +60,7 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
   // Filtrar todas as instâncias mintadas desse tokenId
   const mintedNFTs = (nftsByCollection || []).filter((item: any) => String(item.tokenId) === String(params.tokenId));
   const supply = mintedNFTs.length;
-  const owners = [...new Set(mintedNFTs.map((item: any) => item.owner))].filter(Boolean);
+  const owners = Array.from(new Set(mintedNFTs.map((item: any) => item.owner))).filter(Boolean);
 
   // Volume e transações reais
   const volume = sales.reduce((sum: number, sale: any) => sum + (Number(sale.price) || 0), 0);

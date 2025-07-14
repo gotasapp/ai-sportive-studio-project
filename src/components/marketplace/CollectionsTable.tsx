@@ -154,7 +154,7 @@ export default function CollectionsTable({
             volume24h: totalVolume,
             sales24h: listedItems.length,
             supply: categoryItems.length,
-            owners: new Set(categoryItems.map(item => item.owner || item.creator?.wallet || 'unknown').filter(owner => owner !== 'unknown')).size || 1
+            owners: Array.from(new Set(categoryItems.map(item => item.owner || item.creator?.wallet || 'unknown').filter(owner => owner !== 'unknown'))).length || 1
           };
         };
 

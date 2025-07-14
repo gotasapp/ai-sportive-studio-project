@@ -19,6 +19,7 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { convertIpfsToHttp } from '@/lib/utils';
+import Link from 'next/link';
 
 interface MarketplaceCardProps {
   name: string;
@@ -325,73 +326,38 @@ export default function MarketplaceCard({
   return (
     <>
       <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
-        <div className="relative aspect-square">
-          <Image 
-            src={convertIpfsToHttp(imageUrl)} 
-            alt={name}
-            fill
-            style={{ objectFit: 'cover' }}
-            className="group-hover:scale-105 transition-transform duration-300"
-          />
-          
-          {/* Header com categoria e ações */}
-          <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
-            <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color}`}>
-              {category?.toUpperCase()}
+        <Link href={`/marketplace/collection/${category || 'jerseys'}/${tokenId}`} prefetch={false} legacyBehavior>
+          <a className="block relative aspect-square focus:outline-none">
+            <Image 
+              src={convertIpfsToHttp(imageUrl)} 
+              alt={name}
+              fill
+              style={{ objectFit: 'cover' }}
+              className="group-hover:scale-105 transition-transform duration-300"
+            />
+            {/* Header com categoria e ações */}
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none">
+              <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color}`}>{category?.toUpperCase()}</div>
             </div>
-            
-            <div className="flex gap-2">
-              <button 
-                onClick={handleToggleLike}
-                className={`bg-black/50 p-2 rounded-full transition-colors ${
-                  isLiked ? 'text-[#A20131]' : 'text-[#FDFDFD] hover:text-[#A20131]'
-                }`}
-              >
-                <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
-              </button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="bg-black/50 text-[#FDFDFD] hover:text-[#A20131] h-8 w-8">
-                    <MoreVertical size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-[#333333] border-[#FDFDFD]/20">
-                  <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                    View Details
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                    Share
-                  </DropdownMenuItem>
-                  {isOwner && (
-                    <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#A20131]">
-                      Edit Listing
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+            {/* Status badges */}
+            <div className="absolute bottom-3 left-3 pointer-events-none">
+              {isListed && !isAuction && (
+                <span className="bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
+                  For Sale
+                </span>
+              )}
+              {isAuction && (
+                <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border backdrop-blur-sm ${
+                  endTime && new Date() > endTime 
+                    ? 'bg-black/80 text-white border-white/30' 
+                    : 'bg-black/80 text-white border-white/30'
+                }`}>
+                  {endTime && new Date() > endTime ? 'Auction Ended' : 'Live Auction'}
+                </span>
+              )}
             </div>
-          </div>
-
-          {/* Status badges */}
-          <div className="absolute bottom-3 left-3">
-            {isListed && !isAuction && (
-              <span className="bg-black/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full border border-white/30 backdrop-blur-sm">
-                For Sale
-              </span>
-            )}
-            {isAuction && (
-              <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border backdrop-blur-sm ${
-                endTime && new Date() > endTime 
-                  ? 'bg-black/80 text-white border-white/30' 
-                  : 'bg-black/80 text-white border-white/30'
-              }`}>
-                {endTime && new Date() > endTime ? 'Auction Ended' : 'Live Auction'}
-              </span>
-            )}
-          </div>
-        </div>
-
+          </a>
+        </Link>
         <div className="p-4">
           <p className="text-sm text-[#FDFDFD]/70 truncate">{collection}</p>
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate my-1">{name}</h3>
