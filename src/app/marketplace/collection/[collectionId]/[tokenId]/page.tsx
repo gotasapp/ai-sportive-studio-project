@@ -10,8 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ChartContainer, ChartConfig } from '@/components/ui/chart';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { ChartContainer, ChartConfig, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { convertIpfsToHttp } from '@/lib/utils';
-// import { useNFTData } from '@/hooks/useNFTData';
+import { useNFTData } from '@/hooks/useNFTData';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 
 interface NFTDetailPageProps {
@@ -114,32 +114,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
   // Usar hooks existentes para dados reais
-  // const { data: nftResponse, isLoading: nftLoading, error: nftError } = useNFTData(params.tokenId);
+  const { data: nftResponse, isLoading: nftLoading, error: nftError } = useNFTData(params.tokenId);
   const { nfts: marketplaceNFTs, loading: marketplaceLoading, totalCount, categories } = useMarketplaceData();
-  
-  // Dados mock temporários para debug
-  const nftResponse = {
-    success: true,
-    data: {
-      tokenId: params.tokenId,
-      name: `NFT #${params.tokenId}`,
-      description: 'Mock NFT for testing',
-      image: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
-      imageHttp: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
-      owner: '0x1234567890123456789012345678901234567890',
-      attributes: [
-        { trait_type: 'Team', value: 'Flamengo' },
-        { trait_type: 'Player', value: 'Jefferson' },
-        { trait_type: 'Number', value: '10' },
-        { trait_type: 'Style', value: 'Heritage' }
-      ],
-      metadata: {
-        creator: '0x1234567890123456789012345678901234567890'
-      }
-    }
-  };
-  const nftLoading = false;
-  const nftError = null;
   
   // Estados locais
   const [salesData, setSalesData] = useState<SaleData[]>([]);
@@ -200,12 +176,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                   type: 'mint',
                   date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toLocaleDateString(),
                   timestamp: Date.now() - 7 * 24 * 60 * 60 * 1000,
-                  to: nftResponse?.data?.owner || '0x1234...5678'
+                  to: nftData?.owner || '0x1234...5678'
                 },
                 {
                   type: 'listing',
                   price: '0.035 CHZ',
-                  from: nftResponse?.data?.owner || '0x1234...5678',
+                  from: nftData?.owner || '0x1234...5678',
                   date: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toLocaleDateString(),
                   timestamp: Date.now() - 5 * 24 * 60 * 60 * 1000
                 },
@@ -288,7 +264,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
 
   // Encontrar NFT específico no marketplace para dados de listing/auction
   const currentMarketplaceNFT = marketplaceNFTs.find(
-    nft => nft.tokenId === params.tokenId && nft.type === params.collectionId
+    nft => nft.tokenId === params.tokenId
   );
 
   if (loading) {
@@ -535,17 +511,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                             tickMargin={8}
                             tickFormatter={(value) => `${value}`}
                           />
-                          <Tooltip 
-                            contentStyle={{
-                              backgroundColor: '#0a0a0a',
-                              border: '1px solid rgba(162, 1, 49, 0.3)',
-                              borderRadius: '8px',
-                              color: '#FDFDFD',
-                              fontSize: '12px',
-                              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
-                            }}
-                            formatter={(value: any) => [`${parseFloat(value).toFixed(4)} CHZ`, 'Price']}
-                            labelFormatter={(label) => `Date: ${label}`}
+                          <ChartTooltip 
+                            cursor={{ stroke: '#A20131', strokeWidth: 1, strokeOpacity: 0.5 }}
+                            content={<ChartTooltipContent 
+                              formatter={(value: any) => [`${parseFloat(value).toFixed(4)} CHZ`, 'Price']}
+                              labelFormatter={(label) => `Date: ${label}`}
+                            />}
                           />
                           <Area
                             type="monotone"
