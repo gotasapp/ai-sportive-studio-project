@@ -16,9 +16,25 @@ const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 export async function POST(request: NextRequest) {
   console.log('🔄 Engine Batch Mint API: POST request received');
   
+  // Debug das variáveis de ambiente
+  console.log('🔧 Environment Variables Check:', {
+    ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
+    ENGINE_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing',
+    CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
+    BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
+  });
+  
   if (!ENGINE_URL || !ENGINE_ACCESS_TOKEN || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
-    return NextResponse.json({ error: 'Server configuration error.' }, { status: 500 });
+    return NextResponse.json({ 
+      error: 'Server configuration error.',
+      details: {
+        ENGINE_URL: !!ENGINE_URL,
+        ENGINE_ACCESS_TOKEN: !!ENGINE_ACCESS_TOKEN,
+        CONTRACT_ADDRESS: !!CONTRACT_ADDRESS,
+        BACKEND_WALLET_ADDRESS: !!BACKEND_WALLET_ADDRESS
+      }
+    }, { status: 500 });
   }
 
   try {
@@ -146,4 +162,17 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+} 
+
+export async function GET() {
+  return NextResponse.json({
+    status: 'Batch Mint API is working',
+    config: {
+      ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
+      ENGINE_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing', 
+      CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
+      BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
+    },
+    timestamp: new Date().toISOString()
+  });
 } 

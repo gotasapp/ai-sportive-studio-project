@@ -168,6 +168,13 @@ export default function ProfessionalActionBar({
       )}
 
       {/* Batch Mint - Admin Only */}
+      {console.log('🔍 Batch Mint Debug:', {
+        isUserAdmin,
+        walletAddress,
+        nftName,
+        hasGeneratedImage,
+        shouldShow: isUserAdmin && walletAddress && nftName && hasGeneratedImage
+      })}
       {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
         <BatchMintDialog
           trigger={
@@ -181,6 +188,7 @@ export default function ProfessionalActionBar({
                 // Mobile responsiveness
                 "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
               )}
+              onClick={() => console.log('🎯 Batch Mint button clicked!')}
             >
               <div className="flex items-center gap-2 max-lg:gap-1.5">
                 <Hash className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
