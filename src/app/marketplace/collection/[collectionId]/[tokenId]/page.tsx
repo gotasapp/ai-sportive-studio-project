@@ -8,6 +8,7 @@ import { ChartContainer } from '@/components/ui/chart';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
+import { getMintedNFTAndOwner } from '@/lib/services/thirdweb-nft-utils';
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://jersey-generator-ai2.vercel.app';
 
@@ -60,70 +61,38 @@ const PriceHistoryChart = dynamic(() => import("@/components/marketplace/PriceHi
 
 export default async function NFTDetailPage({ params }: { params: { collectionId: string, tokenId: string } }) {
   try {
-    // Debug logs para diagnóstico
-    console.log('NFTDetailPage params:', params);
-    let nftDetail, nftsByCollection, sales;
+    // Buscar dados reais do NFT e owner via Thirdweb
+    const { nft: mintedNFT, owner: realOwner } = await getMintedNFTAndOwner(params.tokenId);
+
+    // Fetch NFT detail (metadata, description, etc) - pode ser redundante, mas mantido para compatibilidade
+    let nftDetail = null;
     try {
-      [nftDetail, nftsByCollection, sales] = await Promise.all([
-        fetchNFTDetail(params.tokenId),
-        fetchNFTsByCollection(params.collectionId),
-        fetchSales(params.collectionId, params.tokenId)
-      ]);
+      nftDetail = await fetchNFTDetail(params.tokenId);
     } catch (e) {
-      console.error('Erro ao buscar dados:', e);
-      return (
-        <div style={{ color: 'red', textAlign: 'center', marginTop: 100 }}>
-          Erro ao buscar dados do NFT. Veja logs do servidor.<br />
-          <pre>{String(e)}</pre>
-        </div>
-      );
-    }
-    console.log('nftDetail:', nftDetail);
-    console.log('nftsByCollection:', nftsByCollection);
-    console.log('sales:', sales);
-
-    if (!nftDetail) {
-      return (
-        <div style={{ color: 'red', textAlign: 'center', marginTop: 100 }}>
-          NFT não encontrado (nftDetail vazio).
-        </div>
-      );
-    }
-    if (!nftDetail.success) {
-      return (
-        <div style={{ color: 'red', textAlign: 'center', marginTop: 100 }}>
-          NFT não encontrado (success = false).
-        </div>
-      );
-    }
-    if (!nftDetail.nft) {
-      return (
-        <div style={{ color: 'red', textAlign: 'center', marginTop: 100 }}>
-          NFT não encontrado (nft vazio).
-        </div>
-      );
+      console.error('Erro ao buscar dados do NFT:', e);
     }
 
-    const nft = nftDetail.nft;
-    const metadata = nft.metadata || {};
+    // Simular sales vazios (ou integrar real se disponível)
+    const sales: any[] = [];
+
+    // Traits/attributes
+    const metadata = mintedNFT?.metadata || nftDetail?.nft?.metadata || {};
     const attributes = metadata.attributes || [];
 
-    // Filtrar todas as instâncias mintadas desse tokenId
-    const mintedNFTs = (nftsByCollection || []).filter((item: any) => String(item.tokenId) === String(params.tokenId));
-    const supply = mintedNFTs.length;
-    const owners = Array.from(new Set(mintedNFTs.map((item: any) => item.owner))).filter(Boolean);
+    // Supply: se o NFT existe, supply = 1
+    const supply = mintedNFT ? 1 : 0;
+    // Owners: array com o owner real se existir
+    const owners = mintedNFT && realOwner ? [realOwner] : [];
 
-    // Volume e transações reais
+    // Volume e transações reais (placeholder)
     const volume = sales.reduce((sum: number, sale: any) => sum + (Number(sale.price) || 0), 0);
     const transactions = sales.length;
 
-    // Preparar histórico de preço (data, valor)
+    // Price history e activity (placeholder)
     const priceHistory = sales.map((sale: any) => ({
       date: sale.timestamp || sale.date || sale.createdAt,
       price: Number(sale.price) || 0
     }));
-
-    // Atividade recente (últimos eventos)
     const recentActivity = sales.slice(0, 5);
 
     return (
@@ -132,7 +101,8 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
         <div style={{ background: '#222', color: '#fff', padding: 16, borderRadius: 8, marginBottom: 24 }}>
           <strong>DEBUG DATA</strong>
           <div style={{ fontSize: 12, marginTop: 8 }}>
-            <div><b>nftsByCollection:</b> <pre>{JSON.stringify(nftsByCollection, null, 2)}</pre></div>
+            <div><b>mintedNFT:</b> <pre>{JSON.stringify(mintedNFT, null, 2)}</pre></div>
+            <div><b>realOwner:</b> <pre>{JSON.stringify(realOwner, null, 2)}</pre></div>
             <div><b>sales:</b> <pre>{JSON.stringify(sales, null, 2)}</pre></div>
           </div>
         </div>
@@ -149,12 +119,12 @@ export default async function NFTDetailPage({ params }: { params: { collectionId
                 )}
               </div>
               <div className="flex-1 space-y-4">
-                <CardTitle className="text-2xl text-secondary">{metadata.name || `NFT #${nft.tokenId}`}</CardTitle>
+                <CardTitle className="text-2xl text-secondary">{metadata.name || `NFT #${params.tokenId}`}</CardTitle>
                 <CardDescription className="text-secondary/80">{metadata.description || 'No description.'}</CardDescription>
                 <div className="flex gap-2 flex-wrap">
                   <Badge variant="secondary">{params.collectionId}</Badge>
-                  <Badge variant="secondary">Token ID: {nft.tokenId}</Badge>
-                  <Badge variant="secondary">Owner: {nft.owner?.slice(0, 8)}...</Badge>
+                  <Badge variant="secondary">Token ID: {params.tokenId}</Badge>
+                  <Badge variant="secondary">Owner: {realOwner?.slice(0, 8)}...</Badge>
                 </div>
                 {/* Action Button */}
                 <Button className="cyber-button bg-[#A20131] text-white">Buy</Button>
