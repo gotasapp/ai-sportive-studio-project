@@ -43,11 +43,14 @@ export async function POST(request: NextRequest) {
     
     const { to, metadataUri, quantity, collection } = body;
 
-    if (!to || !metadataUri || !quantity || quantity < 1 || quantity > 100) {
+    if (!to || !quantity || quantity < 1 || quantity > 100) {
       return NextResponse.json({ 
-        error: 'Invalid request. "to", "metadataUri" and "quantity" (1-100) are required.' 
+        error: 'Invalid request. "to" and "quantity" (1-100) are required.' 
       }, { status: 400 });
     }
+
+    // Se metadataUri estiver vazio, usar uma URI genérica
+    const finalMetadataUri = metadataUri || 'https://gateway.ipfscdn.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o/0';
 
     console.log(`🚀 Batch minting ${quantity} NFTs to ${to}`);
 
@@ -72,7 +75,7 @@ export async function POST(request: NextRequest) {
             metadata: {
               name: `Generated NFT #${i + 1}`,
               description: 'AI Generated Sports NFT from CHZ Fan Token Studio',
-              image: metadataUri || 'https://gateway.ipfscdn.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o/0',
+              image: finalMetadataUri,
               attributes: [
                 { trait_type: 'Generator', value: 'AI Sports NFT' },
                 { trait_type: 'Collection', value: collection || 'jerseys' },

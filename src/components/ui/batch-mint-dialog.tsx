@@ -40,15 +40,18 @@ export function BatchMintDialog({
   } = useBatchMint();
 
   const handleBatchMint = async () => {
+    console.log('🎯 handleBatchMint called with:', { to, metadataUri, quantity, collection });
     try {
+      console.log('🚀 Calling batchMintGasless...');
       await batchMintGasless({
         to,
         metadataUri,
         quantity,
         collection,
       });
+      console.log('✅ batchMintGasless completed successfully');
     } catch (error) {
-      console.error('Batch mint failed:', error);
+      console.error('❌ Batch mint failed:', error);
     }
   };
 
@@ -210,7 +213,7 @@ export function BatchMintDialog({
               <>
                 <Button
                   onClick={handleBatchMint}
-                  disabled={isBatchMinting || !to || !metadataUri}
+                  disabled={isBatchMinting || !to}
                   className="flex-1 bg-[#A20131] hover:bg-[#A20131]/80 text-white"
                 >
                   {isBatchMinting ? (

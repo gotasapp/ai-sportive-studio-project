@@ -93,10 +93,7 @@ export default function JerseyEditor() {
   const [selectedStyle, setSelectedStyle] = useState<string>('modern')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   
-  // Debug: Log when generatedImage changes
-  useEffect(() => {
-    console.log('🔄 generatedImage changed:', !!generatedImage);
-  }, [generatedImage]);
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [apiStatus, setApiStatus] = useState<boolean>(false)
@@ -1124,7 +1121,6 @@ Design based on analysis: ${analysisText}`
         }
 
         // Set image for display using data URL
-        console.log('🖼️ Setting generatedImage with base64 data');
         setGeneratedImage(`data:image/png;base64,${pureBase64}`);
 
         // Convert base64 back to Blob for IPFS/saving functionality
