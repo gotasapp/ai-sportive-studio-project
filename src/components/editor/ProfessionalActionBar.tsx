@@ -168,13 +168,16 @@ export default function ProfessionalActionBar({
       )}
 
       {/* Batch Mint - Admin Only */}
-      {console.log('🔍 Batch Mint Debug:', {
-        isUserAdmin,
-        walletAddress,
-        nftName,
-        hasGeneratedImage,
-        shouldShow: isUserAdmin && walletAddress && nftName && hasGeneratedImage
-      })}
+      {(() => {
+        console.log('🔍 Batch Mint Debug:', {
+          isUserAdmin,
+          walletAddress,
+          nftName,
+          hasGeneratedImage,
+          shouldShow: isUserAdmin && walletAddress && nftName && hasGeneratedImage
+        });
+        return null;
+      })()}
       {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
         <BatchMintDialog
           trigger={
