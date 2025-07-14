@@ -5,10 +5,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notFound } from 'next/navigation';
 
+const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL || 'https://jersey-generator-ai2.vercel.app';
+
 async function fetchNFTDetail(tokenId: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/nft-collection?action=getNFT&tokenId=${tokenId}`,
+      `${BASE_URL}/api/marketplace/nft-collection?action=getNFT&tokenId=${tokenId}`,
       { next: { revalidate: 30 } }
     );
     if (!res.ok) return null;
@@ -22,7 +24,7 @@ async function fetchNFTDetail(tokenId: string) {
 async function fetchNFTsByCollection(collectionId: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/nfts?type=${collectionId}`,
+      `${BASE_URL}/api/marketplace/nfts?type=${collectionId}`,
       { next: { revalidate: 30 } }
     );
     if (!res.ok) return [];
@@ -37,7 +39,7 @@ async function fetchNFTsByCollection(collectionId: string) {
 async function fetchSales(collectionId: string, tokenId: string) {
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || ''}/api/marketplace/sales?collection=${collectionId}&tokenId=${tokenId}`,
+      `${BASE_URL}/api/marketplace/sales?collection=${collectionId}&tokenId=${tokenId}`,
       { next: { revalidate: 30 } }
     );
     if (!res.ok) return [];
