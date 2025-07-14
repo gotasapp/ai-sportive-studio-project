@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import Header from '@/components/Header';
 import { convertIpfsToHttp } from '@/lib/utils';
-import { useNFTData } from '@/hooks/useNFTData';
+// import { useNFTData } from '@/hooks/useNFTData';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 
 interface NFTDetailPageProps {
@@ -77,8 +77,32 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
   // Usar hooks existentes para dados reais
-  const { data: nftResponse, isLoading: nftLoading, error: nftError } = useNFTData(params.tokenId);
+  // const { data: nftResponse, isLoading: nftLoading, error: nftError } = useNFTData(params.tokenId);
   const { nfts: marketplaceNFTs, loading: marketplaceLoading, totalCount, categories } = useMarketplaceData();
+  
+  // Dados mock temporários para debug
+  const nftResponse = {
+    success: true,
+    data: {
+      tokenId: params.tokenId,
+      name: `NFT #${params.tokenId}`,
+      description: 'Mock NFT for testing',
+      image: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
+      imageHttp: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
+      owner: '0x1234567890123456789012345678901234567890',
+      attributes: [
+        { trait_type: 'Team', value: 'Flamengo' },
+        { trait_type: 'Player', value: 'Jefferson' },
+        { trait_type: 'Number', value: '10' },
+        { trait_type: 'Style', value: 'Heritage' }
+      ],
+      metadata: {
+        creator: '0x1234567890123456789012345678901234567890'
+      }
+    }
+  };
+  const nftLoading = false;
+  const nftError = null;
   
   // Estados locais
   const [salesData, setSalesData] = useState<SaleData[]>([]);
