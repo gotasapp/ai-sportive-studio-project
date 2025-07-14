@@ -391,7 +391,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         {/* Layout Principal: NFT à esquerda, Traits e Compra à direita */}
         <div className="grid grid-cols-1 lg:grid-cols-[35%_35%] gap-6 lg:gap-8 mb-6 lg:mb-8 justify-center">
           {/* NFT Image - mesma largura que Traits */}
-          <div className="flex justify-center">
+          <div className="space-y-4">
             <Card className="cyber-card w-full">
               <CardContent className="p-2 lg:p-3">
                 <div className="aspect-[3/4] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
