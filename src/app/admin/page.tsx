@@ -358,6 +358,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
+                  title="NFTs Criados por Mês"
                 />
               )}
             </CardContent>
@@ -381,6 +382,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
+                  title="Times Mais Populares"
                 />
               )}
             </CardContent>
@@ -404,6 +406,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
+                  title="Crescimento de Usuários"
                 />
               )}
             </CardContent>
