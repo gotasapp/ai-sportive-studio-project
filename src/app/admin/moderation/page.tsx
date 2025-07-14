@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { 
   Shield, Clock, CheckCircle, XCircle, RefreshCw, User, Shirt, Building, Award, Info, Image as ImageIcon, 
-  Plus, X, Settings, Filter, Zap, DollarSign
+  Plus, X, Settings, Filter, Zap, DollarSign, Pencil
 } from 'lucide-react'
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 import { Input } from '@/components/ui/input'
@@ -61,7 +61,7 @@ export default function ModerationPage() {
   
   // Content Filters State
   const [contentFilters, setContentFilters] = useState<ContentFilters>({
-    enabled: true,
+    enabled: false,
     defaultPrompts: [],
     customPrompts: []
   });
@@ -73,19 +73,50 @@ export default function ModerationPage() {
   const [moderationLoading, setModerationLoading] = useState(false);
   
   // Quality Settings State
-  const [qualitySettings, setQualitySettings] = useState<QualitySettings>({
-    defaultQuality: 'standard',
-    allowUserChoice: false,
-    standardCost: 0.04,
-    hdCost: 0.08,
-    maxGenerationsPerUser: 50
-  });
+  const [qualitySettings, setQualitySettings] = useState<QualitySettings | null>(null);
   const [qualityLoading, setQualityLoading] = useState(false);
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(12); // Mostrar 12 itens por página
   const [totalItems, setTotalItems] = useState(0);
+
+  // Novo estado para edição inline de custom prompts
+  const [editingPromptIndex, setEditingPromptIndex] = useState<number | null>(null);
+  const [editingPromptValue, setEditingPromptValue] = useState('');
+
+  const editCustomPrompt = (index: number, currentPrompt: string) => {
+    setEditingPromptIndex(index);
+    setEditingPromptValue(currentPrompt);
+  };
+
+  const cancelEditPrompt = () => {
+    setEditingPromptIndex(null);
+    setEditingPromptValue('');
+  };
+
+  const saveEditPrompt = async (oldPrompt: string, newPrompt: string) => {
+    if (!newPrompt.trim() || newPrompt.trim() === oldPrompt.trim()) {
+      cancelEditPrompt();
+      return;
+    }
+    try {
+      const response = await fetch('/api/admin/settings/negative-prompts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ oldPrompt, newPrompt: newPrompt.trim() })
+      });
+      if (response.ok) {
+        await fetchContentFilters();
+        toast.success('Prompt updated successfully!');
+      } else {
+        toast.error('Failed to update prompt');
+      }
+    } catch (error) {
+      toast.error('Failed to update prompt');
+    }
+    cancelEditPrompt();
+  };
 
   const fetchItems = useCallback(async (force = false) => {
     // Cache simples - evita recarregar se já tem dados e não é forçado
@@ -565,16 +596,63 @@ export default function ModerationPage() {
                   <div className="space-y-2">
                     {contentFilters.customPrompts.map((prompt, index) => (
                       <div key={index} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg border border-gray-700">
-                        <span className="text-sm text-gray-300">{prompt}</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeCustomPrompt(prompt)}
-                          disabled={filtersLoading}
-                          className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                        {editingPromptIndex === index ? (
+                          <div className="flex items-center gap-2 w-full">
+                            <Input
+                              value={editingPromptValue}
+                              onChange={e => setEditingPromptValue(e.target.value)}
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') saveEditPrompt(prompt, editingPromptValue);
+                                if (e.key === 'Escape') cancelEditPrompt();
+                              }}
+                              className="cyber-input h-8 text-sm flex-1"
+                              autoFocus
+                            />
+                            <Button
+                              size="sm"
+                              className="cyber-button px-2 h-8"
+                              onClick={() => saveEditPrompt(prompt, editingPromptValue)}
+                              disabled={!editingPromptValue.trim() || editingPromptValue.trim() === prompt.trim()}
+                              title="Save"
+                            >
+                              ✓
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-gray-400 px-2 h-8"
+                              onClick={cancelEditPrompt}
+                              title="Cancel"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="text-sm text-gray-300 flex-1 truncate">{prompt}</span>
+                            <div className="flex items-center gap-1 ml-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 px-2 h-8"
+                                onClick={() => editCustomPrompt(index, prompt)}
+                                title="Edit"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeCustomPrompt(prompt)}
+                                disabled={filtersLoading}
+                                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 px-2 h-8"
+                                title="Delete"
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -598,7 +676,7 @@ export default function ModerationPage() {
                 <Label className="text-base font-medium">Default Generation Quality</Label>
                 <div className="grid grid-cols-2 gap-4">
                   <Button
-                    variant={qualitySettings.defaultQuality === 'standard' ? 'default' : 'outline'}
+                    variant={qualitySettings?.defaultQuality === 'standard' ? 'default' : 'outline'}
                     onClick={() => updateQualitySettings({ defaultQuality: 'standard' })}
                     disabled={qualityLoading}
                     className="p-4 h-auto flex flex-col items-start"
@@ -611,12 +689,12 @@ export default function ModerationPage() {
                       Fast generation • Lower cost • Good for prototypes
                     </div>
                     <div className="text-xs text-green-400 mt-1">
-                      ${qualitySettings.standardCost.toFixed(3)} per generation
+                      ${qualitySettings?.standardCost.toFixed(3) || '0.000'} per generation
                     </div>
                   </Button>
                   
                   <Button
-                    variant={qualitySettings.defaultQuality === 'hd' ? 'default' : 'outline'}
+                    variant={qualitySettings?.defaultQuality === 'hd' ? 'default' : 'outline'}
                     onClick={() => updateQualitySettings({ defaultQuality: 'hd' })}
                     disabled={qualityLoading}
                     className="p-4 h-auto flex flex-col items-start"
@@ -629,7 +707,7 @@ export default function ModerationPage() {
                       High resolution • Premium cost • Production ready
                     </div>
                     <div className="text-xs text-orange-400 mt-1">
-                      ${qualitySettings.hdCost.toFixed(3)} per generation
+                      ${qualitySettings?.hdCost.toFixed(3) || '0.000'} per generation
                     </div>
                   </Button>
                 </div>
@@ -643,7 +721,7 @@ export default function ModerationPage() {
                     <div>
                       <Label className="text-base font-medium">Allow User Quality Choice</Label>
                       <p className="text-sm text-gray-400 mt-1">
-                        {qualitySettings.allowUserChoice 
+                        {qualitySettings?.allowUserChoice 
                           ? 'Users can choose between Standard and HD quality in generation interfaces' 
                           : 'Users are restricted to the default quality setting only'
                         }
@@ -651,7 +729,7 @@ export default function ModerationPage() {
                     </div>
                   </div>
                   <Switch 
-                    checked={qualitySettings.allowUserChoice}
+                    checked={qualitySettings?.allowUserChoice || false}
                     onCheckedChange={(checked) => updateQualitySettings({ allowUserChoice: checked })}
                     disabled={qualityLoading}
                     className="scale-110"
@@ -669,7 +747,7 @@ export default function ModerationPage() {
                       type="number"
                       step="0.001"
                       min="0"
-                      value={qualitySettings.standardCost}
+                      value={qualitySettings?.standardCost || 0}
                       onChange={(e) => updateQualitySettings({ standardCost: parseFloat(e.target.value) || 0 })}
                       disabled={qualityLoading}
                       className="cyber-input"
@@ -681,7 +759,7 @@ export default function ModerationPage() {
                       type="number"
                       step="0.001"
                       min="0"
-                      value={qualitySettings.hdCost}
+                      value={qualitySettings?.hdCost || 0}
                       onChange={(e) => updateQualitySettings({ hdCost: parseFloat(e.target.value) || 0 })}
                       disabled={qualityLoading}
                       className="cyber-input"
@@ -699,13 +777,13 @@ export default function ModerationPage() {
                     type="number"
                     min="1"
                     max="1000"
-                    value={qualitySettings.maxGenerationsPerUser}
+                    value={qualitySettings?.maxGenerationsPerUser || 50}
                     onChange={(e) => updateQualitySettings({ maxGenerationsPerUser: parseInt(e.target.value) || 50 })}
                     disabled={qualityLoading}
                     className="cyber-input"
                   />
                   <p className="text-xs text-gray-400">
-                    Set daily generation limit to prevent abuse. Current: {qualitySettings.maxGenerationsPerUser} generations/day
+                    Set daily generation limit to prevent abuse. Current: {qualitySettings?.maxGenerationsPerUser || 50} generations/day
                   </p>
                 </div>
               </div>

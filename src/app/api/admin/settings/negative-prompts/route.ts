@@ -136,6 +136,48 @@ export async function POST(request: NextRequest) {
   }
 }
 
+export async function PUT(request: NextRequest) {
+  try {
+    const { oldPrompt, newPrompt } = await request.json();
+    if (!oldPrompt || !newPrompt) {
+      return NextResponse.json({ error: 'Both oldPrompt and newPrompt are required' }, { status: 400 });
+    }
+
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    const collection = db.collection(COLLECTION_NAME);
+
+    let settings = await collection.findOne({});
+    if (!settings || !settings.contentFilters) {
+      return NextResponse.json({ error: 'Settings not found' }, { status: 404 });
+    }
+
+    // Remover o oldPrompt e adicionar o newPrompt
+    let customPrompts = settings.contentFilters.customPrompts || [];
+    customPrompts = customPrompts.filter((p: string) => p !== oldPrompt.toLowerCase().trim());
+    if (!customPrompts.includes(newPrompt.toLowerCase().trim())) {
+      customPrompts.push(newPrompt.toLowerCase().trim());
+    }
+    settings.contentFilters.customPrompts = customPrompts;
+
+    await collection.updateOne(
+      {},
+      { $set: settings },
+      { upsert: true }
+    );
+
+    return NextResponse.json({
+      success: true,
+      message: 'Prompt updated successfully',
+      customPrompts,
+      allPrompts: [...(settings.contentFilters.defaultPrompts || []), ...customPrompts]
+    });
+  } catch (error) {
+    console.error('Error updating prompt:', error);
+    return NextResponse.json({ error: 'Failed to update prompt' }, { status: 500 });
+  }
+}
+
 export async function DELETE(request: NextRequest) {
   try {
     const { prompt } = await request.json();
