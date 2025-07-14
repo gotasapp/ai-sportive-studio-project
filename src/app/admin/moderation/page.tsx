@@ -422,42 +422,44 @@ export default function ModerationPage() {
         </TabsList>
 
         <TabsContent value="queue">
-  <div className="flex items-center justify-between">
-    <div className="flex items-center space-x-4">
-      <p className="text-gray-400">
-        {loading ? 'Loading items...' : `${items.length} items total`}
-      </p>
-      {!loading && items.length > itemsPerPage && (
-        <p className="text-sm text-gray-500">
-          Showing {Math.min((currentPage - 1) * itemsPerPage + 1, items.length)}-
-          {Math.min(currentPage * itemsPerPage, items.length)}
-        </p>
-      )}
-    </div>
-  </div>
-  {error && <p className="p-4 text-red-500 text-center">{error}</p>}
-  {loading ? renderSkeleton() : items.length > 0 ? (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      {items
-        .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-        .map(item => {
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <p className="text-gray-400">
+                  {loading ? 'Loading items...' : `${items.length} items total`}
+                </p>
+                {!loading && items.length > itemsPerPage && (
+                  <p className="text-sm text-gray-500">
+                    Showing {Math.min((currentPage - 1) * itemsPerPage + 1, items.length)}-{Math.min(currentPage * itemsPerPage, items.length)}
+                  </p>
+                )}
+              </div>
+            </div>
+            
+            {/* Grid de Moderação */}
+            {error && <p className="p-4 text-red-500 text-center">{error}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {loading ? renderSkeleton() : items
+          .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+          .map(item => {
           const config = typeConfig[item.type as keyof typeof typeConfig] || typeConfig.Jersey;
           const Icon = config.icon;
+
           return (
             <Card key={item.id} className="cyber-card flex flex-col justify-between">
               <CardHeader className="p-0">
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  width={300}
-                  height={300}
-                  className="rounded-t-lg aspect-square object-cover"
+                <Image 
+                  src={item.imageUrl} 
+                  alt={item.name} 
+                  width={300} 
+                  height={300} 
+                  className="rounded-t-lg aspect-square object-cover" 
                   loading="lazy"
                   placeholder="blur"
                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAv/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxAAPwCdABmX/9k="
                 />
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 space-y-2">
                 <div className="flex items-center justify-between">
                   <Badge className="flex items-center gap-1.5" variant="outline">
                     <Icon className={`w-4 h-4 ${config.color}`} />
@@ -488,7 +490,7 @@ export default function ModerationPage() {
                   </div>
                 </div>
               </CardContent>
-              <div className="flex justify-around p-4 gap-2">
+              <div className="flex justify-around p-4 border-t border-gray-800">
                 <Button className="w-2/5 bg-green-500/20 hover:bg-green-500/30 text-green-400" onClick={() => handleDecision(item.id, 'approved', item.type)}>
                   <CheckCircle className="w-4 h-4 mr-2" /> Approve
                 </Button>
@@ -497,17 +499,44 @@ export default function ModerationPage() {
                 </Button>
               </div>
             </Card>
-          );
+          )
         })}
-    </div>
-  ) : (
-    <div className="text-center py-20">
-      <Shield className="mx-auto w-16 h-16 text-green-500" />
-      <h2 className="mt-4 text-2xl font-semibold text-white">All Clear!</h2>
-      <p className="mt-2 text-gray-400">The moderation queue is empty. Great job!</p>
-    </div>
-  )}
-</TabsContent>
+            </div>
+            
+            {/* Paginação */}
+            {!loading && items.length > itemsPerPage && (
+              <div className="flex justify-center items-center space-x-4 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  className="border-cyan-500/30"
+                >
+                  Previous
+                </Button>
+                <span className="text-gray-400">
+                  Page {currentPage} of {Math.ceil(items.length / itemsPerPage)}
+                </span>
+                <Button
+                  variant="outline"
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, Math.ceil(items.length / itemsPerPage)))}
+                  disabled={currentPage >= Math.ceil(items.length / itemsPerPage)}
+                  className="border-cyan-500/30"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+            
+            {!loading && items.length === 0 && !error &&
+              <div className="text-center py-20">
+                <Shield className="mx-auto w-16 h-16 text-green-500" />
+                <h2 className="mt-4 text-2xl font-semibold text-white">All Clear!</h2>
+                <p className="mt-2 text-gray-400">The moderation queue is empty. Great job!</p>
+              </div>
+            }
+          </div>
+        </TabsContent>
 
         <TabsContent value="filters">
           <Card className="cyber-card border-cyan-500/30">
@@ -540,23 +569,10 @@ export default function ModerationPage() {
                 </div>
               </div>
 
-              {/* Custom Prompts List */}
-<div className="space-y-2">
-  {contentFilters.customPrompts.map((prompt, index) => (
-    <div key={index} className="flex items-center justify-between p-2 bg-gray-800/50 rounded-lg border border-gray-700">
-      <span className="text-sm text-gray-300">{prompt}</span>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => removeCustomPrompt(prompt)}
-        disabled={filtersLoading}
-        className="text-red-400 hover:text-red-300 hover:bg-red-500/10"
-      >
-        <X className="w-4 h-4" />
-      </Button>
-    </div>
-  ))}
-</div>
+              {/* Custom Prompts */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Custom Filters</Label>
+                
                 {/* Add New Custom Prompt */}
                 <div className="flex gap-2">
                   <Input
