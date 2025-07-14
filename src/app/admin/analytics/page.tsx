@@ -84,7 +84,6 @@ export default function AnalyticsPage() {
         const data: OverviewData = await response.json();
         setOverviewData(data);
       } catch (error) {
-        console.error(error);
         setOverviewData(null);
       } finally {
         setLoadingOverview(false);
@@ -99,7 +98,6 @@ export default function AnalyticsPage() {
             const data: PopularTeam[] = await response.json();
             setPopularTeamsData(data);
         } catch (error) {
-            console.error(error);
             setPopularTeamsData([]);
         } finally {
             setLoadingPopularTeams(false);
@@ -114,7 +112,6 @@ export default function AnalyticsPage() {
             const data: RecentSale[] = await response.json();
             setRecentSalesData(data);
         } catch (error) {
-            console.error(error);
             setRecentSalesData([]);
         } finally {
             setLoadingRecentSales(false);
@@ -176,12 +173,11 @@ export default function AnalyticsPage() {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {loadingOverview || !overviewData ? (
-          // Skeletons para os cards
+        {loadingOverview ? (
           Array.from({ length: 4 }).map((_, i) => (
             <Card key={i} className="cyber-card border-cyan-500/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                 <div className="h-5 w-2/3 bg-gray-700 rounded animate-pulse"></div>
+                <div className="h-5 w-2/3 bg-gray-700 rounded animate-pulse"></div>
               </CardHeader>
               <CardContent>
                 <div className="h-8 w-1/2 bg-gray-600 rounded animate-pulse mb-2"></div>
@@ -189,7 +185,7 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           ))
-        ) : (
+        ) : overviewData ? (
           <>
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -204,7 +200,6 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-200">Active Users</CardTitle>
@@ -218,7 +213,6 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-200">Revenue</CardTitle>
@@ -232,7 +226,6 @@ export default function AnalyticsPage() {
                 </div>
               </CardContent>
             </Card>
-
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-gray-200">Success Rate</CardTitle>
@@ -247,6 +240,12 @@ export default function AnalyticsPage() {
               </CardContent>
             </Card>
           </>
+        ) : (
+          <Card className="cyber-card border-cyan-500/30 col-span-4">
+            <CardContent>
+              <div className="text-center text-gray-400 py-8">No data available for overview metrics.</div>
+            </CardContent>
+          </Card>
         )}
       </div>
 
@@ -271,33 +270,27 @@ export default function AnalyticsPage() {
         <TabsContent value="teams" className="space-y-6">
           <Card className="cyber-card border-cyan-500/30">
             <CardHeader>
-              <CardTitle>Most Generated Teams</CardTitle>
-              <CardDescription>Breakdown of the most popular teams by generation count.</CardDescription>
+              <CardTitle>Popular Teams</CardTitle>
+              <CardDescription>Top teams from minted NFTs</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {loadingPopularTeams ? (
-                  Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="flex items-center space-x-4 animate-pulse">
-                      <div className="h-6 w-6 rounded-full bg-gray-700"></div>
-                      <div className="h-6 flex-1 bg-gray-700 rounded"></div>
-                    </div>
-                  ))
-                ) : (
-                  popularTeamsData.map((team) => (
-                    <div key={team.name} className="flex items-center">
-                      <span className="w-1/3 text-gray-300 font-medium">{team.name}</span>
-                      <div className="w-2/3 bg-gray-700 rounded-full h-4 relative overflow-hidden">
-                        <div
-                          className="h-full rounded-full"
-                          style={{ width: `${team.percentage}%`, backgroundColor: team.color }}
-                        />
-                      </div>
-                      <span className="w-16 text-right text-gray-400 text-sm">{team.percentage}%</span>
-                    </div>
-                  ))
-                )}
-              </div>
+              {loadingPopularTeams ? (
+                <div className="h-32 w-full bg-gray-800 animate-pulse rounded" />
+              ) : popularTeamsData.length > 0 ? (
+                <ul className="divide-y divide-gray-700">
+                  {popularTeamsData.map((team, idx) => (
+                    <li key={idx} className="flex items-center justify-between py-2">
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full" style={{ backgroundColor: team.color }} />
+                        <span>{team.name}</span>
+                      </span>
+                      <span className="text-sm text-gray-400">{team.count} ({team.percentage}%)</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="text-center text-gray-400 py-4">No data available for popular teams.</div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -309,12 +302,17 @@ export default function AnalyticsPage() {
             <Card className="cyber-card border-cyan-500/30">
               <CardHeader>
                 <CardTitle>Monthly Performance</CardTitle>
-                <CardDescription>NFT generations and user growth over time</CardDescription>
+                <CardDescription>Minted NFTs per month</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Data will be fetched from API */}
-                </div>
+                {loadingOverview ? (
+                  <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
+                ) : overviewData && overviewData.totalNFTs > 0 ? (
+                  // <Chart data={...} />
+                  <div className="text-center text-gray-400 py-4">[TODO: Real chart with real data]</div>
+                ) : (
+                  <div className="text-center text-gray-400 py-4">No data available for monthly performance.</div>
+                )}
               </CardContent>
             </Card>
 
@@ -458,43 +456,35 @@ export default function AnalyticsPage() {
       </Tabs>
 
       {/* Recent Sales */}
-      <Card className="cyber-card border-cyan-500/30 lg:col-span-1">
-        <CardHeader>
-          <CardTitle className="text-gray-200">Recent Sales</CardTitle>
-          <CardDescription className="text-gray-400">You made 265 sales this month.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {loadingRecentSales ? (
-            // Skeletons para vendas recentes
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="flex items-center space-x-4">
-                <div className="h-10 w-10 rounded-full bg-gray-700 animate-pulse"></div>
-                <div className="flex-1 space-y-1">
-                  <div className="h-4 w-3/4 bg-gray-600 rounded animate-pulse"></div>
-                  <div className="h-3 w-1/2 bg-gray-700 rounded animate-pulse"></div>
-                </div>
-                <div className="h-5 w-1/4 bg-gray-600 rounded animate-pulse"></div>
-              </div>
-            ))
-          ) : (
-            recentSalesData.map((sale, index) => (
-              <div key={index} className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-gray-800 flex items-center justify-center mr-4">
-                  <Trophy className="h-5 w-5 text-yellow-400" />
-                </div>
-                <div className="flex-grow">
-                  <p className="text-sm font-medium text-gray-200">{sale.nft.name}</p>
-                  <p className="text-xs text-gray-400">{sale.user.name}</p>
-                </div>
-                <div className="text-right">
-                   <p className="text-sm font-semibold text-cyan-300">${sale.value.toFixed(2)}</p>
-                   <p className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleTimeString()}</p>
-                </div>
-              </div>
-            ))
-          )}
-        </CardContent>
-      </Card>
+      <div className="mt-8">
+        <Card className="cyber-card border-cyan-500/30">
+          <CardHeader>
+            <CardTitle>Recent Sales</CardTitle>
+            <CardDescription>Latest real marketplace sales</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {loadingRecentSales ? (
+              <div className="h-32 w-full bg-gray-800 animate-pulse rounded" />
+            ) : recentSalesData.length > 0 ? (
+              <ul className="divide-y divide-gray-700">
+                {recentSalesData.map((sale, idx) => (
+                  <li key={idx} className="flex items-center justify-between py-2">
+                    <span className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center text-xs font-semibold">
+                        {sale.user.name.slice(0, 2).toUpperCase()}
+                      </span>
+                      <span>{sale.nft.name} ({sale.nft.type})</span>
+                    </span>
+                    <span className="text-sm text-gray-400">{new Date(sale.timestamp).toLocaleDateString()}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <div className="text-center text-gray-400 py-4">No data available for recent sales.</div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 } 

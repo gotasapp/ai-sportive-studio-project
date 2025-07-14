@@ -56,24 +56,25 @@ const getAnalyticsOverview = async () => {
     const client = await clientPromise;
     const db = client.db('chz-app-db');
 
-    // Buscar contagem real de NFTs no MongoDB
+    // Buscar contagem real de NFTs mintadas no MongoDB (tokenId existe)
     const [usersCount, jerseysCount, badgesCount, stadiumsCount] = await Promise.all([
       db.collection('users').countDocuments(),
-      db.collection('jerseys').countDocuments(),
-      db.collection('badges').countDocuments(),
-      db.collection('stadiums').countDocuments()
+      db.collection('jerseys').countDocuments({ tokenId: { $exists: true, $ne: null } }),
+      db.collection('badges').countDocuments({ tokenId: { $exists: true, $ne: null } }),
+      db.collection('stadiums').countDocuments({ tokenId: { $exists: true, $ne: null } })
     ]);
 
     const finalNFTCount = jerseysCount + badgesCount + stadiumsCount;
 
+    // TODO: Buscar revenue, avgGenerationTime, successRate, growth reais se existir
     return {
       totalNFTs: finalNFTCount,
       totalUsers: usersCount,
-      totalRevenue: 0,
-      avgGenerationTime: 8.2, // Se quiser, pode calcular real depois
-      successRate: 95.1,      // Se quiser, pode calcular real depois
+      totalRevenue: 0, // TODO: Implementar cálculo real
+      avgGenerationTime: 0, // TODO: Implementar cálculo real
+      successRate: 0, // TODO: Implementar cálculo real
       growth: {
-        nfts: 0, // ou calcule real se possível
+        nfts: 0, // TODO: Implementar cálculo real
         users: 0,
         revenue: 0
       }
@@ -93,68 +94,36 @@ const getAnalyticsOverview = async () => {
 };
 
 const getPopularTeamsData = async () => {
-  const cacheKey = 'popular-teams';
-  const cached = getCachedData(cacheKey);
-  if (cached) return cached;
-
   try {
-    // 1. Buscar dados reais do marketplace da Thirdweb
-    let marketplaceTeams: { [key: string]: number } = {};
-    try {
-      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-      const nftResponse = await fetch(`${baseUrl}/api/marketplace/nft-collection?action=getAllNFTs&limit=200`);
-      if (nftResponse.ok) {
-        const nftData = await nftResponse.json();
-        const nfts = nftData.nfts || [];
-        nfts.forEach((nft: any) => {
-          if (nft.metadata && nft.metadata.attributes) {
-            const teamAttr = nft.metadata.attributes.find((attr: any) => 
-              attr.trait_type === 'Team' && attr.value && attr.value !== 'Legacy Mint'
-            );
-            if (teamAttr && isValidTeamName(teamAttr.value)) {
-              const teamName = teamAttr.value;
-              marketplaceTeams[teamName] = (marketplaceTeams[teamName] || 0) + 1;
-            }
+    // Buscar times apenas de NFTs mintadas (tokenId existe)
+    const client = await clientPromise;
+    const db = client.db('chz-app-db');
+    const collections = ['jerseys', 'badges', 'stadiums'];
+    const teamCounts: { [key: string]: number } = {};
+    const aggregationPromises = collections.map(async (collectionName) => {
+      const collection = db.collection(collectionName);
+      const pipeline = [
+        { $match: { tokenId: { $exists: true, $ne: null } } },
+        { $unwind: '$tags' },
+        { $group: { _id: '$tags', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 }
+      ];
+      return withTimeout(collection.aggregate(pipeline).toArray(), 2000);
+    });
+    const results = await Promise.allSettled(aggregationPromises);
+    results.forEach((result) => {
+      if (result.status === 'fulfilled') {
+        result.value.forEach((item: any) => {
+          const team = item._id;
+          if (team && typeof team === 'string') {
+            teamCounts[team] = (teamCounts[team] || 0) + item.count;
           }
         });
       }
-    } catch (marketplaceError) {
-      // Silenciar erro, tentar MongoDB
-    }
-
-    // 2. Se não há dados do marketplace, usar MongoDB
-    if (Object.keys(marketplaceTeams).length === 0) {
-      const client = await clientPromise;
-      const db = client.db('chz-app-db');
-      const collections = ['jerseys', 'badges', 'stadiums'];
-      const teamCounts: { [key: string]: number } = {};
-      const aggregationPromises = collections.map(async (collectionName) => {
-        const collection = db.collection(collectionName);
-        const pipeline = [
-          { $unwind: '$tags' },
-          { $group: { _id: '$tags', count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $limit: 10 }
-        ];
-        return withTimeout(collection.aggregate(pipeline).toArray(), 2000);
-      });
-      const results = await Promise.allSettled(aggregationPromises);
-      results.forEach((result) => {
-        if (result.status === 'fulfilled') {
-          result.value.forEach((item: any) => {
-            const team = item._id;
-            if (team && typeof team === 'string' && isValidTeamName(team)) {
-              teamCounts[team] = (teamCounts[team] || 0) + item.count;
-            }
-          });
-        }
-      });
-      marketplaceTeams = teamCounts;
-    }
-
-    // 3. Processar e filtrar times válidos
-    const sortedTeams = Object.entries(marketplaceTeams)
-      .filter(([name]) => isValidTeamName(name))
+    });
+    // Processar e filtrar times válidos
+    const sortedTeams = Object.entries(teamCounts)
       .map(([name, count]) => ({ name, count }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 8);
@@ -184,11 +153,9 @@ const getPopularTeamsData = async () => {
       percentage: total > 0 ? Math.round((team.count / total) * 100 * 10) / 10 : 0,
       color: teamColors[team.name] || '#666666'
     }));
-    setCachedData(cacheKey, result, 45000); // Cache por 45 segundos
     return result;
   } catch (error) {
     console.error('Error fetching team data:', error);
-    // Nunca retornar mock, apenas array vazio
     return [];
   }
 }
@@ -233,8 +200,9 @@ const isValidTeamName = (name: string): boolean => {
 
 const getRecentSalesData = async () => {
   try {
-    // Buscar vendas reais do banco ou marketplace
-    // (implementar lógica real aqui, se não houver dados, retorna [])
+    // TODO: Buscar vendas reais do marketplace (ex: collection 'sales' ou equivalente)
+    // Exemplo: buscar últimas vendas de NFTs mintadas
+    // Se não houver dados reais, retornar []
     return [];
   } catch (error) {
     console.error('Error fetching sales data:', error);
@@ -243,22 +211,16 @@ const getRecentSalesData = async () => {
 }
 
 const getChartData = async () => {
-  const cacheKey = 'chart-data';
-  const cached = getCachedData(cacheKey);
-  if (cached) return cached;
-
   try {
     const client = await clientPromise;
     const db = client.db('chz-app-db');
-
-    // Buscar todos os itens com datas
+    // Buscar NFTs mintadas por mês
     const collections = ['jerseys', 'stadiums', 'badges'];
     const allItems: any[] = [];
-
     const itemPromises = collections.map(async (collectionName) => {
       return withTimeout(
         db.collection(collectionName)
-          .find({}, { 
+          .find({ tokenId: { $exists: true, $ne: null } }, { 
             projection: { 
               createdAt: 1, 
               tags: 1,
@@ -270,129 +232,46 @@ const getChartData = async () => {
         2000
       );
     });
-
     const results = await Promise.allSettled(itemPromises);
-    
     results.forEach((result) => {
       if (result.status === 'fulfilled') {
         allItems.push(...result.value);
       }
     });
-
-    // Processar dados para gráficos
+    // Processar dados para gráficos reais
     const monthlyNFTs = await getMonthlyStatsFromDB(allItems);
     const userGrowth = getUserGrowthStatsFromDB(allItems);
-    
-    // Para team distribution, usar dados reais do marketplace
+    // Popular teams chart
     const teamData = await getPopularTeamsData();
     const teamDistribution = teamData.slice(0, 5).map((team: any) => ({
       name: team.name,
       value: team.count
     }));
-
-    const result = {
+    return {
       monthlyNFTs,
       teamDistribution,
       userGrowth
     };
-
-    setCachedData(cacheKey, result, 120000); // Cache por 2 minutos
-    return result;
-
   } catch (error) {
     console.error('Error fetching chart data from DB:', error);
-    
-    // Fallback data
     return {
-      monthlyNFTs: [
-        { name: 'Jan', value: 12 }, { name: 'Fev', value: 18 },
-        { name: 'Mar', value: 15 }, { name: 'Abr', value: 24 },
-        { name: 'Mai', value: 19 }, { name: 'Jun', value: 31 }
-      ],
-      teamDistribution: [
-        { name: 'Flamengo', value: 45 }, { name: 'Palmeiras', value: 38 },
-        { name: 'Corinthians', value: 32 }, { name: 'São Paulo', value: 28 }
-      ],
-      userGrowth: [
-        { name: 'Sem 1', value: 12 }, { name: 'Sem 2', value: 18 },
-        { name: 'Sem 3', value: 15 }, { name: 'Sem 4', value: 23 },
-        { name: 'Sem 5', value: 19 }, { name: 'Sem 6', value: 31 }
-      ]
+      monthlyNFTs: [],
+      teamDistribution: [],
+      userGrowth: []
     };
   }
 };
 
 const getMonthlyStatsFromDB = async (items: any[]) => {
-  const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-  const now = new Date();
-  
-  // Tentar buscar dados reais da blockchain primeiro
-  let realNFTs: any[] = [];
-  try {
-    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-    const nftResponse = await fetch(`${baseUrl}/api/marketplace/nft-collection?action=getAllNFTs&limit=200`);
-    if (nftResponse.ok) {
-      const nftData = await nftResponse.json();
-      realNFTs = nftData.nfts || [];
-      console.log(`📊 Using ${realNFTs.length} real NFTs for monthly stats`);
-    }
-  } catch (error) {
-    console.log('⚠️ Could not fetch real NFTs, using fallback data');
-  }
-  
-  const itemsToAnalyze = realNFTs.length > 0 ? realNFTs : items;
-  
-  return months.map((month, index) => {
-    const targetMonth = new Date(now.getFullYear(), now.getMonth() - (5 - index), 1);
-    const nextMonth = new Date(now.getFullYear(), now.getMonth() - (5 - index) + 1, 1);
-    
-    let count = 0;
-    
-    if (realNFTs.length > 0) {
-      // Para NFTs reais, não temos datas de mint precisas, simular baseado em distribuição
-      const totalNFTs = realNFTs.length;
-      const baseCount = Math.floor(totalNFTs / 6); // Distribuir entre 6 meses
-      const variation = Math.floor(Math.random() * (baseCount * 0.4)); // +/- 40% variação
-      count = Math.max(1, baseCount + variation - Math.floor(baseCount * 0.2));
-    } else {
-      // Para dados MongoDB, usar datas reais
-      count = itemsToAnalyze.filter(item => {
-        if (!item.createdAt) return false;
-        const itemDate = new Date(item.createdAt);
-        return itemDate >= targetMonth && itemDate < nextMonth;
-      }).length;
-    }
-    
-    return { name: month, value: Math.max(count, 1) };
-  });
+  // TODO: Implementar lógica real baseada em createdAt de NFTs mintadas
+  // Por enquanto, retorna vazio se não houver dados
+  return [];
 };
 
 const getUserGrowthStatsFromDB = (items: any[]) => {
-  const weeks = ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6'];
-  const now = new Date();
-  
-  // Extrair usuários únicos por semana
-  const usersByWeek = weeks.map((week, index) => {
-    const startWeek = new Date(now.getTime() - ((6 - index) * 7 * 24 * 60 * 60 * 1000));
-    const endWeek = new Date(now.getTime() - ((5 - index) * 7 * 24 * 60 * 60 * 1000));
-    
-    const uniqueUsers = new Set();
-    items.forEach(item => {
-      if (item.creatorWallet && item.createdAt) {
-        const itemDate = new Date(item.createdAt);
-        if (itemDate >= startWeek && itemDate < endWeek) {
-          uniqueUsers.add(item.creatorWallet);
-        }
-      }
-    });
-    
-    return { 
-      name: week, 
-      value: Math.max(uniqueUsers.size, Math.floor(Math.random() * 20) + 8)
-    };
-  });
-  
-  return usersByWeek;
+  // TODO: Implementar lógica real baseada em createdAt/creatorWallet de NFTs mintadas
+  // Por enquanto, retorna vazio se não houver dados
+  return [];
 };
 
 export async function GET(request: NextRequest) {
@@ -401,10 +280,7 @@ export async function GET(request: NextRequest) {
 
   try {
     let data;
-    
-    // Timeout geral para toda a operação
     const operationTimeout = 8000; // 8 segundos
-    
     const operation = async () => {
       switch (metric) {
         case 'overview':
@@ -419,19 +295,15 @@ export async function GET(request: NextRequest) {
           return await getAnalyticsOverview();
       }
     };
-
     data = await withTimeout(operation(), operationTimeout);
-    
     return NextResponse.json(data, {
       headers: {
         'Cache-Control': 'public, max-age=30, stale-while-revalidate=60'
       }
     });
-    
   } catch (error) {
     console.error(`Error fetching admin analytics for metric [${metric}]:`, error);
-    
-    // Retornar fallback baseado no metric
+    // Nunca retornar mock, apenas vazio/zeros
     let fallbackData;
     switch (metric) {
       case 'overview':
@@ -445,21 +317,16 @@ export async function GET(request: NextRequest) {
         };
         break;
       case 'popularTeams':
-        fallbackData = getFallbackTeams();
+        fallbackData = [];
         break;
       case 'recentSales':
-        fallbackData = getFallbackSales();
+        fallbackData = [];
         break;
       case 'chartData':
         fallbackData = {
-          monthlyNFTs: [
-            { name: 'Jan', value: 12 }, { name: 'Fev', value: 18 },
-            { name: 'Mar', value: 15 }, { name: 'Abr', value: 24 }
-          ],
-          teamDistribution: getFallbackTeams().map(team => ({ name: team.name, value: team.count })),
-          userGrowth: [
-            { name: 'Sem 1', value: 12 }, { name: 'Sem 2', value: 18 }
-          ]
+          monthlyNFTs: [],
+          teamDistribution: [],
+          userGrowth: []
         };
         break;
       default:
@@ -472,7 +339,6 @@ export async function GET(request: NextRequest) {
           growth: { nfts: 0, users: 0, revenue: 0 }
         };
     }
-    
     return NextResponse.json(fallbackData, {
       headers: {
         'Cache-Control': 'public, max-age=10, stale-while-revalidate=30'
