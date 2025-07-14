@@ -389,13 +389,13 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         </div>
 
         {/* Layout Principal: NFT à esquerda, Traits e Compra à direita */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 mb-6 lg:mb-8">
-          {/* NFT Image + Chart */}
-          <div className="space-y-4 lg:space-y-6">
-            {/* NFT Image - 30% menor */}
+        <div className="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-6 lg:gap-8 mb-6 lg:mb-8 justify-center">
+          {/* NFT Image + Chart - Container 20% menor na largura */}
+          <div className="space-y-4 lg:space-y-6 w-[80%] mx-auto lg:w-full">
+            {/* NFT Image */}
             <Card className="cyber-card">
               <CardContent className="p-2 lg:p-3">
-                <div className="aspect-square relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 max-w-[70%] mx-auto">
+                <div className="aspect-square relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
                   {displayData.imageUrl ? (
                     <Image
                       src={displayData.imageUrl}
@@ -414,9 +414,9 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                   )}
                 </div>
                 
-                {/* NFT Info */}
-                <div className="mt-2 lg:mt-3">
-                  <div className="flex items-center justify-between mb-2">
+                {/* NFT Info - Organizado e compacto */}
+                <div className="mt-3 lg:mt-4 px-2">
+                  <div className="flex items-center justify-between mb-3">
                     <Badge variant="outline" className="text-[#A20131] border-[#A20131] text-xs">
                       {displayData.collection}
                     </Badge>
@@ -433,12 +433,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                     </div>
                   </div>
                   
-                  <h1 className="text-base lg:text-lg font-bold text-[#FDFDFD] mb-2">
+                  <h1 className="text-base lg:text-lg font-bold text-[#FDFDFD] mb-2 text-center">
                     {displayData.name}
                   </h1>
                   
                   {displayData.description && (
-                    <p className="text-[#FDFDFD]/70 text-xs">
+                    <p className="text-[#FDFDFD]/70 text-xs text-center leading-relaxed">
                       {displayData.description}
                     </p>
                   )}
@@ -446,8 +446,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               </CardContent>
             </Card>
 
-            {/* Price History Chart */}
-            <Card className="cyber-card">
+            {/* Price History Chart - 20% menor na largura */}
+            <Card className="cyber-card w-[80%] mx-auto lg:w-full">
               <CardHeader className="p-3 lg:p-4 pb-2">
                 <CardTitle className="text-[#FDFDFD] flex items-center text-sm">
                   <TrendingUp className="h-4 w-4 mr-2 text-[#A20131]" />
@@ -544,8 +544,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
             </Card>
           </div>
 
-          {/* Traits e Purchase Section */}
-          <div className="space-y-4 lg:space-y-6">
+          {/* Traits e Purchase Section - Containers 20% menores na largura */}
+          <div className="space-y-4 lg:space-y-6 w-[80%] mx-auto lg:w-full">
             {/* Purchase Section - 20% menor */}
             <Card className="cyber-card">
               <CardHeader className="p-2 lg:p-3 pb-1">
@@ -693,8 +693,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           </div>
         </div>
 
-        {/* Activity/Sales History - 40% menor */}
-        <Card className="cyber-card">
+        {/* Activity/Sales History - 40% menor - 20% menor na largura */}
+        <Card className="cyber-card w-[80%] mx-auto lg:w-full">
           <CardHeader className="p-2 pb-1">
             <CardTitle className="text-[#FDFDFD] flex items-center text-xs">
               <Activity className="h-3 w-3 mr-1 text-[#A20131]" />
