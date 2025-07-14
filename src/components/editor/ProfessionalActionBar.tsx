@@ -35,6 +35,7 @@ interface ProfessionalActionBarProps {
   metadataUri?: string
   walletAddress?: string
   collection?: 'jerseys' | 'stadiums' | 'badges'
+  hasGeneratedImage?: boolean
 
   // Wallet
   isConnected: boolean
@@ -67,6 +68,7 @@ export default function ProfessionalActionBar({
   metadataUri,
   walletAddress,
   collection,
+  hasGeneratedImage,
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
@@ -166,7 +168,7 @@ export default function ProfessionalActionBar({
       )}
 
       {/* Batch Mint - Admin Only */}
-      {isUserAdmin && metadataUri && walletAddress && nftName && (
+      {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
         <BatchMintDialog
           trigger={
             <Button
@@ -187,7 +189,7 @@ export default function ProfessionalActionBar({
             </Button>
           }
           to={walletAddress}
-          metadataUri={metadataUri}
+          metadataUri={metadataUri || ''}
           nftName={nftName}
           collection={collection}
           disabled={!canMintGasless || isMinting}

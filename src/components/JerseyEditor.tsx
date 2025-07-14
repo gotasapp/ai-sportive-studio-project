@@ -1482,6 +1482,7 @@ Design based on analysis: ${analysisText}`
           metadataUri={ipfsUrl || undefined}
           walletAddress={address || undefined}
           collection="jerseys"
+          hasGeneratedImage={!!generatedImage}
           getTransactionUrl={getTransactionUrl}
         />
       }
