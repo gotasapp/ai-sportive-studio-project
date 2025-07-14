@@ -95,29 +95,44 @@ const getAnalyticsOverview = async () => {
 
 const getPopularTeamsData = async () => {
   try {
-    // Buscar times apenas de NFTs mintadas (tokenId existe)
     const client = await clientPromise;
     const db = client.db('chz-app-db');
     const collections = ['jerseys', 'badges', 'stadiums'];
     const teamCounts: { [key: string]: number } = {};
     for (const collectionName of collections) {
       const collection = db.collection(collectionName);
-      // Buscar todos NFTs mintados
-      const nfts = await collection.find({ tokenId: { $exists: true, $ne: null } }, { projection: { tags: 1, metadata: 1 } }).toArray();
+      const nfts = await collection.find({ tokenId: { $exists: true, $ne: null } }).toArray();
       nfts.forEach(nft => {
-        // Preferir campo tags (array de times)
+        // 1. tags (array)
         if (Array.isArray(nft.tags)) {
           nft.tags.forEach((tag: string) => {
             if (tag && typeof tag === 'string') {
               teamCounts[tag] = (teamCounts[tag] || 0) + 1;
             }
           });
-        } else if (nft.metadata && nft.metadata.team) {
-          // Fallback: metadado team
+        }
+        // 2. metadata.team
+        else if (nft.metadata && nft.metadata.team) {
           const team = nft.metadata.team;
           if (team && typeof team === 'string') {
             teamCounts[team] = (teamCounts[team] || 0) + 1;
           }
+        }
+        // 3. metadata.attributes (array de objetos)
+        else if (nft.metadata && Array.isArray(nft.metadata.attributes)) {
+          const teamAttr = nft.metadata.attributes.find(
+            (attr: any) =>
+              (attr.trait_type === 'Team' || attr.trait_type === 'team') &&
+              attr.value &&
+              typeof attr.value === 'string'
+          );
+          if (teamAttr) {
+            teamCounts[teamAttr.value] = (teamCounts[teamAttr.value] || 0) + 1;
+          }
+        }
+        // 4. Fallback: campo direto team
+        else if (nft.team && typeof nft.team === 'string') {
+          teamCounts[nft.team] = (teamCounts[nft.team] || 0) + 1;
         }
       });
     }
@@ -129,7 +144,7 @@ const getPopularTeamsData = async () => {
     const total = sortedTeams.reduce((sum, team) => sum + team.count, 0);
     const teamColors: { [key: string]: string } = {
       'Flamengo': '#ff0000',
-      'Palmeiras': '#00aa00', 
+      'Palmeiras': '#00aa00',
       'Corinthians': '#000000',
       'São Paulo': '#ff0000',
       'Vasco': '#000000',
