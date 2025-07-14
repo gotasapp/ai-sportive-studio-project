@@ -170,6 +170,8 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   console.log('🔧 GET - ENGINE_ADMIN_KEY:', process.env.ENGINE_ADMIN_KEY ? 'EXISTS' : 'MISSING');
+  console.log('🔧 ALL ENV VARS:', Object.keys(process.env).filter(key => key.includes('ENGINE') || key.includes('VAULT') || key.includes('ADMIN')));
+  
   return NextResponse.json({
     status: 'Batch Mint API is working - Updated',
     config: {
@@ -177,6 +179,11 @@ export async function GET() {
       ENGINE_ADMIN_KEY: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing', 
       CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
       BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
+    },
+    debug: {
+      ENGINE_ADMIN_KEY_RAW: process.env.ENGINE_ADMIN_KEY ? 'EXISTS' : 'MISSING',
+      VAULT_ACCESS_TOKEN_RAW: process.env.VAULT_ACCESS_TOKEN ? 'EXISTS' : 'MISSING',
+      ADMIN_WALLET_ADDRESS_RAW: process.env.ADMIN_WALLET_ADDRESS ? 'EXISTS' : 'MISSING'
     },
     timestamp: new Date().toISOString()
   });
