@@ -156,8 +156,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   // Calcular stats dinâmicos baseados nos dados do marketplace
   useEffect(() => {
     if (!marketplaceLoading && marketplaceNFTs.length > 0) {
-      const listings = marketplaceNFTs.filter(nft => nft.status === 'listed');
-      const auctions = marketplaceNFTs.filter(nft => nft.status === 'auction');
+      const listings = marketplaceNFTs.filter(nft => nft.isListed);
+      const auctions = marketplaceNFTs.filter(nft => nft.isAuction);
       
       // Calcular floor price
       const listedPrices = listings
@@ -180,7 +180,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
 
   // Encontrar NFT específico no marketplace para dados de listing/auction
   const currentMarketplaceNFT = marketplaceNFTs.find(
-    nft => nft.tokenId === params.tokenId && nft.collection === params.collectionId
+    nft => nft.tokenId === params.tokenId && nft.type === params.collectionId
   );
 
   if (loading) {
@@ -216,9 +216,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
       favorites: Math.floor(Math.random() * 50) + 10,
       owners: 1
     },
-    status: currentMarketplaceNFT?.status || 'owned',
-    isListed: currentMarketplaceNFT?.status === 'listed',
-    isAuction: currentMarketplaceNFT?.status === 'auction'
+    isListed: currentMarketplaceNFT?.isListed || false,
+    isAuction: currentMarketplaceNFT?.isAuction || false
   };
 
   return (
