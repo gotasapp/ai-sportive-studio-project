@@ -87,13 +87,19 @@ export default function AdminDashboard() {
   const { isLoading: loadingTeams, startLoading: startTeams, stopLoading: stopTeams } = useLoadingState();
   const { isLoading: loadingSales, startLoading: startSales, stopLoading: stopSales } = useLoadingState();
   
+  // Estados de erro por seção
+  const [overviewError, setOverviewError] = useState<string | null>(null);
+  const [teamsError, setTeamsError] = useState<string | null>(null);
+  const [salesError, setSalesError] = useState<string | null>(null);
+  const [chartError, setChartError] = useState<string | null>(null);
+
   // Loading inicial
   const [initialLoading, setInitialLoading] = useState(true);
 
-  // Função para buscar dados reais (com timeout rápido)
+  // Funções de fetch individuais com erro por seção
   const fetchOverviewData = useCallback(async () => {
     startOverview();
-    setError(null);
+    setOverviewError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -107,13 +113,11 @@ export default function AdminDashboard() {
         setOverviewData(data);
       } else {
         setOverviewData(null);
-        setError('Erro ao buscar dados de overview.');
-        console.error('Erro ao buscar overview:', response.statusText);
+        setOverviewError('Erro ao buscar dados de overview.');
       }
     } catch (error) {
       setOverviewData(null);
-      setError('Erro ao buscar dados de overview.');
-      console.error('Erro ao buscar overview:', error);
+      setOverviewError('Erro ao buscar dados de overview.');
     } finally {
       stopOverview();
     }
@@ -121,7 +125,7 @@ export default function AdminDashboard() {
 
   const fetchPopularTeamsData = useCallback(async () => {
     startTeams();
-    setError(null);
+    setTeamsError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -135,13 +139,11 @@ export default function AdminDashboard() {
         setPopularTeamsData(data);
       } else {
         setPopularTeamsData([]);
-        setError('Erro ao buscar dados de times populares.');
-        console.error('Erro ao buscar popularTeams:', response.statusText);
+        setTeamsError('Erro ao buscar dados de times populares.');
       }
     } catch (error) {
       setPopularTeamsData([]);
-      setError('Erro ao buscar dados de times populares.');
-      console.error('Erro ao buscar popularTeams:', error);
+      setTeamsError('Erro ao buscar dados de times populares.');
     } finally {
       stopTeams();
     }
@@ -149,7 +151,7 @@ export default function AdminDashboard() {
 
   const fetchRecentSalesData = useCallback(async () => {
     startSales();
-    setError(null);
+    setSalesError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 2000);
@@ -163,20 +165,18 @@ export default function AdminDashboard() {
         setRecentSalesData(data);
       } else {
         setRecentSalesData([]);
-        setError('Erro ao buscar dados de vendas recentes.');
-        console.error('Erro ao buscar recentSales:', response.statusText);
+        setSalesError('Erro ao buscar dados de vendas recentes.');
       }
     } catch (error) {
       setRecentSalesData([]);
-      setError('Erro ao buscar dados de vendas recentes.');
-      console.error('Erro ao buscar recentSales:', error);
+      setSalesError('Erro ao buscar dados de vendas recentes.');
     } finally {
       stopSales();
     }
   }, [startSales, stopSales]);
 
   const fetchChartData = useCallback(async () => {
-    setError(null);
+    setChartError(null);
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
@@ -190,46 +190,44 @@ export default function AdminDashboard() {
         setChartData(data);
       } else {
         setChartData({ monthlyNFTs: [], teamDistribution: [], userGrowth: [] });
-        setError('Erro ao buscar dados de gráficos.');
-        console.error('Erro ao buscar chartData:', response.statusText);
+        setChartError('Erro ao buscar dados de gráficos.');
       }
     } catch (error) {
       setChartData({ monthlyNFTs: [], teamDistribution: [], userGrowth: [] });
-      setError('Erro ao buscar dados de gráficos.');
-      console.error('Erro ao buscar chartData:', error);
+      setChartError('Erro ao buscar dados de gráficos.');
     }
   }, []);
 
-  // Lazy loading - não bloqueia carregamento inicial
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchOverviewData();
-      fetchPopularTeamsData();
-      fetchRecentSalesData();
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [fetchOverviewData, fetchPopularTeamsData, fetchRecentSalesData]);
+  // Chamada robusta: Promise.allSettled
+  const fetchAllData = useCallback(async () => {
+    setInitialLoading(true);
+    setError(null);
+    await Promise.allSettled([
+      fetchOverviewData(),
+      fetchPopularTeamsData(),
+      fetchRecentSalesData(),
+      fetchChartData()
+    ]);
+    setInitialLoading(false);
+  }, [fetchOverviewData, fetchPopularTeamsData, fetchRecentSalesData, fetchChartData]);
 
-  // Fetch chart data after team data is loaded
+  // useEffect inicial usando fetchAllData
   useEffect(() => {
-    if (popularTeamsData.length > 0) {
-      fetchChartData();
-    }
-  }, [popularTeamsData, fetchChartData]);
+    fetchAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Loader global: só some quando todos os dados principais estiverem carregados
+  // Loader global: só some quando todos os fetches terminarem
   useEffect(() => {
     if (
-      overviewData &&
-      popularTeamsData.length > 0 &&
-      recentSalesData.length > 0 &&
-      chartData.monthlyNFTs.length > 0 &&
-      chartData.teamDistribution.length > 0 &&
-      chartData.userGrowth.length > 0
+      !loadingOverview &&
+      !loadingTeams &&
+      !loadingSales &&
+      chartData !== undefined
     ) {
       setInitialLoading(false);
     }
-  }, [overviewData, popularTeamsData, recentSalesData, chartData]);
+  }, [loadingOverview, loadingTeams, loadingSales, chartData]);
 
   const handleRefresh = () => {
     setRefreshTime(new Date().toLocaleTimeString());
