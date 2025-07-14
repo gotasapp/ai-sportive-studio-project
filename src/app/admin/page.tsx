@@ -86,6 +86,7 @@ export default function AdminDashboard() {
   const { isLoading: loadingOverview, startLoading: startOverview, stopLoading: stopOverview } = useLoadingState();
   const { isLoading: loadingTeams, startLoading: startTeams, stopLoading: stopTeams } = useLoadingState();
   const { isLoading: loadingSales, startLoading: startSales, stopLoading: stopSales } = useLoadingState();
+  const { isLoading: loadingCharts, startLoading: startCharts, stopLoading: stopCharts } = useLoadingState();
   
   // Estados de erro por seção
   const [overviewError, setOverviewError] = useState<string | null>(null);
@@ -176,6 +177,7 @@ export default function AdminDashboard() {
   }, [startSales, stopSales]);
 
   const fetchChartData = useCallback(async () => {
+    startCharts();
     setChartError(null);
     try {
       const controller = new AbortController();
@@ -195,8 +197,10 @@ export default function AdminDashboard() {
     } catch (error) {
       setChartData({ monthlyNFTs: [], teamDistribution: [], userGrowth: [] });
       setChartError('Erro ao buscar dados de gráficos.');
+    } finally {
+      stopCharts();
     }
-  }, []);
+  }, [startCharts, stopCharts]);
 
   // Chamada robusta: Promise.allSettled
   const fetchAllData = useCallback(async () => {
@@ -223,11 +227,12 @@ export default function AdminDashboard() {
       !loadingOverview &&
       !loadingTeams &&
       !loadingSales &&
+      !loadingCharts &&
       chartData !== undefined
     ) {
       setInitialLoading(false);
     }
-  }, [loadingOverview, loadingTeams, loadingSales, chartData]);
+  }, [loadingOverview, loadingTeams, loadingSales, loadingCharts, chartData]);
 
   const handleRefresh = () => {
     setRefreshTime(new Date().toLocaleTimeString());
@@ -336,37 +341,73 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
           {/* Gráfico de NFTs por Mês */}
-          <AdminChart
-            title="NFTs Criados por Mês"
-            description="Evolução mensal de criações"
-            data={chartData.monthlyNFTs}
-            type="area"
-            dataKey="value"
-            xKey="name"
-            height={250}
-          />
+          <Card className="cyber-card border-cyan-500/30">
+            <CardHeader>
+              <CardTitle>NFTs Criados por Mês</CardTitle>
+              <CardDescription>Evolução mensal de criações</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingCharts ? (
+                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
+              ) : chartError ? (
+                <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
+              ) : (
+                <AdminChart
+                  data={chartData.monthlyNFTs}
+                  type="area"
+                  dataKey="value"
+                  xKey="name"
+                  height={250}
+                />
+              )}
+            </CardContent>
+          </Card>
 
           {/* Gráfico de Distribuição de Times */}
-          <AdminChart
-            title="Times Mais Populares"
-            description="Distribuição por preferência"
-            data={chartData.teamDistribution}
-            type="pie"
-            dataKey="value"
-            xKey="name"
-            height={250}
-          />
+          <Card className="cyber-card border-cyan-500/30">
+            <CardHeader>
+              <CardTitle>Times Mais Populares</CardTitle>
+              <CardDescription>Distribuição por preferência</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingCharts ? (
+                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
+              ) : chartError ? (
+                <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
+              ) : (
+                <AdminChart
+                  data={chartData.teamDistribution}
+                  type="pie"
+                  dataKey="value"
+                  xKey="name"
+                  height={250}
+                />
+              )}
+            </CardContent>
+          </Card>
 
           {/* Gráfico de Crescimento de Usuários */}
-          <AdminChart
-            title="Crescimento de Usuários"
-            description="Novos usuários por semana"
-            data={chartData.userGrowth}
-            type="line"
-            dataKey="value"
-            xKey="name"
-            height={250}
-          />
+          <Card className="cyber-card border-cyan-500/30">
+            <CardHeader>
+              <CardTitle>Crescimento de Usuários</CardTitle>
+              <CardDescription>Novos usuários por semana</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loadingCharts ? (
+                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
+              ) : chartError ? (
+                <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
+              ) : (
+                <AdminChart
+                  data={chartData.userGrowth}
+                  type="line"
+                  dataKey="value"
+                  xKey="name"
+                  height={250}
+                />
+              )}
+            </CardContent>
+          </Card>
 
         </div>
 
