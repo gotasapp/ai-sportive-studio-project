@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useSendTransaction, useActiveAccount } from 'thirdweb/react';
 import { createThirdwebClient, getContract, prepareContractCall } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
-import { claimTo } from 'thirdweb/extensions/erc721';
+import { claimTo } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from '@/lib/services/ipfs-service';
 
 interface PublicMintProps {
@@ -36,7 +36,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
 
   const contract = getContract({
     client,
-    address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+    address: process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET || '0xdFE746c26D3a7d222E89469C8dcb033fbBc75236',
     chain: polygonAmoy,
   });
 
@@ -66,10 +66,11 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       setStep('minting');
       console.log('🚀 Preparing batch mint transaction...');
 
-      // Use claimTo for NFT Drop with quantity to create internal collection
+      // Use claimTo for Edition Drop (ERC1155) with tokenId and quantity
       const transaction = claimTo({
         contract,
         to: account.address, // receiver
+        tokenId: BigInt(0), // Token ID 0 (first edition in the drop)
         quantity: BigInt(quantity), // quantity - creates internal collection of same NFTs
       });
 
@@ -134,14 +135,14 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
             <>
               <div className="space-y-2">
                 <label className="text-sm font-medium">
-                  Quantity (1-20)
+                  Quantity (1-100)
                 </label>
                 <input
                   type="number"
                   min="1"
-                  max="20"
+                  max="100"
                   value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                  onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
                   className="w-full px-3 py-2 border rounded-md"
                 />
                 <p className="text-xs text-gray-500">
