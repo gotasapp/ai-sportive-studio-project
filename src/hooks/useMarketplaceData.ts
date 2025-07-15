@@ -8,6 +8,7 @@ import { getContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
+import { getNFTs as getNFTsERC1155, balanceOf as balanceOfERC1155 } from 'thirdweb/extensions/erc1155';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 
@@ -16,11 +17,20 @@ const client = createThirdwebClient({
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
 });
 
-// Contract addresses
+// Contract addresses - Updated to include Edition Drop
 const NFT_CONTRACT_ADDRESSES = {
-  80002: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Amoy
-  137: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Mainnet (if needed)
-  88888: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // CHZ Mainnet (if needed)
+  // ERC721 NFT Collection Contract
+  erc721: {
+    80002: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Amoy
+    137: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // Polygon Mainnet
+    88888: '0xfF973a4aFc5A96DEc81366461A461824c4f80254', // CHZ Mainnet
+  },
+  // ERC1155 Edition Drop Contract
+  erc1155: {
+    80002: '0xdFE746c26D3a7d222E89469C8dcb033fbBc75236', // Polygon Amoy - Edition Drop
+    137: '0xdFE746c26D3a7d222E89469C8dcb033fbBc75236', // Polygon Mainnet (if needed)
+    88888: '0xdFE746c26D3a7d222E89469C8dcb033fbBc75236', // CHZ Mainnet (if needed)
+  }
 };
 
 // Marketplace contract address
@@ -67,22 +77,28 @@ export function useMarketplaceData() {
       const thirdwebData = await getThirdwebDataWithFallback();
       const { nfts, listings: marketplaceListings, auctions: marketplaceAuctions } = thirdwebData;
 
-      // Get contract address for filtering
+      // Get contract addresses for filtering (both ERC721 and ERC1155)
       const chainId = 80002; // Polygon Amoy where our NFTs exist
-      const contractAddress = NFT_CONTRACT_ADDRESSES[chainId as keyof typeof NFT_CONTRACT_ADDRESSES];
+      const erc721Address = NFT_CONTRACT_ADDRESSES.erc721[chainId];
+      const erc1155Address = NFT_CONTRACT_ADDRESSES.erc1155[chainId];
+      console.log('🎯 Searching in contracts:', { erc721Address, erc1155Address });
       
       console.log(`✅ Found ${nfts.length} NFTs in contract`);
       console.log(`📋 Found ${marketplaceListings.length} total listings`);
       console.log(`🏆 Found ${marketplaceAuctions.length} total auctions`);
       
-            // Filter only listings and auctions from our NFT contract
-      const ourContractListings = marketplaceListings.filter((listing: any) =>
-        listing.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()     
-      );
+                  // Filter listings and auctions from both our NFT contracts (ERC721 and ERC1155)
+      const ourContractListings = marketplaceListings.filter((listing: any) => {
+        const listingContract = listing.assetContractAddress.toLowerCase();
+        return listingContract === erc721Address.toLowerCase() || 
+               listingContract === erc1155Address.toLowerCase();
+      });
       
-            const ourContractAuctions = marketplaceAuctions.filter((auction: any) =>
-        auction.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
-      );
+      const ourContractAuctions = marketplaceAuctions.filter((auction: any) => {
+        const auctionContract = auction.assetContractAddress.toLowerCase();
+        return auctionContract === erc721Address.toLowerCase() || 
+               auctionContract === erc1155Address.toLowerCase();
+      });
       
       // Create lookup maps for quick access
       const listingsByTokenId = new Map();
@@ -140,31 +156,102 @@ export function useMarketplaceData() {
         });
       });
 
-      // Create contract instance for owner lookup
-      const nftContract = getContract({
+      // Create contract instances for both ERC721 and ERC1155
+      const erc721Contract = getContract({
         client,
         chain: polygonAmoy,
-        address: contractAddress,
+        address: erc721Address,
       });
 
+      const erc1155Contract = getContract({
+        client,
+        chain: polygonAmoy,
+        address: erc1155Address,
+      });
+
+      // Fetch NFTs from both contracts
+      console.log('🔄 Fetching NFTs from both ERC721 and ERC1155 contracts...');
+      
+      let allNFTs: any[] = [];
+      
+      try {
+        // Fetch ERC721 NFTs
+        console.log('📦 Fetching ERC721 NFTs from:', erc721Address);
+        const erc721NFTs = await getNFTs({ contract: erc721Contract, start: 0, count: 50 });
+        console.log(`✅ Found ${erc721NFTs.length} ERC721 NFTs`);
+        
+        // Add contract type for later processing
+        const taggedERC721NFTs = erc721NFTs.map(nft => ({
+          ...nft,
+          contractType: 'ERC721',
+          contractAddress: erc721Address
+        }));
+        
+        allNFTs = [...allNFTs, ...taggedERC721NFTs];
+      } catch (error) {
+        console.warn('⚠️ Failed to fetch ERC721 NFTs:', error);
+      }
+      
+      try {
+        // Fetch ERC1155 NFTs
+        console.log('📦 Fetching ERC1155 NFTs from:', erc1155Address);
+        const erc1155NFTs = await getNFTsERC1155({ contract: erc1155Contract, start: 0, count: 50 });
+        console.log(`✅ Found ${erc1155NFTs.length} ERC1155 NFTs`);
+        
+        // Add contract type for later processing
+        const taggedERC1155NFTs = erc1155NFTs.map(nft => ({
+          ...nft,
+          contractType: 'ERC1155',
+          contractAddress: erc1155Address
+        }));
+        
+        allNFTs = [...allNFTs, ...taggedERC1155NFTs];
+      } catch (error) {
+        console.warn('⚠️ Failed to fetch ERC1155 NFTs:', error);
+      }
+      
+      console.log(`🎯 Total NFTs found: ${allNFTs.length} (ERC721 + ERC1155)`);
+      
       // Process NFTs with MANUAL OWNER LOOKUP + MARKETPLACE DATA
       console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
-      console.log('📋 Sample NFT from Thirdweb:', nfts[0]);
+      console.log('📋 Sample NFT from combined results:', allNFTs[0]);
        
-       const processedNFTs = await Promise.all(nfts.map(async (nft: any, index: number) => {
+       const processedNFTs = await Promise.all(allNFTs.map(async (nft: any, index: number) => {
          const tokenId = nft.id.toString();
          const metadata = nft.metadata || {};
+         const contractType = nft.contractType;
+         const contractAddress = nft.contractAddress;
          
-         // MANUALLY FETCH OWNER using ownerOf function
+         console.log(`🔍 Processing NFT #${tokenId} from ${contractType} contract:`, contractAddress);
+         
+         // MANUALLY FETCH OWNER using appropriate function for contract type
          let nftOwner = 'Unknown';
          try {
-           nftOwner = await ownerOf({
-             contract: nftContract,
-             tokenId: BigInt(tokenId)
-           });
-           console.log(`✅ NFT #${tokenId} owner found:`, nftOwner);
+           if (contractType === 'ERC721') {
+             nftOwner = await ownerOf({
+               contract: erc721Contract,
+               tokenId: BigInt(tokenId)
+             });
+             console.log(`✅ ERC721 NFT #${tokenId} owner found:`, nftOwner);
+           } else if (contractType === 'ERC1155') {
+             // For ERC1155, we need to check balance instead of ownership
+             // For Edition Drop, check if user has any balance
+             const balance = await balanceOfERC1155({
+               contract: erc1155Contract,
+               owner: nft.owner || '0x0000000000000000000000000000000000000000', // fallback address
+               tokenId: BigInt(tokenId)
+             });
+             
+             if (balance > 0n) {
+               nftOwner = nft.owner || 'Unknown';
+               console.log(`✅ ERC1155 NFT #${tokenId} balance found:`, balance.toString(), 'for owner:', nftOwner);
+             } else {
+               nftOwner = 'No balance';
+               console.log(`ℹ️ ERC1155 NFT #${tokenId} has no balance for default address`);
+             }
+           }
          } catch (error) {
-           console.warn(`⚠️ Could not fetch owner for NFT #${tokenId}:`, error);
+           console.warn(`⚠️ Could not fetch ownership for ${contractType} NFT #${tokenId}:`, error);
            nftOwner = nft.owner || 'Unknown';
          }
          
@@ -287,7 +374,7 @@ export function useMarketplaceData() {
          const marketplaceNFT: MarketplaceNFT = {
            id: tokenId,
            tokenId: tokenId,
-           name: metadata.name || `NFT #${tokenId}`,
+           name: metadata.name || `${contractType} #${tokenId}`,
            description: metadata.description || '',
            image: metadata.image ? convertIpfsToHttp(metadata.image) : '',
            imageUrl: metadata.image ? convertIpfsToHttp(metadata.image) : '',
@@ -295,15 +382,15 @@ export function useMarketplaceData() {
            currency: currency,
            owner: actualOwner,
            creator: actualOwner ? actualOwner.slice(0, 6) + '...' : 'Unknown',
-           category: 'nft',
-           type: 'nft', 
+           category: contractType === 'ERC1155' ? 'edition' : 'nft',
+           type: contractType === 'ERC1155' ? 'edition' : 'nft', 
            attributes: Array.isArray(metadata.attributes) ? metadata.attributes : [],
            isListed: isListed,
            isVerified: true,
-           blockchain: { verified: true, tokenId, owner: nft.owner },
+           blockchain: { verified: true, tokenId, owner: nft.owner, contractType },
            contractAddress: contractAddress,
            isAuction: isAuction,
-            activeOffers: 0,
+           activeOffers: 0,
            listingId: listingIdString,
            auctionId: auctionIdString,
            currentBid: currentBid,
