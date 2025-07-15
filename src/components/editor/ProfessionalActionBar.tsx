@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Progress } from '@/components/ui/progress'
 import { UserPaidBatchMint } from '@/components/ui/user-paid-batch-mint';
 import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
+import { PublicMint } from '@/components/ui/public-mint'
 import { cn } from '@/lib/utils'
 
 interface ProfessionalActionBarProps {
@@ -37,6 +38,11 @@ interface ProfessionalActionBarProps {
   walletAddress?: string
   collection?: 'jerseys' | 'stadiums' | 'badges'
   hasGeneratedImage?: boolean
+
+  // Public Minting (for any user)
+  generatedImageBlob?: Blob
+  nftDescription?: string
+  nftAttributes?: Array<{ trait_type: string; value: string }>
 
   // Wallet
   isConnected: boolean
@@ -70,6 +76,9 @@ export default function ProfessionalActionBar({
   walletAddress,
   collection,
   hasGeneratedImage,
+  generatedImageBlob,
+  nftDescription,
+  nftAttributes,
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
@@ -224,6 +233,29 @@ export default function ProfessionalActionBar({
           collection={collection || 'jerseys'}
           disabled={!isConnected || isMinting}
         />
+      )}
+
+      {/* Public Mint (Signature-based - Any user) */}
+      {isConnected && generatedImageBlob && nftName && (
+        <div className="w-full max-w-sm">
+          <PublicMint
+            name={nftName}
+            description={nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`}
+            imageBlob={generatedImageBlob}
+            attributes={nftAttributes || [
+              { trait_type: 'Generator', value: 'AI Sports NFT' },
+              { trait_type: 'Collection', value: collection || 'General' },
+              { trait_type: 'Type', value: 'Public Mint' }
+            ]}
+            disabled={isMinting}
+            onSuccess={(result) => {
+              console.log('✅ Public mint successful:', result);
+            }}
+            onError={(error) => {
+              console.error('❌ Public mint failed:', error);
+            }}
+          />
+        </div>
       )}
     </div>
   )

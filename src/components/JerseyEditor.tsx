@@ -1485,6 +1485,17 @@ Design based on analysis: ${analysisText}`
           walletAddress={address || undefined}
           collection="jerseys"
           hasGeneratedImage={!!generatedImage}
+          generatedImageBlob={generatedImageBlob}
+          nftDescription={`AI-generated jersey for ${selectedTeam} - ${playerName} #${playerNumber}. ${selectedStyle} style jersey created with advanced AI technology.`}
+          nftAttributes={[
+            { trait_type: 'Team', value: selectedTeam || 'Unknown' },
+            { trait_type: 'Player Name', value: playerName },
+            { trait_type: 'Player Number', value: playerNumber },
+            { trait_type: 'Style', value: selectedStyle },
+            { trait_type: 'Quality', value: quality },
+            { trait_type: 'Type', value: 'Jersey' },
+            { trait_type: 'Generator', value: 'AI Sports NFT' }
+          ]}
           getTransactionUrl={getTransactionUrl}
         />
       }

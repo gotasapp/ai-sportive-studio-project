@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+module.exports = {
   // Disable static generation for API routes to prevent timeouts
   experimental: {
     outputFileTracingIncludes: {
@@ -61,6 +61,4 @@ const nextConfig = {
       },
     ],
   },
-};
-
-export default nextConfig; 
+}; 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +30,7 @@ export function ContractRoleChecker() {
     address: NFT_CONTRACT_ADDRESS,
   });
 
-  const checkRoles = async () => {
+  const checkRoles = useCallback(async () => {
     if (!account?.address) return;
     
     setLoading(true);
@@ -85,7 +85,7 @@ export function ContractRoleChecker() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [account?.address, contract]);
 
   const grantMinterRole = async () => {
     if (!account?.address || !results?.hasAdminRole) return;
@@ -123,7 +123,7 @@ export function ContractRoleChecker() {
     if (account?.address) {
       checkRoles();
     }
-  }, [account?.address]);
+  }, [account?.address, checkRoles]);
 
   if (!account?.address) {
     return (
@@ -259,7 +259,7 @@ export function ContractRoleChecker() {
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Issue Found:</strong> You don't have MINTER_ROLE permissions. 
+                  <strong>Issue Found:</strong> You don&apos;t have MINTER_ROLE permissions. 
                   Contact the contract owner to grant you MINTER_ROLE, or deploy a new contract where you are the owner.
                 </AlertDescription>
               </Alert>
