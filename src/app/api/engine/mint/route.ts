@@ -21,6 +21,14 @@ const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
 // Método GET para debug
 export async function GET() {
+  console.log("--- DEBUG GET REQUEST ---");
+  console.log("ENGINE_URL:", process.env.ENGINE_URL ? "Loaded" : "MISSING");
+  console.log("NEXT_PUBLIC_ENGINE_URL:", process.env.NEXT_PUBLIC_ENGINE_URL ? "Loaded" : "MISSING");
+  console.log("VAULT_ACCESS_TOKEN:", process.env.VAULT_ACCESS_TOKEN ? "Loaded" : "MISSING");
+  console.log("NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS:", process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS ? "Loaded" : "MISSING");
+  console.log("BACKEND_WALLET_ADDRESS:", process.env.BACKEND_WALLET_ADDRESS ? "Loaded" : "MISSING");
+  console.log("--- END DEBUG GET REQUEST ---");
+
   return NextResponse.json({ 
     message: 'Engine Mint API is running',
     configured: !!(ENGINE_URL && VAULT_ACCESS_TOKEN && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS),
