@@ -135,13 +135,17 @@ export function useMarketplaceData() {
       // 🚨 DEBUG: Log all valid listings to find the correct ID
       console.log('🔍 ALL MARKETPLACE LISTINGS DEBUG:');
       marketplaceListings.forEach((listing: any, index: number) => {
+        const listingContract = listing.assetContractAddress.toLowerCase();
+        const isOurContract = listingContract === erc721Address.toLowerCase() || 
+                             listingContract === erc1155Address.toLowerCase();
+        
         console.log(`📋 Listing ${index}:`, {
           id: listing.id?.toString(),
           assetContract: listing.assetContractAddress,
           tokenId: listing.tokenId?.toString(),
           price: listing.currencyValuePerToken?.displayValue,
           creator: listing.creatorAddress,
-          isOurContract: listing.assetContractAddress.toLowerCase() === contractAddress.toLowerCase()
+          isOurContract
         });
       });
       
