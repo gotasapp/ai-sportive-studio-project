@@ -168,138 +168,6 @@ export default function ProfessionalSidebar({
           </div>
         )}
 
-        {/* Upload Image */}
-        <Card className="cyber-card-upload-jersey border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Upload Image" 
-              section="vision" 
-              icon={FileImage}
-              badge={referenceImage ? "Active" : undefined}
-            />
-          </CardHeader>
-          {expandedSections.vision && (
-            <CardContent className="CardContent p-3 pt-0 space-y-3">
-              {!referenceImage ? (
-                                  <div
-                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    onChange={onFileUpload}
-                    accept="image/png, image/jpeg, image/webp"
-                  />
-                  <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
-                  <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
-                  <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="relative">
-                    <img
-                      src={referenceImage}
-                      alt="Reference"
-                      className="w-full h-24 object-cover rounded-[2px] border border-[#333333]"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={onClearReference}
-                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div>
-                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
-                      <div className="sport-view-buttons grid grid-cols-1 gap-1">
-                        {SPORTS_OPTIONS.map(sport => (
-                          <button
-                            key={sport.id}
-                            onClick={() => setSelectedSport(sport.id)}
-                            className={cn(
-                              "p-2 rounded-[2px] border text-left transition-all duration-200",
-                              selectedSport === sport.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                            )}
-                          >
-                            <div className="text-xs font-medium">{sport.name}</div>
-                            <div className="text-xs opacity-70">{sport.description}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                                         <div>
-                       <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
-                       <div className="sport-view-buttons grid grid-cols-1 gap-1">
-                        {VIEW_OPTIONS.map(view => (
-                          <button
-                            key={view.id}
-                            onClick={() => setSelectedView(view.id)}
-                            className={cn(
-                              "p-2 rounded-[2px] border text-left transition-all duration-200",
-                              selectedView === view.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                            )}
-                          >
-                            <div className="text-xs font-medium">{view.name}</div>
-                            <div className="text-xs opacity-70">{view.description}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Custom Prompt */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Custom Prompt" 
-              section="prompt" 
-              icon={MessageSquare}
-              badge={customPrompt ? "Added" : undefined}
-            />
-          </CardHeader>
-          {expandedSections.prompt && (
-            <CardContent className="CardContent p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Additional Instructions (Optional)
-                </label>
-                <textarea
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  placeholder="e.g., make it more colorful, add special patterns, vintage style..."
-                  rows={3}
-                  maxLength={200}
-                  className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <p className="text-xs text-[#ADADAD]">
-                    Custom instructions for AI generation
-                  </p>
-                  <span className="text-xs text-[#ADADAD]">
-                    {customPrompt.length}/200
-                  </span>
-                </div>
-              </div>
-            </CardContent>
-          )}
-        </Card>
-
         {/* Team Selection */}
         <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
@@ -439,6 +307,138 @@ export default function ProfessionalSidebar({
                 </div>
               </div>
               <p className="text-xs text-[#ADADAD]">Name: max 12 chars • Number: 1-99</p>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Upload Image */}
+        <Card className="cyber-card-upload-jersey border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Upload Image" 
+              section="vision" 
+              icon={FileImage}
+              badge={referenceImage ? "Active" : undefined}
+            />
+          </CardHeader>
+          {expandedSections.vision && (
+            <CardContent className="CardContent p-3 pt-0 space-y-3">
+              {!referenceImage ? (
+                                  <div
+                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={onFileUpload}
+                    accept="image/png, image/jpeg, image/webp"
+                  />
+                  <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
+                  <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
+                  <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <img
+                      src={referenceImage}
+                      alt="Reference"
+                      className="w-full h-24 object-cover rounded-[2px] border border-[#333333]"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onClearReference}
+                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
+                      <div className="sport-view-buttons grid grid-cols-1 gap-1">
+                        {SPORTS_OPTIONS.map(sport => (
+                          <button
+                            key={sport.id}
+                            onClick={() => setSelectedSport(sport.id)}
+                            className={cn(
+                              "p-2 rounded-[2px] border text-left transition-all duration-200",
+                              selectedSport === sport.id
+                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{sport.name}</div>
+                            <div className="text-xs opacity-70">{sport.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                                         <div>
+                       <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
+                       <div className="sport-view-buttons grid grid-cols-1 gap-1">
+                        {VIEW_OPTIONS.map(view => (
+                          <button
+                            key={view.id}
+                            onClick={() => setSelectedView(view.id)}
+                            className={cn(
+                              "p-2 rounded-[2px] border text-left transition-all duration-200",
+                              selectedView === view.id
+                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{view.name}</div>
+                            <div className="text-xs opacity-70">{view.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Custom Prompt */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Custom Prompt" 
+              section="prompt" 
+              icon={MessageSquare}
+              badge={customPrompt ? "Added" : undefined}
+            />
+          </CardHeader>
+          {expandedSections.prompt && (
+            <CardContent className="CardContent p-3 pt-0 space-y-2">
+              <div>
+                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+                  Additional Instructions (Optional)
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., make it more colorful, add special patterns, vintage style..."
+                  rows={3}
+                  maxLength={200}
+                  className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-[#ADADAD]">
+                    Custom instructions for AI generation
+                  </p>
+                  <span className="text-xs text-[#ADADAD]">
+                    {customPrompt.length}/200
+                  </span>
+                </div>
+              </div>
             </CardContent>
           )}
         </Card>

@@ -91,6 +91,7 @@ export default function ProfessionalBadgeSidebar({
   const [expandedSections, setExpandedSections] = React.useState({
     vision: false,
     prompt: false,
+    template: true,
     details: true,
     style: true,
     settings: false
@@ -162,12 +163,12 @@ export default function ProfessionalBadgeSidebar({
           <CardHeader className="p-0">
             <SectionHeader 
               title="Select Template" 
-              section="details" 
+              section="template" 
               icon={Award}
               required
             />
           </CardHeader>
-          {expandedSections.details && (
+          {expandedSections.template && (
             <CardContent className="p-3 pt-2">
               <Select
                 value={selectedBadge}
@@ -188,6 +189,81 @@ export default function ProfessionalBadgeSidebar({
                   ))}
                 </SelectContent>
               </Select>
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Badge Details */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Badge Details" 
+              section="details" 
+              icon={User}
+              required
+              badge={badgeName ? badgeName : undefined}
+            />
+          </CardHeader>
+          {expandedSections.details && (
+            <CardContent className="p-3 pt-0 space-y-2">
+              <div>
+                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+                  Badge Name <span className="text-[#A20131]">*</span>
+                </label>
+                <div className="relative">
+                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
+                  <input
+                    type="text"
+                    value={badgeName}
+                    onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
+                    placeholder="CHAMPION"
+                    maxLength={15}
+                    className={cn(
+                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
+                      badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
+                    )}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-[#ADADAD]">Name: max 15 characters</p>
+            </CardContent>
+          )}
+        </Card>
+        
+        {/* Badge Style */}
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Style" 
+              section="style" 
+              icon={Palette}
+              badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
+            />
+          </CardHeader>
+          {expandedSections.style && (
+            <CardContent className="p-4 pt-0">
+              <select
+                value={selectedStyle}
+                onChange={(e) => setSelectedStyle(e.target.value)}
+                className={cn(
+                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
+                style={{ 
+                  pointerEvents: 'auto',
+                  zIndex: 10,
+                  position: 'relative'
+                }}
+              >
+                {STYLE_FILTERS.map((style) => (
+                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
+                    {style.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-[#ADADAD] mt-2">
+                Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
+              </p>
             </CardContent>
           )}
         </Card>
@@ -323,81 +399,6 @@ export default function ProfessionalBadgeSidebar({
                   </span>
                 </div>
               </div>
-            </CardContent>
-          )}
-        </Card>
-
-        {/* Badge Details */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Badge Details" 
-              section="details" 
-              icon={User}
-              required
-              badge={badgeName ? badgeName : undefined}
-            />
-          </CardHeader>
-          {expandedSections.details && (
-            <CardContent className="p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Badge Name <span className="text-[#A20131]">*</span>
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={badgeName}
-                    onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
-                    placeholder="CHAMPION"
-                    maxLength={15}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
-                      badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-[#ADADAD]">Name: max 15 characters</p>
-            </CardContent>
-          )}
-        </Card>
-        
-        {/* Badge Style */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Style" 
-              section="style" 
-              icon={Palette}
-              badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-            />
-          </CardHeader>
-          {expandedSections.style && (
-            <CardContent className="p-4 pt-0">
-              <select
-                value={selectedStyle}
-                onChange={(e) => setSelectedStyle(e.target.value)}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
-                    {style.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-[#ADADAD] mt-2">
-                Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-              </p>
             </CardContent>
           )}
         </Card>

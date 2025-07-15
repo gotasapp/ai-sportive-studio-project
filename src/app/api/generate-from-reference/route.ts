@@ -56,16 +56,43 @@ export async function POST(req: Request) {
     }
 
     console.log(`[Next.js API] Encaminhando para ${endpoint} com payload:`, payload);
-    const pythonResponse = await fetch(`${PYTHON_API_URL}${endpoint}`, {
+    
+    // Primeira tentativa com OpenRouter (padrão)
+    let pythonResponse = await fetch(`${PYTHON_API_URL}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
+    
+    // Se der rate limit (429), tentar com OpenAI direto
+    if (pythonResponse.status === 429) {
+      console.log(`[Next.js API] 🚫 Rate limit do OpenRouter! Tentando com OpenAI direto...`);
+      
+      // Adicionar flag para usar OpenAI direto
+      const fallbackPayload = { ...payload, use_openai_direct: true };
+      
+      pythonResponse = await fetch(`${PYTHON_API_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(fallbackPayload),
+      });
+      
+      if (pythonResponse.ok) {
+        console.log(`[Next.js API] ✅ Sucesso com OpenAI direto!`);
+      }
+    }
+    
     if (!pythonResponse.ok) {
       const errorData = await pythonResponse.text();
       console.error(`[Next.js API] ERRO: Backend Python respondeu com status ${pythonResponse.status}. Detalhes: ${errorData}`);
+      
+      // Mensagem mais amigável para rate limit
+      const friendlyError = pythonResponse.status === 429 
+        ? `Rate limit atingido em ambos OpenRouter e OpenAI. Aguarde 1-2 minutos e tente novamente.`
+        : `Error from generation service: ${errorData}`;
+      
       return NextResponse.json(
-        { success: false, error: `Error from generation service: ${errorData}` },
+        { success: false, error: friendlyError },
         { status: pythonResponse.status }
       );
     }

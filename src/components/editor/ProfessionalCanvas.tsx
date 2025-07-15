@@ -127,28 +127,52 @@ export default function ProfessionalCanvas({
     </div>
   )
 
-  const renderError = () => (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="error-content text-center max-w-md">
-        <div className="w-16 h-16 mx-auto mb-4 bg-red-500/10 rounded-full flex items-center justify-center">
-          <AlertCircle className="w-8 h-8 text-red-400" />
+  const renderError = () => {
+    // Detectar se é erro de rate limit
+    const isRateLimit = error?.toLowerCase().includes('rate limit') || 
+                       error?.toLowerCase().includes('too many requests') ||
+                       error?.includes('429');
+    
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="error-content text-center max-w-md">
+          <div className={`w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center ${
+            isRateLimit ? 'bg-yellow-500/10' : 'bg-red-500/10'
+          }`}>
+            <AlertCircle className={`w-8 h-8 ${isRateLimit ? 'text-yellow-400' : 'text-red-400'}`} />
+          </div>
+          <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
+            {isRateLimit ? 'Rate Limit Reached' : 'Generation Failed'}
+          </h3>
+          <p className={`text-sm mb-4 ${isRateLimit ? 'text-yellow-400' : 'text-red-400'}`}>
+            {isRateLimit ? (
+              <>
+                OpenAI API rate limit exceeded. This usually happens when you generate too many images in a short time.
+                <br /><br />
+                💡 <strong>Solutions:</strong>
+                <br />• Wait 1-2 minutes and try again
+                <br />• Check your OpenAI API usage at platform.openai.com
+                <br />• The system will automatically retry with delays
+              </>
+            ) : (
+              error
+            )}
+          </p>
+          <Button
+            onClick={onResetError}
+            variant="outline"
+            className={`${
+              isRateLimit 
+                ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/20'
+                : 'bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20'
+            }`}
+          >
+            {isRateLimit ? 'Try Again (Auto-retry enabled)' : 'Try Again'}
+          </Button>
         </div>
-        <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
-          Generation Failed
-        </h3>
-        <p className="text-sm text-red-400 mb-4">
-          {error}
-        </p>
-        <Button
-          onClick={onResetError}
-          variant="outline"
-          className="bg-red-500/10 text-red-400 border-red-500/30 hover:bg-red-500/20"
-        >
-          Try Again
-        </Button>
       </div>
-    </div>
-  )
+    )
+  }
 
   const renderImage = () => (
     <div className="flex-1 flex flex-col">
