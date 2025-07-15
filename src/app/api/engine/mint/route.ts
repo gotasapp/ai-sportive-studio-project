@@ -66,11 +66,7 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         receiver: to,
-        metadata: {
-          name: 'Generated NFT',
-          description: 'AI Generated Sports NFT',
-          image: metadataUri.startsWith('ipfs://') ? metadataUri : `ipfs://${metadataUri}`,
-        },
+        metadataUri: metadataUri.startsWith('ipfs://') ? metadataUri : `ipfs://${metadataUri.split('ipfs/')[1]}`,
       }),
     });
 
