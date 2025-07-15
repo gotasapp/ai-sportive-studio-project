@@ -63,6 +63,9 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       });
       console.log('✅ Metadata uploaded:', metadataUri);
 
+      // Armazenar metadataUri para uso posterior
+      const currentMetadataUri = metadataUri;
+
       setStep('minting');
       console.log('🚀 Preparing batch mint transaction...');
 
@@ -77,9 +80,72 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       console.log(`🚀 Minting ${quantity} NFTs to create internal collection...`);
 
       sendTransaction(transaction, {
-        onSuccess: (result) => {
+        onSuccess: async (result) => {
           console.log('✅ Batch mint successful:', result.transactionHash);
           setTxHash(result.transactionHash);
+          
+          // Após mint bem-sucedido, fazer uploads seguindo padrão dos outros editores
+          try {
+            console.log('📤 Starting post-mint uploads...');
+            
+            // 1. Upload para Cloudinary (mesmo fluxo do Jersey)
+            const formData = new FormData();
+            formData.append('file', imageBlob, `${metadata.name.replace(/\s+/g, '_')}.png`);
+            formData.append('fileName', `public_mint_${Date.now()}`);
+            
+            const uploadResponse = await fetch('/api/upload', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error('Failed to upload image to Cloudinary');
+            }
+
+            const uploadResult = await uploadResponse.json();
+            console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+            // 2. Save no MongoDB (mesmo padrão do Jersey)
+            const nftData = {
+              name: metadata.name,
+              description: metadata.description,
+              imageUrl: uploadResult.url, // Cloudinary URL
+              cloudinaryPublicId: uploadResult.publicId,
+              prompt: JSON.stringify({ type: 'public_mint', metadata }),
+              creatorWallet: account.address,
+              transactionHash: result.transactionHash,
+              metadataUri: currentMetadataUri,
+              attributes: metadata.attributes || [],
+              tags: ['public_mint', 'ai_generated', 'edition_drop'],
+              metadata: {
+                generationMode: 'public_mint',
+                quantity: quantity,
+                chainId: 80002,
+                contractAddress: contract.address,
+                tokenId: 0 // Edition Drop usa token ID 0
+              }
+            };
+
+            const saveResponse = await fetch('/api/jerseys', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(nftData),
+            });
+
+            if (!saveResponse.ok) {
+              console.error('❌ Failed to save to MongoDB:', await saveResponse.text());
+            } else {
+              const saveResult = await saveResponse.json();
+              console.log('✅ NFT saved to MongoDB:', saveResult);
+            }
+            
+          } catch (uploadError) {
+            console.error('❌ Post-mint upload failed:', uploadError);
+            // Não falha o mint, apenas loga o erro
+          }
+          
           setStep('success');
         },
         onError: (error) => {
