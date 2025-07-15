@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
         'x-backend-wallet-address': BACKEND_WALLET_ADDRESS,
       },
       body: JSON.stringify({
-        receiver: to,
+        to: to, // CORREÇÃO: A chave deve ser 'to', não 'receiver'
         metadataUri: metadataUri.startsWith('ipfs://') ? metadataUri : `ipfs://${metadataUri.split('ipfs/')[1]}`,
       }),
     });
