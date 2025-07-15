@@ -15,7 +15,7 @@ const amoy = defineChain(80002);
 // Engine Configuration
 const ENGINE_URL = process.env.ENGINE_URL || process.env.NEXT_PUBLIC_ENGINE_URL || 'http://localhost:3005';
 const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
-// CORREÇÃO: Usar a variável do NFT Collection, não do NFT Drop
+// FINAL FIX: Use the variable name that is correctly configured on Vercel
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS; 
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
     const missing = [
       !ENGINE_URL && "ENGINE_URL",
       !VAULT_ACCESS_TOKEN && "VAULT_ACCESS_TOKEN", 
-      // CORREÇÃO: Atualizar a mensagem de erro para a variável correta
+      // FINAL FIX: Check for the correct variable
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
       !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
