@@ -3,12 +3,13 @@
 import React from 'react'
 import { 
   Zap, Wallet, Rocket, Clock, CheckCircle, AlertCircle, 
-  ExternalLink, Loader2, Hash
+  ExternalLink, Loader2, Hash, Users
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Progress } from '@/components/ui/progress'
+import { UserPaidBatchMint } from '@/components/ui/user-paid-batch-mint';
 import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
 import { cn } from '@/lib/utils'
 
@@ -167,7 +168,7 @@ export default function ProfessionalActionBar({
         </TooltipProvider>
       )}
 
-      {/* Batch Mint - Admin Only */}
+      {/* Batch Mint (Admin - Backend pays) */}
       {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
         <BatchMintDialog
           trigger={
@@ -185,7 +186,7 @@ export default function ProfessionalActionBar({
             >
               <div className="flex items-center gap-2 max-lg:gap-1.5">
                 <Hash className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                <span>Batch Mint</span>
+                <span>Batch Mint (Admin)</span>
               </div>
             </Button>
           }
@@ -194,6 +195,34 @@ export default function ProfessionalActionBar({
           nftName={nftName}
           collection={collection}
           disabled={!canMintGasless || isMinting}
+        />
+      )}
+
+      {/* User Paid Batch Mint (All users) */}
+      {isConnected && walletAddress && nftName && hasGeneratedImage && (
+        <UserPaidBatchMint
+          trigger={
+            <Button
+              disabled={!isConnected || isMinting}
+              variant="outline"
+              className={cn(
+                "h-12 px-6 text-base font-medium transition-all duration-200",
+                "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20",
+                "disabled:opacity-50 disabled:cursor-not-allowed",
+                // Mobile responsiveness
+                "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
+              )}
+            >
+              <div className="flex items-center gap-2 max-lg:gap-1.5">
+                <Users className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                <span>Batch Mint (User Pays)</span>
+              </div>
+            </Button>
+          }
+          nftName={nftName}
+          metadataUri={metadataUri}
+          collection={collection}
+          disabled={!isConnected || isMinting}
         />
       )}
     </div>
