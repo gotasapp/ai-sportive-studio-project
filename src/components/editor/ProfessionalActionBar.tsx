@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Progress } from '@/components/ui/progress'
 import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
-import { UserPaidBatchMint } from '@/components/ui/user-paid-batch-mint'
+import { PublicMint } from '@/components/ui/public-mint'
 import { cn } from '@/lib/utils'
 
 interface ProfessionalActionBarProps {
@@ -206,29 +206,19 @@ export default function ProfessionalActionBar({
         />
       )}
 
-      {/* User Paid Batch Mint (Edition Contract ERC1155) */}
-      {isConnected && nftName && (
-        <UserPaidBatchMint
-          trigger={
-            <Button
-              disabled={!isConnected || !nftName}
-              className={cn(
-                "h-12 px-6 text-base font-medium transition-all duration-200",
-                "bg-[#A20131] hover:bg-[#A20131]/90 text-white",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                // Mobile responsiveness
-                "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-              )}
-            >
-              <div className="flex items-center gap-2 max-lg:gap-1.5">
-                <Hash className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                <span>Mint Batch</span>
-              </div>
-            </Button>
-          }
-          nftName={nftName}
-          metadataUri={metadataUri || ''}
-          collection={collection || 'General'}
+      {/* Public Mint (Edition Drop Contract - Working) */}
+      {isConnected && generatedImageBlob && nftName && (
+        <PublicMint
+          imageBlob={generatedImageBlob}
+          metadata={{
+            name: nftName,
+            description: nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`,
+            attributes: nftAttributes || [
+              { trait_type: 'Generator', value: 'AI Sports NFT' },
+              { trait_type: 'Collection', value: collection || 'General' },
+              { trait_type: 'Type', value: 'Public Mint' }
+            ]
+          }}
         />
       )}
     </div>
