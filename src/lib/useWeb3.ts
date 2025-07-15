@@ -4,7 +4,7 @@ import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/reac
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { claimTo } from 'thirdweb/extensions/erc721';
-import { mintTo } from 'thirdweb/extensions/erc1155';
+import { claimTo as claimToERC1155 } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -32,13 +32,13 @@ export function useWeb3() {
     ? amoy 
     : (usePolygon ? defineChain(137) : chzMainnet);
     
-  // Edition Contract (ERC1155) for collections with multiple quantities
-  const editionContractAddress = (isTestnet
-    ? process.env.NEXT_PUBLIC_EDITION_AMOY_TESTNET
+  // Edition Drop Contract (ERC1155) for collections with multiple quantities and claim conditions
+  const editionDropContractAddress = (isTestnet
+    ? process.env.NEXT_PUBLIC_EDITION_DROP_AMOY_TESTNET
     : (usePolygon 
-        ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON
-        : process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_CHZ
-      )) || "0xF11774d1192FB3D189cc5a25946Bc974D710Fa96";
+        ? process.env.NEXT_PUBLIC_NFT_EDITION_DROP_CONTRACT_POLYGON
+        : process.env.NEXT_PUBLIC_NFT_EDITION_DROP_CONTRACT_CHZ
+      )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254"; // Default to existing working Edition Drop
 
   // Legacy NFT Drop Contract (ERC721) for individual unique NFTs
   const contractAddress = (isTestnet
@@ -55,11 +55,11 @@ export function useWeb3() {
     address: contractAddress,
   });
 
-  // Edition contract (ERC1155) for collections with multiple quantities
-  const editionContract = getContract({
+  // Edition Drop contract (ERC1155) for collections with multiple quantities and claim conditions
+  const editionDropContract = getContract({
     client,
     chain: activeChain,
-    address: editionContractAddress,
+    address: editionDropContractAddress,
   });
 
   // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation with NFT Drop)
@@ -172,50 +172,36 @@ export function useWeb3() {
     return Promise.resolve();
   };
 
-  // 🎯 NEW EDITION MINT - User pays gas (ERC1155 Edition for collections with multiple quantities)
+  // 🎯 EDITION DROP CLAIM - User pays gas (ERC1155 Edition Drop for collections with claim conditions)
   const mintEditionWithMetadata = async (
     name: string,
     description: string,
     imageFile: File,
-    tokenId: string = "0", // Edition Token ID (0 for first edition)
-    quantity: number = 100, // Number of copies to mint
+    tokenId: string = "0", // Edition Drop Token ID (0 for first edition)
+    quantity: number = 1, // Number of copies to claim
     attributes: any[] = []
   ) => {
     if (!account?.address) throw new Error('No wallet connected');
 
-    if (!IPFSService.isConfigured()) {
-      throw new Error('IPFS not configured. Please add Pinata credentials.');
-    }
-
     try {
-      console.log(`🎯 Edition Mint: ${quantity} copies of token ${tokenId}`);
+      console.log(`🎯 Edition Drop Claim: ${quantity} copies of token ${tokenId}`);
       console.log('📦 Name:', name);
       console.log('📝 Description:', description);
       console.log('🎯 Recipient:', account.address);
       console.log('💳 User pays gas');
 
-      // 1. Upload image and metadata to IPFS (same as legacy)
-      const ipfsResult = await IPFSService.uploadComplete(
-        imageFile,
-        name,
-        description,
-        'Edition Mint',
-        'user-paid',
-        'edition',
-        tokenId
-      );
+      // For Edition Drop, we don't need to upload metadata - it's already lazy minted
+      // We just claim existing tokens
 
-      console.log('✅ IPFS upload completed:', ipfsResult.imageUrl);
-
-      // 2. Prepare mint transaction for Edition (ERC1155) - using mintTo
-      const transaction = mintTo({
-        contract: editionContract,
+      // Prepare claim transaction for Edition Drop (ERC1155) - using claimTo
+      const transaction = claimToERC1155({
+        contract: editionDropContract,
         to: account.address,
-        supply: BigInt(quantity),
-        nft: ipfsResult.metadataUrl, // Use metadata URL from IPFS
+        tokenId: BigInt(tokenId),
+        quantity: BigInt(quantity),
       });
 
-      console.log('✅ Transaction prepared for Edition mint');
+      console.log('✅ Transaction prepared for Edition Drop claim');
 
       // 3. Send transaction (user pays gas)
       console.log('📤 Sending transaction...');
@@ -224,7 +210,7 @@ export function useWeb3() {
         account,
       });
 
-      console.log('✅ EDITION MINT successful:', result);
+      console.log('✅ EDITION DROP CLAIM successful:', result);
 
       return {
         success: true,
@@ -234,16 +220,16 @@ export function useWeb3() {
         metadata: {
           name,
           description,
-          image: ipfsResult.imageUrl,
-          imageHttp: ipfsResult.imageUrl,
+          image: 'https://example.com/placeholder.png', // Metadata is already on-chain
+          imageHttp: 'https://example.com/placeholder.png',
           attributes,
-          metadataUrl: ipfsResult.metadataUrl,
+          metadataUrl: '', // Already lazy minted
           created_at: new Date().toISOString(),
         }
       };
 
     } catch (error: any) {
-      console.error('❌ Edition mint failed:', error);
+      console.error('❌ Edition Drop claim failed:', error);
       throw error;
     }
   };
@@ -258,7 +244,7 @@ export function useWeb3() {
     uploadToIPFS,
     createNFTMetadata,
     mintNFTWithMetadata, // Legacy mint (NFT Collection ERC721)
-    mintEditionWithMetadata, // New Edition mint (ERC1155)
+    mintEditionWithMetadata, // Edition Drop claim (ERC1155)
     setClaimConditions,
     setTokenURI,
     lazyMint,
@@ -267,6 +253,6 @@ export function useWeb3() {
 
     // Contracts
     contract, // Legacy NFT Collection contract
-    editionContract, // Edition Drop contract
+    editionDropContract, // Edition Drop contract
   };
 } 
