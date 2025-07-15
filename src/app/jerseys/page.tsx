@@ -396,6 +396,8 @@ export default function JerseyEditor() {
       return
     }
 
+    console.log('>>> [MINT GASLESS] Forcing re-deploy. Chain ID:', chainId); // Log para forçar re-deploy
+
     setIsMinting(true)
     setMintError(null)
     setMintSuccess(null)
