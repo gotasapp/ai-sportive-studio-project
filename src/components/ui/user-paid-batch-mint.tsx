@@ -81,12 +81,14 @@ export function UserPaidBatchMint({
         { trait_type: 'Timestamp', value: new Date().toISOString() }
       ]
 
-      // Create a simple image file (placeholder since we don't have the actual generated image)
-      // In a real implementation, you'd get the actual generated image blob
-      const placeholderImageBlob = new Blob(['placeholder'], { type: 'image/png' })
+      // Create a minimal valid PNG image (1x1 transparent pixel)
+      const pngBytes = new Uint8Array([
+        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 55, 110, 249, 36, 0, 0, 0, 10, 73, 68, 65, 84, 120, 156, 99, 96, 0, 0, 0, 2, 0, 1, 229, 39, 222, 218, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130
+      ]);
+      const placeholderImageBlob = new Blob([pngBytes], { type: 'image/png' })
       const imageFile = new File([placeholderImageBlob], `${nftName_unique}.png`, { type: 'image/png' })
 
-      // Mint the Edition using Edition Drop contract
+      // Mint the Edition using Edition contract (ERC1155)
       const result = await mintEditionWithMetadata(
         nftName_unique,
         nftDescription,
@@ -255,7 +257,7 @@ export function UserPaidBatchMint({
            <div className="text-xs text-white/60 space-y-1">
              <p>• User pays gas fees directly (no backend wallet)</p>
              <p>• Network: Polygon Amoy Testnet</p>
-             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}... (Edition Drop)</p>
+             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}... (Edition ERC1155)</p>
              <p className="text-orange-400">• Note: This mints {quantity} copies of the same edition</p>
            </div>
         </div>

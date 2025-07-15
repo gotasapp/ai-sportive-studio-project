@@ -32,7 +32,7 @@ export function useWeb3() {
     ? amoy 
     : (usePolygon ? defineChain(137) : chzMainnet);
     
-  // Edition Drop Contract (ERC1155) for collections with multiple quantities
+  // Edition Contract (ERC1155) for collections with multiple quantities
   const editionContractAddress = (isTestnet
     ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET
     : (usePolygon 
@@ -55,7 +55,7 @@ export function useWeb3() {
     address: contractAddress,
   });
 
-  // Edition Drop contract (ERC1155) for collections with multiple quantities
+  // Edition contract (ERC1155) for collections with multiple quantities
   const editionContract = getContract({
     client,
     chain: activeChain,
@@ -172,7 +172,7 @@ export function useWeb3() {
     return Promise.resolve();
   };
 
-  // 🎯 NEW EDITION DROP MINT - User pays gas (ERC1155 for collections with multiple quantities)
+  // 🎯 NEW EDITION MINT - User pays gas (ERC1155 Edition for collections with multiple quantities)
   const mintEditionWithMetadata = async (
     name: string,
     description: string,
@@ -183,68 +183,68 @@ export function useWeb3() {
   ) => {
     if (!account?.address) throw new Error('No wallet connected');
 
+    if (!IPFSService.isConfigured()) {
+      throw new Error('IPFS not configured. Please add Pinata credentials.');
+    }
+
     try {
-      console.log(`🎯 Edition Drop Mint: ${quantity} copies of token ${tokenId}`);
+      console.log(`🎯 Edition Mint: ${quantity} copies of token ${tokenId}`);
+      console.log('📦 Name:', name);
+      console.log('📝 Description:', description);
+      console.log('🎯 Recipient:', account.address);
+      console.log('💳 User pays gas');
 
-      // 1. Upload image to IPFS
-      const imageUploadResult = await IPFSService.uploadImage(imageFile, imageFile.name);
-      if (!imageUploadResult.success || !imageUploadResult.ipfsHash) {
-        throw new Error(`Image upload failed: ${imageUploadResult.error}`);
-      }
-
-      // 2. Create metadata
-      const metadata = {
+      // 1. Upload image and metadata to IPFS (same as legacy)
+      const ipfsResult = await IPFSService.uploadComplete(
+        imageFile,
         name,
         description,
-        image: `ipfs://${imageUploadResult.ipfsHash}`,
-        attributes: attributes || [],
-        collection: "CHZ Fan Token Studio",
-        created_at: new Date().toISOString(),
-      };
+        'Edition Mint',
+        'user-paid',
+        'edition',
+        tokenId
+      );
 
-      // 3. Upload metadata to IPFS
-      const metadataUploadResult = await IPFSService.uploadMetadata(metadata, `${name}_metadata.json`);
-      if (!metadataUploadResult.success || !metadataUploadResult.ipfsHash) {
-        throw new Error(`Metadata upload failed: ${metadataUploadResult.error}`);
-      }
+      console.log('✅ IPFS upload completed:', ipfsResult.imageUrl);
 
-      console.log(`✅ Metadata uploaded to IPFS: ${metadataUploadResult.ipfsHash}`);
-
-      // 4. Claim/mint from Edition Drop (ERC1155)
-      const transaction = claimToERC1155({
+      // 2. Prepare mint transaction for Edition (ERC1155) - using mintTo
+      const transaction = mintTo({
         contract: editionContract,
         to: account.address,
-        tokenId: BigInt(tokenId),
-        quantity: BigInt(quantity),
+        supply: BigInt(quantity),
+        nft: ipfsResult.metadataUrl, // Use metadata URL from IPFS
       });
 
-      console.log(`🔄 Claiming ${quantity} copies of edition ${tokenId}...`);
-      const receipt = await sendTransaction({ 
-        transaction, 
-        account 
+      console.log('✅ Transaction prepared for Edition mint');
+
+      // 3. Send transaction (user pays gas)
+      console.log('📤 Sending transaction...');
+      const result = await sendTransaction({
+        transaction,
+        account,
       });
 
-      console.log(`✅ Edition minted successfully!`, receipt);
+      console.log('✅ EDITION MINT successful:', result);
 
       return {
         success: true,
-        transactionHash: receipt.transactionHash,
+        transactionHash: result.transactionHash,
         tokenId: tokenId,
         quantity: quantity,
         metadata: {
           name,
           description,
-          image: `ipfs://${imageUploadResult.ipfsHash}`,
-          imageHttp: `https://ipfs.io/ipfs/${imageUploadResult.ipfsHash}`,
+          image: ipfsResult.imageUrl,
+          imageHttp: ipfsResult.imageUrl,
           attributes,
-          ipfsHash: metadataUploadResult.ipfsHash,
+          metadataUrl: ipfsResult.metadataUrl,
           created_at: new Date().toISOString(),
         }
       };
 
     } catch (error: any) {
       console.error('❌ Edition mint failed:', error);
-      throw new Error(`Edition mint failed: ${error.message}`);
+      throw error;
     }
   };
 
