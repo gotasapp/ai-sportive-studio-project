@@ -405,7 +405,8 @@ export default function ContentGenerator() {
       
       const result = await mintGasless({
         to: address,
-        metadataUri: ipfsResult.metadataUrl
+        metadataUri: ipfsResult.metadataUrl,
+        chainId: chainId || 80002, // Adicionando chainId com fallback
       })
       
       if (result.success) {
