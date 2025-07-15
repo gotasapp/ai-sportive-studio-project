@@ -3,7 +3,7 @@
 import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { mintTo } from 'thirdweb/extensions/erc721';
+import { mintTo, claimTo } from 'thirdweb/extensions/erc721';
 import { claimTo as claimToERC1155 } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
@@ -98,11 +98,11 @@ export function useWeb3() {
 
       console.log('✅ IPFS upload completed:', ipfsResult.imageUrl);
 
-      // 2. Prepare mint transaction
-      const transaction = mintTo({
+      // 2. Prepare claim transaction (user pays gas, but uses claim conditions)
+      const transaction = claimTo({
         contract,
         to: address!,
-        nft: ipfsResult.metadataUrl, // Use metadata URL from IPFS
+        quantity: BigInt(quantity),
       });
 
       console.log('✅ Transaction prepared with metadata URL:', ipfsResult.metadataUrl);
