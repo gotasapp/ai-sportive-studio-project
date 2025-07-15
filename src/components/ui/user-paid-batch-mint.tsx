@@ -88,7 +88,7 @@ export function UserPaidBatchMint({
       const placeholderImageBlob = new Blob([pngBytes], { type: 'image/png' })
       const imageFile = new File([placeholderImageBlob], `${nftName_unique}.png`, { type: 'image/png' })
 
-      // Mint the Edition using Edition contract (ERC1155)
+      // Mint using Edition contract (ERC1155) - Direct mint, no claim conditions needed
       const result = await mintEditionWithMetadata(
         nftName_unique,
         nftDescription,
