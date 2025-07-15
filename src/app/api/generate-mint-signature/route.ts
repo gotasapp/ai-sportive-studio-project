@@ -57,8 +57,8 @@ export async function POST(request: NextRequest) {
         primarySaleRecipient: to, // User gets primary sale
         price: "0", // Free mint
         currency: "0x0000000000000000000000000000000000000000", // Native token
-        validityStartTimestamp: Math.floor(Date.now() / 1000),
-        validityEndTimestamp: Math.floor(Date.now() / 1000) + 3600, // Valid for 1 hour
+        validityStartTimestamp: new Date(),
+        validityEndTimestamp: new Date(Date.now() + 3600 * 1000), // Valid for 1 hour
         uid: `uid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`, // Unique ID
       }
     };
