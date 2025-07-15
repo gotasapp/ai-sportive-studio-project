@@ -1,40 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET() {
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://jersey-api-dalle3.onrender.com';
-  
-  try {
-    // Teste de health check da API Python
-    const healthResponse = await fetch(`${API_BASE_URL}/health`, {
-      method: 'GET'
-    });
-    
-    const healthData = healthResponse.ok ? await healthResponse.json() : null;
-    
-    return NextResponse.json({
-      success: true,
-      config: {
-        API_BASE_URL,
-        environment: process.env.NODE_ENV,
-        hasApiUrl: !!process.env.NEXT_PUBLIC_API_URL,
-        apiStatus: healthResponse.ok ? 'online' : 'offline',
-        apiStatusCode: healthResponse.status
-      },
-      health: healthData,
-      timestamp: new Date().toISOString()
-    });
-    
-  } catch (error: any) {
-    return NextResponse.json({
-      success: false,
-      config: {
-        API_BASE_URL,
-        environment: process.env.NODE_ENV,
-        hasApiUrl: !!process.env.NEXT_PUBLIC_API_URL,
-        apiStatus: 'connection_error'
-      },
-      error: error.message,
-      timestamp: new Date().toISOString()
-    });
-  }
+  return NextResponse.json({
+    message: 'Debug config endpoint',
+    timestamp: new Date().toISOString(),
+    env: {
+      NODE_ENV: process.env.NODE_ENV,
+      VERCEL_ENV: process.env.VERCEL_ENV,
+    }
+  });
 } 
