@@ -3,7 +3,7 @@
 import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { mintTo, claimTo } from 'thirdweb/extensions/erc721';
+import { mintTo } from 'thirdweb/extensions/erc721';
 import { claimTo as claimToERC1155 } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
@@ -32,6 +32,12 @@ export function useWeb3() {
     ? amoy 
     : (usePolygon ? defineChain(137) : chzMainnet);
     
+  console.log('[DEBUG] useWeb3 Hook:', {
+    isTestnet,
+    usePolygon,
+    activeChainId: activeChain.id,
+  });
+
   // Edition Drop Contract (ERC1155) for collections with multiple quantities and claim conditions
   const editionDropContractAddress = (isTestnet
     ? process.env.NEXT_PUBLIC_EDITION_DROP_AMOY_TESTNET
@@ -48,6 +54,11 @@ export function useWeb3() {
         : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
       )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
+  console.log('[DEBUG] useWeb3 Contracts:', {
+    legacyContractAddress: contractAddress,
+    editionDropContractAddress: editionDropContractAddress,
+  });
+
   // NFT Collection contract (ERC721) for unique individual NFTs
   const contract = getContract({
     client,
@@ -78,7 +89,7 @@ export function useWeb3() {
       throw new Error('IPFS not configured. Please add Pinata credentials.');
     }
 
-    console.log('🎯 LEGACY MINT: Starting user-paid claim process...');
+    console.log('🎯 LEGACY MINT: Starting user-paid mint process...');
     console.log('📦 Name:', name);
     console.log('📝 Description:', description);
     console.log('🎯 Recipient:', address);
@@ -98,11 +109,11 @@ export function useWeb3() {
 
       console.log('✅ IPFS upload completed:', ipfsResult.imageUrl);
 
-      // 2. Prepare claim transaction (user pays gas, but uses claim conditions)
-      const transaction = claimTo({
+      // 2. Prepare mint transaction
+      const transaction = mintTo({
         contract,
         to: address!,
-        quantity: BigInt(quantity),
+        nft: ipfsResult.metadataUrl, // Use metadata URL from IPFS
       });
 
       console.log('✅ Transaction prepared with metadata URL:', ipfsResult.metadataUrl);
