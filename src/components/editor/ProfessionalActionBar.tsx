@@ -221,7 +221,7 @@ export default function ProfessionalActionBar({
           }
           nftName={nftName}
           metadataUri={metadataUri || ''}
-          collection={collection}
+          collection={collection || 'jerseys'}
           disabled={!isConnected || isMinting}
         />
       )}
