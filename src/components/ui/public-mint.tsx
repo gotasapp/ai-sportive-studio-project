@@ -56,6 +56,10 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       const metadataUri = await IPFSService.uploadMetadata({
         ...metadata,
         image: imageUrl,
+        attributes: metadata.attributes || [
+          { trait_type: 'Generator', value: 'AI Sports NFT' },
+          { trait_type: 'Type', value: 'Public Mint' }
+        ],
       });
       console.log('✅ Metadata uploaded:', metadataUri);
 
