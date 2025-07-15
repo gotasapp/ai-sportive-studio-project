@@ -55,9 +55,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Usar Engine API diretamente
-    console.log('🚀 Calling Engine API:', `${ENGINE_URL}/80002/${CONTRACT_ADDRESS}/erc721/mint-to`);
+    console.log('🚀 Calling Engine API:', `${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/erc721/mint-to`);
     
-    const engineResponse = await fetch(`${ENGINE_URL}/80002/${CONTRACT_ADDRESS}/erc721/mint-to`, {
+    const engineResponse = await fetch(`${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/erc721/mint-to`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
