@@ -61,15 +61,16 @@ export default function SimpleActionBar({
       {/* Mint Button - Only show when image is generated */}
       {isConnected && generatedImageBlob && nftName && (
         <PublicMint
-          name={nftName}
-          description={nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`}
           imageBlob={generatedImageBlob}
-          attributes={nftAttributes || [
-            { trait_type: 'Generator', value: 'AI Sports NFT' },
-            { trait_type: 'Collection', value: collection || 'General' },
-            { trait_type: 'Type', value: 'Public Mint' }
-          ]}
-          disabled={isMinting}
+          metadata={{
+            name: nftName,
+            description: nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`,
+            attributes: nftAttributes || [
+              { trait_type: 'Generator', value: 'AI Sports NFT' },
+              { trait_type: 'Collection', value: collection || 'General' },
+              { trait_type: 'Type', value: 'Public Mint' }
+            ]
+          }}
         />
       )}
     </div>
