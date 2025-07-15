@@ -51,6 +51,7 @@ export async function POST(request: NextRequest) {
       metadata,
       mintRequest: {
         to,
+        metadata, // Add metadata to mintRequest
         royaltyRecipient: to, // User gets royalties
         royaltyBps: 0, // 0% royalty for now
         primarySaleRecipient: to, // User gets primary sale
