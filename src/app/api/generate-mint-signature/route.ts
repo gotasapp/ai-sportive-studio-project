@@ -15,6 +15,12 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🎯 Generate Mint Signature API called');
 
+    // Debug environment variables
+    console.log('🔍 Environment check:');
+    console.log('- THIRDWEB_SECRET_KEY:', process.env.THIRDWEB_SECRET_KEY ? 'SET' : 'NOT SET');
+    console.log('- ADMIN_WALLET_ADDRESS:', process.env.ADMIN_WALLET_ADDRESS ? 'SET' : 'NOT SET');
+    console.log('- VAULT_ACCESS_TOKEN:', process.env.VAULT_ACCESS_TOKEN ? 'SET' : 'NOT SET');
+
     // Validate environment variables
     if (!process.env.THIRDWEB_SECRET_KEY) {
       console.error('❌ THIRDWEB_SECRET_KEY not configured');
@@ -76,16 +82,34 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔐 Generating signature with admin wallet:', adminWalletAddress);
+    console.log('🔍 Signature payload:', JSON.stringify(signaturePayload, null, 2));
 
-    const { payload, signature } = await generateMintSignature({
-      contract,
-      account: {
-        address: adminWalletAddress,
-      } as any,
-      ...signaturePayload
-    });
+    let payload, signature;
+    
+    try {
+      const result = await generateMintSignature({
+        contract,
+        account: {
+          address: adminWalletAddress,
+        } as any,
+        ...signaturePayload
+      });
 
-    console.log('✅ Signature generated successfully');
+      payload = result.payload;
+      signature = result.signature;
+
+      console.log('✅ Signature generated successfully');
+      console.log('📦 Payload preview:', JSON.stringify(payload, null, 2).substring(0, 200) + '...');
+      console.log('✍️ Signature preview:', signature.substring(0, 20) + '...');
+    } catch (signatureError: any) {
+      console.error('❌ Error generating signature:', signatureError);
+      console.error('❌ Error message:', signatureError.message);
+      console.error('❌ Error stack:', signatureError.stack);
+      return NextResponse.json(
+        { error: `Signature generation failed: ${signatureError.message}` },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
