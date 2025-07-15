@@ -12,7 +12,7 @@ interface MintApiRequest {
 const amoy = defineChain(80002);
 
 // Engine Configuration
-const ENGINE_URL = process.env.ENGINE_URL || 'http://localhost:3005';
+const ENGINE_URL = process.env.ENGINE_URL || process.env.NEXT_PUBLIC_ENGINE_URL || 'http://localhost:3005';
 const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
