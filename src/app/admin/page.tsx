@@ -27,6 +27,7 @@ import { MetricsGrid, ProgressMetric, ComparisonMetric } from '@/components/admi
 import { AdminEnhancedCard, GlassMetricsCard } from '@/components/admin/AdminEnhancedCard'
 import { AdminDashboardLoadingSkeleton, useLoadingState } from '@/components/admin/AdminLoadingStates'
 import AdminChart from '@/components/admin/AdminChart'
+import { ContractRoleChecker } from '@/components/debug/ContractRoleChecker'
 
 // Tipos para os dados da API
 interface OverviewData {
@@ -511,6 +512,11 @@ export default function AdminDashboard() {
             </div>
           </AdminEnhancedCard>
         )}
+
+        {/* Contract Role Checker */}
+        <div className="col-span-1 md:col-span-2 lg:col-span-3">
+          <ContractRoleChecker />
+        </div>
 
       </div>
     </div>
