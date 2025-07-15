@@ -8,7 +8,13 @@ import {
 } from "thirdweb/react"
 import { getContract, prepareContractCall } from "thirdweb"
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { 
   Loader2, 
@@ -16,7 +22,8 @@ import {
   AlertCircle, 
   ExternalLink,
   Wallet,
-  Zap
+  Zap,
+  Hash
 } from 'lucide-react'
 import { client } from '@/lib/client'
 import { polygonAmoy } from "thirdweb/chains"
@@ -49,6 +56,8 @@ export function PublicMint({
   const [error, setError] = useState<string | null>(null)
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [ipfsUrl, setIpfsUrl] = useState<string | null>(null)
+  const [quantity, setQuantity] = useState<number>(1)
+  const [open, setOpen] = useState(false)
 
   const { mutate: sendTransaction } = useSendTransaction()
 
@@ -59,31 +68,40 @@ export function PublicMint({
     setIpfsUrl(null)
   }
 
+  const getExplorerUrl = (hash: string) => {
+    return `https://amoy.polygonscan.com/tx/${hash}`
+  }
+
   const handleMint = async () => {
-    if (!account || !wallet) {
-      setError('Conecte sua carteira primeiro')
+    if (!account) {
+      setError('Conecte sua wallet primeiro')
       return
     }
 
+    if (!imageBlob) {
+      setError('Imagem não encontrada')
+      return
+    }
+
+    setStatus('uploading')
+    setError(null)
+
     try {
-      resetState()
-      setStatus('uploading')
-
-      // 1. Upload da imagem para IPFS
+      // 1. Upload image to IPFS
       console.log('📤 Uploading image to IPFS...')
-      const formData = new FormData()
-      formData.append('file', imageBlob, 'nft-image.png')
+      const imageFormData = new FormData()
+      imageFormData.append('file', new File([imageBlob], `${name}.png`, { type: 'image/png' }))
 
-      const uploadResponse = await fetch('/api/ipfs-upload', {
+      const imageResponse = await fetch('/api/ipfs-upload', {
         method: 'POST',
-        body: formData
+        body: imageFormData
       })
 
-      if (!uploadResponse.ok) {
+      if (!imageResponse.ok) {
         throw new Error('Falha no upload da imagem')
       }
 
-      const { ipfsUrl: imageUrl } = await uploadResponse.json()
+      const { ipfsUrl: imageUrl } = await imageResponse.json()
       setIpfsUrl(imageUrl)
       console.log('✅ Image uploaded:', imageUrl)
 
@@ -126,7 +144,8 @@ export function PublicMint({
         },
         body: JSON.stringify({
           to: account.address,
-          metadata: metadataUri
+          metadata: metadataUri,
+          quantity: quantity
         })
       })
 
@@ -182,150 +201,111 @@ export function PublicMint({
     }
   }
 
-  const getExplorerUrl = (hash: string) => {
-    return `https://amoy.polygonscan.com/tx/${hash}`
-  }
-
-  const getStatusInfo = () => {
-    switch (status) {
-      case 'uploading':
-        return {
-          icon: <Loader2 className="h-4 w-4 animate-spin" />,
-          text: 'Fazendo upload para IPFS...',
-          color: 'bg-blue-500'
-        }
-      case 'minting':
-        return {
-          icon: <Loader2 className="h-4 w-4 animate-spin" />,
-          text: 'Mintando NFT...',
-          color: 'bg-purple-500'
-        }
-      case 'success':
-        return {
-          icon: <CheckCircle className="h-4 w-4" />,
-          text: 'NFT mintado com sucesso!',
-          color: 'bg-green-500'
-        }
-      case 'error':
-        return {
-          icon: <AlertCircle className="h-4 w-4" />,
-          text: 'Erro no mint',
-          color: 'bg-red-500'
-        }
-      default:
-        return {
-          icon: <Zap className="h-4 w-4" />,
-          text: 'Mint Público',
-          color: 'bg-[#A20131]'
-        }
-    }
-  }
-
-  const statusInfo = getStatusInfo()
   const isLoading = status === 'uploading' || status === 'signing' || status === 'minting'
   const isDisabled = disabled || isLoading || !account
 
   return (
-    <Card className="cyber-card">
-      <CardContent className="p-6 space-y-4">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-white">Mint Público</h3>
-          <Badge variant="outline" className="cyber-border">
-            Usuário paga Gas
-          </Badge>
-        </div>
-
-        {/* Status */}
-        <div className="flex items-center space-x-2">
-          <div className={`p-2 rounded-lg ${statusInfo.color}`}>
-            {statusInfo.icon}
-          </div>
-          <span className="text-sm text-gray-300">{statusInfo.text}</span>
-        </div>
-
-        {/* NFT Info */}
-        <div className="space-y-2 p-3 bg-black/20 rounded-lg cyber-border">
-          <p className="text-sm text-gray-400">Nome: <span className="text-white">{name}</span></p>
-          <p className="text-sm text-gray-400">Rede: <span className="text-white">Polygon Amoy</span></p>
-          <p className="text-sm text-gray-400">Contrato: <span className="text-white">NFT Collection</span></p>
-        </div>
-
-        {/* Connection Status */}
-        {!account ? (
-          <div className="flex items-center space-x-2 text-yellow-400">
-            <Wallet className="h-4 w-4" />
-            <span className="text-sm">Conecte sua carteira para mintar</span>
-          </div>
-        ) : (
-          <div className="flex items-center space-x-2 text-green-400">
-            <CheckCircle className="h-4 w-4" />
-            <span className="text-sm">Carteira conectada</span>
-          </div>
-        )}
-
-        {/* Error Display */}
-        {error && (
-          <div className="p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
-            <div className="flex items-center space-x-2 text-red-400">
-              <AlertCircle className="h-4 w-4" />
-              <span className="text-sm font-medium">Erro:</span>
-            </div>
-            <p className="text-sm text-red-300 mt-1">{error}</p>
-          </div>
-        )}
-
-        {/* Success Display */}
-        {status === 'success' && transactionHash && (
-          <div className="p-3 bg-green-900/20 border border-green-500/20 rounded-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2 text-green-400">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">Sucesso!</span>
-              </div>
-              <a
-                href={getExplorerUrl(transactionHash)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs"
-              >
-                <span>Ver no Explorer</span>
-                <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-            <p className="text-sm text-green-300 mt-1">
-              NFT mintado com sucesso na blockchain!
-            </p>
-          </div>
-        )}
-
-        {/* Action Button */}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button
-          onClick={handleMint}
           disabled={isDisabled}
-          className="w-full cyber-button"
-          size="lg"
+          variant="outline"
+          className="h-10 px-4 text-sm font-medium transition-all duration-200 bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
-            <div className="flex items-center space-x-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>
-                {status === 'uploading' ? 'Fazendo Upload...' : status === 'signing' ? 'Obtendo Assinatura...' : 'Mintando...'}
-              </span>
-            </div>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Zap className="h-3 w-3" />
-              <span>Mint NFT</span>
+          <div className="flex items-center gap-2">
+            <Hash className="w-4 h-4" />
+            <span>Mint Batch</span>
+          </div>
+        </Button>
+      </DialogTrigger>
+      
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Mint NFT Batch</DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-4">
+          {/* NFT Info */}
+          <div className="p-3 bg-gray-900/20 border border-gray-700/20 rounded-lg">
+            <h3 className="text-sm font-medium text-white">{name}</h3>
+            <p className="text-xs text-gray-400 mt-1">{description}</p>
+          </div>
+
+          {/* Quantity Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-white">Quantidade:</label>
+            <input
+              type="number"
+              min="1"
+              max="20"
+              value={quantity}
+              onChange={(e) => setQuantity(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+              className="w-full p-2 bg-gray-900/50 border border-gray-700/30 rounded-md text-white"
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Status Messages */}
+          {error && (
+            <div className="p-3 bg-red-900/20 border border-red-500/20 rounded-lg">
+              <div className="flex items-center space-x-2 text-red-400">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Erro</span>
+              </div>
+              <p className="text-sm text-red-300 mt-1">{error}</p>
             </div>
           )}
-        </Button>
 
-        {/* Info */}
-        <p className="text-xs text-gray-500 text-center">
-          Mint público: você paga o gas, nft vai para sua carteira
-        </p>
-      </CardContent>
-    </Card>
+          {status === 'success' && transactionHash && (
+            <div className="p-3 bg-green-900/20 border border-green-500/20 rounded-lg">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2 text-green-400">
+                  <CheckCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">Sucesso!</span>
+                </div>
+                <a
+                  href={getExplorerUrl(transactionHash)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-1 text-blue-400 hover:text-blue-300 text-xs"
+                >
+                  <span>Ver no Explorer</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+              <p className="text-sm text-green-300 mt-1">
+                {quantity} NFT{quantity > 1 ? 's' : ''} mintado{quantity > 1 ? 's' : ''} com sucesso!
+              </p>
+            </div>
+          )}
+
+          {/* Action Button */}
+          <Button
+            onClick={handleMint}
+            disabled={isDisabled}
+            className="w-full h-12 bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+          >
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>
+                  {status === 'uploading' ? 'Fazendo Upload...' : status === 'signing' ? 'Obtendo Assinatura...' : 'Mintando...'}
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Zap className="h-4 w-4" />
+                <span>Mint {quantity} NFT{quantity > 1 ? 's' : ''}</span>
+              </div>
+            )}
+          </Button>
+
+          {/* Info */}
+          <p className="text-xs text-gray-500 text-center">
+            Mint público: você paga a gas, nft vai para sua carteira
+          </p>
+        </div>
+      </DialogContent>
+    </Dialog>
   )
 } 

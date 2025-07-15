@@ -64,10 +64,23 @@ export async function POST(request: NextRequest) {
       }
     };
 
+    // Use admin wallet address for signing
+    const adminWalletAddress = process.env.ADMIN_WALLET_ADDRESS;
+    
+    if (!adminWalletAddress) {
+      console.error('❌ ADMIN_WALLET_ADDRESS not configured');
+      return NextResponse.json(
+        { error: 'Admin wallet not configured' },
+        { status: 500 }
+      );
+    }
+
+    console.log('🔐 Generating signature with admin wallet:', adminWalletAddress);
+
     const { payload, signature } = await generateMintSignature({
       contract,
       account: {
-        address: process.env.BACKEND_WALLET_ADDRESS || process.env.ADMIN_WALLET_ADDRESS!,
+        address: adminWalletAddress,
       } as any,
       ...signaturePayload
     });
