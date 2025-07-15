@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { to, metadata } = body;
+    const { to, metadata, quantity = 1 } = body;
 
     if (!to || !metadata) {
       return NextResponse.json(
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         to,
         metadata, // Add metadata to mintRequest
         royaltyRecipient: to, // User gets royalties
+        quantity: quantity.toString(), // Use provided quantity
         royaltyBps: 0, // 0% royalty for now
         primarySaleRecipient: to, // User gets primary sale
         price: "0", // Free mint

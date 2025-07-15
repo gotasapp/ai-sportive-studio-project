@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check, Eye, FileImage, X } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
+import { getContract, prepareContractCall, createThirdwebClient, sendTransaction } from 'thirdweb'
+import { polygonAmoy } from 'thirdweb/chains'
 import { useRouter } from 'next/navigation'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
