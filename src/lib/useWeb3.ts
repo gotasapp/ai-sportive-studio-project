@@ -4,6 +4,7 @@ import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/reac
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { claimTo } from 'thirdweb/extensions/erc721';
+import { claim } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -31,6 +32,15 @@ export function useWeb3() {
     ? amoy 
     : (usePolygon ? defineChain(137) : chzMainnet);
     
+  // Edition Drop Contract (ERC1155) for collections with multiple quantities
+  const editionContractAddress = (isTestnet
+    ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET
+    : (usePolygon 
+        ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON
+        : process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_CHZ
+      )) || "0xdFE746c26D3a7d222E89469C8dcb033fbBc75236";
+
+  // Legacy NFT Drop Contract (ERC721) for individual unique NFTs
   const contractAddress = (isTestnet
     ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET
     : (usePolygon 
@@ -38,10 +48,18 @@ export function useWeb3() {
         : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
       )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
+  // NFT Collection contract (ERC721) for unique individual NFTs
   const contract = getContract({
     client,
     chain: activeChain,
     address: contractAddress,
+  });
+
+  // Edition Drop contract (ERC1155) for collections with multiple quantities
+  const editionContract = getContract({
+    client,
+    chain: activeChain,
+    address: editionContractAddress,
   });
 
   // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation with NFT Drop)
@@ -154,7 +172,81 @@ export function useWeb3() {
     return Promise.resolve();
   };
 
+  // 🎯 NEW EDITION DROP MINT - User pays gas (ERC1155 for collections with multiple quantities)
+  const mintEditionWithMetadata = async (
+    name: string,
+    description: string,
+    imageFile: File,
+    tokenId: string = "0", // Edition Token ID (0 for first edition)
+    quantity: number = 100, // Number of copies to mint
+    attributes: any[] = []
+  ) => {
+    if (!account?.address) throw new Error('No wallet connected');
 
+    try {
+      console.log(`🎯 Edition Drop Mint: ${quantity} copies of token ${tokenId}`);
+
+      // 1. Upload image to IPFS
+      const imageUploadResult = await IPFSService.uploadImage(imageFile, imageFile.name);
+      if (!imageUploadResult.success || !imageUploadResult.ipfsHash) {
+        throw new Error(`Image upload failed: ${imageUploadResult.error}`);
+      }
+
+      // 2. Create metadata
+      const metadata = {
+        name,
+        description,
+        image: `ipfs://${imageUploadResult.ipfsHash}`,
+        attributes: attributes || [],
+        collection: "CHZ Fan Token Studio",
+        created_at: new Date().toISOString(),
+      };
+
+      // 3. Upload metadata to IPFS
+      const metadataUploadResult = await IPFSService.uploadMetadata(metadata, `${name}_metadata.json`);
+      if (!metadataUploadResult.success || !metadataUploadResult.ipfsHash) {
+        throw new Error(`Metadata upload failed: ${metadataUploadResult.error}`);
+      }
+
+      console.log(`✅ Metadata uploaded to IPFS: ${metadataUploadResult.ipfsHash}`);
+
+      // 4. Claim/mint from Edition Drop (ERC1155)
+      const transaction = claim({
+        contract: editionContract,
+        to: account.address,
+        tokenId: BigInt(tokenId),
+        quantity: BigInt(quantity),
+      });
+
+      console.log(`🔄 Claiming ${quantity} copies of edition ${tokenId}...`);
+      const receipt = await sendTransaction({ 
+        transaction, 
+        account 
+      });
+
+      console.log(`✅ Edition minted successfully!`, receipt);
+
+      return {
+        success: true,
+        transactionHash: receipt.transactionHash,
+        tokenId: tokenId,
+        quantity: quantity,
+        metadata: {
+          name,
+          description,
+          image: `ipfs://${imageUploadResult.ipfsHash}`,
+          imageHttp: `https://ipfs.io/ipfs/${imageUploadResult.ipfsHash}`,
+          attributes,
+          ipfsHash: metadataUploadResult.ipfsHash,
+          created_at: new Date().toISOString(),
+        }
+      };
+
+    } catch (error: any) {
+      console.error('❌ Edition mint failed:', error);
+      throw new Error(`Edition mint failed: ${error.message}`);
+    }
+  };
 
   return {
     // Connection state
@@ -165,11 +257,16 @@ export function useWeb3() {
     // Functions
     uploadToIPFS,
     createNFTMetadata,
-    mintNFTWithMetadata,
+    mintNFTWithMetadata, // Legacy mint (NFT Collection ERC721)
+    mintEditionWithMetadata, // New Edition Drop mint (ERC1155)
     setClaimConditions,
     setTokenURI,
     lazyMint,
     getSDK,
     switchToChzChain,
+
+    // Contracts
+    contract, // Legacy NFT Collection contract
+    editionContract, // Edition Drop contract
   };
 } 

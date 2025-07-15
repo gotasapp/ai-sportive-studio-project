@@ -34,7 +34,7 @@ export function UserPaidBatchMint({
   
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
-  const { mintNFTWithMetadata } = useWeb3()
+  const { mintEditionWithMetadata } = useWeb3()
 
   const isConnected = !!account
   const isOnCorrectChain = chain?.id === 80002 // Polygon Amoy
@@ -86,13 +86,14 @@ export function UserPaidBatchMint({
       const placeholderImageBlob = new Blob(['placeholder'], { type: 'image/png' })
       const imageFile = new File([placeholderImageBlob], `${nftName_unique}.png`, { type: 'image/png' })
 
-      // Mint the NFT using the same method as other components
-      const result = await mintNFTWithMetadata(
+      // Mint the Edition using Edition Drop contract
+      const result = await mintEditionWithMetadata(
         nftName_unique,
         nftDescription,
         imageFile,
-        attributes,
-        1 // Only mint 1 NFT for now
+        "0", // Token ID (0 for first edition)
+        quantity, // Use the selected quantity
+        attributes
       )
 
       console.log('✅ User-paid mint successful:', result)
@@ -116,14 +117,14 @@ export function UserPaidBatchMint({
                  <DialogHeader>
            <DialogTitle className="text-white flex items-center gap-2">
              <Hash className="w-5 h-5 text-[#A20131]" />
-             User-Paid NFT Mint
+             Mint Collection (ERC1155)
            </DialogTitle>
          </DialogHeader>
 
         <div className="space-y-6">
-          {/* NFT Info */}
+          {/* Collection Info */}
           <div className="space-y-2">
-            <Label className="text-white/80">NFT to Mint</Label>
+            <Label className="text-white/80">Collection to Mint</Label>
             <div className="p-3 bg-white/5 rounded-lg border border-white/10">
               <p className="text-white font-medium">{nftName}</p>
               <p className="text-white/60 text-sm">{collection} Collection</p>
@@ -135,7 +136,7 @@ export function UserPaidBatchMint({
             <div className="flex items-center justify-between">
               <Label className="text-white/80">Quantity</Label>
               <Badge variant="outline" className="text-[#A20131] border-[#A20131]/30">
-                {quantity} NFTs
+                {quantity} Copies
               </Badge>
             </div>
             <Slider
@@ -184,7 +185,7 @@ export function UserPaidBatchMint({
                  <span className="text-sm font-medium">Mint Successful!</span>
                </div>
                <p className="text-green-300/80 text-xs mt-1">
-                 NFT minted successfully
+                 {quantity} copies minted successfully
                </p>
                <a
                  href={`https://amoy.polygonscan.com/tx/${txHash}`}
@@ -235,7 +236,7 @@ export function UserPaidBatchMint({
                  ) : isComplete ? (
                    'Mint Complete'
                  ) : (
-                   'Mint 1 NFT'
+                   `Mint ${quantity} Copies`
                  )}
                </Button>
              ) : (
@@ -254,8 +255,8 @@ export function UserPaidBatchMint({
            <div className="text-xs text-white/60 space-y-1">
              <p>• User pays gas fees directly (no backend wallet)</p>
              <p>• Network: Polygon Amoy Testnet</p>
-             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}...</p>
-             <p className="text-orange-400">• Note: This demo mints 1 NFT with placeholder image</p>
+             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}... (Edition Drop)</p>
+             <p className="text-orange-400">• Note: This mints {quantity} copies of the same edition</p>
            </div>
         </div>
       </DialogContent>
