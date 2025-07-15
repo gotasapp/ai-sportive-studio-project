@@ -423,6 +423,7 @@ export default function JerseyEditor() {
       const result = await mintGasless({
         to: address,
         metadataUri: ipfsResult.metadataUrl,
+        chainId: chainId || 80002, // Enviar o chainId ativo
       });
 
       console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);

@@ -6,6 +6,7 @@ import { mintTo } from 'thirdweb/extensions/erc721';
 interface MintApiRequest {
   to: string;
   metadataUri: string;
+  chainId: number;
 }
 
 // Define a chain Amoy usando seu ID
@@ -48,17 +49,17 @@ export async function POST(request: NextRequest) {
     const body: MintApiRequest = await request.json();
     console.log('📦 Engine Mint API: Request body:', body);
     
-    const { to, metadataUri } = body;
+    const { to, metadataUri, chainId } = body;
 
-    if (!to || !metadataUri) {
-      return NextResponse.json({ error: '"to" address and "metadataUri" are required.' }, { status: 400 });
+    if (!to || !metadataUri || !chainId) {
+      return NextResponse.json({ error: '"to" address, "metadataUri", and "chainId" are required.' }, { status: 400 });
     }
 
     // Usar Engine API diretamente para MINT (NFT Collection)
     const endpoint = 'erc721/mint-to';
-    console.log('🚀 Calling Engine API:', `${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/${endpoint}`);
+    console.log('🚀 Calling Engine API:', `${ENGINE_URL}/contract/${chainId}/${CONTRACT_ADDRESS}/${endpoint}`);
     
-    const engineResponse = await fetch(`${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/${endpoint}`, {
+    const engineResponse = await fetch(`${ENGINE_URL}/contract/${chainId}/${CONTRACT_ADDRESS}/${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
