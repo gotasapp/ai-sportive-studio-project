@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const blob = new Blob([await file.arrayBuffer()], { type: file.type });
 
     // Upload to IPFS
-    const result = await IPFSService.uploadFile(blob, file.name);
+    const result = await IPFSService.uploadImage(blob, file.name);
 
     console.log('✅ File uploaded to IPFS:', result);
 
