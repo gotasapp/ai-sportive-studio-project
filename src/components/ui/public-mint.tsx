@@ -222,7 +222,7 @@ export function PublicMint({
   }
 
   const statusInfo = getStatusInfo()
-  const isLoading = status === 'uploading' || status === 'minting'
+  const isLoading = status === 'uploading' || status === 'signing' || status === 'minting'
   const isDisabled = disabled || isLoading || !account
 
   return (
