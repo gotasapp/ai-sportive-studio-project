@@ -48,7 +48,8 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       setError('');
 
       console.log('📤 Uploading image to IPFS...');
-      const imageUrl = await IPFSService.uploadImage(imageBlob);
+      const filename = `${metadata.name.replace(/\s+/g, '_')}_${Date.now()}.png`;
+      const imageUrl = await IPFSService.uploadImage(imageBlob, filename);
       console.log('✅ Image uploaded:', imageUrl);
 
       console.log('📤 Uploading metadata to IPFS...');
