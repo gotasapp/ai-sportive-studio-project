@@ -3,7 +3,7 @@
 import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { mintTo } from 'thirdweb/extensions/erc721';
+import { claimTo } from 'thirdweb/extensions/erc721';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -44,7 +44,7 @@ export function useWeb3() {
     address: contractAddress,
   });
 
-  // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation)
+  // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation with NFT Drop)
   const mintNFTWithMetadata = async (
     name: string,
     description: string,
@@ -60,7 +60,7 @@ export function useWeb3() {
       throw new Error('IPFS not configured. Please add Pinata credentials.');
     }
 
-    console.log('🎯 LEGACY MINT: Starting user-paid mint process...');
+    console.log('🎯 LEGACY MINT: Starting user-paid claim process...');
     console.log('📦 Name:', name);
     console.log('📝 Description:', description);
     console.log('🎯 Recipient:', address);
@@ -80,14 +80,14 @@ export function useWeb3() {
 
       console.log('✅ IPFS upload completed:', ipfsResult.imageUrl);
 
-      // 2. Prepare mint transaction
-      const transaction = mintTo({
+      // 2. Prepare claim transaction for NFT Drop
+      const transaction = claimTo({
         contract,
         to: address!,
-        nft: ipfsResult.metadataUrl, // Use metadata URL from IPFS
+        quantity: BigInt(quantity),
       });
 
-      console.log('✅ Transaction prepared with metadata URL:', ipfsResult.metadataUrl);
+      console.log('✅ Transaction prepared for NFT Drop claim');
 
       // 3. Send transaction (user pays gas)
       console.log('📤 Sending transaction...');

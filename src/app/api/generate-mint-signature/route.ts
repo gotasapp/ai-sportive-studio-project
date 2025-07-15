@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { privateKeyToAccount } from 'thirdweb/wallets';
+import { generateMintSignature } from 'thirdweb/extensions/erc721';
 
 const client = createThirdwebClient({
   secretKey: process.env.THIRDWEB_SECRET_KEY!,
@@ -15,11 +16,6 @@ export async function POST(request: NextRequest) {
   try {
     console.log('🎯 Generate Mint Signature API called');
 
-    // Debug environment variables
-    console.log('🔍 Environment check:');
-    console.log('- THIRDWEB_SECRET_KEY:', process.env.THIRDWEB_SECRET_KEY ? 'SET' : 'NOT SET');
-    console.log('- ADMIN_WALLET_ADDRESS:', process.env.ADMIN_WALLET_ADDRESS ? 'SET' : 'NOT SET');
-
     // Validate environment variables
     if (!process.env.THIRDWEB_SECRET_KEY) {
       console.error('❌ THIRDWEB_SECRET_KEY not configured');
@@ -29,29 +25,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body
-    const body = await request.json();
-    const { to, metadata, quantity = 1 } = body;
-
-    if (!to || !metadata) {
-      return NextResponse.json(
-        { error: 'Missing required fields: to, metadata' },
-        { status: 400 }
-      );
-    }
-
-    console.log('📥 Request received:', { to, metadata: metadata.substring(0, 50) + '...', quantity });
-
-    // Use admin wallet address for signing
-    const adminWalletAddress = process.env.ADMIN_WALLET_ADDRESS;
-    
-    if (!adminWalletAddress) {
-      console.error('❌ ADMIN_WALLET_ADDRESS not configured');
+    if (!process.env.ADMIN_WALLET_PRIVATE_KEY) {
+      console.error('❌ ADMIN_WALLET_PRIVATE_KEY not configured');
       return NextResponse.json(
         { error: 'Admin wallet not configured' },
         { status: 500 }
       );
     }
+
+    // Parse request body
+    const body = await request.json();
+    const { to, metadataUri, quantity = 1 } = body;
+
+    if (!to || !metadataUri) {
+      return NextResponse.json(
+        { error: 'Missing required fields: to, metadataUri' },
+        { status: 400 }
+      );
+    }
+
+    console.log('📥 Request received:', { to, metadataUri: metadataUri.substring(0, 50) + '...', quantity });
+
+    // Create admin account from private key
+    const adminAccount = privateKeyToAccount({
+      client,
+      privateKey: process.env.ADMIN_WALLET_PRIVATE_KEY as `0x${string}`,
+    });
+
+    console.log('👤 Admin account created:', adminAccount.address);
 
     // Create contract instance
     const contract = getContract({
@@ -62,32 +63,48 @@ export async function POST(request: NextRequest) {
 
     console.log('📝 Contract created:', NFT_CONTRACT_ADDRESS);
 
-    // NOVA ABORDAGEM: Em vez de generateMintSignature complexo,
-    // vamos retornar dados simples para o frontend usar com prepareContractCall
+    // Generate mint signature using Thirdweb SDK v5
+    const { payload, signature } = await generateMintSignature({
+      account: adminAccount,
+      contract,
+      mintRequest: {
+        to: to,
+        metadata: {
+          name: "AI Generated NFT",
+          description: "AI Generated Sports NFT from CHZ Fan Token Studio",
+          image: metadataUri,
+        },
+        // Optional fields with default values
+        royaltyRecipient: to,
+        royaltyBps: 0,
+        primarySaleRecipient: to,
+        price: "0",
+        currency: "0x0000000000000000000000000000000000000000", // Native token
+        validityStartTimestamp: Math.floor(Date.now() / 1000),
+        validityEndTimestamp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+        uid: `0x${Math.random().toString(16).substr(2, 32).padStart(64, '0')}`,
+      },
+    });
+
+    console.log('✅ Signature generated successfully');
+    console.log('📦 Payload:', payload);
+
     const response = {
       success: true,
+      payload,
+      signature,
       contractAddress: NFT_CONTRACT_ADDRESS,
-      to: to,
-      metadata: metadata,
-      quantity: quantity,
-      // Dados para usar no frontend com prepareContractCall
-      mintData: {
-        method: "function mintTo(address to, string uri)",
-        params: [to, metadata]
-      }
     };
-
-    console.log('✅ Response prepared successfully');
 
     return NextResponse.json(response);
 
-  } catch (error: any) {
-    console.error('❌ API Error:', error);
-    console.error('❌ Error message:', error.message);
-    console.error('❌ Error stack:', error.stack);
-    
+  } catch (error) {
+    console.error('❌ Error generating mint signature:', error);
     return NextResponse.json(
-      { error: `Server error: ${error.message}` },
+      { 
+        error: 'Failed to generate mint signature',
+        details: error instanceof Error ? error.message : String(error)
+      },
       { status: 500 }
     );
   }
