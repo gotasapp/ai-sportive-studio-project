@@ -257,7 +257,7 @@ export function UserPaidBatchMint({
            <div className="text-xs text-white/60 space-y-1">
              <p>• User pays gas fees directly (no backend wallet)</p>
              <p>• Network: Polygon Amoy Testnet</p>
-             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}... (Edition ERC1155)</p>
+             <p>• Contract: {process.env.NEXT_PUBLIC_EDITION_AMOY_TESTNET?.slice(0, 8)}... (Edition ERC1155)</p>
              <p className="text-orange-400">• Note: This mints {quantity} copies of the same edition</p>
            </div>
         </div>

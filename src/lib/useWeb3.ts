@@ -4,7 +4,7 @@ import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/reac
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { claimTo } from 'thirdweb/extensions/erc721';
-import { claimTo as claimToERC1155, mintTo } from 'thirdweb/extensions/erc1155';
+import { mintTo } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -34,11 +34,11 @@ export function useWeb3() {
     
   // Edition Contract (ERC1155) for collections with multiple quantities
   const editionContractAddress = (isTestnet
-    ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET
+    ? process.env.NEXT_PUBLIC_EDITION_AMOY_TESTNET
     : (usePolygon 
         ? process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON
         : process.env.NEXT_PUBLIC_NFT_EDITION_CONTRACT_CHZ
-      )) || "0xdFE746c26D3a7d222E89469C8dcb033fbBc75236";
+      )) || "0xF11774d1192FB3D189cc5a25946Bc974D710Fa96";
 
   // Legacy NFT Drop Contract (ERC721) for individual unique NFTs
   const contractAddress = (isTestnet
@@ -258,7 +258,7 @@ export function useWeb3() {
     uploadToIPFS,
     createNFTMetadata,
     mintNFTWithMetadata, // Legacy mint (NFT Collection ERC721)
-    mintEditionWithMetadata, // New Edition Drop mint (ERC1155)
+    mintEditionWithMetadata, // New Edition mint (ERC1155)
     setClaimConditions,
     setTokenURI,
     lazyMint,
