@@ -4,7 +4,7 @@ import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/reac
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { claimTo } from 'thirdweb/extensions/erc721';
-import { claim } from 'thirdweb/extensions/erc1155';
+import { claimTo } from 'thirdweb/extensions/erc1155';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -211,7 +211,7 @@ export function useWeb3() {
       console.log(`✅ Metadata uploaded to IPFS: ${metadataUploadResult.ipfsHash}`);
 
       // 4. Claim/mint from Edition Drop (ERC1155)
-      const transaction = claim({
+      const transaction = claimTo({
         contract: editionContract,
         to: account.address,
         tokenId: BigInt(tokenId),
