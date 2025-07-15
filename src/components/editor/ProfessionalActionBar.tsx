@@ -220,7 +220,7 @@ export default function ProfessionalActionBar({
             </Button>
           }
           nftName={nftName}
-          metadataUri={metadataUri}
+          metadataUri={metadataUri || ''}
           collection={collection}
           disabled={!isConnected || isMinting}
         />
