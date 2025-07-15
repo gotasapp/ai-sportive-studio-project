@@ -52,7 +52,7 @@ export function PublicMint({
 }: PublicMintProps) {
   const account = useActiveAccount()
   const wallet = useActiveWallet()
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'signing' | 'minting' | 'success' | 'error'>('idle')
+  const [status, setStatus] = useState<'idle' | 'uploading' | 'minting' | 'success' | 'error'>('idle')
   const [error, setError] = useState<string | null>(null)
   const [transactionHash, setTransactionHash] = useState<string | null>(null)
   const [ipfsUrl, setIpfsUrl] = useState<string | null>(null)
@@ -133,52 +133,30 @@ export function PublicMint({
       const { ipfsUrl: metadataUri } = await metadataResponse.json()
       console.log('✅ Metadata uploaded:', metadataUri)
 
-      setStatus('signing')
-
-      // 4. Gerar assinatura do backend (que tem MINTER_ROLE)
-      console.log('📝 Requesting mint signature from backend...')
-      const signatureResponse = await fetch('/api/generate-mint-signature', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          to: account.address,
-          metadata: metadataUri,
-          quantity: quantity
-        })
-      })
-
-      if (!signatureResponse.ok) {
-        throw new Error('Falha ao gerar assinatura de mint')
-      }
-
-      const { signature, payload } = await signatureResponse.json()
-      console.log('✅ Signature received from backend')
-
       setStatus('minting')
 
-      // 5. Preparar contrato para mint com assinatura
+      // 4. Preparar contrato diretamente para mint
+      console.log('🚀 Preparing mint transaction...')
       const contract = getContract({
         client,
         chain: polygonAmoy,
         address: NFT_CONTRACT_ADDRESS
       })
 
-      // 6. Preparar transação usando mintWithSignature
-      console.log('🚀 Preparing mint with signature...')
+      // 5. Preparar transação simples usando mintTo
+      console.log('📝 Preparing direct mint...')
       const transaction = prepareContractCall({
         contract,
-        method: "function mintWithSignature((address to, address royaltyRecipient, uint256 royaltyBps, address primarySaleRecipient, string uri, uint256 quantity, uint256 pricePerToken, address currency, uint128 validityStartTimestamp, uint128 validityEndTimestamp, bytes32 uid) req, bytes signature)",
-        params: [payload.mintRequest, signature]
+        method: "function mintTo(address to, string uri)",
+        params: [account.address, metadataUri]
       })
 
-      console.log('🚀 Sending mint transaction with signature...')
+      console.log('🚀 Sending mint transaction...')
 
-      // 7. Enviar transação
+      // 6. Enviar transação diretamente (usuário paga gas)
       sendTransaction(transaction, {
         onSuccess: (result) => {
-          console.log('✅ Mint with signature successful!', result)
+          console.log('✅ Mint successful!', result)
           setTransactionHash(result.transactionHash)
           setStatus('success')
           onSuccess?.({ 
@@ -186,7 +164,7 @@ export function PublicMint({
           })
         },
         onError: (error) => {
-          console.error('❌ Mint with signature failed:', error)
+          console.error('❌ Mint failed:', error)
           setError(error.message || 'Falha no mint')
           setStatus('error')
           onError?.(error.message || 'Falha no mint')
@@ -201,7 +179,7 @@ export function PublicMint({
     }
   }
 
-  const isLoading = status === 'uploading' || status === 'signing' || status === 'minting'
+  const isLoading = status === 'uploading' || status === 'minting'
   const isDisabled = disabled || isLoading || !account
 
   return (
@@ -289,7 +267,7 @@ export function PublicMint({
               <div className="flex items-center space-x-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 <span>
-                  {status === 'uploading' ? 'Fazendo Upload...' : status === 'signing' ? 'Obtendo Assinatura...' : 'Mintando...'}
+                  {status === 'uploading' ? 'Fazendo Upload...' : 'Mintando...'}
                 </span>
               </div>
             ) : (
