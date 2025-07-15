@@ -185,11 +185,7 @@ export default function BadgesPage() {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-gray-800 text-gray-400">
-                    <th className="p-4 font-medium">Preview</th>
                     <th className="p-4 font-medium">NFT Name</th>
-                    <th className="p-4 font-medium">Creator</th>
-                    <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium">Mint Progress</th>
                     <th className="p-4 font-medium">Created At</th>
                     <th className="p-4 font-medium">Actions</th>
                   </tr>
@@ -197,23 +193,7 @@ export default function BadgesPage() {
                 <tbody>
                   {badges.map((badge) => (
                     <tr key={badge.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                      <td className="p-4">
-                        <Image src={badge.imageUrl} alt={badge.name} width={40} height={40} className="rounded-md" />
-                      </td>
                       <td className="p-4 font-medium text-white">{badge.name}</td>
-                      <td className="p-4">
-                        <div className="text-white">Unknown</div>
-                        <div className="text-gray-400 text-xs">Unknown</div>
-                      </td>
-                      <td className="p-4">
-                        <UiBadge className="bg-green-500/20 text-green-400 border-green-500/30">Minted</UiBadge>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-white">0 / 1</div>
-                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-                          <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `0%`}}></div>
-                        </div>
-                      </td>
                       <td className="p-4 text-gray-400">{new Date(badge.createdAt).toLocaleDateString()}</td>
                       <td className="p-4">
                         <Button variant="ghost" size="sm">

@@ -326,10 +326,9 @@ export default function JerseysPage() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-gray-800 text-gray-400">
-                  <th className="p-4 font-medium">Preview</th>
-                  <th className="p-4 font-medium">NFT Name</th>
-                  <th className="p-4 font-medium">Creator</th>
-                  <th className="p-4 font-medium">Status</th>
+                  <th className="p-4 text-left font-semibold text-secondary/80">Name</th>
+                  <th className="p-4 text-left font-semibold text-secondary/80">Creator</th>
+                  <th className="p-4 text-left font-semibold text-secondary/80">Status</th>
                   <th className="p-4 font-medium">Mint Progress</th>
                   <th className="p-4 font-medium">Created At</th>
                   <th className="p-4 font-medium">Actions</th>
@@ -339,10 +338,10 @@ export default function JerseysPage() {
                 {loading ? renderSkeleton() : filteredJerseys.map(jersey => (
                   <React.Fragment key={jersey.id}>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
-                      <td className="p-4">
-                        <Image src={jersey.imageUrl} alt={jersey.name} width={40} height={40} className="rounded-md" />
+                      <td className="p-4 align-top">
+                        <div className="font-bold text-lg text-secondary">{jersey.name}</div>
+                        <div className="text-xs text-secondary/60">ID: {jersey.id}</div>
                       </td>
-                      <td className="p-4 font-medium text-white">{jersey.name}</td>
                       <td className="p-4">
                         <div className="text-white">{jersey.creator?.name || 'Unknown'}</div>
                         <div className="text-gray-400 text-xs">{jersey.creator?.wallet || 'Unknown'}</div>

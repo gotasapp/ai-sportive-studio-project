@@ -249,41 +249,21 @@ export default function StadiumsPage() {
             <div className="text-gray-400 text-center p-8">No stadiums found.</div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
+              <table className="w-full">
                 <thead>
-                  <tr className="border-b border-gray-800 text-gray-400">
-                    <th className="p-4 font-medium">Preview</th>
-                    <th className="p-4 font-medium">NFT Name</th>
-                    <th className="p-4 font-medium">Creator</th>
-                    <th className="p-4 font-medium">Status</th>
-                    <th className="p-4 font-medium">Mint Progress</th>
-                    <th className="p-4 font-medium">Created At</th>
-                    <th className="p-4 font-medium">Actions</th>
+                  <tr className="border-b border-cyan-500/20 text-left text-sm text-cyan-300">
+                    <th className="p-3 font-semibold">Name</th>
+                    <th className="p-3 font-semibold">Created At</th>
+                    <th className="p-3 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {stadiums.map((stadium) => (
-                    <tr key={stadium.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                      <td className="p-4">
-                        <Image src={stadium.imageUrl} alt={stadium.name} width={40} height={40} className="rounded-md" />
-                      </td>
-                      <td className="p-4 font-medium text-white">{stadium.name}</td>
-                      <td className="p-4">
-                        <div className="text-white">Unknown</div>
-                        <div className="text-gray-400 text-xs">Unknown</div>
-                      </td>
-                      <td className="p-4">
-                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">Minted</Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="text-white">0 / 1</div>
-                        <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
-                          <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `0%`}}></div>
-                        </div>
-                      </td>
-                      <td className="p-4 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
-                      <td className="p-4">
-                        <Button variant="ghost" size="sm">
+                  {stadiums.map(stadium => (
+                    <tr key={stadium.id} className="border-b border-gray-800 hover:bg-cyan-500/5">
+                      <td className="p-3 text-gray-200">{stadium.name}</td>
+                      <td className="p-3 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
+                      <td className="p-3 text-right">
+                        <Button variant="ghost" size="icon">
                           <MoreHorizontal className="w-4 h-4" />
                         </Button>
                       </td>
