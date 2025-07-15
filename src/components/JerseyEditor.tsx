@@ -428,11 +428,11 @@ export default function JerseyEditor() {
       const result = await mintGasless({
         to: address,
         metadataUri: ipfsResult.metadataUrl,
+        chainId: chainId || 80002, // Adicionando chainId com fallback
       });
 
-      console.log('✅ ENGINE MINT (GASLESS): Mint started successfully:', result);
-      setMintStatus('pending');
-      setMintSuccess(`Transaction sent! Checking status... Queue ID: ${result.queueId || 'N/A'}`);
+      // 3. Update UI with queue ID
+      setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
       setMintedTokenId(result.queueId || null);
       
     } catch (error: any) {

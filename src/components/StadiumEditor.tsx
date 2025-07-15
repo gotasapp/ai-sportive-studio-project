@@ -449,11 +449,14 @@ This description will be used to generate a new version of the stadium with slig
           atmosphere
         );
 
+        console.log('🚀 Calling Engine to mint Gasless NFT for:', address)
         const result = await mintGasless({
           to: address,
           metadataUri: ipfsResult.metadataUrl,
+          chainId: chainId || 80002, // Adicionando chainId com fallback
         });
 
+        setMintStatus('pending');
         setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
         setMintedTokenId(result.queueId || null);
       } else {
