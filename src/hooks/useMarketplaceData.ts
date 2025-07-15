@@ -246,7 +246,7 @@ export function useMarketplaceData() {
                tokenId: BigInt(tokenId)
              });
              
-             if (balance > 0n) {
+                           if (balance > BigInt(0)) {
                nftOwner = nft.owner || 'Unknown';
                console.log(`✅ ERC1155 NFT #${tokenId} balance found:`, balance.toString(), 'for owner:', nftOwner);
              } else {
