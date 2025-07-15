@@ -1,10 +1,8 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useActiveAccount, useActiveWalletChain, TransactionButton } from 'thirdweb/react'
-import { createThirdwebClient, getContract, prepareContractCall } from 'thirdweb'
-import { mintTo } from 'thirdweb/extensions/erc721'
-import { polygonAmoy } from 'thirdweb/chains'
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
+import { useWeb3 } from '@/lib/useWeb3'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -31,67 +29,83 @@ export function UserPaidBatchMint({
   const [quantity, setQuantity] = useState(3)
   const [txHash, setTxHash] = useState<string>('')
   const [isComplete, setIsComplete] = useState(false)
+  const [isMinting, setIsMinting] = useState(false)
+  const [mintError, setMintError] = useState<string>('')
   
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
-
-  // Thirdweb client setup
-  const client = createThirdwebClient({
-    clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "",
-  })
-
-  // Contract setup - using current NFT contract
-  const contract = getContract({
-    client,
-    chain: polygonAmoy,
-    address: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || "0xfF973a4aFc5A96DEc81366461A461824c4f80254",
-  })
+  const { mintNFTWithMetadata } = useWeb3()
 
   const isConnected = !!account
   const isOnCorrectChain = chain?.id === 80002 // Polygon Amoy
 
-  const handleClose = () => {
+    const handleClose = () => {
     setOpen(false)
     setTxHash('')
     setIsComplete(false)
     setQuantity(3)
+    setMintError('')
   }
 
   const estimatedGasCost = `~${(0.02 * quantity).toFixed(3)} POL`
 
-     const prepareBatchMintTransaction = () => {
-     if (!account) {
-       throw new Error('Missing account')
-     }
+  const handleMintNFT = async () => {
+    if (!account) {
+      setMintError('Please connect your wallet first')
+      return
+    }
 
-     console.log('🎯 Preparing user-paid batch mint transaction:')
-     console.log('📦 NFT Name:', nftName)
-     console.log('🔗 Metadata URI:', metadataUri || 'Will create simple metadata')
-     console.log('👤 To:', account.address)
-     console.log('🔢 Quantity:', quantity)
-     console.log('💳 User pays gas')
+    if (!isOnCorrectChain) {
+      setMintError('Please switch to Polygon Amoy network')
+      return
+    }
 
-     // Create simple metadata for the NFT if none provided
-     const nftMetadata = metadataUri || {
-       name: `${nftName} #${Date.now()}`,
-       description: `Batch minted NFT from ${collection} collection`,
-       image: 'https://via.placeholder.com/300x300.png?text=NFT',
-       attributes: [
-         { trait_type: 'Collection', value: collection },
-         { trait_type: 'Batch Size', value: quantity.toString() },
-         { trait_type: 'Minted By', value: account.address },
-         { trait_type: 'Timestamp', value: new Date().toISOString() }
-       ]
-     }
+    setIsMinting(true)
+    setMintError('')
 
-     // For batch minting, we'll mint one NFT at a time
-     // Note: This is a limitation of standard ERC721 contracts
-     return mintTo({
-       contract,
-       to: account.address,
-       nft: nftMetadata,
-     })
-   }
+    try {
+      console.log('🎯 Starting user-paid mint:')
+      console.log('📦 NFT Name:', nftName)
+      console.log('👤 To:', account.address)
+      console.log('🔢 Quantity:', quantity)
+      console.log('💳 User pays gas')
+
+      // Create metadata for the NFT
+      const nftName_unique = `${nftName} #${Date.now()}`
+      const nftDescription = `User-minted NFT from ${collection} collection. Original: ${nftName}`
+      
+      const attributes = [
+        { trait_type: 'Collection', value: collection },
+        { trait_type: 'Original Name', value: nftName },
+        { trait_type: 'Minted By', value: account.address },
+        { trait_type: 'Timestamp', value: new Date().toISOString() }
+      ]
+
+      // Create a simple image file (placeholder since we don't have the actual generated image)
+      // In a real implementation, you'd get the actual generated image blob
+      const placeholderImageBlob = new Blob(['placeholder'], { type: 'image/png' })
+      const imageFile = new File([placeholderImageBlob], `${nftName_unique}.png`, { type: 'image/png' })
+
+      // Mint the NFT using the same method as other components
+      const result = await mintNFTWithMetadata(
+        nftName_unique,
+        nftDescription,
+        imageFile,
+        attributes,
+        1 // Only mint 1 NFT for now
+      )
+
+      console.log('✅ User-paid mint successful:', result)
+      setTxHash(result.transactionHash)
+      setIsComplete(true)
+
+    } catch (error: any) {
+      console.error('❌ User-paid mint failed:', error)
+      setMintError(error.message || 'Minting failed')
+    } finally {
+      setIsMinting(false)
+    }
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -99,12 +113,12 @@ export function UserPaidBatchMint({
         {trigger}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md bg-black border border-white/20">
-        <DialogHeader>
-          <DialogTitle className="text-white flex items-center gap-2">
-            <Hash className="w-5 h-5 text-[#A20131]" />
-            User-Paid Batch Mint
-          </DialogTitle>
-        </DialogHeader>
+                 <DialogHeader>
+           <DialogTitle className="text-white flex items-center gap-2">
+             <Hash className="w-5 h-5 text-[#A20131]" />
+             User-Paid NFT Mint
+           </DialogTitle>
+         </DialogHeader>
 
         <div className="space-y-6">
           {/* NFT Info */}
@@ -162,27 +176,40 @@ export function UserPaidBatchMint({
             </div>
           )}
 
-          {/* Transaction Success */}
-          {isComplete && txHash && (
-            <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
-              <div className="flex items-center gap-2 text-green-400">
-                <CheckCircle className="w-4 h-4" />
-                <span className="text-sm font-medium">Batch Mint Successful!</span>
-              </div>
-              <p className="text-green-300/80 text-xs mt-1">
-                {quantity} NFTs minted successfully
-              </p>
-              <a
-                href={`https://amoy.polygonscan.com/tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-green-400 hover:text-green-300 text-xs mt-2"
-              >
-                <span>View on Explorer</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-          )}
+                     {/* Transaction Success */}
+           {isComplete && txHash && (
+             <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+               <div className="flex items-center gap-2 text-green-400">
+                 <CheckCircle className="w-4 h-4" />
+                 <span className="text-sm font-medium">Mint Successful!</span>
+               </div>
+               <p className="text-green-300/80 text-xs mt-1">
+                 NFT minted successfully
+               </p>
+               <a
+                 href={`https://amoy.polygonscan.com/tx/${txHash}`}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="inline-flex items-center gap-1 text-green-400 hover:text-green-300 text-xs mt-2"
+               >
+                 <span>View on Explorer</span>
+                 <ExternalLink className="w-3 h-3" />
+               </a>
+             </div>
+           )}
+
+           {/* Error Display */}
+           {mintError && (
+             <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+               <div className="flex items-center gap-2 text-red-400">
+                 <AlertTriangle className="w-4 h-4" />
+                 <span className="text-sm font-medium">Mint Failed</span>
+               </div>
+               <p className="text-red-300/80 text-xs mt-1">
+                 {mintError}
+               </p>
+             </div>
+           )}
 
           {/* Action Buttons */}
           <div className="flex gap-3">
@@ -194,40 +221,33 @@ export function UserPaidBatchMint({
               Cancel
             </Button>
             
-                         {isConnected && isOnCorrectChain ? (
-                             <TransactionButton
-                 transaction={prepareBatchMintTransaction}
-                 onTransactionConfirmed={(receipt) => {
-                   console.log('✅ Single mint successful:', receipt)
-                   setTxHash(receipt.transactionHash)
-                   
-                   // For now, we only mint 1 NFT per transaction
-                   // Real batch minting would require multiple transactions
-                   if (quantity === 1) {
-                     setIsComplete(true)
-                   } else {
-                     // TODO: Implement sequential minting for remaining quantity
-                     console.log(`⚠️ Note: Only 1 NFT minted. ${quantity - 1} remaining.`)
-                     setIsComplete(true) // For demo purposes
-                   }
-                 }}
-                 onError={(error) => {
-                   console.error('❌ Mint failed:', error)
-                 }}
-                 className="flex-1 bg-[#A20131] hover:bg-[#A20131]/80 text-white"
+                                      {isConnected && isOnCorrectChain ? (
+               <Button
+                 onClick={handleMintNFT}
+                 disabled={isMinting || isComplete}
+                 className="flex-1 bg-[#A20131] hover:bg-[#A20131]/80 text-white disabled:opacity-50"
                >
-                 {quantity === 1 ? 'Mint 1 NFT' : `Mint 1 NFT (of ${quantity})`}
-               </TransactionButton>
-            ) : (
-              <Button disabled className="flex-1 bg-[#A20131]/50 text-white/50">
-                                 {!isConnected 
+                 {isMinting ? (
+                   <div className="flex items-center gap-2">
+                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                     <span>Minting...</span>
+                   </div>
+                 ) : isComplete ? (
+                   'Mint Complete'
+                 ) : (
+                   'Mint 1 NFT'
+                 )}
+               </Button>
+             ) : (
+               <Button disabled className="flex-1 bg-[#A20131]/50 text-white/50">
+                 {!isConnected 
                    ? 'Connect Wallet' 
                    : !isOnCorrectChain 
                      ? 'Wrong Network'
                      : 'Ready to Mint'
                  }
-              </Button>
-            )}
+               </Button>
+             )}
           </div>
 
                      {/* Info Footer */}
@@ -235,9 +255,7 @@ export function UserPaidBatchMint({
              <p>• User pays gas fees directly (no backend wallet)</p>
              <p>• Network: Polygon Amoy Testnet</p>
              <p>• Contract: {process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET?.slice(0, 8)}...</p>
-             {quantity > 1 && (
-               <p className="text-orange-400">• Note: Current contract mints 1 NFT per transaction</p>
-             )}
+             <p className="text-orange-400">• Note: This demo mints 1 NFT with placeholder image</p>
            </div>
         </div>
       </DialogContent>
