@@ -208,24 +208,19 @@ export default function ProfessionalActionBar({
 
       {/* Removed redundant UserPaidBatchMint - using PublicMint instead */}
 
-      {/* Public Mint (Signature-based - Any user) */}
+      {/* Public Mint (Batch Mint - Any user) */}
       {isConnected && generatedImageBlob && nftName && (
         <div className="w-full max-w-sm">
           <PublicMint
-            name={nftName}
-            description={nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`}
             imageBlob={generatedImageBlob}
-            attributes={nftAttributes || [
-              { trait_type: 'Generator', value: 'AI Sports NFT' },
-              { trait_type: 'Collection', value: collection || 'General' },
-              { trait_type: 'Type', value: 'Public Mint' }
-            ]}
-            disabled={isMinting}
-            onSuccess={(result) => {
-              console.log('✅ Public mint successful:', result);
-            }}
-            onError={(error) => {
-              console.error('❌ Public mint failed:', error);
+            metadata={{
+              name: nftName,
+              description: nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`,
+              attributes: nftAttributes || [
+                { trait_type: 'Generator', value: 'AI Sports NFT' },
+                { trait_type: 'Collection', value: collection || 'General' },
+                { trait_type: 'Type', value: 'Public Mint' }
+              ]
             }}
           />
         </div>
