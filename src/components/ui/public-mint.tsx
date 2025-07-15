@@ -67,14 +67,10 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       console.log('🚀 Preparing batch mint transaction...');
 
       // Use claimTo for NFT Drop with quantity to create internal collection
-      const transaction = prepareContractCall({
+      const transaction = claimTo({
         contract,
-        method: claimTo,
-        params: [
-          account.address, // receiver
-          BigInt(quantity), // quantity - creates internal collection of same NFTs
-          { currency: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', pricePerToken: 0n, allowlistProof: undefined }
-        ],
+        to: account.address, // receiver
+        quantity: BigInt(quantity), // quantity - creates internal collection of same NFTs
       });
 
       console.log(`🚀 Minting ${quantity} NFTs to create internal collection...`);
