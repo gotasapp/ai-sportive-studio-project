@@ -13,7 +13,7 @@ const amoy = defineChain(80002);
 
 // Engine Configuration
 const ENGINE_URL = process.env.ENGINE_URL || 'http://localhost:3005';
-const ENGINE_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
+const VAULT_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
@@ -21,22 +21,22 @@ const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 export async function GET() {
   return NextResponse.json({ 
     message: 'Engine Mint API is running',
-    configured: !!(ENGINE_URL && ENGINE_ACCESS_TOKEN && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS),
+    configured: !!(ENGINE_URL && VAULT_ACCESS_TOKEN && CONTRACT_ADDRESS && BACKEND_WALLET_ADDRESS),
     engineUrl: ENGINE_URL,
     contract: CONTRACT_ADDRESS,
     backendWallet: BACKEND_WALLET_ADDRESS,
-    hasAccessToken: !!ENGINE_ACCESS_TOKEN
+    hasAccessToken: !!VAULT_ACCESS_TOKEN
   });
 }
 
 export async function POST(request: NextRequest) {
   console.log('🔄 Engine Mint API: POST request received');
   
-  if (!ENGINE_URL || !ENGINE_ACCESS_TOKEN || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
+  if (!ENGINE_URL || !VAULT_ACCESS_TOKEN || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
     const missing = [
       !ENGINE_URL && "ENGINE_URL",
-      !ENGINE_ACCESS_TOKEN && "ENGINE_ACCESS_TOKEN", 
+      !VAULT_ACCESS_TOKEN && "VAULT_ACCESS_TOKEN", 
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET",
       !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${ENGINE_ACCESS_TOKEN}`,
+        'Authorization': `Bearer ${VAULT_ACCESS_TOKEN}`,
         'x-backend-wallet-address': BACKEND_WALLET_ADDRESS,
       },
       body: JSON.stringify({
