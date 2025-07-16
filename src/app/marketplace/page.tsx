@@ -75,6 +75,17 @@ export default function MarketplacePage() {
     });
   }, [marketplaceItems, watchlist.length, ownedCollections.length]);
 
+  // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
+  const getContractByCategory = (category: string): string => {
+    const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
+    const contractAddress = NFT_CONTRACTS[chainId];
+    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
+    if (!contractAddress) {
+      return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
+    }
+    return contractAddress;
+  };
+
   // Só depois dos hooks, o return condicional do loader global
   if (showGlobalLoader) {
     return (
