@@ -2,8 +2,8 @@
 
 import React from 'react';
 import { TransactionButton } from 'thirdweb/react';
-import { getContract, mintTo } from 'thirdweb';
-import { createThirdwebClient } from 'thirdweb';
+import { getContract, createThirdwebClient } from 'thirdweb';
+import { mintTo } from 'thirdweb/extensions/erc721';
 import { defineChain } from 'thirdweb/chains';
 import { Rocket, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';

@@ -13,9 +13,9 @@ import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
 import { PublicMint } from '@/components/ui/public-mint'
 import { cn } from '@/lib/utils'
 import { TransactionButton } from 'thirdweb/react'
-import { getContract, mintTo } from 'thirdweb'
-import { createThirdwebClient } from 'thirdweb'
+import { getContract, createThirdwebClient } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
+import { mintTo } from 'thirdweb/extensions/erc721'
 import { toast } from 'sonner'
 
 interface ProfessionalActionBarProps {
