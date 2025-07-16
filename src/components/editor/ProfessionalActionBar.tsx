@@ -12,6 +12,11 @@ import { Progress } from '@/components/ui/progress'
 import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
 import { PublicMint } from '@/components/ui/public-mint'
 import { cn } from '@/lib/utils'
+import { TransactionButton } from 'thirdweb/react'
+import { getContract, mintTo } from 'thirdweb'
+import { createThirdwebClient } from 'thirdweb'
+import { defineChain } from 'thirdweb/chains'
+import { toast } from 'sonner'
 
 interface ProfessionalActionBarProps {
   // Generation
