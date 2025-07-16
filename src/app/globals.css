@@ -16,7 +16,7 @@
     --background: 60 2% 6%; /* #111011 */
     --foreground: 0 0% 99.2%; /* #FDFDFD */
 
-    --card: 60 2% 6%;
+    --card: 60 2% 6% / 0.1;
     --card-foreground: 0 0% 99.2%;
 
     --popover: 60 2% 6%;
@@ -39,7 +39,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 99.2%;
 
-    --border: 0 0% 44%; /* #707070 convertido para HSL */
+    --border: 0 0% 66% / 0.2; /* #A9A9A9 com 20% opacidade */
     --input: 0 0% 20%; /* Cinza escuro para inputs */
     --ring: 0 0% 99.2%; /* Anel de foco branco para visibilidade */
 
@@ -57,7 +57,7 @@
     --background: 60 2% 6%; /* #111011 */
     --foreground: 0 0% 99.2%; /* #FDFDFD */
 
-    --card: 60 2% 6%;
+    --card: 60 2% 6% / 0.1;
     --card-foreground: 0 0% 99.2%;
 
     --popover: 60 2% 6%;
@@ -80,7 +80,7 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 99.2%;
 
-    --border: 0 0% 44%; /* #707070 convertido para HSL */
+    --border: 0 0% 66% / 0.2; /* #A9A9A9 com 20% opacidade */
     --input: 0 0% 20%; /* Cinza escuro para inputs */
     --ring: 0 0% 99.2%; /* Anel de foco branco para visibilidade */
   }
@@ -275,20 +275,15 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 /* Upload card variants with custom border-radius */
 .cyber-card-upload-jersey {
   position: relative;
-  background: #14101e;
+  background: rgba(20, 16, 30, 0.1);
   border-radius: 2px;
   transition: all 0.2s ease;
 }
@@ -297,25 +292,20 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 2px;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
   pointer-events: none;
 }
 
 .cyber-card-upload-jersey:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
   pointer-events: none;
 }
 
 .cyber-card-upload-badge {
   position: relative;
-  background: #14101e;
+  background: rgba(20, 16, 30, 0.1);
   border-radius: 2px;
   transition: all 0.2s ease;
 }
@@ -324,25 +314,20 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 2px;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
   pointer-events: none;
 }
 
 .cyber-card-upload-badge:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
   pointer-events: none;
 }
 
 .cyber-card {
   position: relative;
-  background: #14101e;
+  background: rgba(20, 16, 30, 0.1);
   border-radius: 2px;
   transition: all 0.2s ease;
 }
@@ -390,13 +375,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
   pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
@@ -406,7 +386,7 @@
 }
 
 .cyber-button:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
   pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
@@ -417,7 +397,7 @@
 }
 
 .cyber-button:disabled::before {
-  background: linear-gradient(to bottom right, rgba(107, 114, 128, 0.1), rgba(75, 85, 99, 0.15), rgba(107, 114, 128, 0.1)) border-box;
+  border-color: rgba(107, 114, 128, 0.1);
 }
 
 .cyber-input {
@@ -439,18 +419,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
 }
 
 .cyber-input:focus::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
 }
 
 .cyber-input:focus {
@@ -458,24 +433,24 @@
 }
 
 .cyber-input option {
-  background: #14101e;
+  background: rgba(20, 16, 30, 0.1);
   color: #FDFDFD;
 }
 
 .cyber-select {
-  background: #14101e;
-  border: 0.5px solid #ADADAD;
+  background: rgba(20, 16, 30, 0.1);
+  border: 0.5px solid rgba(169, 169, 169, 0.3);
   border-radius: 0.5rem;
   transition: all 0.2s ease;
 }
 
 .cyber-select:focus {
-  border-color: #707070;
+  border-color: rgba(169, 169, 169, 0.5);
   outline: none;
 }
 
 .cyber-select:hover {
-  border-color: #707070;
+  border-color: rgba(169, 169, 169, 0.5);
 }
 
 .gradient-border {
@@ -488,13 +463,8 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
 }
 
 .style-button {
@@ -517,18 +487,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
 }
 
 .style-button:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
 }
 
 .style-button.active {
@@ -560,18 +525,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 0.75rem;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
 }
 
 .marketplace-card:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
 }
 
 /* Slider customization - Minimalista */

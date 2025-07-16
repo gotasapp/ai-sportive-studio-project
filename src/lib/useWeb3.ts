@@ -31,7 +31,7 @@ export function useWeb3() {
     activeChainId: activeChain.id,
     chainName: 'Polygon Amoy'
   });
-
+    
   // Usar diretamente a variável configurada no Vercel
   const contractAddress = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
@@ -43,7 +43,7 @@ export function useWeb3() {
     editionDropContractAddress: editionDropContractAddress,
     source: 'NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS'
   });
-
+  
   // NFT Collection contract (ERC721) for unique individual NFTs
   const contract = getContract({
     client,
