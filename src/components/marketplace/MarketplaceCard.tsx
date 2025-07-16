@@ -355,7 +355,6 @@ export default function MarketplaceCard({
           </a>
         </Link>
         <div className="p-4">
-          <p className="text-sm text-[#FDFDFD]/70 truncate">{collection}</p>
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate my-1">{name}</h3>
           
           {/* Price information */}
@@ -377,11 +376,8 @@ export default function MarketplaceCard({
               </div>
             ) : (
               <div>
-                <p className="text-xs text-[#FDFDFD]/70">{isListed ? 'Price' : 'Last Price'}</p>
                 <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>
-                    {safePrice}
-                  </p>
+                  <p className={`text-sm font-medium ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>{safePrice}</p>
                   {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
                     <div title="Invalid price detected">
                       <AlertTriangle className="h-4 w-4 text-red-400" />

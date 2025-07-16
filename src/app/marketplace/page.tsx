@@ -24,57 +24,18 @@ import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/market
 export default function MarketplacePage() {
   // Thirdweb hooks
   const chain = useActiveWalletChain();
-  
-  // Marketplace data (COM LÓGICA COMPLETA DE LISTINGS/AUCTIONS)
   const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
-  
-  // Estado para refresh manual
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Filter States
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
   const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [priceSort, setPriceSort] = useState<PriceSort>('volume-desc');
   const [tokenType, setTokenType] = useState<TokenType>('all');
   const [viewType, setViewType] = useState<ViewType>('table');
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Legacy data states (mantidos apenas para filtros)
   const [filteredNfts, setFilteredNfts] = useState<any[]>([]);
-  
-  // Counter States
-  const [counters, setCounters] = useState({
-    total: 0,
-    watchlist: 0,
-    owned: 0
-  });
-
-  // Watchlist state (mock - in real app this would come from user data)
+  const [counters, setCounters] = useState({ total: 0, watchlist: 0, owned: 0 });
   const [watchlist, setWatchlist] = useState<string[]>(['Jersey Collection']);
   const [ownedCollections, setOwnedCollections] = useState<string[]>(['Badge Collection']);
-
-  // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
-  const getContractByCategory = (category: string): string => {
-    const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
-    const contractAddress = NFT_CONTRACTS[chainId];
-    
-    console.log('🔍 getContractByCategory Debug:', {
-      category,
-      chainId,
-      chainName: chain?.name || 'unknown',
-      contractAddress,
-      allContracts: NFT_CONTRACTS
-    });
-    
-    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
-    if (!contractAddress) {
-      console.warn(`⚠️ Contrato NFT não encontrado para rede ${chainId}, usando fallback para Polygon Amoy`);
-      return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
-    }
-    
-    return contractAddress;
-  };
-
   const [showGlobalLoader, setShowGlobalLoader] = useState(true);
 
   // Todos os hooks devem estar no topo, fora de qualquer if/return
@@ -82,24 +43,10 @@ export default function MarketplacePage() {
     const timer = setTimeout(() => setShowGlobalLoader(false), 1500);
     return () => clearTimeout(timer);
   }, []);
-
   useEffect(() => {
     if (!marketplaceLoading) setShowGlobalLoader(false);
   }, [marketplaceLoading]);
-
-  if (showGlobalLoader) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
-        <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
-      </div>
-    );
-  }
-
-  useEffect(() => {
-    // Dados legacy removidos - agora apenas useMarketplaceData é usado
-    // O hook useMarketplaceData já carrega todos os dados necessários
-  }, []);
-
+  useEffect(() => {}, []);
   useEffect(() => {
     let filtered = marketplaceItems || [];
     if (tokenType !== 'all') {
@@ -118,7 +65,6 @@ export default function MarketplacePage() {
     }
     setFilteredNfts(filtered);
   }, [marketplaceItems, tokenType, searchTerm]);
-
   useEffect(() => {
     const items = marketplaceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
@@ -128,6 +74,15 @@ export default function MarketplacePage() {
       owned: ownedCollections.length
     });
   }, [marketplaceItems, watchlist.length, ownedCollections.length]);
+
+  // Só depois dos hooks, o return condicional do loader global
+  if (showGlobalLoader) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+        <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
+      </div>
+    );
+  }
 
   const handleToggleWatchlist = (collectionName: string) => {
     setWatchlist(prev => {
