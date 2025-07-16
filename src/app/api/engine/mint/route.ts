@@ -1,50 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createThirdwebClient, getContract, Engine } from 'thirdweb';
+import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 
 const amoy = defineChain(80002);
 
 // Variáveis de ambiente conforme estão configuradas no Vercel
+// Last updated: 2025-07-16 - Using Transactions API instead of Engine
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
-const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL;
-const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN || process.env.ENGINE_ADMIN_KEY || process.env.VAULT_ACCESS_TOKEN;
 
 export async function POST(request: NextRequest) {
-  // --- DIAGNÓSTICO DEFINITIVO ---
+  // --- DIAGNÓSTICO ---
   console.log('--- VERCEL ENVIRONMENT DIAGNOSTIC ---');
   console.log(`1. THIRDWEB_SECRET_KEY:`, {
     isPresent: !!THIRDWEB_SECRET_KEY,
     value: THIRDWEB_SECRET_KEY ? `...${THIRDWEB_SECRET_KEY.slice(-4)}` : 'NÃO ENCONTRADA'
   });
-  console.log(`2. NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS:`, {
-    isPresent: !!CONTRACT_ADDRESS,
-    value: CONTRACT_ADDRESS || 'NÃO ENCONTRADA'
-  });
-  console.log(`3. BACKEND_WALLET_ADDRESS:`, {
-    isPresent: !!BACKEND_WALLET_ADDRESS,
-    value: BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA'
-  });
-  console.log(`4. NEXT_PUBLIC_ENGINE_URL:`, {
-    isPresent: !!ENGINE_URL,
-    value: ENGINE_URL || 'NÃO ENCONTRADA'
-  });
-  console.log(`5. ENGINE_ACCESS_TOKEN:`, {
-    isPresent: !!ENGINE_ACCESS_TOKEN,
-    value: ENGINE_ACCESS_TOKEN ? `...${ENGINE_ACCESS_TOKEN.slice(-4)}` : 'NÃO ENCONTRADA'
-  });
+  console.log(`2. CONTRACT_ADDRESS:`, CONTRACT_ADDRESS || 'NÃO ENCONTRADA');
+  console.log(`3. BACKEND_WALLET_ADDRESS:`, BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA');
   console.log('------------------------------------');
 
   // Validação completa com mensagem específica
-  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL || !ENGINE_ACCESS_TOKEN) {
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
     const missing = [
       !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
-      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
-      !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL",
-      !ENGINE_ACCESS_TOKEN && "ENGINE_ACCESS_TOKEN (or ENGINE_ADMIN_KEY or VAULT_ACCESS_TOKEN)"
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
 
     console.error(`❌ API Error: Missing variables: ${missing}`);
@@ -59,29 +42,43 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '"to" address and "metadataUri" are required.' }, { status: 400 });
     }
 
-    // Inicialização correta conforme MILESTONE_3_MINT_ENGINE_FIXED.md
-    const client = createThirdwebClient({ secretKey: THIRDWEB_SECRET_KEY });
-    const contract = getContract({ client, chain: amoy, address: CONTRACT_ADDRESS });
-    const transaction = mintTo({ contract, to, nft: metadataUri });
-
-    console.log("✅ API: Transaction prepared with metadata URI:", metadataUri);
-
-    // Configuração da Engine conforme documentação
-    const serverWallet = Engine.serverWallet({
-      address: BACKEND_WALLET_ADDRESS,
-      client: client,
-      vaultAccessToken: ENGINE_ACCESS_TOKEN,
+    // Usar a API de Transações diretamente
+    const response = await fetch('https://engine.thirdweb.com/transaction/write', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${THIRDWEB_SECRET_KEY}`,
+        'Content-Type': 'application/json',
+        'x-wallet-address': BACKEND_WALLET_ADDRESS
+      },
+      body: JSON.stringify({
+        chainId: '80002',
+        contractAddress: CONTRACT_ADDRESS,
+        functionName: 'mintTo',
+        args: [to, metadataUri],
+        txOverrides: {
+          gas: '200000'
+        }
+      })
     });
 
-    // Enfileirar a transação
-    const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error(`❌ Transactions API error: ${response.status} - ${error}`);
+      throw new Error(`Error sending transaction: ${error}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ API: Transaction submitted successfully!", data);
     
-    console.log(`✅ API: Transaction enqueued successfully! Queue ID: ${transactionId}`);
-    return NextResponse.json({ queueId: transactionId });
+    // Retorna o ID da transação
+    return NextResponse.json({ 
+      queueId: data.transactionId || data.queueId || data.result?.queueId || 'transaction-submitted',
+      result: data
+    });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
-    console.error('❌ API CRITICAL ERROR:', error);
+    console.error('❌ API CRITICAL ERROR:', { message: errorMessage, stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json({ error: 'Failed to process mint request.', details: errorMessage }, { status: 500 });
   }
 } 
