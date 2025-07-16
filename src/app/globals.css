@@ -283,7 +283,7 @@
 /* Upload card variants with custom border-radius */
 .cyber-card-upload-jersey {
   position: relative;
-  background: rgba(20, 16, 30, 0.1);
+  background: rgba(20, 16, 30, 0.4);
   border-radius: 2px;
   transition: all 0.2s ease;
 }
@@ -305,7 +305,7 @@
 
 .cyber-card-upload-badge {
   position: relative;
-  background: rgba(20, 16, 30, 0.1);
+  background: rgba(20, 16, 30, 0.4);
   border-radius: 2px;
   transition: all 0.2s ease;
 }
@@ -327,7 +327,7 @@
 
 .cyber-card {
   position: relative;
-  background: rgba(20, 16, 30, 0.1);
+  background: rgba(20, 16, 30, 0.4);
   border-radius: 2px;
   transition: all 0.2s ease;
 }

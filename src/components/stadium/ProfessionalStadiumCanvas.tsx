@@ -301,7 +301,7 @@ export default function ProfessionalStadiumCanvas({
   )
 
   return (
-    <Card className="h-full mt-[10px] m-[10px] mb-0 bg-[#111011] border-[#333333] shadow-xl max-w-4xl mx-auto">
+    <Card className="h-full mt-[10px] m-[10px] mb-0 bg-[#111011]/40 border-[#333333] shadow-xl max-w-4xl mx-auto">
       <CardContent className="p-[1px] pb-0 h-full flex flex-col">
         {error ? renderError() : isLoading ? renderLoading() : generatedImage ? renderImage() : renderPlaceholder()}
       </CardContent>
