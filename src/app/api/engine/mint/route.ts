@@ -8,7 +8,7 @@ const amoy = defineChain(80002);
 
 // Lê as variáveis de ambiente com os nomes EXATOS do seu arquivo .env.local
 const THIRDWEB_SECRET_KEY = process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY;
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     console.error("❌ Server-side configuration error: Missing environment variables.");
     const missing = [
         !THIRDWEB_SECRET_KEY && "NEXT_PUBLIC_THIRDWEB_SECRET_KEY",
-        !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
+        !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET",
         !BACKEND_WALLET_ADDRESS && "NEXT_PUBLIC_BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
     console.error(`Missing: ${missing}`);
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: client,
-      vaultAccessToken: process.env.VAULT_ACCESS_TOKEN!,
+      vaultAccessToken: THIRDWEB_SECRET_KEY,
     });
     
     // Enfileira a transação
