@@ -36,12 +36,7 @@ interface ApiBadge {
   previewImage: string | null;
 }
 
-interface MarketplaceNFT {
-  name: string;
-  imageUrl: string; // CORRIGIDO: sem underscore para ser consistente
-  description: string;
-  price: string;
-}
+// MarketplaceNFT interface removida - marketplace não é mais usado na página de badges
 
 export default function BadgeEditor() {
   const router = useRouter()
@@ -682,9 +677,8 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         .slice(0, 6); // Limitar a 6 itens no carrossel
 
         console.log('✅ Top Collections compiled for badges:', allTopCollections);
-        if (allTopCollections.length > 0) {
-          setMarketplaceNFTs(allTopCollections);
-        }
+        // Marketplace foi removido da página de badges para manter consistência
+        // com as páginas de jersey e stadium
         // Se APIs falharem, mantém fallback
 
       } catch (error) {
