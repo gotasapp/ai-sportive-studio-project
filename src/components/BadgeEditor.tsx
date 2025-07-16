@@ -602,11 +602,9 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
     setIsAnalyzing(false)
   }
 
-
-
-
-
-
+  // useEffect para carregar dados do marketplace
+  useEffect(() => {
+    const loadTopCollectionsData = async () => {
       try {
         console.log('🔄 Loading top collections data for badge editor...');
         

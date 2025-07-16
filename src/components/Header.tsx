@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { Shield, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -13,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AccountName } from '@/components/ui/account-name';
 import { CustomConnectButton } from '@/components/ui/custom-connect-button';
+import { HeaderLogo } from '@/components/ui/Logo';
 
 export default function Header() {
   const account = useActiveAccount();
@@ -220,19 +220,7 @@ export default function Header() {
           isMobile ? "py-2" : "py-3"
         )}>
           {/* Logo */}
-          <div className="flex items-center space-x-3">
-            <Image 
-              src="https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png" 
-              alt="Chiliz Logo" 
-              width={isMobile ? 120 : 180}
-              height={isMobile ? 32 : 48}
-              className={cn(
-                "object-contain",
-                isMobile ? "w-auto h-8 ml-2" : "w-auto h-12 ml-6"
-              )}
-              priority
-            />
-          </div>
+          <HeaderLogo />
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center space-x-6">
