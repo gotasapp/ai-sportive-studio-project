@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
     const transaction = mintTo({ contract, to, nft: metadataUri });
 
     console.log("✅ API: Transaction prepared with metadata URI:", metadataUri);
+    console.log("📍 Chain:", amoy.id, "- Polygon Amoy");
+    console.log("📄 Contract:", CONTRACT_ADDRESS);
+    console.log("👤 Backend Wallet:", BACKEND_WALLET_ADDRESS);
+    console.log("🎯 Recipient:", to);
 
     // Configuração da Engine conforme documentação
     const serverWallet = Engine.serverWallet({
@@ -72,6 +76,8 @@ export async function POST(request: NextRequest) {
       client: client,
       vaultAccessToken: ENGINE_ACCESS_TOKEN,
     });
+
+    console.log("🔧 Engine configured, enqueueing transaction...");
 
     // Enfileirar a transação
     const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
