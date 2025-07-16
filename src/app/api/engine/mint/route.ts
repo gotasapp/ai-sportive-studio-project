@@ -6,45 +6,28 @@ import { mintTo } from 'thirdweb/extensions/erc721';
 const amoy = defineChain(80002);
 
 // Variáveis de ambiente conforme estão configuradas no Vercel
+// Last updated: 2025-07-16 - Using THIRDWEB_SECRET_KEY as vaultAccessToken
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
-const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL;
-const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN || process.env.ENGINE_ADMIN_KEY || process.env.VAULT_ACCESS_TOKEN;
 
 export async function POST(request: NextRequest) {
-  // --- DIAGNÓSTICO DEFINITIVO ---
+  // --- DIAGNÓSTICO ---
   console.log('--- VERCEL ENVIRONMENT DIAGNOSTIC ---');
   console.log(`1. THIRDWEB_SECRET_KEY:`, {
     isPresent: !!THIRDWEB_SECRET_KEY,
     value: THIRDWEB_SECRET_KEY ? `...${THIRDWEB_SECRET_KEY.slice(-4)}` : 'NÃO ENCONTRADA'
   });
-  console.log(`2. NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS:`, {
-    isPresent: !!CONTRACT_ADDRESS,
-    value: CONTRACT_ADDRESS || 'NÃO ENCONTRADA'
-  });
-  console.log(`3. BACKEND_WALLET_ADDRESS:`, {
-    isPresent: !!BACKEND_WALLET_ADDRESS,
-    value: BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA'
-  });
-  console.log(`4. NEXT_PUBLIC_ENGINE_URL:`, {
-    isPresent: !!ENGINE_URL,
-    value: ENGINE_URL || 'NÃO ENCONTRADA'
-  });
-  console.log(`5. ENGINE_ACCESS_TOKEN:`, {
-    isPresent: !!ENGINE_ACCESS_TOKEN,
-    value: ENGINE_ACCESS_TOKEN ? `...${ENGINE_ACCESS_TOKEN.slice(-4)}` : 'NÃO ENCONTRADA'
-  });
+  console.log(`2. CONTRACT_ADDRESS:`, CONTRACT_ADDRESS || 'NÃO ENCONTRADA');
+  console.log(`3. BACKEND_WALLET_ADDRESS:`, BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA');
   console.log('------------------------------------');
 
   // Validação completa com mensagem específica
-  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL || !ENGINE_ACCESS_TOKEN) {
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
     const missing = [
       !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
-      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
-      !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL",
-      !ENGINE_ACCESS_TOKEN && "ENGINE_ACCESS_TOKEN (or ENGINE_ADMIN_KEY or VAULT_ACCESS_TOKEN)"
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
 
     console.error(`❌ API Error: Missing variables: ${missing}`);
@@ -74,7 +57,7 @@ export async function POST(request: NextRequest) {
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: client,
-      vaultAccessToken: ENGINE_ACCESS_TOKEN,
+      vaultAccessToken: THIRDWEB_SECRET_KEY, // Usar THIRDWEB_SECRET_KEY como estava funcionando em junho
     });
 
     console.log("🔧 Engine configured, enqueueing transaction...");
