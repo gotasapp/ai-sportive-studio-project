@@ -66,6 +66,17 @@ export function useMarketplaceData() {
           const contractType = nft.type || 'ERC721';
           
           let nftOwner = nft.owner || 'Unknown';
+
+          // Buscar owner real da blockchain
+          try {
+            const contract = getContract({ client, chain: polygonAmoy, address: contractAddress });
+            const realOwner = await ownerOf({ contract, tokenId: BigInt(tokenId) });
+            if (realOwner) {
+              nftOwner = realOwner;
+            }
+          } catch (ownerError) {
+            console.warn(`[V2] Não foi possível buscar owner real para tokenId ${tokenId}:`, ownerError);
+          }
           
           const listing = listingsByTokenId.get(tokenId);
           const auction = auctionsByTokenId.get(tokenId);
