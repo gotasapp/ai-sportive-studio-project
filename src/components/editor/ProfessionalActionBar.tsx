@@ -141,7 +141,7 @@ export default function ProfessionalActionBar({
             >
               <div className="flex items-center gap-2 max-lg:gap-1.5">
                 <Wallet className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                <span>Mint Legacy</span>
+                <span>Mint</span>
               </div>
             </Button>
           </TooltipTrigger>

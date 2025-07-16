@@ -21,6 +21,15 @@ const ENHANCED_BASE_PROMPTS = {
         "advanced": "Professional photography quality, studio lighting, premium fabric textures, perfect name/number positioning, exact color matching",
         "premium": "Ultra-high quality, magazine-ready photography, perfect lighting, luxurious fabric details, championship-grade typography, brand-accurate presentation"
       }
+    },
+    // Novo estilo: retro-jersey
+    "retro-jersey": {
+      "base": `A retro-style soccer jersey inspired by the aesthetics of the 80s and 90s. Features thick horizontal or vertical stripes, a soft fabric texture, and a wide ribbed collar (often polo-style) in a contrasting color. Includes vintage stitching details, bold sleeve cuffs, and a looser athletic fit. Displayed floating flat on a clean white background, no mannequin, soft studio lighting, 4K photorealistic quality, with worn color accents and old-school charm. Player {{playerName}} #{{{playerNumber}}}.`,
+      "quality_enhancers": {
+        "basic": "Retro design, visible stripes, vintage collar, soft fabric look",
+        "advanced": "Photorealistic retro jersey, studio lighting, authentic 80s/90s details, worn color accents, premium fabric texture",
+        "premium": "Ultra-high quality, magazine-ready retro jersey, perfect vintage details, luxurious fabric, championship-grade retro presentation"
+      }
     }
   },
   
@@ -170,6 +179,17 @@ TECHNICAL SPECIFICATIONS:
         "premium": "Super Bowl-grade presentation, ultra-high quality, professional sports photography, premium NFL aesthetics, championship typography"
       }
     }
+  },
+  "stadium": {
+    "perspective-internal": {
+      "base": `Photorealistic aerial view of a large football stadium interior in daylight. Colorful curved stands surround a vivid green pitch with mowing patterns. Architecture includes tiered seating and structural beams. Sunlight creates realistic shadows. No people. Centered top-down angle, clean lines, sharp 4K lighting, and sense of massive scale.`,
+      "quality_enhancers": {
+        "basic": "Aerial stadium, vivid pitch, colorful stands, clean lines",
+        "advanced": "Photorealistic stadium, 4K lighting, realistic shadows, architectural details, massive scale",
+        "premium": "Ultra-high quality, magazine-ready stadium, perfect aerial perspective, sharp details, championship-grade presentation"
+      }
+    },
+    // ... outros estilos de stadium se houver ...
   }
 }
 
