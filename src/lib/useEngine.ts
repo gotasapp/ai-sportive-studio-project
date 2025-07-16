@@ -7,6 +7,7 @@ import { useActiveAccount } from 'thirdweb/react';
 export interface MintRequest {
   to: string;
   metadataUri: string;
+  chainId?: number; // Opcional para compatibilidade com componentes existentes
 }
 
 export interface EngineResponse {
