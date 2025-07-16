@@ -226,23 +226,6 @@ export default function ProfessionalActionBar({
                 { trait_type: 'Type', value: 'Public Mint' }
               ]
             }}
-            customTrigger={
-              <Button
-                variant="outline"
-                className={cn(
-                  "h-12 px-6 text-base font-medium transition-all duration-200",
-                  "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  // Mobile responsiveness
-                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-                )}
-              >
-                <div className="flex items-center gap-2 max-lg:gap-1.5">
-                  <Users className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                  <span>Mint Batch</span>
-                </div>
-              </Button>
-            }
           />
         )
       )}
