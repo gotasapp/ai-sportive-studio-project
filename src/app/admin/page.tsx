@@ -286,7 +286,14 @@ export default function AdminDashboard() {
 
   // Mostrar loading completo na primeira carga
   if (initialLoading) {
-    return <AdminDashboardLoadingSkeleton />;
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto"></div>
+          <p className="text-white mt-4">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
   }
 
   // Renderização condicional para dados reais
@@ -345,7 +352,7 @@ export default function AdminDashboard() {
           <Card className="cyber-card border-cyan-500/30">
             <CardHeader>
               <CardTitle>NFTs Criados por Mês</CardTitle>
-              <CardDescription>Evolução mensal de criações</CardDescription>
+          
             </CardHeader>
             <CardContent>
               {loadingCharts ? (
@@ -359,7 +366,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
-                  title="NFTs Criados por Mês"
+                  title=" "
                 />
               )}
             </CardContent>
@@ -369,7 +376,7 @@ export default function AdminDashboard() {
           <Card className="cyber-card border-cyan-500/30">
             <CardHeader>
               <CardTitle>Times Mais Populares</CardTitle>
-              <CardDescription>Distribuição por preferência</CardDescription>
+            
             </CardHeader>
             <CardContent>
               {loadingCharts ? (
@@ -383,7 +390,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
-                  title="Times Mais Populares"
+                  title=" "
                 />
               )}
             </CardContent>
@@ -393,7 +400,7 @@ export default function AdminDashboard() {
           <Card className="cyber-card border-cyan-500/30">
             <CardHeader>
               <CardTitle>Crescimento de Usuários</CardTitle>
-              <CardDescription>Novos usuários por semana</CardDescription>
+          
             </CardHeader>
             <CardContent>
               {loadingCharts ? (
@@ -407,7 +414,7 @@ export default function AdminDashboard() {
                   dataKey="value"
                   xKey="name"
                   height={250}
-                  title="Crescimento de Usuários"
+                  title=" "
                 />
               )}
             </CardContent>
