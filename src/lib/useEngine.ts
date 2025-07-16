@@ -15,6 +15,8 @@ export interface EngineResponse {
   queueId?: string;
   error?: string;
   details?: string;
+  transactionHash?: string; // Para compatibilidade com componentes existentes
+  tokenId?: string; // Para compatibilidade com componentes existentes
 }
 
 export function useEngine() {
