@@ -5,16 +5,16 @@ import { mintTo } from 'thirdweb/extensions/erc721';
 
 const amoy = defineChain(80002);
 
-// Variáveis de ambiente conforme a documentação que funcionou
-const THIRDWEB_SECRET_KEY = process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY;
+// Variáveis de ambiente conforme estão configuradas no Vercel
+const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
-const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL;
 
 export async function POST(request: NextRequest) {
   // --- DIAGNÓSTICO DEFINITIVO ---
   console.log('--- VERCEL ENVIRONMENT DIAGNOSTIC ---');
-  console.log(`1. NEXT_PUBLIC_THIRDWEB_SECRET_KEY:`, {
+  console.log(`1. THIRDWEB_SECRET_KEY:`, {
     isPresent: !!THIRDWEB_SECRET_KEY,
     value: THIRDWEB_SECRET_KEY ? `...${THIRDWEB_SECRET_KEY.slice(-4)}` : 'NÃO ENCONTRADA'
   });
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     isPresent: !!CONTRACT_ADDRESS,
     value: CONTRACT_ADDRESS || 'NÃO ENCONTRADA'
   });
-  console.log(`3. NEXT_PUBLIC_BACKEND_WALLET_ADDRESS:`, {
+  console.log(`3. BACKEND_WALLET_ADDRESS:`, {
     isPresent: !!BACKEND_WALLET_ADDRESS,
     value: BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA'
   });
@@ -35,9 +35,9 @@ export async function POST(request: NextRequest) {
   // Validação das variáveis de ambiente
   if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL) {
     const missing = [
-      !THIRDWEB_SECRET_KEY && "NEXT_PUBLIC_THIRDWEB_SECRET_KEY",
+      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
-      !BACKEND_WALLET_ADDRESS && "NEXT_PUBLIC_BACKEND_WALLET_ADDRESS",
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
       !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL"
     ].filter(Boolean).join(", ");
 
