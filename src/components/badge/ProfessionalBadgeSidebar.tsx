@@ -256,7 +256,7 @@ export default function ProfessionalBadgeSidebar({
                 }}
               >
                 {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}

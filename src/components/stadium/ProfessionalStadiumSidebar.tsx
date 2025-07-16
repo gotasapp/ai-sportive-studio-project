@@ -256,7 +256,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {GENERATION_STYLES.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
@@ -294,7 +294,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {PERSPECTIVES.map((persp) => (
-                  <option key={persp.id} value={persp.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {persp.label}
                   </option>
                 ))}
@@ -332,7 +332,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {ATMOSPHERES.map((atm) => (
-                  <option key={atm.id} value={atm.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {atm.label}
                   </option>
                 ))}
@@ -370,7 +370,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {TIME_OPTIONS.map((time) => (
-                  <option key={time.id} value={time.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {time.label}
                   </option>
                 ))}
@@ -408,7 +408,7 @@ export default function ProfessionalStadiumSidebar({
                 }}
               >
                 {WEATHER_OPTIONS.map((w) => (
-                  <option key={w.id} value={w.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {w.label}
                   </option>
                 ))}
