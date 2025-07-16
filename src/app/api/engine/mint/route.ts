@@ -5,44 +5,44 @@ import { mintTo } from 'thirdweb/extensions/erc721';
 
 const amoy = defineChain(80002);
 
-// Nomes das variáveis exatamente como esperamos que estejam no Vercel.
-const THIRDWEB_SECRET_KEY_NAME = "THIRDWEB_SECRET_KEY";
-const CONTRACT_ADDRESS_NAME = "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS";
-const BACKEND_WALLET_ADDRESS_NAME = "BACKEND_WALLET_ADDRESS";
+// Variáveis de ambiente conforme a documentação que funcionou
+const THIRDWEB_SECRET_KEY = process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY;
+const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
+const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL;
 
 export async function POST(request: NextRequest) {
-  // Lendo as variáveis do ambiente
-  const THIRDWEB_SECRET_KEY = process.env[THIRDWEB_SECRET_KEY_NAME];
-  const CONTRACT_ADDRESS = process.env[CONTRACT_ADDRESS_NAME];
-  const BACKEND_WALLET_ADDRESS = process.env[BACKEND_WALLET_ADDRESS_NAME];
-
   // --- DIAGNÓSTICO DEFINITIVO ---
-  // Este bloco irá nos dizer exatamente o que o servidor Vercel está vendo.
   console.log('--- VERCEL ENVIRONMENT DIAGNOSTIC ---');
-  console.log(`1. Lendo a variável '${THIRDWEB_SECRET_KEY_NAME}':`, {
+  console.log(`1. NEXT_PUBLIC_THIRDWEB_SECRET_KEY:`, {
     isPresent: !!THIRDWEB_SECRET_KEY,
     value: THIRDWEB_SECRET_KEY ? `...${THIRDWEB_SECRET_KEY.slice(-4)}` : 'NÃO ENCONTRADA'
   });
-  console.log(`2. Lendo a variável '${CONTRACT_ADDRESS_NAME}':`, {
+  console.log(`2. NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS:`, {
     isPresent: !!CONTRACT_ADDRESS,
     value: CONTRACT_ADDRESS || 'NÃO ENCONTRADA'
   });
-  console.log(`3. Lendo a variável '${BACKEND_WALLET_ADDRESS_NAME}':`, {
+  console.log(`3. NEXT_PUBLIC_BACKEND_WALLET_ADDRESS:`, {
     isPresent: !!BACKEND_WALLET_ADDRESS,
     value: BACKEND_WALLET_ADDRESS || 'NÃO ENCONTRADA'
   });
+  console.log(`4. NEXT_PUBLIC_ENGINE_URL:`, {
+    isPresent: !!ENGINE_URL,
+    value: ENGINE_URL || 'NÃO ENCONTRADA'
+  });
   console.log('------------------------------------');
 
-  // Validação Crítica
-  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
+  // Validação das variáveis de ambiente
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL) {
     const missing = [
-      !THIRDWEB_SECRET_KEY && THIRDWEB_SECRET_KEY_NAME,
-      !CONTRACT_ADDRESS && CONTRACT_ADDRESS_NAME,
-      !BACKEND_WALLET_ADDRESS && BACKEND_WALLET_ADDRESS_NAME
+      !THIRDWEB_SECRET_KEY && "NEXT_PUBLIC_THIRDWEB_SECRET_KEY",
+      !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
+      !BACKEND_WALLET_ADDRESS && "NEXT_PUBLIC_BACKEND_WALLET_ADDRESS",
+      !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL"
     ].filter(Boolean).join(", ");
 
-    console.error(`❌ API Error: As seguintes variáveis de ambiente estão ausentes ou vazias no Vercel: ${missing}`);
-    return NextResponse.json({ error: `Server configuration error. Variáveis ausentes: ${missing}` }, { status: 500 });
+    console.error(`❌ API Error: Missing variables: ${missing}`);
+    return NextResponse.json({ error: `Server configuration error. Missing: ${missing}` }, { status: 500 });
   }
 
   try {
@@ -53,24 +53,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '"to" address and "metadataUri" are required.' }, { status: 400 });
     }
 
+    // Inicialização correta conforme MILESTONE_3_MINT_ENGINE_FIXED.md
     const client = createThirdwebClient({ secretKey: THIRDWEB_SECRET_KEY });
     const contract = getContract({ client, chain: amoy, address: CONTRACT_ADDRESS });
     const transaction = mintTo({ contract, to, nft: metadataUri });
 
+    console.log("✅ API: Transaction prepared with metadata URI:", metadataUri);
+
+    // Configuração da Engine conforme documentação
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: client,
       vaultAccessToken: THIRDWEB_SECRET_KEY,
     });
 
+    // Enfileirar a transação
     const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
     
-    console.log(`✅ API: Transação enfileirada com sucesso! Queue ID: ${transactionId}`);
+    console.log(`✅ API: Transaction enqueued successfully! Queue ID: ${transactionId}`);
     return NextResponse.json({ queueId: transactionId });
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     console.error('❌ API CRITICAL ERROR:', error);
-    return NextResponse.json({ error: 'Falha ao processar a requisição no servidor.', details: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process mint request.', details: errorMessage }, { status: 500 });
   }
 } 
