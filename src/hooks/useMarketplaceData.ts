@@ -220,220 +220,94 @@ export function useMarketplaceData() {
       console.log('🔄 Processing NFTs with owner lookup + marketplace data...');
       console.log('📋 Sample NFT from combined results:', allNFTs[0]);
        
-       const processedNFTs = await Promise.all(allNFTs.map(async (nft: any, index: number) => {
-         const tokenId = nft.id.toString();
-         const metadata = nft.metadata || {};
-         const contractType = nft.contractType;
-         const contractAddress = nft.contractAddress;
-         
-         console.log(`🔍 Processing NFT #${tokenId} from ${contractType} contract:`, contractAddress);
-         
-         // MANUALLY FETCH OWNER using appropriate function for contract type
-         let nftOwner = 'Unknown';
+       const processedNFTsPromises = allNFTs.map(async (nft: any, index: number) => {
          try {
+           const tokenId = nft.id.toString();
+           const metadata = nft.metadata || {};
+           const contractType = nft.contractType;
+           const contractAddress = nft.contractAddress;
+           
+           console.log(`🔍 Processing NFT #${tokenId} from ${contractType} contract:`, contractAddress);
+           
+           let nftOwner = 'Unknown';
            if (contractType === 'ERC721') {
-             nftOwner = await ownerOf({
-               contract: erc721Contract,
-               tokenId: BigInt(tokenId)
-             });
-             console.log(`✅ ERC721 NFT #${tokenId} owner found:`, nftOwner);
-           } else if (contractType === 'ERC1155') {
-             // For ERC1155, we need to check balance instead of ownership
-             // For Edition Drop, check if user has any balance
-             const balance = await balanceOfERC1155({
-               contract: erc1155Contract,
-               owner: nft.owner || '0x0000000000000000000000000000000000000000', // fallback address
-               tokenId: BigInt(tokenId)
-             });
-             
-                           if (balance > BigInt(0)) {
-               nftOwner = nft.owner || 'Unknown';
-               console.log(`✅ ERC1155 NFT #${tokenId} balance found:`, balance.toString(), 'for owner:', nftOwner);
-             } else {
-               nftOwner = 'No balance';
-               console.log(`ℹ️ ERC1155 NFT #${tokenId} has no balance for default address`);
-             }
-           }
-         } catch (error) {
-           console.warn(`⚠️ Could not fetch ownership for ${contractType} NFT #${tokenId}:`, error);
-           nftOwner = nft.owner || 'Unknown';
-         }
-         
-         // Check if this NFT is listed or auctioned in marketplace
-         const marketplaceListing = listingsByTokenId.get(tokenId);
-         const marketplaceAuction = auctionsByTokenId.get(tokenId);
-         
-         const isListed = !!marketplaceListing;
-         const isAuction = !!marketplaceAuction;
-         
-         let price = 'Not for sale';
-         let currency = 'MATIC';
-         let endTime: Date | undefined;
-         let currentBid: string | undefined;
-         
-         // 🔧 FIX: Proper BigInt to string conversion
-         let listingIdString: string | undefined = undefined;
-         let auctionIdString: string | undefined = undefined;
-         
-         if (isListed && marketplaceListing) {
-           price = marketplaceListing.currencyValuePerToken?.displayValue || 'Not for sale';
-           currency = marketplaceListing.currencyValuePerToken?.symbol || 'MATIC';
-           listingIdString = String(marketplaceListing.id); // Ensure string conversion
-         } else if (isAuction && marketplaceAuction) {
-           const currentTime = Math.floor(Date.now() / 1000);
-           const auctionEndTime = Number(marketplaceAuction.endTimeInSeconds);
-           const isAuctionActive = currentTime < auctionEndTime;
-           
-           // 🚨 DEBUG AUCTION PROCESSING
-           console.log('🏆 PROCESSING AUCTION:', {
-             tokenId,
-             id: marketplaceAuction.id, // ← O valor correto conforme docs
-             auctionId: marketplaceAuction.id, // Use 'id' instead of 'auctionId'
-             auctionIdType: typeof marketplaceAuction.id,
-             auctionIdToString: marketplaceAuction.id?.toString(),
-             auctionCreator: marketplaceAuction.creatorAddress, // Use 'creatorAddress'
-             currentTime,
-             currentTimeDate: new Date(currentTime * 1000),
-             auctionEndTime,
-             auctionEndTimeDate: new Date(auctionEndTime * 1000),
-             isAuctionActive,
-             endTimestamp: marketplaceAuction.endTimeInSeconds,
-             endTimestampType: typeof marketplaceAuction.endTimeInSeconds,
-             minimumBid: marketplaceAuction.minimumBidAmount?.toString(),
-             timeLeft: auctionEndTime - currentTime,
-             timeLeftHours: (auctionEndTime - currentTime) / 3600
-           });
-           
-                        if (isAuctionActive) {
-             // Convert from Wei to MATIC (divide by 10^18)
-             const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
-             const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
-             
-             console.log('💰 BID CONVERSION:', {
-               minBidWei: minBidWei.toString(),
-               minBidMatic,
-               displayValue: `${minBidMatic} MATIC`
-             });
-             
-             currentBid = `${minBidMatic} MATIC`;
-             price = `${minBidMatic} MATIC`;
-             
-             currency = 'MATIC';
-             endTime = new Date(auctionEndTime * 1000);
+               nftOwner = await ownerOf({
+                 contract: getContract({ client, chain: polygonAmoy, address: contractAddress }),
+                 tokenId: BigInt(tokenId)
+               });
            } else {
-             // Para leilões expirados, converter Wei para MATIC
-             const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
-             const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
-             
-             currentBid = `${minBidMatic} MATIC`;
-             price = `${minBidMatic} MATIC`;
-             currency = 'MATIC';
-             endTime = new Date(auctionEndTime * 1000);
+             nftOwner = nft.owner || 'Not available for ERC1155';
            }
-           // 🔧 FIX: Usar 'id' em vez de 'auctionId' conforme documentação Thirdweb
-           // Tratar valores problemáticos no service layer em vez de aqui
-           auctionIdString = marketplaceAuction.id !== undefined && marketplaceAuction.id !== null 
-             ? String(marketplaceAuction.id)
-             : 'INVALID_AUCTION_ID'; // Placeholder para identificar problemas
-           
-           // 🔍 DEBUG: Log final do auctionId processado
-           console.log('🎯 AUCTION ID FINAL:', {
-             tokenId,
-             rawAuctionId: marketplaceAuction.id, // ← Mudado de auctionId para id
-             finalAuctionIdString: auctionIdString,
-             willPassToComponent: auctionIdString || 'undefined'
-           });
-         }
-         
-         console.log(`🔍 NFT #${tokenId} FULL DEBUG:`, {
-           rawNftOwner: nft.owner,
-           fetchedOwner: nftOwner,
-           nftOwnerType: typeof nft.owner,
-           hasMetadata: !!metadata,
-           hasImage: !!metadata.image,
-           isListed,
-           isAuction,
-           price,
-           listingId: listingIdString,
-           listingIdType: typeof listingIdString,
-           auctionId: auctionIdString,
-           auctionCreator: marketplaceAuction?.auctionCreator,
-           auctionEndTime: endTime,
-           currentBid,
-           rawListingId: marketplaceListing?.id,
-           rawListingIdType: typeof marketplaceListing?.id
-         });
-         
-         // Para leilões, o owner é o creatorAddress, não o owner do NFT (que está em escrow)
-         const actualOwner = isAuction && marketplaceAuction ? marketplaceAuction.creatorAddress : nftOwner;
-         
-         console.log(`👤 OWNER DETECTION #${tokenId}:`, {
-           isAuction,
-           nftOwner,
-           auctionCreator: marketplaceAuction?.creatorAddress,
-           actualOwner,
-           ownerSource: isAuction ? 'creatorAddress' : 'nftOwner'
-         });
-         
-         const marketplaceNFT: MarketplaceNFT = {
-           id: tokenId,
-           tokenId: tokenId,
-           name: metadata.name || `${contractType} #${tokenId}`,
-           description: metadata.description || '',
-           image: metadata.image ? convertIpfsToHttp(metadata.image) : '',
-           imageUrl: metadata.image ? convertIpfsToHttp(metadata.image) : '',
-           price: price,
-           currency: currency,
-           owner: actualOwner,
-           creator: actualOwner ? actualOwner.slice(0, 6) + '...' : 'Unknown',
-           category: contractType === 'ERC1155' ? 'edition' : 'nft',
-           type: contractType === 'ERC1155' ? 'edition' : 'nft', 
-           attributes: Array.isArray(metadata.attributes) ? metadata.attributes : [],
-           isListed: isListed,
-           isVerified: true,
-           blockchain: { verified: true, tokenId, owner: nft.owner, contractType },
-           contractAddress: contractAddress,
-           isAuction: isAuction,
-           activeOffers: 0,
-           listingId: listingIdString,
-           auctionId: auctionIdString,
-           currentBid: currentBid,
-           endTime: endTime
-         };
-         
-         console.log(`✅ NFT #${tokenId} processed:`, {
-           name: marketplaceNFT.name,
-           hasImage: !!marketplaceNFT.image,
-           imageUrl: marketplaceNFT.image?.slice(0, 50) + '...'
-         });
-         
-         return marketplaceNFT;
-       }));
-       
-       console.log('🎯 All NFTs processed successfully:', processedNFTs.length);
 
-             // Categorize and select featured NFTs (simplified)
+           const listing = listingsByTokenId.get(tokenId);
+           const auction = auctionsByTokenId.get(tokenId);
+           const imageUrlHttp = convertIpfsToHttp(metadata.image || '');
+
+           const finalNFT: MarketplaceNFT = {
+             id: tokenId,
+             tokenId: tokenId,
+             name: metadata.name || 'Untitled NFT',
+             description: metadata.description || '',
+             image: imageUrlHttp,
+             imageUrl: imageUrlHttp,
+             price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
+             currency: listing?.currencyValuePerToken?.symbol || 'MATIC',
+             owner: nftOwner,
+             creator: nftOwner,
+             category: determineNFTCategoryFromMetadata(metadata),
+             type: contractType,
+             attributes: metadata.attributes || [],
+             isListed: !!listing,
+             isVerified: true,
+             blockchain: {
+               verified: true,
+               tokenId: tokenId,
+               owner: nftOwner,
+               contractType: contractType,
+             },
+             contractAddress: contractAddress,
+             isAuction: !!auction,
+             activeOffers: 0, 
+             listingId: listing?.id.toString(),
+             auctionId: auction?.id.toString(),
+             currentBid: auction?.minimumBidAmount?.toString(),
+             endTime: auction?.endTimeInSeconds ? new Date(Number(auction.endTimeInSeconds) * 1000) : undefined,
+           };
+           return finalNFT;
+
+         } catch (error) {
+           console.error(`❌ Failed to process NFT at index ${index} (ID: ${nft.id?.toString()}):`, error);
+           return null; 
+         }
+       });
+
+       const processedNFTsResults = await Promise.all(processedNFTsPromises);
+       const validProcessedNFTs = processedNFTsResults.filter(Boolean) as MarketplaceNFT[];
+      
+      console.log(`✅ Processed ${validProcessedNFTs.length} valid NFTs successfully`);
+      
+      // Categorize and set final data
        const categorizedNFTs = {
          jerseys: [],
          stadiums: [],
          badges: []
        };
-       const featuredNFTs = processedNFTs.slice(0, 6); // Use first 6 as featured
+       const featuredNFTs = validProcessedNFTs.slice(0, 6); // Use first 6 as featured
 
        console.log('✅ Marketplace data processed successfully:', {
-         total: processedNFTs.length,
+         total: validProcessedNFTs.length,
          featured: featuredNFTs.length,
-         sampleNFT: processedNFTs[0] ? {
-           name: processedNFTs[0].name,
-           image: processedNFTs[0].image ? 'has image' : 'no image'
+         sampleNFT: validProcessedNFTs[0] ? {
+           name: validProcessedNFTs[0].name,
+           image: validProcessedNFTs[0].image ? 'has image' : 'no image'
          } : 'none'
        });
 
       setData({
-        nfts: processedNFTs,
+        nfts: validProcessedNFTs,
         loading: false,
         error: null,
-        totalCount: processedNFTs.length,
+        totalCount: validProcessedNFTs.length,
         categories: categorizedNFTs,
         featuredNFTs
       });
