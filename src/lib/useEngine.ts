@@ -64,10 +64,43 @@ export function useEngine() {
     }
   }, []);
 
+  // Função para checar o status da transação na Engine
+  const getTransactionStatus = async (queueId: string) => {
+    try {
+      // Este endpoint precisa ser criado se quisermos monitorar o status.
+      const response = await fetch(`/api/engine/status/${queueId}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || 'Failed to fetch transaction status');
+      }
+      return await response.json();
+    } catch (err) {
+      console.error('❌ Engine Hook: Failed to get transaction status', err);
+      return { success: false, error: err instanceof Error ? err.message : 'Unknown error' };
+    }
+  };
+
+  // Helper para criar metadados
+  const createNFTMetadata = useCallback((
+    name: string,
+    description: string,
+    imageUrl: string,
+    attributes: Array<{ trait_type: string; value: string | number }>
+  ) => {
+    return {
+      name,
+      description,
+      image: imageUrl,
+      attributes,
+    };
+  }, []);
+
   return {
     isLoading,
     error,
     mintGasless,
+    getTransactionStatus,
+    createNFTMetadata,
     userAddress: address
   };
 } 
