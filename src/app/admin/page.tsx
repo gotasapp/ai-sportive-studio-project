@@ -354,20 +354,22 @@ export default function AdminDashboard() {
               <CardTitle>NFTs Criados por Mês</CardTitle>
           
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 min-h-[250px]">
               {loadingCharts ? (
                 <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
               ) : chartError ? (
                 <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
               ) : (
-                <AdminChart
-                  data={chartData.monthlyNFTs}
-                  type="area"
-                  dataKey="value"
-                  xKey="name"
-                  height={250}
-                  title=" "
-                />
+                <div className="w-full h-full">
+                  <AdminChart
+                    data={chartData.monthlyNFTs}
+                    type="area"
+                    dataKey="value"
+                    xKey="name"
+                    height={250}
+                    title=" "
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -378,20 +380,22 @@ export default function AdminDashboard() {
               <CardTitle>Times Mais Populares</CardTitle>
             
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 min-h-[250px]">
               {loadingCharts ? (
                 <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
               ) : chartError ? (
                 <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
               ) : (
-                <AdminChart
-                  data={chartData.teamDistribution}
-                  type="pie"
-                  dataKey="value"
-                  xKey="name"
-                  height={250}
-                  title=" "
-                />
+                <div className="w-full h-full">
+                  <AdminChart
+                    data={chartData.teamDistribution}
+                    type="pie"
+                    dataKey="value"
+                    xKey="name"
+                    height={250}
+                    title=" "
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
@@ -402,20 +406,22 @@ export default function AdminDashboard() {
               <CardTitle>Crescimento de Usuários</CardTitle>
           
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-0 min-h-[250px]">
               {loadingCharts ? (
                 <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
               ) : chartError ? (
                 <div className="text-red-400 text-sm">Erro ao carregar gráfico.</div>
               ) : (
-                <AdminChart
-                  data={chartData.userGrowth}
-                  type="line"
-                  dataKey="value"
-                  xKey="name"
-                  height={250}
-                  title=" "
-                />
+                <div className="w-full h-full">
+                  <AdminChart
+                    data={chartData.userGrowth}
+                    type="line"
+                    dataKey="value"
+                    xKey="name"
+                    height={250}
+                    title=" "
+                  />
+                </div>
               )}
             </CardContent>
           </Card>
