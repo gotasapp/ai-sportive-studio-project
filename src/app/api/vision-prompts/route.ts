@@ -1,7 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 // ===== ENHANCED BASE PROMPTS COM FIDELIDADE VISUAL =====
-const ENHANCED_BASE_PROMPTS = {
+
+type QualityEnhancers = {
+  basic: string;
+  advanced: string;
+  premium: string;
+};
+
+type EnhancedPrompt = {
+  base: string;
+  quality_enhancers: QualityEnhancers;
+};
+
+type SportPromptMap = {
+  [viewOrStyle: string]: EnhancedPrompt;
+};
+
+type EnhancedBasePrompts = {
+  [sport: string]: SportPromptMap;
+};
+
+const ENHANCED_BASE_PROMPTS: EnhancedBasePrompts = {
   "soccer": {
     "front": {
       "base": `A professional soccer jersey front view, centered composition. Team crest on chest, {{style}} design style. Player {{playerName}} #{{{playerNumber}}}. Clean background, high-resolution quality, professional lighting.`,
@@ -302,11 +322,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const viewPrompt = sportPrompts[view as keyof typeof sportPrompts]
-    if (!viewPrompt) {
+    // Permitir que tanto 'view' quanto 'style' sejam usados como chave
+    const viewPrompt = sportPrompts[view as keyof typeof sportPrompts] || sportPrompts[style as keyof typeof sportPrompts];
+    if (!viewPrompt || typeof viewPrompt !== 'object' || !('base' in viewPrompt)) {
       return NextResponse.json({
         success: false,
-        error: `View '${view}' not supported for ${sport}. Available: ${Object.keys(sportPrompts).join(', ')}`
+        error: `View/style '${view}'/'${style}' not supported for ${sport}. Available: ${Object.keys(sportPrompts).join(', ')}`
       }, { status: 400 })
     }
 
