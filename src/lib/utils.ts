@@ -5,20 +5,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-// Helper function to get the correct explorer URL based on current network configuration
+// Helper function to get the correct explorer URL - Simplificado para Polygon Amoy
 export function getExplorerUrl(): string {
-  const isTestnet = process.env.NEXT_PUBLIC_USE_TESTNET === 'true';
-  const usePolygon = process.env.NEXT_PUBLIC_USE_POLYGON === 'true';
-  
-  if (usePolygon) {
-    return isTestnet 
-      ? 'https://amoy.polygonscan.com'
-      : 'https://polygonscan.com';
-  } else {
-    return isTestnet 
-      ? 'https://spicy.chzscan.com'
-      : 'https://scan.chiliz.com';
-  }
+  // Usar sempre Polygon Amoy
+  return 'https://amoy.polygonscan.com';
 }
 
 // Helper function to get transaction URL

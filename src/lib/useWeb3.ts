@@ -24,39 +24,24 @@ export function useWeb3() {
   const amoy = defineChain(80002);
   const chzMainnet = defineChain(88888);
   
-  // Determine active chain and contract based on environment
-  const isTestnet = process.env.NEXT_PUBLIC_USE_TESTNET === 'true';
-  const usePolygon = process.env.NEXT_PUBLIC_USE_POLYGON === 'true';
-  
-  const activeChain = isTestnet 
-    ? amoy 
-    : (usePolygon ? defineChain(137) : chzMainnet);
+  // Configuração simplificada - usar diretamente as variáveis configuradas no Vercel
+  const activeChain = amoy; // Polygon Amoy testnet
     
   console.log('[DEBUG] useWeb3 Hook:', {
-    isTestnet,
-    usePolygon,
     activeChainId: activeChain.id,
+    chainName: 'Polygon Amoy'
   });
 
-  // Edition Drop Contract (ERC1155) for collections with multiple quantities and claim conditions
-  const editionDropContractAddress = (isTestnet
-    ? process.env.NEXT_PUBLIC_EDITION_DROP_AMOY_TESTNET
-    : (usePolygon 
-        ? process.env.NEXT_PUBLIC_NFT_EDITION_DROP_CONTRACT_POLYGON
-        : process.env.NEXT_PUBLIC_NFT_EDITION_DROP_CONTRACT_CHZ
-      )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254"; // Default to existing working Edition Drop
-
-  // Legacy NFT Drop Contract (ERC721) for individual unique NFTs
-  const contractAddress = (isTestnet
-    ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET
-    : (usePolygon 
-        ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON
-        : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
-      )) || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
+  // Usar diretamente a variável configurada no Vercel
+  const contractAddress = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
+  
+  // Edition Drop Contract - usar o mesmo por simplicidade
+  const editionDropContractAddress = contractAddress;
   
   console.log('[DEBUG] useWeb3 Contracts:', {
-    legacyContractAddress: contractAddress,
+    contractAddress: contractAddress,
     editionDropContractAddress: editionDropContractAddress,
+    source: 'NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS'
   });
 
   // NFT Collection contract (ERC721) for unique individual NFTs

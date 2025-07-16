@@ -10,9 +10,9 @@ export const API_CONFIG = {
   DEFAULT_SEED: -1
 }
 
-// Network Configuration
-const USE_TESTNET = process.env.NEXT_PUBLIC_USE_TESTNET === 'true'
-const USE_POLYGON = process.env.NEXT_PUBLIC_USE_POLYGON === 'true'
+// Network Configuration - Simplificado para usar Polygon Amoy
+const USE_TESTNET = true;
+const USE_POLYGON = true;
 
 // Supported Networks (CHZ + Polygon only)
 const NETWORKS = {
