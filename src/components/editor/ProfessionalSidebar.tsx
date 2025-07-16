@@ -169,7 +169,7 @@ export default function ProfessionalSidebar({
         )}
 
         {/* Team Selection */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Team" 
@@ -198,11 +198,11 @@ export default function ProfessionalSidebar({
                   position: 'relative'
                 }}
               >
-                <option value="" className="bg-[#14101e] text-[#FDFDFD]">
+                <option value="" className="bg-[#14101e]/10 text-[#FDFDFD]">
                   Select a team...
                 </option>
                 {availableTeams.map((team) => (
-                  <option key={team} value={team} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={team} value={team} className="bg-[#14101e]/10 text-[#FDFDFD]">
                     {team}
                   </option>
                 ))}
@@ -217,7 +217,7 @@ export default function ProfessionalSidebar({
         </Card>
 
         {/* Style Selection */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Style" 
@@ -242,7 +242,7 @@ export default function ProfessionalSidebar({
                 }}
               >
                 {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e] text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#14101e]/10 text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
@@ -255,7 +255,7 @@ export default function ProfessionalSidebar({
         </Card>
 
         {/* Player Details */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Player" 
@@ -325,7 +325,7 @@ export default function ProfessionalSidebar({
             <CardContent className="CardContent p-3 pt-0 space-y-3">
               {!referenceImage ? (
                                   <div
-                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/10 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                   <input
@@ -369,7 +369,7 @@ export default function ProfessionalSidebar({
                               "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedSport === sport.id
                                 ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                                : "border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
                             <div className="text-xs font-medium">{sport.name}</div>
@@ -390,7 +390,7 @@ export default function ProfessionalSidebar({
                               "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedView === view.id
                                 ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                                : "border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
                             <div className="text-xs font-medium">{view.name}</div>
@@ -407,7 +407,7 @@ export default function ProfessionalSidebar({
         </Card>
 
         {/* Custom Prompt */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Custom Prompt" 
@@ -445,7 +445,7 @@ export default function ProfessionalSidebar({
 
         {/* Quality Settings - HIDDEN: Moved to Admin Panel Moderation */}
         {/* 
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
           <CardHeader className="p-0">
             <SectionHeader 
               title="Quality" 
@@ -463,7 +463,7 @@ export default function ProfessionalSidebar({
                     "p-2 rounded-[2px] border transition-colors",
                     quality === 'standard' 
                       ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
-                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
+                      : 'border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
                 >
                   <span className="font-semibold text-sm">STANDARD</span>
@@ -474,14 +474,14 @@ export default function ProfessionalSidebar({
                     "p-2 rounded-[2px] border transition-colors",
                     quality === 'hd'
                       ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
-                      : 'border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD]'
+                      : 'border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
                 >
                   <span className="font-semibold text-sm">HD</span>
                 </button>
               </div>
               {generationCost && (
-                <div className="mt-3 p-2 rounded-[2px] bg-[#333333]/20 border border-[#333333]">
+                <div className="mt-3 p-2 rounded-[2px] bg-[#333333]/10 border border-[#333333]">
                   <div className="flex justify-between items-center text-xs">
                     <span className='text-gray-400'>Generation Cost:</span>
                     <span className="text-white font-mono">{generationCost.toFixed(2)} Credits</span>

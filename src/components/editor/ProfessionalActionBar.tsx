@@ -133,7 +133,7 @@ export default function ProfessionalActionBar({
               variant="outline"
               className={cn(
                 "h-12 px-6 text-base font-medium transition-all duration-200",
-                "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
+                "bg-[#333333]/10 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/20",
                 "disabled:opacity-50 disabled:cursor-not-allowed",
                 // Mobile responsiveness
                 "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
@@ -289,7 +289,7 @@ export default function ProfessionalActionBar({
           </div>
           <Progress
             value={progress || 0}
-            className="h-2 bg-[#333333]/30 max-lg:h-1.5"
+                            className="h-2 bg-[#333333]/10 max-lg:h-1.5"
           />
         </div>
       </div>

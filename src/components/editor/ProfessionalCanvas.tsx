@@ -177,7 +177,7 @@ export default function ProfessionalCanvas({
   const renderImage = () => (
     <div className="flex-1 flex flex-col">
       {/* Canvas Toolbar */}
-      <div className="canvas-toolbar flex items-center justify-between px-4 py-2 bg-[#333333]/20 border-b border-[#333333]">
+                  <div className="canvas-toolbar flex items-center justify-between px-4 py-2 bg-[#333333]/10 border-b border-[#333333]">
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-green-500/10 text-green-400 border-green-500/30">
             <CheckCircle className="w-2.5 h-2.5 mr-1" />
@@ -296,7 +296,7 @@ export default function ProfessionalCanvas({
   )
 
   return (
-    <Card className="ProfessionalCanvas h-full mt-[10px] m-[10px] mb-0 bg-[#111011] border-[#333333] shadow-xl max-w-4xl mx-auto">
+            <Card className="ProfessionalCanvas h-full mt-[10px] m-[10px] mb-0 bg-[#111011]/10 border-[#333333] shadow-xl max-w-4xl mx-auto">
       <CardContent className="p-[1px] pb-0 h-full flex flex-col">
         {error ? renderError() : isLoading ? renderLoading() : generatedImage ? renderImage() : renderPlaceholder()}
       </CardContent>
