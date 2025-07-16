@@ -75,6 +75,25 @@ export default function MarketplacePage() {
     return contractAddress;
   };
 
+  const [showGlobalLoader, setShowGlobalLoader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowGlobalLoader(false), 1500);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!marketplaceLoading) setShowGlobalLoader(false);
+  }, [marketplaceLoading]);
+
+  if (showGlobalLoader) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80">
+        <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
+      </div>
+    );
+  }
+
   useEffect(() => {
     // Dados legacy removidos - agora apenas useMarketplaceData é usado
     // O hook useMarketplaceData já carrega todos os dados necessários
