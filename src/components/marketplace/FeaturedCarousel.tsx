@@ -2,9 +2,9 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Star, AlertCircle } from 'lucide-react';
-import Image from 'next/image';
 import { gsap } from 'gsap';
-import { convertIpfsToHttp } from '@/lib/utils';
+import { CarouselImage } from './OptimizedImage';
+import { CarouselSkeleton } from './MarketplacePageSkeleton';
 
 interface RealNFT {
   _id: string;
@@ -121,12 +121,7 @@ export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarou
 
   // Estado de carregamento
   if (loading) {
-    return (
-      <div className="w-full h-[350px] md:h-[400px] lg:h-[500px] bg-transparent flex flex-col items-center justify-center">
-        <div className="w-12 h-12 border-4 border-accent border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p className="text-gray-400 text-sm">Loading featured NFTs...</p>
-      </div>
-    );
+    return <CarouselSkeleton />;
   }
 
   // Estado de erro
@@ -174,13 +169,9 @@ export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarou
             key={index}
             className="relative w-full h-full flex-shrink-0"
           >
-            <Image
-              src={convertIpfsToHttp(nft.imageUrl)}
+            <CarouselImage
+              src={nft.imageUrl}
               alt={nft.name}
-              fill
-              style={{ objectFit: 'cover' }}
-              className="transition-transform duration-300"
-              loading="eager"
               priority={index < 2}
             />
             

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { Heart, MoreVertical, Tag, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
@@ -18,7 +17,7 @@ import { CancelAuctionButton } from './CancelAuctionButton';
 import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
-import { convertIpfsToHttp } from '@/lib/utils';
+import { CardImage } from './OptimizedImage';
 import Link from 'next/link';
 
 interface MarketplaceCardProps {
@@ -328,12 +327,9 @@ export default function MarketplaceCard({
       <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
         <Link href={`/marketplace/collection/${category || 'jerseys'}/${tokenId}`} prefetch={false} legacyBehavior>
           <a className="block relative aspect-square focus:outline-none">
-            <Image 
-              src={convertIpfsToHttp(imageUrl)} 
+            <CardImage 
+              src={imageUrl} 
               alt={name}
-              fill
-              style={{ objectFit: 'cover' }}
-              className="group-hover:scale-105 transition-transform duration-300"
             />
             {/* Header com categoria e ações */}
             <div className="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none">
