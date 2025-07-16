@@ -175,10 +175,10 @@ export default function ProfessionalBadgeSidebar({
                 onValueChange={setSelectedBadge}
                 disabled={!availableBadges || availableBadges.length === 0}
               >
-                <SelectTrigger className="w-full bg-transparent border-[#333333] text-[#FDFDFD]">
+                <SelectTrigger className="w-full bg-transparent border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
                   <SelectValue placeholder="Select a badge template..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1C] border-[#333333] text-[#FDFDFD]">
+                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
                   <SelectItem value="custom_only" className="focus:bg-[#A20131]/20">
                     No Template (Custom Generation)
                   </SelectItem>
