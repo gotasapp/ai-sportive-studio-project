@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface LogoProps {
   width?: number
@@ -60,7 +61,7 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
   }
 
   return (
-    <div className={cn("relative", className)} style={{ width, height }}>
+    <div className="relative" style={{ width, height }}>
       {/* Loading skeleton */}
       {isLoading && (
         <div 
@@ -77,7 +78,8 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
         height={height}
         className={cn(
           "object-contain transition-opacity duration-300",
-          isLoading ? "opacity-0" : "opacity-100"
+          isLoading ? "opacity-0" : "opacity-100",
+          className
         )}
         priority={priority}
         onError={handleImageError}
@@ -91,18 +93,14 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
 
 // Componente específico para o Header com tamanhos responsivos
 export function HeaderLogo() {
+  const isMobile = useIsMobile()
+  
   return (
     <div className="flex items-center space-x-3">
       <Logo 
-        width={180}
-        height={48}
-        className="hidden md:block w-auto h-12 ml-6"
-        priority
-      />
-      <Logo 
-        width={120}
-        height={32}
-        className="md:hidden w-auto h-8 ml-2"
+        width={isMobile ? 120 : 180}
+        height={isMobile ? 32 : 48}
+        className={isMobile ? "w-auto h-8 ml-2" : "w-auto h-12 ml-6"}
         priority
       />
     </div>
