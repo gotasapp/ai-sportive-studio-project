@@ -10,6 +10,7 @@ const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 const ENGINE_URL = process.env.NEXT_PUBLIC_ENGINE_URL;
+const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN || process.env.ENGINE_ADMIN_KEY || process.env.VAULT_ACCESS_TOKEN;
 
 export async function POST(request: NextRequest) {
   // --- DIAGNÓSTICO DEFINITIVO ---
@@ -30,15 +31,20 @@ export async function POST(request: NextRequest) {
     isPresent: !!ENGINE_URL,
     value: ENGINE_URL || 'NÃO ENCONTRADA'
   });
+  console.log(`5. ENGINE_ACCESS_TOKEN:`, {
+    isPresent: !!ENGINE_ACCESS_TOKEN,
+    value: ENGINE_ACCESS_TOKEN ? `...${ENGINE_ACCESS_TOKEN.slice(-4)}` : 'NÃO ENCONTRADA'
+  });
   console.log('------------------------------------');
 
-  // Validação das variáveis de ambiente
-  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL) {
+  // Validação completa com mensagem específica
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !ENGINE_URL || !ENGINE_ACCESS_TOKEN) {
     const missing = [
       !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
       !CONTRACT_ADDRESS && "NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS",
       !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS",
-      !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL"
+      !ENGINE_URL && "NEXT_PUBLIC_ENGINE_URL",
+      !ENGINE_ACCESS_TOKEN && "ENGINE_ACCESS_TOKEN (or ENGINE_ADMIN_KEY or VAULT_ACCESS_TOKEN)"
     ].filter(Boolean).join(", ");
 
     console.error(`❌ API Error: Missing variables: ${missing}`);
@@ -64,7 +70,7 @@ export async function POST(request: NextRequest) {
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: client,
-      vaultAccessToken: THIRDWEB_SECRET_KEY,
+      vaultAccessToken: ENGINE_ACCESS_TOKEN,
     });
 
     // Enfileirar a transação
