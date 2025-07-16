@@ -60,8 +60,8 @@ export function useMarketplaceData() {
       
       const processedNFTsPromises = allNFTs.map(async (nft: any, index: number) => {
         try {
-          const tokenId = nft.id.toString();
-          const metadata = nft.metadata || {};
+         const tokenId = nft.id.toString();
+         const metadata = nft.metadata || {};
           const contractAddress = NFT_CONTRACT_ADDRESS;
           const contractType = nft.type || 'ERC721';
           
@@ -72,10 +72,10 @@ export function useMarketplaceData() {
           const imageUrlHttp = convertIpfsToHttp(metadata.image || '');
 
           const finalNFT: MarketplaceNFT = {
-            id: tokenId,
-            tokenId: tokenId,
+           id: tokenId,
+           tokenId: tokenId,
             name: metadata.name || 'Untitled NFT',
-            description: metadata.description || '',
+           description: metadata.description || '',
             image: imageUrlHttp,
             imageUrl: imageUrlHttp,
             price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
@@ -86,16 +86,16 @@ export function useMarketplaceData() {
             type: contractType,
             attributes: metadata.attributes || [],
             isListed: !!listing,
-            isVerified: true,
+           isVerified: true,
             blockchain: {
               verified: true,
               tokenId: tokenId,
               owner: nftOwner,
               contractType: contractType,
             },
-            contractAddress: contractAddress,
+           contractAddress: contractAddress,
             isAuction: !!auction,
-            activeOffers: 0, 
+           activeOffers: 0,
             listingId: listing?.id.toString(),
             auctionId: auction?.id.toString(),
             currentBid: auction?.minimumBidAmount?.toString(),
