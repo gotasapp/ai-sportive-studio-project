@@ -77,6 +77,7 @@ export default function MarketplacePage() {
 
   const [showGlobalLoader, setShowGlobalLoader] = useState(true);
 
+  // Todos os hooks devem estar no topo, fora de qualquer if/return
   useEffect(() => {
     const timer = setTimeout(() => setShowGlobalLoader(false), 1500);
     return () => clearTimeout(timer);
@@ -99,10 +100,26 @@ export default function MarketplacePage() {
     // O hook useMarketplaceData já carrega todos os dados necessários
   }, []);
 
-  // Update counters whenever underlying data changes
   useEffect(() => {
-    // Usar dados do marketplace em vez de allNfts legacy
-    // Garantir que marketplaceItems não seja undefined
+    let filtered = marketplaceItems || [];
+    if (tokenType !== 'all') {
+      filtered = filtered.filter(item => {
+        if (tokenType === 'jerseys') return item.category === 'jersey';
+        if (tokenType === 'stadiums') return item.category === 'stadium';
+        if (tokenType === 'badges') return item.category === 'badge';
+        return true;
+      });
+    }
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(item => 
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.category?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    setFilteredNfts(filtered);
+  }, [marketplaceItems, tokenType, searchTerm]);
+
+  useEffect(() => {
     const items = marketplaceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
     setCounters({
@@ -111,73 +128,6 @@ export default function MarketplacePage() {
       owned: ownedCollections.length
     });
   }, [marketplaceItems, watchlist.length, ownedCollections.length]);
-
-  // Filter NFTs based on current filters
-  useEffect(() => {
-    // Filtros agora aplicados aos dados do marketplace
-    // Garantir que marketplaceItems não seja undefined
-    let filtered = marketplaceItems || [];
-    
-    const allCategories = Array.from(new Set(filtered.map(item => item.category)));
-    console.log('🔍 FILTER DEBUG:', {
-      tokenType,
-      totalItems: filtered.length,
-      sampleCategories: filtered.slice(0, 5).map(item => ({ name: item.name, category: item.category })),
-      allCategories,
-      allCategoriesExpanded: allCategories,
-      sampleFullItems: filtered.slice(0, 2)
-    });
-    console.log('📋 CATEGORIES FOUND:', allCategories);
-    console.log('🎯 SAMPLE ITEM FULL:', filtered[0]);
-    
-    // Aplicar filtro de categoria (com detecção inteligente)
-    if (tokenType !== 'all') {
-      console.log('🎯 Filtering by category:', { tokenType });
-      
-      filtered = filtered.filter(item => {
-        // Primeira tentativa: categoria exata
-        if (tokenType === 'jerseys' && item.category === 'jersey') return true;
-        if (tokenType === 'stadiums' && item.category === 'stadium') return true; 
-        if (tokenType === 'badges' && item.category === 'badge') return true;
-        
-        // Fallback: detecção inteligente baseada em nome/descrição
-        const name = (item.name || '').toLowerCase();
-        const description = (item.description || '').toLowerCase();
-        
-        if (tokenType === 'jerseys') {
-          return name.includes('jersey') || description.includes('jersey') || 
-                 name.includes('#') || description.includes('ai-generated') ||
-                 (name.includes(' ') && name.match(/\b\w+\s+\w+\s+#\d+/)); // Pattern: "Team Player #Number"
-        }
-        
-        if (tokenType === 'stadiums') {
-          return name.includes('stadium') || description.includes('stadium') ||
-                 name.includes('arena') || description.includes('arena');
-        }
-        
-        if (tokenType === 'badges') {
-          return name.includes('badge') || description.includes('badge') ||
-                 name.includes('achievement') || description.includes('achievement');
-        }
-        
-        return false;
-      });
-      
-      console.log('✅ After smart category filter:', filtered.length, 'items');
-    }
-    
-    // Aplicar busca por nome
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(item => 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    
-    // Atualizar filteredNfts com dados filtrados do marketplace
-    console.log('💾 Setting filteredNfts:', filtered.length, 'items');
-    setFilteredNfts(filtered);
-  }, [tokenType, marketplaceItems, searchTerm]);
 
   const handleToggleWatchlist = (collectionName: string) => {
     setWatchlist(prev => {
