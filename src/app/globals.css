@@ -341,19 +341,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  border: 1px solid transparent;
+  border: 0.5px solid rgba(169, 169, 169, 0.2);
   border-radius: 2px;
-  padding: 0.25px;
-  background: linear-gradient(to bottom right, rgba(209, 213, 219, 0.15), rgba(243, 244, 246, 0.25), rgba(209, 213, 219, 0.15)) border-box;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: xor;
-  -webkit-mask-composite: xor;
   transition: all 0.2s ease;
   pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
 .cyber-card:hover::before {
-  background: linear-gradient(to bottom right, rgba(229, 231, 235, 0.2), rgba(255, 255, 255, 0.3), rgba(229, 231, 235, 0.2)) border-box;
+  border-color: rgba(169, 169, 169, 0.4);
   pointer-events: none; /* ADICIONADO: Não bloqueia cliques */
 }
 
@@ -433,7 +428,13 @@
 }
 
 .cyber-input option {
-  background: rgba(20, 16, 30, 0.1);
+  background: #1C1C1C;
+  color: #FDFDFD;
+}
+
+.cyber-input option:hover,
+.cyber-input option:focus {
+  background: rgba(162, 1, 49, 0.2);
   color: #FDFDFD;
 }
 

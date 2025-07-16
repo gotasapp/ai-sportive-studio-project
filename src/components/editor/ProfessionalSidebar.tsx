@@ -198,11 +198,11 @@ export default function ProfessionalSidebar({
                   position: 'relative'
                 }}
               >
-                <option value="" className="bg-[#14101e]/10 text-[#FDFDFD]">
+                <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
                   Select a team...
                 </option>
                 {availableTeams.map((team) => (
-                  <option key={team} value={team} className="bg-[#14101e]/10 text-[#FDFDFD]">
+                  <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {team}
                   </option>
                 ))}
@@ -242,7 +242,7 @@ export default function ProfessionalSidebar({
                 }}
               >
                 {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#14101e]/10 text-[#FDFDFD]">
+                  <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {style.label}
                   </option>
                 ))}
