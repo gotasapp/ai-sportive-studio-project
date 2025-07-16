@@ -3,7 +3,11 @@ import { createThirdwebClient, getContract, Engine } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 
-const amoy = defineChain(80002);
+// Define a chain Amoy com RPC dedicado
+const amoy = defineChain({
+  id: 80002,
+  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
+});
 
 // Variáveis de ambiente conforme estão configuradas no Vercel
 // Last updated: 2025-07-16 - Using THIRDWEB_SECRET_KEY as vaultAccessToken

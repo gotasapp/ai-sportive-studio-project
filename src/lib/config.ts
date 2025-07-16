@@ -51,7 +51,7 @@ const NETWORKS = {
     name: 'Polygon Amoy Testnet',
     currency: 'MATIC',
     explorerUrl: 'https://amoy.polygonscan.com',
-    rpcUrl: 'https://rpc-amoy.polygon.technology',
+    rpcUrl: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology',
     faucet: 'https://faucet.polygon.technology',
     isTestnet: true
   }
