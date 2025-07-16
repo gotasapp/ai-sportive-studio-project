@@ -9,7 +9,7 @@ interface ProfessionalEditorLayoutProps {
   sidebar: React.ReactNode
   canvas: React.ReactNode
   actionBar: React.ReactNode
-  marketplace: React.ReactNode
+  marketplace?: React.ReactNode // Tornou-se opcional
   className?: string
   title?: string
   showTitle?: boolean
@@ -111,14 +111,16 @@ export default function ProfessionalEditorLayout({
             >
               <Menu className="h-4 w-4 text-[#ADADAD]" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsMarketplaceOpen(!isMarketplaceOpen)}
-              className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
-            >
-              {isMarketplaceOpen ? <EyeOff className="h-4 w-4 text-[#ADADAD]" /> : <Eye className="h-4 w-4 text-[#ADADAD]" />}
-            </Button>
+            {marketplace && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsMarketplaceOpen(!isMarketplaceOpen)}
+                className="text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 bg-black/50 backdrop-blur-sm"
+              >
+                {isMarketplaceOpen ? <EyeOff className="h-4 w-4 text-[#ADADAD]" /> : <Eye className="h-4 w-4 text-[#ADADAD]" />}
+              </Button>
+            )}
           </div>
 
           {/* Canvas Content & Action Bar Container */}
@@ -135,12 +137,13 @@ export default function ProfessionalEditorLayout({
           </div>
         </div>
 
-        {/* Marketplace Sidebar */}
-        <div className={cn(
-          "relative bg-transparent border-l border-[#333333] transition-all duration-300 ease-in-out",
-          isMarketplaceOpen ? "w-80" : "w-12",
-          "hidden lg:block"
-        )}>
+        {/* Marketplace Sidebar - só renderiza se marketplace existir */}
+        {marketplace && (
+          <div className={cn(
+            "relative bg-transparent border-l border-[#333333] transition-all duration-300 ease-in-out",
+            isMarketplaceOpen ? "w-80" : "w-12",
+            "hidden lg:block"
+          )}>
           {isMarketplaceOpen ? (
             <div className="h-full overflow-y-auto overflow-x-hidden">
               {/* Marketplace Header */}
@@ -179,23 +182,26 @@ export default function ProfessionalEditorLayout({
               </Button>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Mobile Marketplace */}
-      <div className={cn(
-        "lg:hidden bg-transparent border-t border-[#333333] transition-all duration-300 ease-in-out",
-        isMarketplaceOpen ? "h-48" : "h-0"
-      )}>
+      {/* Mobile Marketplace - só renderiza se marketplace existir */}
+      {marketplace && (
         <div className={cn(
-          "h-full overflow-y-auto overflow-x-hidden",
-          !isMarketplaceOpen && "hidden"
+          "lg:hidden bg-transparent border-t border-[#333333] transition-all duration-300 ease-in-out",
+          isMarketplaceOpen ? "h-48" : "h-0"
         )}>
-          <div className="p-4">
-            {marketplace}
+          <div className={cn(
+            "h-full overflow-y-auto overflow-x-hidden",
+            !isMarketplaceOpen && "hidden"
+          )}>
+            <div className="p-4">
+              {marketplace}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (

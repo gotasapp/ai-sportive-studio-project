@@ -1,3 +1,12 @@
+# BACKUP: JerseyEditor.tsx - Estado Atual (Pré-Reset)
+
+**Data**: ${new Date().toISOString()}
+**Motivo**: Backup antes de reset do commit devido a erros de deploy
+**Objetivo**: Preservar mudanças da remoção do marketplace e layout 2-colunas
+
+## Arquivo: src/components/JerseyEditor.tsx
+
+```tsx
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
@@ -48,8 +57,6 @@ const VISION_MODELS = [
   { id: 'meta-llama/llama-3.2-11b-vision-instruct', name: 'Llama 3.2 Vision', cost: '~$0.02' },
   { id: 'qwen/qwen-2-vl-72b-instruct', name: 'Qwen 2 VL', cost: '~$0.025' }
 ]
-
-
 
 export default function JerseyEditor() {
   const router = useRouter()
@@ -114,8 +121,6 @@ export default function JerseyEditor() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-
-
 
   // ===== NEW VISION ANALYSIS STATES =====
   const [isVisionMode, setIsVisionMode] = useState(false)
@@ -945,7 +950,7 @@ Design based on analysis: ${analysisText}`
             // Method 1: Try fetch conversion
             console.log('🔄 [VISION GENERATION] Converting base64 to blob...')
             const response = await fetch(imageDataUrl)
-        const blob = await response.blob()
+            const blob = await response.blob()
             
             // Validate blob
             if (!blob || blob.size === 0) {
@@ -1032,20 +1037,20 @@ Design based on analysis: ${analysisText}`
         
         if (finalBlob && finalBlob.size > 0) {
           console.log('✅ [SAVE] Proceeding with database save using local blob...')
-        await saveJerseyToDB({
-          name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
-          prompt: simplePrompt,
+          await saveJerseyToDB({
+            name: `${selectedTeam} ${playerName} #${playerNumber} (Vision)`,
+            prompt: simplePrompt,
             imageUrl: generatedImage, // Use the converted base64 or original URL
-          creatorWallet: address || "N/A",
-          tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
-          metadata: {
-            generationMode: 'vision_enhanced',
-            hasReferenceImage: true,
-            analysisUsed: !!analysisResult,
-            sport: selectedSport,
-            view: selectedView,
-            visionModel: selectedVisionModel,
-            qualityLevel: 'advanced',
+            creatorWallet: address || "N/A",
+            tags: [selectedTeam, selectedStyle, 'vision-generated', selectedSport, selectedView],
+            metadata: {
+              generationMode: 'vision_enhanced',
+              hasReferenceImage: true,
+              analysisUsed: !!analysisResult,
+              sport: selectedSport,
+              view: selectedView,
+              visionModel: selectedVisionModel,
+              qualityLevel: 'advanced',
               costUsd: visionResult.cost_usd,
               dalleImageUrl: visionResult.image_url // Keep original URL for reference
             }
@@ -1303,8 +1308,6 @@ Design based on analysis: ${analysisText}`
     loadTeams();
   }, []);
 
-
-
   return (
     <ProfessionalEditorLayout
       sidebar={
@@ -1390,3 +1393,137 @@ Design based on analysis: ${analysisText}`
     />
   )
 } 
+```
+
+## Arquivo: src/components/layouts/ProfessionalEditorLayout.tsx
+
+```tsx
+'use client'
+
+import React from 'react'
+import { cn } from '@/lib/utils'
+
+interface MarketplaceNFT {
+  id: string
+  name: string
+  image: string
+  price: string
+  collection: string
+}
+
+interface ProfessionalEditorLayoutProps {
+  sidebar: React.ReactNode
+  canvas: React.ReactNode
+  actionBar: React.ReactNode
+  marketplace?: React.ReactNode // Tornou-se opcional
+}
+
+export default function ProfessionalEditorLayout({
+  sidebar,
+  canvas,
+  actionBar,
+  marketplace
+}: ProfessionalEditorLayoutProps) {
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <div className="border-b">
+          {sidebar}
+        </div>
+        
+        <div className="p-4">
+          {canvas}
+        </div>
+        
+        <div className="border-t p-4 bg-card">
+          {actionBar}
+        </div>
+        
+        {/* Marketplace para mobile apenas se fornecido */}
+        {marketplace && (
+          <div className="border-t p-4">
+            {marketplace}
+          </div>
+        )}
+      </div>
+
+      {/* Desktop Layout */}
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-6 lg:p-6 lg:h-screen">
+        {/* Sidebar - 3 colunas */}
+        <div className="lg:col-span-3 overflow-y-auto">
+          <div className="sticky top-0">
+            {sidebar}
+          </div>
+        </div>
+        
+        {/* Canvas + Action Bar - expandir para usar o espaço do marketplace */}
+        <div className={cn(
+          "flex flex-col gap-6",
+          marketplace ? "lg:col-span-6" : "lg:col-span-9" // Expandir se não há marketplace
+        )}>
+          {/* Canvas */}
+          <div className="flex-1">
+            {canvas}
+          </div>
+          
+          {/* Action Bar */}
+          <div className="bg-card rounded-lg border p-6">
+            {actionBar}
+          </div>
+        </div>
+        
+        {/* Marketplace - 3 colunas, apenas se fornecido */}
+        {marketplace && (
+          <div className="lg:col-span-3 overflow-y-auto">
+            <div className="sticky top-0">
+              {marketplace}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+```
+
+## Mudanças Principais
+
+### 1. **Remoção do Marketplace do JerseyEditor.tsx:**
+- Removida interface `MarketplaceNFT`
+- Removidas todas as variáveis de estado relacionadas ao marketplace
+- Removido useEffect que carregava dados do marketplace  
+- Removida prop `marketplace` do `ProfessionalEditorLayout`
+
+### 2. **Layout 2-Colunas:**
+- **Mobile**: Sidebar → Canvas → ActionBar (marketplace removido)
+- **Desktop**: Sidebar (3 cols) + Canvas+ActionBar (9 cols) em vez de (6 cols)
+
+### 3. **ProfessionalEditorLayout.tsx Flexível:**
+- Prop `marketplace` tornou-se opcional
+- Layout se adapta automaticamente: 
+  - **Com marketplace**: Sidebar (3) + Canvas (6) + Marketplace (3)
+  - **Sem marketplace**: Sidebar (3) + Canvas (9)
+- Renderização condicional em mobile e desktop
+
+### 4. **Funcionalidades Preservadas:**
+- ✅ Sistema de geração dual (Standard + Vision)
+- ✅ Engine gasless mint + Legacy mint  
+- ✅ Monitoramento de status de transação
+- ✅ Todas as funcionalidades de visão e análise
+- ✅ Salvamento em MongoDB + Cloudinary
+- ✅ Validações de admin e rede
+
+## Como Restaurar
+
+Após o reset do commit, copie estes arquivos de volta:
+
+```bash
+# Restaurar JerseyEditor.tsx
+cp BACKUP_JERSEY_EDITOR_CURRENT.md src/components/JerseyEditor.tsx
+
+# Restaurar ProfessionalEditorLayout.tsx  
+cp BACKUP_JERSEY_EDITOR_CURRENT.md src/components/layouts/ProfessionalEditorLayout.tsx
+```
+
+> **Nota**: Este backup preserva todas as funcionalidades funcionais e remove apenas os erros problemáticos relacionados ao marketplace e layout. 
