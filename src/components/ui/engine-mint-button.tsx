@@ -46,8 +46,9 @@ export function EngineMintButton({
       });
 
       console.log('✅ ENGINE: Mint successful!', result);
-      toast.success(`Transaction sent! Queue ID: ${result.queueId}`);
-      onSuccess?.(result.queueId);
+      const queueId = result.queueId || 'unknown';
+      toast.success(`Transaction sent! Queue ID: ${queueId}`);
+      onSuccess?.(queueId);
       
     } catch (error) {
       console.error('❌ ENGINE: Mint failed:', error);
