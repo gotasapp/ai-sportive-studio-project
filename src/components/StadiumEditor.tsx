@@ -479,6 +479,7 @@ This description will be used to generate a new version of the stadium with slig
           isUserAdmin={isUserAdmin}
           getTransactionUrl={getTransactionUrl}
           isAnalyzing={isAnalyzing}
+          hasGeneratedImage={!!generatedImage}
         />
       }
 

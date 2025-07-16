@@ -29,6 +29,7 @@ interface ProfessionalStadiumActionBarProps {
   isUserAdmin: boolean
   getTransactionUrl: (hash: string) => string
   isAnalyzing?: boolean
+  hasGeneratedImage?: boolean
 }
 
 export default function ProfessionalStadiumActionBar({
@@ -49,7 +50,8 @@ export default function ProfessionalStadiumActionBar({
   isOnSupportedChain,
   isUserAdmin,
   getTransactionUrl,
-  isAnalyzing = false
+  isAnalyzing = false,
+  hasGeneratedImage = false
 }: ProfessionalStadiumActionBarProps) {
   
   const renderGenerateButton = () => (
@@ -82,7 +84,7 @@ export default function ProfessionalStadiumActionBar({
 
   const renderMintButtons = () => (
     <div className="flex items-center gap-3">
-      {/* Legacy Mint */}
+      {/* Legacy Mint - Sempre visível após gerar imagem */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -98,7 +100,7 @@ export default function ProfessionalStadiumActionBar({
             >
               <div className="flex items-center gap-2">
                 <Wallet className="w-5 h-5" />
-                <span>Mint (Legacy)</span>
+                <span>Mint Legacy</span>
               </div>
             </Button>
           </TooltipTrigger>
@@ -108,8 +110,34 @@ export default function ProfessionalStadiumActionBar({
         </Tooltip>
       </TooltipProvider>
 
-      {/* Gasless Mint - Admin Only */}
-      {isUserAdmin && (
+      {/* Batch Mint Button - Admin: "Batch Mint", Usuário Comum: "Mint Batch" */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() => console.log(`🎯 ${isUserAdmin ? 'Admin Batch' : 'User Batch'} Mint clicked!`)}
+              disabled={!canMintLegacy || isMinting}
+              variant="outline"
+              className={cn(
+                "h-12 px-6 text-base font-medium transition-all duration-200",
+                "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
+                "disabled:opacity-50 disabled:cursor-not-allowed"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5" />
+                <span>{isUserAdmin ? 'Batch Mint' : 'Mint Batch'}</span>
+              </div>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{isUserAdmin ? 'Admin batch mint (gasless)' : 'Public batch mint'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      {/* Gasless Mint - TEMPORARIAMENTE OCULTO (código mantido) */}
+      {false && isUserAdmin && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -187,11 +215,11 @@ export default function ProfessionalStadiumActionBar({
 
       {/* Main Action Bar - Centralizado */}
       <div className="flex items-center justify-center gap-6">
-        {/* Generate Button */}
-        {renderGenerateButton()}
+        {/* ANTES de gerar imagem: Apenas Generate Button centralizado */}
+        {!hasGeneratedImage && renderGenerateButton()}
 
-        {/* Mint Buttons */}
-        {renderMintButtons()}
+        {/* DEPOIS de gerar imagem: Mint Buttons */}
+        {hasGeneratedImage && renderMintButtons()}
       </div>
 
       {/* Connection Warning - Apenas se necessário */}

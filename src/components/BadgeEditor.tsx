@@ -754,6 +754,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           isUserAdmin={isUserAdmin}
           getTransactionUrl={getTransactionUrl}
           isAnalyzing={isAnalyzing}
+          hasGeneratedImage={!!generatedImage}
         />
       }
 
