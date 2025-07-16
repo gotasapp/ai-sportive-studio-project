@@ -19,7 +19,7 @@ import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLay
 import ProfessionalBadgeSidebar from '@/components/badge/ProfessionalBadgeSidebar'
 import ProfessionalBadgeCanvas from '@/components/badge/ProfessionalBadgeCanvas'
 import ProfessionalBadgeActionBar from '@/components/badge/ProfessionalBadgeActionBar'
-import ProfessionalMarketplace from '@/components/editor/ProfessionalMarketplace'
+
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -90,8 +90,7 @@ export default function BadgeEditor() {
   const [availableBadges, setAvailableBadges] = useState<ApiBadge[]>([]);
   const [selectedBadge, setSelectedBadge] = useState<string>('custom_only');
   
-  const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
-  const [marketplaceLoading, setMarketplaceLoading] = useState(true)
+  // Marketplace removed to match Jersey page layout
   
   const supportedChainIds = [88888, 88882, 137, 80002]
   const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
@@ -605,18 +604,8 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
 
 
-  useEffect(() => {
-    const loadTopCollectionsData = async () => {
-      setMarketplaceLoading(true);
-      
-      // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs (prioridade badges)
-      const fallbackData = [
-        { name: 'Corinthians Champion Badge', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png', description: 'AI-generated champion badge', price: '0.03 CHZ' },
-        { name: 'Jersey Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
-        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'AI-generated stadium', price: '0.15 CHZ' },
-      ];
-      setMarketplaceNFTs(fallbackData);
-      setMarketplaceLoading(false);
+
+
 
       try {
         console.log('🔄 Loading top collections data for badge editor...');
@@ -775,24 +764,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           isAnalyzing={isAnalyzing}
         />
       }
-      marketplace={
-        <ProfessionalMarketplace
-          items={marketplaceNFTs}
-          isLoading={marketplaceLoading}
-          onItemClick={(item) => {
-            console.log('Clicked marketplace item:', item)
-          }}
-          onViewAll={() => {
-            console.log('View all marketplace items')
-            // Navegação interna sem nova aba
-            router.push('/marketplace')
-          }}
-          title="Trending NFTs"
-          showSearch={false}
-          showFilters={false}
-          maxItems={6}
-        />
-      }
+
     />
   )
 } 

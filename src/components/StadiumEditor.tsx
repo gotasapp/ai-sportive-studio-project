@@ -15,7 +15,7 @@ import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLay
 import ProfessionalStadiumSidebar from '@/components/stadium/ProfessionalStadiumSidebar'
 import ProfessionalStadiumCanvas from '@/components/stadium/ProfessionalStadiumCanvas'
 import ProfessionalStadiumActionBar from '@/components/stadium/ProfessionalStadiumActionBar'
-import ProfessionalMarketplace from '@/components/editor/ProfessionalMarketplace'
+
 
 // NEW TYPE DEFINITION for stadiums from our API
 interface ApiStadium {
@@ -96,9 +96,7 @@ export default function StadiumEditor() {
   const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
   const [transactionHash, setTransactionHash] = useState<string | null>(null);
   
-  // Marketplace state
-  const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
-  const [marketplaceLoading, setMarketplaceLoading] = useState(true)
+  // Marketplace removed to match Jersey page layout
   
   // Vision Analysis states
   const [isVisionMode, setIsVisionMode] = useState(false)
@@ -115,106 +113,7 @@ export default function StadiumEditor() {
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
   const canMintGasless = generatedImage && isUserAdmin
 
-  // Load marketplace data
-  useEffect(() => {
-    const loadTopCollectionsData = async () => {
-      setMarketplaceLoading(true);
-      
-      // FALLBACK INSTANTÂNEO - Suas imagens reais de NFTs
-      const fallbackData = [
-        { name: 'Camp Nou Stadium', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751638622/jerseys/stadium_camp_nou_realistic_1751638577656.png', description: 'AI-generated stadium', price: '0.15 CHZ' },
-        { name: 'Stadium Collection #1', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
-        { name: 'Stadium Collection #2', imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png', description: 'AI-generated jersey', price: '0.05 CHZ' },
-      ];
-      setMarketplaceNFTs(fallbackData);
-      setMarketplaceLoading(false);
 
-      try {
-        console.log('🔄 Loading top collections data for stadium editor...');
-        
-        // Buscar dados reais das 3 APIs em paralelo
-        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
-          fetch('/api/jerseys'),
-          fetch('/api/stadiums'),
-          fetch('/api/badges')
-        ]);
-
-        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
-          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
-        }
-
-        const jerseys = await jerseysResponse.json();
-        const stadiums = await stadiumsResponse.json();
-        const badges = await badgesResponse.json();
-
-        console.log('📊 Raw API data:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
-
-        // Top 3 Stadiums mais recentes
-        const topStadiums = stadiums
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 3)
-          .map((stadium: any) => ({
-            name: stadium.name,
-            imageUrl: stadium.imageUrl,
-            description: stadium.description || 'AI-generated stadium',
-            price: '0.15 CHZ',
-            category: 'stadium',
-            createdAt: stadium.createdAt
-          }));
-
-        // Top 2 Jerseys mais recentes
-        const topJerseys = jerseys
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 2)
-          .map((jersey: any) => ({
-            name: jersey.name,
-            imageUrl: jersey.imageUrl,
-            description: jersey.description || 'AI-generated jersey',
-            price: '0.05 CHZ',
-            category: 'jersey',
-            createdAt: jersey.createdAt
-          }));
-
-        // Top 1 Badge mais recente
-        const topBadges = badges
-          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 1)
-          .map((badge: any) => ({
-            name: badge.name,
-            imageUrl: badge.imageUrl,
-            description: badge.description || 'AI-generated badge',
-            price: '0.03 CHZ',
-            category: 'badge',
-            createdAt: badge.createdAt
-          }));
-
-        // Combinar priorizando stadiums primeiro, depois outros por data
-        const allTopCollections = [
-          ...topStadiums,
-          ...topJerseys,
-          ...topBadges
-        ]
-        .sort((a: any, b: any) => {
-          // Stadiums primeiro, depois por data
-          if (a.category === 'stadium' && b.category !== 'stadium') return -1;
-          if (a.category !== 'stadium' && b.category === 'stadium') return 1;
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        })
-        .slice(0, 6); // Limitar a 6 itens no carrossel
-
-        console.log('✅ Top Collections compiled for stadiums:', allTopCollections);
-        if (allTopCollections.length > 0) {
-          setMarketplaceNFTs(allTopCollections);
-        }
-
-      } catch (error) {
-        console.error('❌ Error loading top collections data for stadiums:', error);
-        console.log('🔄 Keeping fallback NFT data due to API error');
-      }
-    };
-
-    loadTopCollectionsData();
-  }, []);
 
   // Load available stadiums from our new DB-driven endpoint
   useEffect(() => {
@@ -582,24 +481,7 @@ This description will be used to generate a new version of the stadium with slig
           isAnalyzing={isAnalyzing}
         />
       }
-      marketplace={
-        <ProfessionalMarketplace
-          items={marketplaceNFTs}
-          isLoading={marketplaceLoading}
-          onItemClick={(item) => {
-            console.log('Clicked marketplace item:', item)
-          }}
-          onViewAll={() => {
-            console.log('View all marketplace items')
-            // Navegação interna sem nova aba
-            router.push('/marketplace')
-          }}
-          title="Trending NFTs"
-          showSearch={false}
-          showFilters={false}
-          maxItems={6}
-        />
-      }
+
     />
   )
 } 

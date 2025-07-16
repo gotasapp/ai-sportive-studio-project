@@ -438,6 +438,16 @@
   color: #FDFDFD;
 }
 
+/* Fix para SelectContent ter background sólido */
+[data-radix-select-content] {
+  background: #1C1C1C !important;
+  backdrop-filter: none !important;
+}
+
+[data-radix-popper-content-wrapper] {
+  background: #1C1C1C !important;
+}
+
 .cyber-select {
   background: rgba(20, 16, 30, 0.1);
   border: 0.5px solid rgba(169, 169, 169, 0.3);

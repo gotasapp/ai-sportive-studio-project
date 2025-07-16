@@ -212,7 +212,7 @@ export default function ProfessionalStadiumSidebar({
                 <SelectTrigger className="w-full bg-transparent border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
                   <SelectValue placeholder="Select a stadium template..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
+                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD] shadow-lg">
                   {availableStadiums.length > 0 ? (
                     availableStadiums.map((stadium) => (
                       <SelectItem key={stadium.id} value={stadium.id} className="focus:bg-[#A20131]/20">

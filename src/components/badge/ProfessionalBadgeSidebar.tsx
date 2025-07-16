@@ -178,7 +178,7 @@ export default function ProfessionalBadgeSidebar({
                 <SelectTrigger className="w-full bg-transparent border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
                   <SelectValue placeholder="Select a badge template..." />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
+                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD] shadow-lg">
                   <SelectItem value="custom_only" className="focus:bg-[#A20131]/20">
                     No Template (Custom Generation)
                   </SelectItem>
