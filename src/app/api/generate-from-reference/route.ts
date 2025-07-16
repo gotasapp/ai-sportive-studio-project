@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000';
 
 // Adicione o objeto de estilos genéricos no topo do arquivo
-const GENERIC_STYLE_PROMPTS = {
+const GENERIC_STYLE_PROMPTS: Record<string, string> = {
   "retro-jersey": "A retro-style soccer jersey inspired by the aesthetics of the 80s and 90s. Features thick horizontal or vertical stripes, a soft fabric texture, and a wide ribbed collar (often polo-style) in a contrasting color. Includes vintage stitching details, bold sleeve cuffs, and a looser athletic fit. Displayed floating flat on a clean white background, no mannequin, soft studio lighting, 4K photorealistic quality, with worn color accents and old-school charm.",
   // Adicione outros estilos se quiser
 };
@@ -20,8 +20,8 @@ export async function POST(req: Request) {
       endpoint = '/generate-jersey-from-reference';
       // Se style for um dos genéricos, use o prompt genérico
       let prompt = body.prompt;
-      if (body.style && GENERIC_STYLE_PROMPTS[body.style]) {
-        prompt = GENERIC_STYLE_PROMPTS[body.style];
+      if (body.style && GENERIC_STYLE_PROMPTS[body.style as string]) {
+        prompt = GENERIC_STYLE_PROMPTS[body.style as string];
         console.log('[DEBUG] Usando prompt de estilo genérico:', body.style);
       }
       payload = {
