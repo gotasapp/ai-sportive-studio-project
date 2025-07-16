@@ -218,7 +218,16 @@ export default function AdminDashboard() {
 
   // useEffect inicial usando fetchAllData
   useEffect(() => {
-    fetchAllData();
+    setInitialLoading(true);
+    const minTime = new Promise(resolve => setTimeout(resolve, 1500)); // 1,5 segundos
+    Promise.allSettled([
+      fetchOverviewData(),
+      fetchPopularTeamsData(),
+      fetchRecentSalesData(),
+      fetchChartData()
+    ]).then(() => {
+      minTime.then(() => setInitialLoading(false));
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
