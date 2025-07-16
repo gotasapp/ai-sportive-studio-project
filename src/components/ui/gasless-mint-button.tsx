@@ -51,7 +51,8 @@ export function GaslessMintButton({
       })}
       gasless={{
         provider: "engine",
-        relayerUrl: process.env.NEXT_PUBLIC_ENGINE_URL || ""
+        relayerUrl: process.env.NEXT_PUBLIC_ENGINE_URL || "",
+        relayerForwarderAddress: process.env.BACKEND_WALLET_ADDRESS || "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
         // relayerForwarderAddress é gerenciado automaticamente pelo SDK para Polygon Amoy
       }}
       onTransactionSent={(tx) => {
