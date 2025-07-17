@@ -144,22 +144,7 @@ export default function AnalyticsPage() {
     );
   }
 
-  // Mensagem de erro só se tudo terminou de carregar e não há dados
-  if (
-    !loadingOverview &&
-    !loadingPopularTeams &&
-    !loadingRecentSales &&
-    !overviewData &&
-    popularTeamsData.length === 0 &&
-    recentSalesData.length === 0
-  ) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen">
-        <p className="text-red-500 text-lg font-bold mb-2">No real data found for the admin dashboard.</p>
-        <p className="text-gray-400">Try again later or check your data sources.</p>
-      </div>
-    );
-  }
+  // Remover mensagem de erro: não exibir nada se não houver dados
 
   return (
     <div className="space-y-8">
