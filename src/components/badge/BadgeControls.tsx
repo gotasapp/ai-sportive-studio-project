@@ -21,7 +21,7 @@ const TEAMS = [
   'Corinthians', 
   'Palmeiras',
   'Santos',
-  'Vasco'
+  'Vasco da Gama'
 ]
 
 interface BadgeControlsProps {
