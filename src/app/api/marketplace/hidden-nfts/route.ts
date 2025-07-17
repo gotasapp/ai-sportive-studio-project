@@ -9,6 +9,6 @@ export async function GET() {
     const hiddenIds = hiddenDocs.map(doc => doc.tokenId);
     return NextResponse.json({ hiddenIds });
   } catch (error) {
-    return NextResponse.json({ hiddenIds: [], error: error?.message || 'Failed to fetch hidden NFTs' }, { status: 500 });
+    return NextResponse.json({ hiddenIds: [], error: (error as any)?.message || 'Failed to fetch hidden NFTs' }, { status: 500 });
   }
 } 
