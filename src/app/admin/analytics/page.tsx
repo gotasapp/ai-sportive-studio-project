@@ -132,8 +132,8 @@ export default function AnalyticsPage() {
     alert(`Exporting ${type} report...`)
   }
 
-  // Loader global enquanto todos os dados principais estão carregando
-  if (loadingOverview && loadingPopularTeams && loadingRecentSales) {
+  // Loader global enquanto QUALQUER dado principal está carregando
+  if (loadingOverview || loadingPopularTeams || loadingRecentSales) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="flex flex-col items-center">
