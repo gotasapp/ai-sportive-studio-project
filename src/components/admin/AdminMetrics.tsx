@@ -22,7 +22,7 @@ export function MetricCard({
   description, 
   icon: Icon, 
   trend,
-  className = ''
+  className = ' '
 }: MetricCardProps) {
   return (
     <Card className={`cyber-card ${className}`}>
