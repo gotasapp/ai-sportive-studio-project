@@ -28,12 +28,13 @@ interface FeaturedNFT {
 
 interface FeaturedCarouselProps {
   marketplaceData?: any[];
+  loading?: boolean;
 }
 
-export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarouselProps) {
+export default function FeaturedCarousel({ marketplaceData = [], loading = false }: FeaturedCarouselProps) {
   const [featuredNFTs, setFeaturedNFTs] = useState<FeaturedNFT[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loadingState, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
@@ -120,7 +121,7 @@ export default function FeaturedCarousel({ marketplaceData = [] }: FeaturedCarou
   }, [featuredNFTs.length]);
 
   // Estado de carregamento
-  if (loading) {
+  if (loading || loadingState) {
     return <CarouselSkeleton />;
   }
 

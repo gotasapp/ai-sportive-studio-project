@@ -301,7 +301,7 @@ export default function MarketplacePage() {
       <div className="flex-1">
         {/* Featured Carousel */}
         <div className="w-full">
-          <FeaturedCarousel marketplaceData={marketplaceItems || []} />
+          <FeaturedCarousel marketplaceData={marketplaceItems || []} loading={marketplaceLoading} />
         </div>
 
         {/* Data Source Indicator - Removido temporariamente */}
