@@ -132,6 +132,35 @@ export default function AnalyticsPage() {
     alert(`Exporting ${type} report...`)
   }
 
+  // Loader global enquanto todos os dados principais estão carregando
+  if (loadingOverview && loadingPopularTeams && loadingRecentSales) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-500 mx-auto"></div>
+          <p className="text-cyan-300 mt-4">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Mensagem de erro só se tudo terminou de carregar e não há dados
+  if (
+    !loadingOverview &&
+    !loadingPopularTeams &&
+    !loadingRecentSales &&
+    !overviewData &&
+    popularTeamsData.length === 0 &&
+    recentSalesData.length === 0
+  ) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <p className="text-red-500 text-lg font-bold mb-2">No real data found for the admin dashboard.</p>
+        <p className="text-gray-400">Try again later or check your data sources.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
