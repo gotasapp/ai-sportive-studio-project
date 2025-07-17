@@ -158,11 +158,12 @@ export default function ProfessionalStadiumSidebar({
         <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
         {required && <span className="text-[#A20131] text-xs"></span>}
-        {badge && (
+        {/* Remover badge do SectionHeader */}
+        {/* {badge && (
           <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
             {badge}
           </Badge>
-        )}
+        )} */}
       </div>
       {expandedSections[section] ? (
         <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
