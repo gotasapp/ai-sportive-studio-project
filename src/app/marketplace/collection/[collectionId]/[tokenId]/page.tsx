@@ -436,11 +436,14 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                     {displayData.name}
                   </h1>
                   
+                  {/* Removido: descrição AI do NFT */}
+                  {/*
                   {displayData.description && (
                     <p className="text-[#FDFDFD]/70 text-xs text-center leading-relaxed">
                       {displayData.description}
                     </p>
                   )}
+                  */}
                 </div>
               </CardContent>
             </Card>
