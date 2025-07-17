@@ -6,6 +6,7 @@ export async function GET() {
     const client = await clientPromise;
     const db = client.db('chz-app-db');
     const hiddenDocs = await db.collection('hidden_nfts').find().toArray();
+    console.log('hiddenDocs:', hiddenDocs); // LOG ADICIONADO PARA DEBUG
     const hiddenIds = hiddenDocs.map(doc => doc.tokenId);
     return NextResponse.json({ hiddenIds });
   } catch (error) {

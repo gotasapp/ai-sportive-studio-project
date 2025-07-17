@@ -37,6 +37,7 @@ export default function MarketplacePage() {
   const [watchlist, setWatchlist] = useState<string[]>(['Jersey Collection']);
   const [ownedCollections, setOwnedCollections] = useState<string[]>(['Badge Collection']);
   const [showGlobalLoader, setShowGlobalLoader] = useState(true);
+  const [blacklist, setBlacklist] = useState<string[]>([]);
 
   // Todos os hooks devem estar no topo, fora de qualquer if/return
   useEffect(() => {
@@ -63,8 +64,12 @@ export default function MarketplacePage() {
         item.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    // Filtro temporário de blacklist
+    if (blacklist.length > 0) {
+      filtered = filtered.filter(item => !blacklist.includes(String(item.tokenId)));
+    }
     setFilteredNfts(filtered);
-  }, [marketplaceItems, tokenType, searchTerm]);
+  }, [marketplaceItems, tokenType, searchTerm, blacklist]);
   useEffect(() => {
     const items = marketplaceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
@@ -85,6 +90,17 @@ export default function MarketplacePage() {
     }
     return contractAddress;
   };
+
+  // Buscar blacklist temporária do backend
+  useEffect(() => {
+    fetch('/api/marketplace/hidden-nfts')
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data.hiddenIds)) {
+          setBlacklist(data.hiddenIds.map(String));
+        }
+      });
+  }, []);
 
   // Só depois dos hooks, o return condicional do loader global
   if (showGlobalLoader) {
