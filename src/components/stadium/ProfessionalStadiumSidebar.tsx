@@ -175,8 +175,8 @@ export default function ProfessionalStadiumSidebar({
   return (
     <TooltipProvider>
       <div className="h-full flex flex-col">
-        {/* HEADER FIXO */}
-        <div className="sticky top-0 z-10 bg-[#1C1C1C] p-4 flex items-center justify-center">
+        {/* HEADER NÃO FIXO - aparece só no topo, rola junto com o conteúdo */}
+        <div className="p-4 flex items-center justify-center">
           <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">Stadium Fan NFT</h2>
         </div>
         {/* CONTEÚDO ROLÁVEL */}

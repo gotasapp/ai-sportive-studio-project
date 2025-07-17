@@ -179,9 +179,6 @@ export default function ProfessionalBadgeSidebar({
                   <SelectValue placeholder="Select a badge template..." />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD] shadow-lg">
-                  <SelectItem value="custom_only" className="focus:bg-[#A20131]/20">
-                    No Template (Custom Generation)
-                  </SelectItem>
                   {(availableBadges || []).map((badge) => (
                     <SelectItem key={badge.id} value={badge.id} className="focus:bg-[#A20131]/20">
                       {badge.name}
