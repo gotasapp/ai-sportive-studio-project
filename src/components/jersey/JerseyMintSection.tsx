@@ -5,6 +5,8 @@ import { Wallet, Zap, Upload, ExternalLink, AlertTriangle, Check } from 'lucide-
 import { Button } from '@/components/ui/button'
 import { getTransactionUrl } from '../../lib/utils'
 import { RequireWallet } from '@/components/RequireWallet'
+import { toast } from 'sonner';
+import { useEffect } from 'react';
 
 interface JerseyMintSectionProps {
   // Wallet & Network
@@ -106,6 +108,12 @@ export default function JerseyMintSection({
       default: return null
     }
   }
+
+  useEffect(() => {
+    if (mintStatus === 'success' && mintSuccess) {
+      toast.success('NFT minted successfully!');
+    }
+  }, [mintStatus, mintSuccess]);
 
   if (!generatedImage) {
     return (
@@ -307,28 +315,6 @@ export default function JerseyMintSection({
                     {mintStatus === 'error' && 'Mint failed'}
                   </span>
                 </div>
-
-                {mintSuccess && (
-                  <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-                    <div className="text-green-400 text-sm">{mintSuccess}</div>
-                    {transactionHash && (
-                      <div className="mt-2">
-                        <a
-                          href={forceNetwork === 'polygon-amoy' 
-                            ? `https://amoy.polygonscan.com/tx/${transactionHash}`
-                            : getTransactionUrl(transactionHash)
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1 text-cyan-400 hover:text-cyan-300 text-xs"
-                        >
-                          <span>View Transaction</span>
-                          <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                )}
 
                 {mintError && (
                   <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
