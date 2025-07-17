@@ -183,41 +183,45 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchUserNFTs = async () => {
       if (!account?.address) return
-
       setNftsLoading(true)
       setNftsError(null)
       setDataSource('loading')
-
       try {
         console.log('🔄 Fetching user NFTs for:', account.address)
-
         // Usar API otimizada com cache
         const response = await fetch(`/api/profile/user-nfts?address=${account.address}`)
         const result = await response.json()
-
         if (!result.success) {
           throw new Error(result.error || 'Failed to fetch user NFTs')
         }
-
         const { data, source } = result
         setDataSource(source || 'api')
-
         console.log(`✅ NFTs loaded: ${data.totalNFTs} total (Source: ${source})`)
         console.log(`📊 Breakdown: ${data.owned} owned, ${data.listed} listed, ${data.created} created`)
-
+        // === BUSCAR BLACKLIST DO BACKEND ===
+        let hiddenIds: string[] = [];
+        try {
+          const res = await fetch('/api/marketplace/hidden-nfts');
+          if (res.ok) {
+            const data = await res.json();
+            hiddenIds = data.hiddenIds || [];
+          }
+        } catch (err) {
+          console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
+        }
         // Converter API response para NFTItem format
-        const userNFTs: NFTItem[] = data.nfts.map((nft: any) => ({
-          id: nft.id,
-          name: nft.name,
-          imageUrl: nft.imageUrl,
-          price: nft.price,
-          status: nft.status,
-          createdAt: nft.createdAt,
-          collection: nft.collection
-        }))
-
+        const userNFTs: NFTItem[] = data.nfts
+          .filter((nft: any) => !hiddenIds.includes(nft.id?.toString()))
+          .map((nft: any) => ({
+            id: nft.id,
+            name: nft.name,
+            imageUrl: nft.imageUrl,
+            price: nft.price,
+            status: nft.status,
+            createdAt: nft.createdAt,
+            collection: nft.collection
+          }))
         setUserNFTs(userNFTs)
-
       } catch (error) {
         console.error('❌ Error fetching user NFTs:', error)
         setNftsError(error instanceof Error ? error.message : 'Failed to fetch NFTs')
@@ -228,7 +232,6 @@ export default function ProfilePage() {
         setNftsLoading(false)
       }
     }
-
     fetchUserNFTs()
   }, [account?.address])
 

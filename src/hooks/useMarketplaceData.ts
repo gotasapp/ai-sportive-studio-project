@@ -55,10 +55,24 @@ export function useMarketplaceData() {
 
       console.log(`✅ [V2] Found ${allNFTs.length} NFTs, ${listings.length} listings, ${auctions.length} auctions.`);
       
+      // === BUSCAR BLACKLIST DO BACKEND ===
+      let hiddenIds: string[] = [];
+      try {
+        const res = await fetch('/api/marketplace/hidden-nfts');
+        if (res.ok) {
+          const data = await res.json();
+          hiddenIds = data.hiddenIds || [];
+        }
+      } catch (err) {
+        console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
+      }
+      // === FILTRAR NFTs ===
+      const filteredNFTs = allNFTs.filter((nft: any) => !hiddenIds.includes(nft.id?.toString()));
+      
       const listingsByTokenId = new Map(listings.map((l: any) => [l.tokenId.toString(), l]));
       const auctionsByTokenId = new Map(auctions.map((a: any) => [a.tokenId.toString(), a]));
       
-      const processedNFTsPromises = allNFTs.map(async (nft: any, index: number) => {
+      const processedNFTsPromises = filteredNFTs.map(async (nft: any, index: number) => {
         try {
          const tokenId = nft.id.toString();
          const metadata = nft.metadata || {};
