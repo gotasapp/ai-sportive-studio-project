@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
+import clientPromise from '@/lib/mongodb';
 
 /**
  * API para buscar NFTs diretamente do contrato de NFT Collection
@@ -105,11 +106,20 @@ export async function GET(request: Request) {
           }
         }
 
+        // === BLACKLIST FILTER ===
+        // Buscar tokenIds ocultos do MongoDB
+        const client = await clientPromise;
+        const db = client.db('chz-app-db');
+        const hiddenDocs = await db.collection('hidden_nfts').find().toArray();
+        const hiddenIds = hiddenDocs.map(doc => doc.tokenId);
+        // Filtrar NFTs
+        const visibleNFTs = nfts.filter(nft => !hiddenIds.includes(nft.tokenId));
+        // Retornar apenas as NFTs visíveis
         return NextResponse.json({
           success: true,
-          nfts,
+          nfts: visibleNFTs,
           totalSupply: Number(totalSupply),
-          fetched: nfts.length,
+          fetched: visibleNFTs.length,
           contractAddress
         });
 
@@ -242,12 +252,20 @@ export async function GET(request: Request) {
           }
         }
 
+        // === BLACKLIST FILTER ===
+        // Buscar tokenIds ocultos do MongoDB
+        const client = await clientPromise;
+        const db = client.db('chz-app-db');
+        const hiddenDocs = await db.collection('hidden_nfts').find().toArray();
+        const hiddenIds = hiddenDocs.map(doc => doc.tokenId);
+        // Filtrar NFTs
+        const visibleOwnedNfts = ownedNfts.filter(nft => !hiddenIds.includes(nft.tokenId));
         return NextResponse.json({
           success: true,
-          nfts: ownedNfts,
+          nfts: visibleOwnedNfts,
           totalSupply: Number(totalSupply),
           owner: ownerAddress,
-          ownedCount: ownedNfts.length
+          ownedCount: visibleOwnedNfts.length
         });
 
       } catch (error: any) {
