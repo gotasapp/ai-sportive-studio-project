@@ -117,16 +117,20 @@ export default function ProfessionalSidebar({
     section, 
     icon: Icon, 
     required = false,
-    badge
+    badge,
+    onClick,
+    expanded
   }: { 
     title: string
     section: keyof typeof expandedSections
     icon: React.ComponentType<any>
     required?: boolean
     badge?: string
+    onClick?: () => void
+    expanded?: boolean
   }) => (
     <button
-      onClick={() => toggleSection(section)}
+      onClick={onClick || (() => toggleSection(section))}
       className="SectionHeader w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-[2px] transition-colors group"
     >
       <div className="flex items-center gap-3">
@@ -170,156 +174,138 @@ export default function ProfessionalSidebar({
         )}
 
         {/* Team Selection */}
-        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Team" 
-              section="team" 
-              icon={Globe}
-              required={!isVisionMode}
-            />
-          </CardHeader>
-          {expandedSections.team && (
-            <CardContent className="CardContent p-4 pt-0">
-              <select
-                value={selectedTeam}
-                onChange={(e) => setSelectedTeam(e.target.value)}
-                disabled={isVisionMode}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px]",
-                  "transition-colors",
-                  "pointer-events-auto relative", 
-                  selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
-                  isVisionMode && "opacity-50 cursor-not-allowed"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
-                  Select a team...
-                </option>
-                {availableTeams.map((team) => (
-                  <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                    {team}
-                  </option>
-                ))}
-              </select>
-              {isVisionMode && (
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Team auto-detected from reference image
-                </p>
-              )}
-            </CardContent>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Team" 
+            section="team" 
+            icon={Globe}
+            required={!isVisionMode}
+          />
+          <select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            disabled={isVisionMode}
+            className={cn(
+              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
+              "transition-colors",
+              "pointer-events-auto relative", 
+              selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
+              isVisionMode && "opacity-50 cursor-not-allowed"
+            )}
+            style={{ 
+              pointerEvents: 'auto',
+              zIndex: 10,
+              position: 'relative'
+            }}
+          >
+            <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
+              Select a team...
+            </option>
+            {availableTeams.map((team) => (
+              <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                {team}
+              </option>
+            ))}
+          </select>
+          {isVisionMode && (
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Team auto-detected from reference image
+            </p>
           )}
-        </Card>
+        </div>
 
         {/* Style Selection */}
-        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Style" 
-              section="style" 
-              icon={Palette}
-            />
-          </CardHeader>
-          {expandedSections.style && (
-            <CardContent className="CardContent p-4 pt-0">
-              <select
-                value={selectedStyle}
-                onChange={(e) => setSelectedStyle(e.target.value)}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm rounded-[2px] transition-colors pointer-events-auto relative", 
-                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                    {style.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-[#ADADAD] mt-2">
-                Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-              </p>
-            </CardContent>
-          )}
-        </Card>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Style" 
+            section="style" 
+            icon={Palette}
+          />
+          <select
+            value={selectedStyle}
+            onChange={(e) => setSelectedStyle(e.target.value)}
+            className={cn(
+              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none", 
+              selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+            )}
+            style={{ 
+              pointerEvents: 'auto',
+              zIndex: 10,
+              position: 'relative'
+            }}
+          >
+            {STYLE_FILTERS.map((style) => (
+              <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                {style.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-[#ADADAD] mt-2">
+            Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
+          </p>
+        </div>
 
         {/* Player Details */}
-        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Player" 
-              section="player" 
-              icon={User}
-              required
-              badge={playerName && playerNumber ? `${playerName} #${playerNumber}` : undefined}
-            />
-          </CardHeader>
-          {expandedSections.player && (
-            <CardContent className="CardContent p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Player Name
-                </label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
-                    placeholder="JEFF"
-                    maxLength={12}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
-                      playerName ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Jersey Number
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={playerNumber}
-                    onChange={(e) => setPlayerNumber(e.target.value)}
-                    placeholder="10"
-                    maxLength={2}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] placeholder-[#ADADAD] transition-colors", 
-                      playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-[#ADADAD]">Name: max 12 chars • Number: 1-99</p>
-            </CardContent>
-          )}
-        </Card>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Player" 
+            section="player" 
+            icon={User}
+            required
+            badge={playerName && playerNumber ? `${playerName} #${playerNumber}` : undefined}
+          />
+          <div>
+            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+              Player Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
+              <input
+                type="text"
+                value={playerName}
+                onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
+                placeholder="JEFF"
+                maxLength={12}
+                className={cn(
+                  "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none placeholder-[#ADADAD] transition-colors", 
+                  playerName ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
+              />
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+              Jersey Number
+            </label>
+            <div className="relative">
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
+              <input
+                type="text"
+                value={playerNumber}
+                onChange={(e) => setPlayerNumber(e.target.value)}
+                placeholder="10"
+                maxLength={2}
+                className={cn(
+                  "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none placeholder-[#ADADAD] transition-colors", 
+                  playerNumber ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-[#ADADAD]">Name: max 12 chars • Number: 1-99</p>
+        </div>
 
         {/* Upload Image */}
-        <Card className="cyber-card-upload-jersey border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Upload Image" 
-              section="vision" 
-              icon={FileImage}
-              badge={referenceImage ? "Active" : undefined}
-            />
-          </CardHeader>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Upload Image" 
+            section="vision" 
+            icon={FileImage}
+            badge={referenceImage ? "Active" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, vision: !prev.vision }))}
+            expanded={expandedSections.vision}
+          />
           {expandedSections.vision && (
             <CardContent className="CardContent p-3 pt-0 space-y-3">
               {!referenceImage ? (
@@ -403,18 +389,18 @@ export default function ProfessionalSidebar({
               )}
             </CardContent>
           )}
-        </Card>
+        </div>
 
         {/* Custom Prompt */}
-        <Card className="bg-[#333333]/10 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Custom Prompt" 
-              section="prompt" 
-              icon={MessageSquare}
-              badge={customPrompt ? "Added" : undefined}
-            />
-          </CardHeader>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Custom Prompt" 
+            section="prompt" 
+            icon={Sparkles}
+            badge={customPrompt ? "Added" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, prompt: !prev.prompt }))}
+            expanded={expandedSections.prompt}
+          />
           {expandedSections.prompt && (
             <CardContent className="CardContent p-3 pt-0 space-y-2">
               <div>
@@ -440,7 +426,7 @@ export default function ProfessionalSidebar({
               </div>
             </CardContent>
           )}
-        </Card>
+        </div>
 
         {/* Quality Settings - HIDDEN: Moved to Admin Panel Moderation */}
         {/* 

@@ -3,7 +3,7 @@
 import React, { useRef } from 'react'
 import { 
   Upload, X, Building, Users, Eye, Camera, Zap, Cloud, Sunset,
-  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp
+  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -142,16 +142,20 @@ export default function ProfessionalStadiumSidebar({
     section, 
     icon: Icon, 
     required = false,
-    badge
+    badge,
+    onClick,
+    expanded
   }: { 
     title: string
     section: keyof typeof expandedSections
     icon: React.ComponentType<any>
     required?: boolean
     badge?: string
+    onClick?: () => void
+    expanded?: boolean
   }) => (
     <button
-      onClick={() => toggleSection(section)}
+      onClick={onClick || (() => toggleSection(section))}
       className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
     >
       <div className="flex items-center gap-3">
@@ -165,7 +169,7 @@ export default function ProfessionalStadiumSidebar({
           </Badge>
         )} */}
       </div>
-      {expandedSections[section] ? (
+      {expanded ? (
         <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
       ) : (
         <ChevronDown className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
@@ -196,375 +200,276 @@ export default function ProfessionalStadiumSidebar({
           )}
 
           {/* NEW: Stadium Template Selection */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Select Template" 
-                section="template" 
-                icon={Building}
-                required
-              />
-            </CardHeader>
-            {expandedSections.template && (
-              <CardContent className="p-3 pt-2">
-                <Select
-                  value={selectedStadium}
-                  onValueChange={setSelectedStadium}
-                  disabled={availableStadiums.length === 0}
-                >
-                  <SelectTrigger className="w-full bg-transparent border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
-                    <SelectValue placeholder="Select a stadium template..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD] shadow-lg">
-                    {availableStadiums.length > 0 ? (
-                      availableStadiums.map((stadium) => (
-                        <SelectItem key={stadium.id} value={stadium.id} className="focus:bg-[#A20131]/20">
-                          {stadium.name}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="loading" disabled>
-                        Loading stadiums...
-                      </SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Select Template" 
+              section="template" 
+              icon={Building}
+              required
+            />
+            <Select
+              value={selectedStadium}
+              onValueChange={setSelectedStadium}
+              disabled={availableStadiums.length === 0}
+            >
+              <SelectTrigger className="w-full bg-transparent border-none text-[#FDFDFD]">
+                <SelectValue placeholder="Select a stadium template..." />
+              </SelectTrigger>
+              <SelectContent className="bg-[#1C1C1C] border-none text-[#FDFDFD] shadow-lg">
+                {availableStadiums.length > 0 ? (
+                  availableStadiums.map((stadium) => (
+                    <SelectItem key={stadium.id} value={stadium.id} className="focus:bg-[#A20131]/20">
+                      {stadium.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  <SelectItem value="loading" disabled>
+                    Loading stadiums...
+                  </SelectItem>
+                )}
+              </SelectContent>
+            </Select>
+          </div>
           
           {/* Generation Style */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Style" 
-                section="style" 
-                icon={Camera}
-                badge={GENERATION_STYLES.find(s => s.id === generationStyle)?.label}
-              />
-            </CardHeader>
-            {expandedSections.style && (
-              <CardContent className="p-4 pt-0">
-                <select
-                  value={generationStyle}
-                  onChange={(e) => setGenerationStyle(e.target.value)}
-                  className={cn(
-                    "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                    generationStyle ? "text-[#707070]" : "text-[#FDFDFD]"
-                  )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
-                >
-                  {GENERATION_STYLES.map((style) => (
-                    <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                      {style.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Selected: {GENERATION_STYLES.find(s => s.id === generationStyle)?.label} style
-                </p>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Style" 
+              section="style" 
+              icon={Camera}
+              badge={GENERATION_STYLES.find(s => s.id === generationStyle)?.label}
+            />
+            <select
+              value={generationStyle}
+              onChange={(e) => setGenerationStyle(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                generationStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+              )}
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 10,
+                position: 'relative'
+              }}
+            >
+              {GENERATION_STYLES.map((style) => (
+                <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {style.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Selected: {GENERATION_STYLES.find(s => s.id === generationStyle)?.label} style
+            </p>
+          </div>
 
           {/* Perspective */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Perspective" 
-                section="perspective" 
-                icon={Eye}
-                badge={PERSPECTIVES.find(p => p.id === perspective)?.label}
-              />
-            </CardHeader>
-            {expandedSections.perspective && (
-              <CardContent className="p-4 pt-0">
-                <select
-                  value={perspective}
-                  onChange={(e) => setPerspective(e.target.value)}
-                  className={cn(
-                    "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                    perspective ? "text-[#707070]" : "text-[#FDFDFD]"
-                  )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
-                >
-                  {PERSPECTIVES.map((persp) => (
-                    <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                      {persp.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Selected: {PERSPECTIVES.find(p => p.id === perspective)?.label} perspective
-                </p>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Perspective" 
+              section="perspective" 
+              icon={Eye}
+              badge={PERSPECTIVES.find(p => p.id === perspective)?.label}
+            />
+            <select
+              value={perspective}
+              onChange={(e) => setPerspective(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                perspective ? "text-[#707070]" : "text-[#FDFDFD]"
+              )}
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 10,
+                position: 'relative'
+              }}
+            >
+              {PERSPECTIVES.map((persp) => (
+                <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {persp.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Selected: {PERSPECTIVES.find(p => p.id === perspective)?.label} perspective
+            </p>
+          </div>
 
           {/* Atmosphere */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Atmosphere" 
-                section="atmosphere" 
-                icon={Users}
-                badge={ATMOSPHERES.find(a => a.id === atmosphere)?.label}
-              />
-            </CardHeader>
-            {expandedSections.atmosphere && (
-              <CardContent className="p-4 pt-0">
-                <select
-                  value={atmosphere}
-                  onChange={(e) => setAtmosphere(e.target.value)}
-                  className={cn(
-                    "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                    atmosphere ? "text-[#707070]" : "text-[#FDFDFD]"
-                  )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
-                >
-                  {ATMOSPHERES.map((atm) => (
-                    <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                      {atm.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Selected: {ATMOSPHERES.find(a => a.id === atmosphere)?.label} atmosphere
-                </p>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Atmosphere" 
+              section="atmosphere" 
+              icon={Users}
+              badge={ATMOSPHERES.find(a => a.id === atmosphere)?.label}
+            />
+            <select
+              value={atmosphere}
+              onChange={(e) => setAtmosphere(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                atmosphere ? "text-[#707070]" : "text-[#FDFDFD]"
+              )}
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 10,
+                position: 'relative'
+              }}
+            >
+              {ATMOSPHERES.map((atm) => (
+                <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {atm.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Selected: {ATMOSPHERES.find(a => a.id === atmosphere)?.label} atmosphere
+            </p>
+          </div>
 
           {/* Time of Day */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Time of Day" 
-                section="time" 
-                icon={Sunset}
-                badge={TIME_OPTIONS.find(t => t.id === timeOfDay)?.label}
-              />
-            </CardHeader>
-            {expandedSections.time && (
-              <CardContent className="p-4 pt-0">
-                <select
-                  value={timeOfDay}
-                  onChange={(e) => setTimeOfDay(e.target.value)}
-                  className={cn(
-                    "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                    timeOfDay ? "text-[#707070]" : "text-[#FDFDFD]"
-                  )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
-                >
-                  {TIME_OPTIONS.map((time) => (
-                    <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                      {time.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Selected: {TIME_OPTIONS.find(t => t.id === timeOfDay)?.label} time
-                </p>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Time of Day" 
+              section="time" 
+              icon={Sunset}
+              badge={TIME_OPTIONS.find(t => t.id === timeOfDay)?.label}
+            />
+            <select
+              value={timeOfDay}
+              onChange={(e) => setTimeOfDay(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                timeOfDay ? "text-[#707070]" : "text-[#FDFDFD]"
+              )}
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 10,
+                position: 'relative'
+              }}
+            >
+              {TIME_OPTIONS.map((time) => (
+                <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {time.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Selected: {TIME_OPTIONS.find(t => t.id === timeOfDay)?.label} time
+            </p>
+          </div>
 
           {/* Weather */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Weather" 
-                section="weather" 
-                icon={Cloud}
-                badge={WEATHER_OPTIONS.find(w => w.id === weather)?.label}
-              />
-            </CardHeader>
-            {expandedSections.weather && (
-              <CardContent className="p-4 pt-0">
-                <select
-                  value={weather}
-                  onChange={(e) => setWeather(e.target.value)}
-                  className={cn(
-                    "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                    weather ? "text-[#707070]" : "text-[#FDFDFD]"
-                  )}
-                  style={{ 
-                    pointerEvents: 'auto',
-                    zIndex: 10,
-                    position: 'relative'
-                  }}
-                >
-                  {WEATHER_OPTIONS.map((w) => (
-                    <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                      {w.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-[#ADADAD] mt-2">
-                  Selected: {WEATHER_OPTIONS.find(w => w.id === weather)?.label} weather
-                </p>
-              </CardContent>
-            )}
-          </Card>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Weather" 
+              section="weather" 
+              icon={Cloud}
+              badge={WEATHER_OPTIONS.find(w => w.id === weather)?.label}
+            />
+            <select
+              value={weather}
+              onChange={(e) => setWeather(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
+                weather ? "text-[#707070]" : "text-[#FDFDFD]"
+              )}
+              style={{ 
+                pointerEvents: 'auto',
+                zIndex: 10,
+                position: 'relative'
+              }}
+            >
+              {WEATHER_OPTIONS.map((w) => (
+                <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {w.label}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-[#ADADAD] mt-2">
+              Selected: {WEATHER_OPTIONS.find(w => w.id === weather)?.label} weather
+            </p>
+          </div>
 
           {/* Upload Image */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Upload Image" 
-                section="vision" 
-                icon={FileImage}
-                badge={referenceImage ? "Active" : undefined}
-              />
-            </CardHeader>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Upload Image" 
+              section="vision" 
+              icon={FileImage}
+              badge={referenceImage ? "Active" : undefined}
+              onClick={() => setExpandedSections(prev => ({ ...prev, vision: !prev.vision }))}
+              expanded={expandedSections.vision}
+            />
             {expandedSections.vision && (
-              <CardContent className="p-3 pt-0 space-y-3">
-                {!referenceImage ? (
-                  <div
-                    className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      className="hidden"
-                      onChange={onFileUpload}
-                      accept="image/png, image/jpeg, image/webp"
-                    />
-                    <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
-                    <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
-                    <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <div className="relative">
-                      <img
-                        src={referenceImage}
-                        alt="Reference"
-                        className="w-full h-24 object-cover rounded-lg border border-[#333333]"
-                      />
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onClearReference}
-                        className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div>
-                        <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
-                        <div className="grid grid-cols-1 gap-1">
-                          {SPORTS_OPTIONS.map(sport => (
-                            <button
-                              key={sport.id}
-                              onClick={() => setSelectedSport(sport.id)}
-                              className={cn(
-                                "p-2 rounded-lg border text-left transition-all duration-200",
-                                selectedSport === sport.id
-                                  ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                  : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                              )}
-                            >
-                              <div className="text-xs font-medium">{sport.name}</div>
-                              <div className="text-xs opacity-70">{sport.description}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
-                        <div className="grid grid-cols-1 gap-1">
-                          {VIEW_OPTIONS.map(view => (
-                            <button
-                              key={view.id}
-                              onClick={() => setSelectedView(view.id)}
-                              className={cn(
-                                "p-2 rounded-lg border text-left transition-all duration-200",
-                                selectedView === view.id
-                                  ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
-                                  : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
-                              )}
-                            >
-                              <div className="text-xs font-medium">{view.name}</div>
-                              <div className="text-xs opacity-70">{view.description}</div>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
+              <div
+                className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={onFileUpload}
+                  accept="image/png, image/jpeg, image/webp"
+                />
+                <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
+                <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
+                <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
+              </div>
             )}
-          </Card>
+          </div>
 
           {/* Custom Prompt */}
-          <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-            <CardHeader className="p-0">
-              <SectionHeader 
-                title="Custom Prompt" 
-                section="prompt" 
-                icon={MessageSquare}
-                badge={customPrompt ? "Added" : undefined}
-              />
-            </CardHeader>
+          <div className="space-y-2">
+            <SectionHeader 
+              title="Custom Prompt" 
+              section="prompt" 
+              icon={Sparkles}
+              badge={customPrompt ? "Added" : undefined}
+              onClick={() => setExpandedSections(prev => ({ ...prev, prompt: !prev.prompt }))}
+              expanded={expandedSections.prompt}
+            />
             {expandedSections.prompt && (
-              <CardContent className="p-3 pt-0 space-y-2">
-                <div>
-                  <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                    Additional Instructions (Optional)
-                  </label>
-                  <textarea
-                    value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
-                    placeholder="e.g., a futuristic stadium on Mars, with neon lights..."
-                    rows={3}
-                    maxLength={200}
-                    className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
-                  />
-                  <div className="flex justify-between items-center mt-1">
-                    <p className="text-xs text-[#ADADAD]">
-                      Custom instructions for AI generation
-                    </p>
-                    <span className="text-xs text-[#ADADAD]">
-                      {customPrompt.length}/200
-                    </span>
-                  </div>
+              <div>
+                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+                  Additional Instructions (Optional)
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., a futuristic stadium on Mars, with neon lights..."
+                  rows={3}
+                  maxLength={200}
+                  className="w-full px-3 py-2 cyber-select text-[#FDFDFD] text-sm placeholder-[#ADADAD] transition-colors resize-none"
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-[#ADADAD]">
+                    Custom instructions for AI generation
+                  </p>
+                  <span className="text-xs text-[#ADADAD]">
+                    {customPrompt.length}/200
+                  </span>
                 </div>
-              </CardContent>
+              </div>
             )}
-          </Card>
+          </div>
 
           {/* Generation Cost */}
           {generationCost && (
-            <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+            <div className="space-y-2">
+              <SectionHeader 
+                title="Generation Cost" 
+                section="settings" 
+                icon={Zap}
+              />
               <CardContent className="p-4">
                 <div className="p-2 cyber-select">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
                   <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           )}
         </div> {/* Fecha o flex-1 overflow-y-auto */}
       </div> {/* Fecha o h-full flex flex-col */}

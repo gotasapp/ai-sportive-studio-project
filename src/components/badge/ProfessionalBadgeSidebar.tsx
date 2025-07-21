@@ -3,7 +3,7 @@
 import React, { useRef } from 'react'
 import { 
   Upload, X, Zap, Gamepad2, Globe, Crown, Palette,
-  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, User, Hash, Award
+  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, User, Hash, Award, Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
@@ -109,16 +109,20 @@ export default function ProfessionalBadgeSidebar({
     section, 
     icon: Icon, 
     required = false,
-    badge
+    badge,
+    onClick,
+    expanded
   }: { 
     title: string
     section: keyof typeof expandedSections
     icon: React.ComponentType<any>
     required?: boolean
     badge?: string
+    onClick?: () => void
+    expanded?: boolean
   }) => (
     <button
-      onClick={() => toggleSection(section)}
+      onClick={onClick || (() => toggleSection(section))}
       className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
     >
       <div className="flex items-center gap-3">
@@ -131,7 +135,7 @@ export default function ProfessionalBadgeSidebar({
           </Badge>
         )} */}
       </div>
-      {expandedSections[section] ? (
+      {expanded ? (
         <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
       ) : (
         <ChevronDown className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
@@ -160,124 +164,102 @@ export default function ProfessionalBadgeSidebar({
         )}
 
         {/* NEW: Badge Template Selection */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Select Template" 
-              section="template" 
-              icon={Award}
-              required
-            />
-          </CardHeader>
-          {expandedSections.template && (
-            <CardContent className="p-3 pt-2">
-              <Select
-                value={selectedBadge}
-                onValueChange={setSelectedBadge}
-                disabled={!availableBadges || availableBadges.length === 0}
-              >
-                <SelectTrigger className="w-full bg-transparent border-[rgba(169,169,169,0.2)] text-[#FDFDFD]">
-                  <SelectValue placeholder="Select a badge template..." />
-                </SelectTrigger>
-                <SelectContent className="bg-[#1C1C1C] border-[rgba(169,169,169,0.2)] text-[#FDFDFD] shadow-lg">
-                  {(availableBadges || []).map((badge) => (
-                    <SelectItem key={badge.id} value={badge.id} className="focus:bg-[#A20131]/20">
-                      {badge.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </CardContent>
-          )}
-        </Card>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Badge" 
+            section="badge" 
+            icon={Award}
+            required
+          />
+          <select
+            value={selectedBadge}
+            onChange={(e) => setSelectedBadge(e.target.value)}
+            className={cn(
+              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
+              selectedBadge ? "text-[#707070]" : "text-[#FDFDFD]"
+            )}
+          >
+            <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
+              Select a badge...
+            </option>
+            {availableBadges.map((badge) => (
+              <option key={badge.id} value={badge.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                {badge.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {/* Badge Details */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Badge Details" 
-              section="details" 
-              icon={User}
-              required
-              badge={badgeName ? badgeName : undefined}
-            />
-          </CardHeader>
-          {expandedSections.details && (
-            <CardContent className="p-3 pt-0 space-y-2">
-              <div>
-                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-                  Badge Name <span className="text-[#A20131]">*</span>
-                </label>
-                <div className="relative">
-                  <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
-                  <input
-                    type="text"
-                    value={badgeName}
-                    onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
-                    placeholder="CHAMPION"
-                    maxLength={15}
-                    className={cn(
-                      "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
-                      badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
-                    )}
-                  />
-                </div>
-              </div>
-              <p className="text-xs text-[#ADADAD]">Name: max 15 characters</p>
-            </CardContent>
-          )}
-        </Card>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Badge Details" 
+            section="details" 
+            icon={User}
+            required
+            badge={badgeName ? badgeName : undefined}
+          />
+          <div>
+            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+              Badge Name <span className="text-[#A20131]">*</span>
+            </label>
+            <div className="relative">
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
+              <input
+                type="text"
+                value={badgeName}
+                onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
+                placeholder="CHAMPION"
+                maxLength={15}
+                className={cn(
+                  "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
+                  badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-[#ADADAD]">Name: max 15 characters</p>
+        </div>
         
         {/* Badge Style */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Style" 
-              section="style" 
-              icon={Palette}
-              badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-            />
-          </CardHeader>
-          {expandedSections.style && (
-            <CardContent className="p-4 pt-0">
-              <select
-                value={selectedStyle}
-                onChange={(e) => setSelectedStyle(e.target.value)}
-                className={cn(
-                  "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                  selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
-                )}
-                style={{ 
-                  pointerEvents: 'auto',
-                  zIndex: 10,
-                  position: 'relative'
-                }}
-              >
-                {STYLE_FILTERS.map((style) => (
-                  <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                    {style.label}
-                  </option>
-                ))}
-              </select>
-              <p className="text-xs text-[#ADADAD] mt-2">
-                Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-              </p>
-            </CardContent>
-          )}
-        </Card>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Style" 
+            section="style" 
+            icon={Palette}
+            badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
+          />
+          <select
+            value={selectedStyle}
+            onChange={(e) => setSelectedStyle(e.target.value)}
+            className={cn(
+              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
+              selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+            )}
+          >
+            {STYLE_FILTERS.map((style) => (
+              <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                {style.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-[#ADADAD] mt-2">
+            Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
+          </p>
+        </div>
 
         {/* Upload Image */}
-        <Card className="cyber-card-upload-badge border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Upload Image" 
-              section="vision" 
-              icon={FileImage}
-              badge={referenceImage ? "Active" : undefined}
-            />
-          </CardHeader>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Upload Image" 
+            section="vision" 
+            icon={FileImage}
+            badge={referenceImage ? "Active" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, vision: !prev.vision }))}
+            expanded={expandedSections.vision}
+          />
           {expandedSections.vision && (
-            <CardContent className="p-3 pt-0 space-y-3">
+            <>
               {!referenceImage ? (
                 <div
                   className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
@@ -357,22 +339,22 @@ export default function ProfessionalBadgeSidebar({
                   </div>
                 </div>
               )}
-            </CardContent>
+            </>
           )}
-        </Card>
+        </div>
 
         {/* Custom Prompt */}
-        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
-          <CardHeader className="p-0">
-            <SectionHeader 
-              title="Custom Prompt" 
-              section="prompt" 
-              icon={MessageSquare}
-              badge={customPrompt ? "Added" : undefined}
-            />
-          </CardHeader>
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Custom Prompt" 
+            section="prompt" 
+            icon={Sparkles}
+            badge={customPrompt ? "Added" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, prompt: !prev.prompt }))}
+            expanded={expandedSections.prompt}
+          />
           {expandedSections.prompt && (
-            <CardContent className="p-3 pt-0 space-y-2">
+            <>
               <div>
                 <label className="block text-xs font-medium text-[#ADADAD] mb-1">
                   Additional Instructions (Optional)
@@ -397,9 +379,9 @@ export default function ProfessionalBadgeSidebar({
                   </span>
                 </div>
               </div>
-            </CardContent>
+            </>
           )}
-        </Card>
+        </div>
 
         {/* Quality Settings - HIDDEN: Moved to Admin Panel Moderation */}
         {/* 
