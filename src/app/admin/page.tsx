@@ -360,86 +360,81 @@ export default function AdminDashboard() {
         </div>
 
         {/* Gráficos */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 h-full">
           {/* Gráfico de NFTs por Mês */}
-          <Card className="cyber-card border-cyan-500/30">
-            <CardHeader>
-              <CardTitle>NFTs Created per Month</CardTitle>
-          
-            </CardHeader>
-            <CardContent className="p-0 min-h-[250px]">
-              {loadingCharts ? (
-                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
-              ) : chartError ? (
-                <div className="text-red-400 text-sm">Error loading chart.</div>
-              ) : (
-                <div className="w-full h-full">
-                  <AdminChart
-                    data={chartData.monthlyNFTs}
-                    type="area"
-                    dataKey="value"
-                    xKey="name"
-                    height={250}
-                    title=" "
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="h-full flex flex-col">
+            <h3 className="text-base font-semibold text-white mb-2">NFTs Created per Month</h3>
+            <Card className="cyber-card border-cyan-500/30 h-full flex flex-col">
+              <CardContent className="p-0 min-h-[250px] h-full flex flex-col">
+                {loadingCharts ? (
+                  <div className="h-56 w-full bg-gray-800 animate-pulse rounded flex-1" />
+                ) : chartError ? (
+                  <div className="text-red-400 text-sm flex-1">Error loading chart.</div>
+                ) : (
+                  <div className="w-full h-full flex-1">
+                    <AdminChart
+                      data={chartData.monthlyNFTs}
+                      type="area"
+                      dataKey="value"
+                      xKey="name"
+                      height={250}
+                      title=" "
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Gráfico de Distribuição de Times */}
-          <Card className="cyber-card border-cyan-500/30">
-            <CardHeader>
-              <CardTitle>Most Popular Teams</CardTitle>
-            
-            </CardHeader>
-            <CardContent className="p-0 min-h-[250px]">
-              {loadingCharts ? (
-                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
-              ) : chartError ? (
-                <div className="text-red-400 text-sm">Error loading chart.</div>
-              ) : (
-                <div className="w-full h-full">
-                  <AdminChart
-                    data={chartData.teamDistribution}
-                    type="pie"
-                    dataKey="value"
-                    xKey="name"
-                    height={250}
-                    title=" "
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <div className="h-full flex flex-col">
+            <h3 className="text-base font-semibold text-white mb-2">Most Popular Teams</h3>
+            <Card className="cyber-card border-cyan-500/30 h-full flex flex-col">
+              <CardContent className="p-0 min-h-[250px] h-full flex flex-col">
+                {loadingCharts ? (
+                  <div className="h-56 w-full bg-gray-800 animate-pulse rounded flex-1" />
+                ) : chartError ? (
+                  <div className="text-red-400 text-sm flex-1">Error loading chart.</div>
+                ) : (
+                  <div className="w-full h-full flex-1">
+                    <AdminChart
+                      data={chartData.teamDistribution}
+                      type="pie"
+                      dataKey="value"
+                      xKey="name"
+                      height={250}
+                      title=" "
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Gráfico de Crescimento de Usuários */}
-          <Card className="cyber-card border-cyan-500/30">
-            <CardHeader>
-              <CardTitle>User Growth</CardTitle>
-          
-            </CardHeader>
-            <CardContent className="p-0 min-h-[250px]">
-              {loadingCharts ? (
-                <div className="h-56 w-full bg-gray-800 animate-pulse rounded" />
-              ) : chartError ? (
-                <div className="text-red-400 text-sm">Error loading chart.</div>
-              ) : (
-                <div className="w-full h-full">
-                  <AdminChart
-                    data={chartData.userGrowth}
-                    type="line"
-                    dataKey="value"
-                    xKey="name"
-                    height={250}
-                    title=" "
-                  />
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
+          <div className="h-full flex flex-col">
+            <h3 className="text-base font-semibold text-white mb-2">User Growth</h3>
+            <Card className="cyber-card border-cyan-500/30 h-full flex flex-col">
+              <CardContent className="p-0 min-h-[250px] h-full flex flex-col">
+                {loadingCharts ? (
+                  <div className="h-56 w-full bg-gray-800 animate-pulse rounded flex-1" />
+                ) : chartError ? (
+                  <div className="text-red-400 text-sm flex-1">Error loading chart.</div>
+                ) : (
+                  <div className="w-full h-full flex-1">
+                    <AdminChart
+                      data={chartData.userGrowth}
+                      type="line"
+                      dataKey="value"
+                      xKey="name"
+                      height={250}
+                      title=" "
+                    />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* Métricas Detalhadas com Glass Effect */}

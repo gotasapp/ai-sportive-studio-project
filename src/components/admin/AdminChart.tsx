@@ -158,18 +158,23 @@ export default function AdminChart({
   };
 
   return (
-    <Card className={`cyber-card ${className}`}>
-      <CardHeader className="pb-4">
-        <CardTitle className="text-sm font-medium text-white">{title}</CardTitle>
-        {description && (
-          <CardDescription className="text-xs text-gray-medium">
-            {description}
-          </CardDescription>
-        )}
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-full">
-          <ResponsiveContainer width="100%" height={height}>
+    <Card className={`cyber-card ${className} h-full flex flex-col`}>
+      {/* Só renderiza o header se houver título ou descrição */}
+      {(title && title.trim() !== '') || description ? (
+        <CardHeader className="pb-4">
+          {title && title.trim() !== '' && (
+            <CardTitle className="text-sm font-medium text-white">{title}</CardTitle>
+          )}
+          {description && (
+            <CardDescription className="text-xs text-gray-medium">
+              {description}
+            </CardDescription>
+          )}
+        </CardHeader>
+      ) : null}
+      <CardContent className="h-full flex-1 flex flex-col p-0">
+        <ChartContainer config={chartConfig} className="h-full flex-1">
+          <ResponsiveContainer width="100%" height="100%" className="h-full">
             {renderChart()}
           </ResponsiveContainer>
         </ChartContainer>
