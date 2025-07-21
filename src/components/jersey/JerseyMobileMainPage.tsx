@@ -12,13 +12,35 @@ const styles = ["Modern", "Retro", "Classic", "Urban", "National"];
 
 type JerseyMobileMainPageProps = {
   onGoToAdvanced: () => void;
+  generatedImage: string | null;
+  isLoading: boolean;
+  error: string | null;
+  onResetError: () => void;
+  playerName: string;
+  playerNumber: string;
+  selectedTeam: string;
+  selectedStyle: string;
+  quality: string;
+  referenceImage: string | null;
+  isVisionMode: boolean;
 };
 
-export default function JerseyMobileMainPage({ onGoToAdvanced }: JerseyMobileMainPageProps) {
-  const [team, setTeam] = useState('Fluminense');
-  const [style, setStyle] = useState('Modern');
-  const [playerName, setPlayerName] = useState('JEFF');
-  const [jerseyNumber, setJerseyNumber] = useState('10');
+export default function JerseyMobileMainPage({
+  onGoToAdvanced,
+  generatedImage,
+  isLoading,
+  error,
+  onResetError,
+  playerName,
+  playerNumber,
+  selectedTeam,
+  selectedStyle,
+  quality,
+  referenceImage,
+  isVisionMode
+}: JerseyMobileMainPageProps) {
+  const [team, setTeam] = useState(selectedTeam || 'Fluminense');
+  const [style, setStyle] = useState(selectedStyle || 'Modern');
   const [customPrompt, setCustomPrompt] = useState('');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
 
@@ -26,7 +48,19 @@ export default function JerseyMobileMainPage({ onGoToAdvanced }: JerseyMobileMai
     <div className="min-h-screen bg-black text-white flex flex-col items-center px-2 py-4">
       {/* Canvas ocupa o topo, com mesmo tamanho do preview antigo */}
       <div className="w-full max-w-sm aspect-square mx-auto mb-6">
-        <ProfessionalCanvas />
+        <ProfessionalCanvas
+          generatedImage={generatedImage}
+          isLoading={isLoading}
+          error={error}
+          onResetError={onResetError}
+          playerName={playerName}
+          playerNumber={playerNumber}
+          selectedTeam={team}
+          selectedStyle={style}
+          quality={quality}
+          referenceImage={referenceImage}
+          isVisionMode={isVisionMode}
+        />
       </div>
 
       {/* Form Buttons/Inputs */}
