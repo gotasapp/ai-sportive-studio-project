@@ -10,7 +10,11 @@ import ProfessionalCanvas from '@/components/editor/ProfessionalCanvas';
 const teams = ["Fluminense", "Flamengo", "Palmeiras", "Vasco", "Corinthians", "São Paulo"];
 const styles = ["Modern", "Retro", "Classic", "Urban", "National"];
 
-export default function JerseyMobileMainPage({ onGoToAdvanced }) {
+type JerseyMobileMainPageProps = {
+  onGoToAdvanced: () => void;
+};
+
+export default function JerseyMobileMainPage({ onGoToAdvanced }: JerseyMobileMainPageProps) {
   const [team, setTeam] = useState('Fluminense');
   const [style, setStyle] = useState('Modern');
   const [playerName, setPlayerName] = useState('JEFF');
