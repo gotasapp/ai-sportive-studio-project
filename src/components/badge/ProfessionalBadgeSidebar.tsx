@@ -167,7 +167,7 @@ export default function ProfessionalBadgeSidebar({
         <div className="space-y-2">
           <SectionHeader 
             title="Badge" 
-            section="badge" 
+            section="template" 
             icon={Award}
             required
           />
