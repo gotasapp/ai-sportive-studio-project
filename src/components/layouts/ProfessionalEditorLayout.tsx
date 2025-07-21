@@ -62,7 +62,7 @@ export default function ProfessionalEditorLayout({
           )}>
             {/* Sidebar Header */}
             {showTitle && (
-              <div className="sticky top-0 z-10 bg-transparent p-4">
+              <div className="p-4 pb-2">
                 <div className="flex items-center justify-between">
                   <div className="flex-1 flex justify-center">
                     <h2 className="text-sm font-semibold text-[#FDFDFD] uppercase tracking-wide">
