@@ -21,6 +21,9 @@ import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLay
 import ProfessionalSidebar from '@/components/editor/ProfessionalSidebar'
 import ProfessionalCanvas from '@/components/editor/ProfessionalCanvas'
 import ProfessionalActionBar from '@/components/editor/ProfessionalActionBar'
+import { useIsMobile } from "@/hooks/useIsMobile";
+import JerseyMobileMainPage from "@/components/jersey/JerseyMobileMainPage";
+import JerseyMobileAdvancedPage from "@/components/jersey/JerseyMobileAdvancedPage";
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -1303,7 +1306,16 @@ Design based on analysis: ${analysisText}`
     loadTeams();
   }, []);
 
+  const isMobile = useIsMobile();
+  const [mobilePage, setMobilePage] = useState<'main' | 'advanced'>('main');
 
+  if (isMobile) {
+    if (mobilePage === 'main') {
+      return <JerseyMobileMainPage onGoToAdvanced={() => setMobilePage('advanced')} />;
+    } else {
+      return <JerseyMobileAdvancedPage onBack={() => setMobilePage('main')} />;
+    }
+  }
 
   return (
     <ProfessionalEditorLayout
