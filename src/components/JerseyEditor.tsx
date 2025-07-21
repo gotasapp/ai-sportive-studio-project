@@ -1322,7 +1322,7 @@ Design based on analysis: ${analysisText}`
           playerNumber=""
           selectedTeam=""
           selectedStyle=""
-          quality=""
+          quality="standard"
           referenceImage={null}
           isVisionMode={false}
         />
