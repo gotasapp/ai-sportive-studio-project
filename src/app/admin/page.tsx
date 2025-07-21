@@ -311,7 +311,12 @@ export default function AdminDashboard() {
   }
 
   if (!overviewData) {
-    return <div className="text-yellow-500 text-center mt-10">No real data found for the admin dashboard.</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto mb-4"></div>
+        <p className="text-[#A20131] text-lg">Loading dashboard data...</p>
+      </div>
+    );
   }
 
   return (
