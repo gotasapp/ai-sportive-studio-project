@@ -1311,7 +1311,22 @@ Design based on analysis: ${analysisText}`
 
   if (isMobile) {
     if (mobilePage === 'main') {
-      return <JerseyMobileMainPage onGoToAdvanced={() => setMobilePage('advanced')} />;
+      return (
+        <JerseyMobileMainPage
+          onGoToAdvanced={() => setMobilePage('advanced')}
+          generatedImage={null}
+          isLoading={false}
+          error={null}
+          onResetError={() => {}}
+          playerName=""
+          playerNumber=""
+          selectedTeam=""
+          selectedStyle=""
+          quality=""
+          referenceImage={null}
+          isVisionMode={false}
+        />
+      );
     } else {
       return <JerseyMobileAdvancedPage onBack={() => setMobilePage('main')} />;
     }
