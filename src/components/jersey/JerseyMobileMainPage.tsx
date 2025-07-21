@@ -20,7 +20,7 @@ type JerseyMobileMainPageProps = {
   playerNumber: string;
   selectedTeam: string;
   selectedStyle: string;
-  quality: string;
+  quality: "standard" | "hd" | undefined;
   referenceImage: string | null;
   isVisionMode: boolean;
 };
@@ -57,7 +57,7 @@ export default function JerseyMobileMainPage({
           playerNumber={playerNumber}
           selectedTeam={team}
           selectedStyle={style}
-          quality={quality}
+          quality={quality === "" ? "standard" : quality}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
         />
