@@ -19,6 +19,8 @@ import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLay
 import ProfessionalBadgeSidebar from '@/components/badge/ProfessionalBadgeSidebar'
 import ProfessionalBadgeCanvas from '@/components/badge/ProfessionalBadgeCanvas'
 import ProfessionalBadgeActionBar from '@/components/badge/ProfessionalBadgeActionBar'
+import { useIsMobile } from '@/hooks/useIsMobile';
+import BadgeMobileLayout from '@/components/badge/BadgeMobileLayout';
 
 
 const STYLE_FILTERS = [
@@ -690,6 +692,51 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
 
     loadTopCollectionsData();
   }, []);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <BadgeMobileLayout
+        availableBadges={availableBadges}
+        selectedBadge={selectedBadge}
+        setSelectedBadge={setSelectedBadge}
+        badgeStyle={selectedStyle}
+        setBadgeStyle={setSelectedStyle}
+        badgeLevel={''} // Adapte se houver nível de badge
+        setBadgeLevel={() => {}}
+        customPrompt={customPrompt}
+        setCustomPrompt={setCustomPrompt}
+        isVisionMode={isVisionMode}
+        referenceImage={referenceImage}
+        onFileUpload={handleVisionFileUpload}
+        onClearReference={exitVisionMode}
+        generationCost={null} // Adapte se necessário
+        error={error}
+        onResetError={resetError}
+        generatedImage={generatedImage || ''}
+        isLoading={isLoading}
+        onGenerate={generateContent}
+        isConnected={isConnected}
+        isOnSupportedChain={isOnSupportedChain}
+        isUserAdmin={isUserAdmin}
+        canMintLegacy={!!canMintLegacy}
+        canMintGasless={!!canMintGasless}
+        isMinting={isMinting}
+        mintStatus={mintStatus}
+        mintSuccess={mintSuccess}
+        mintError={mintError}
+        transactionHash={transactionHash}
+        onMintLegacy={handleMintNFT}
+        onMintGasless={handleEngineNormalMint}
+        walletAddress={address || ''}
+        nftName={badgeName}
+        hasGeneratedImage={!!generatedImage}
+        metadataUri={''} // Adapte se necessário
+        collection="badges"
+      />
+    );
+  }
 
   return (
     <ProfessionalEditorLayout

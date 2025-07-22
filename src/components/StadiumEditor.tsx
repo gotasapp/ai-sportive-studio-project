@@ -9,6 +9,8 @@ import { useEngine } from '@/lib/useEngine';
 import { isAdmin } from '@/lib/admin-config';
 import { getTransactionUrl } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import StadiumMobileLayout from '@/components/stadium/StadiumMobileLayout';
 
 // Importando os novos componentes profissionais
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
@@ -113,41 +115,6 @@ export default function StadiumEditor() {
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
   const canMintGasless = generatedImage && isUserAdmin
 
-
-
-  // Load available stadiums from our new DB-driven endpoint
-  useEffect(() => {
-    const loadAvailableStadiums = async () => {
-      try {
-        console.log('🔄 Loading available stadium references from DB...');
-        const response = await fetch('/api/admin/stadiums/references');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch stadium references: ${response.statusText}`);
-        }
-        const data = await response.json();
-        // data.data é o array de stadium references
-        const stadiums: ApiStadium[] = (data.data || []).map((ref: any) => ({
-          id: ref.teamName || ref.stadiumId || ref._id,
-          name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
-          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null,
-          basePrompt: ref.teamBasePrompt || '', // NOVO: prompt base do stadium
-          available_references: ref.available_references || [],
-        }));
-        setAvailableStadiums(stadiums);
-        if (stadiums.length > 0) {
-          setSelectedStadium(stadiums[0].id);
-        }
-        console.log(`✅ Loaded ${stadiums.length} stadium references from DB.`);
-      } catch (error) {
-        console.error('❌ Error loading stadium references:', error);
-        setAvailableStadiums([]);
-        setSelectedStadium('custom_only');
-      }
-    };
-
-    loadAvailableStadiums();
-  }, []);
-  
   const handleVisionFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -406,6 +373,94 @@ This description will be used to generate a new version of the stadium with slig
 
   const resetError = () => setError('');
 
+  // useEffect para carregar stadiums
+  useEffect(() => {
+    const loadAvailableStadiums = async () => {
+      try {
+        console.log('🔄 Loading available stadium references from DB...');
+        const response = await fetch('/api/admin/stadiums/references');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch stadium references: ${response.statusText}`);
+        }
+        const data = await response.json();
+        // data.data é o array de stadium references
+        const stadiums: ApiStadium[] = (data.data || []).map((ref: any) => ({
+          id: ref.teamName || ref.stadiumId || ref._id,
+          name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
+          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null,
+          basePrompt: ref.teamBasePrompt || '', // NOVO: prompt base do stadium
+          available_references: ref.available_references || [],
+        }));
+        setAvailableStadiums(stadiums);
+        if (stadiums.length > 0) {
+          setSelectedStadium(stadiums[0].id);
+        }
+        console.log(`✅ Loaded ${stadiums.length} stadium references from DB.`);
+      } catch (error) {
+        console.error('❌ Error loading stadium references:', error);
+        setAvailableStadiums([]);
+        setSelectedStadium('custom_only');
+      }
+    };
+
+    loadAvailableStadiums();
+  }, []);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <StadiumMobileLayout
+        availableStadiums={availableStadiums}
+        selectedStadium={selectedStadium}
+        setSelectedStadium={setSelectedStadium}
+        generationStyle={generationStyle}
+        setGenerationStyle={setGenerationStyle}
+        perspective={perspective}
+        setPerspective={setPerspective}
+        atmosphere={atmosphere}
+        setAtmosphere={setAtmosphere}
+        timeOfDay={timeOfDay}
+        setTimeOfDay={setTimeOfDay}
+        weather={weather}
+        setWeather={setWeather}
+        customPrompt={customPrompt}
+        setCustomPrompt={setCustomPrompt}
+        isVisionMode={isVisionMode}
+        referenceImage={referenceImage}
+        selectedSport={selectedSport}
+        setSelectedSport={setSelectedSport}
+        selectedView={selectedView}
+        setSelectedView={setSelectedView}
+        onFileUpload={handleVisionFileUpload}
+        onClearReference={clearVisionImage}
+        generationCost={generationCost}
+        error={error}
+        onResetError={resetError}
+        generatedImage={generatedImage}
+        isLoading={isGenerating}
+        onGenerate={generateStadium}
+        isConnected={isConnected}
+        isOnSupportedChain={isOnSupportedChain}
+        isUserAdmin={isUserAdmin}
+        canMintLegacy={!!canMintLegacy}
+        canMintGasless={!!canMintGasless}
+        isMinting={isMinting}
+        mintStatus={mintStatus}
+        mintSuccess={mintSuccess}
+        mintError={mintError}
+        transactionHash={transactionHash}
+        onMintLegacy={() => handleMintNFT(false)}
+        onMintGasless={() => handleMintNFT(true)}
+        walletAddress={address || ""}
+        nftName={selectedStadium !== 'custom_only' ? selectedStadium.replace(/_/g, ' ') : 'Custom Stadium'}
+        hasGeneratedImage={!!generatedImage}
+        metadataUri={''} // Adapte se necessário para stadium
+        collection="stadiums"
+      />
+    );
+  }
+  
   return (
     <ProfessionalEditorLayout
       title="Stadium Fan NFT"
