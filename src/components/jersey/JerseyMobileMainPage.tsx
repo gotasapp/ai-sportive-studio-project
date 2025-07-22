@@ -43,6 +43,8 @@ export default function JerseyMobileMainPage({
   const [style, setStyle] = useState(selectedStyle || 'Modern');
   const [customPrompt, setCustomPrompt] = useState('');
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [localPlayerName, setLocalPlayerName] = useState(playerName || "");
+  const [localPlayerNumber, setLocalPlayerNumber] = useState(playerNumber || "");
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center px-2 py-4">
@@ -106,8 +108,8 @@ export default function JerseyMobileMainPage({
             <Input
               type="text"
               placeholder="Player Name"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
+              value={localPlayerName}
+              onChange={(e) => setLocalPlayerName(e.target.value)}
               className="bg-white/5 border-white/10 text-white font-semibold py-3 rounded-lg"
             />
           </div>
@@ -116,8 +118,8 @@ export default function JerseyMobileMainPage({
             <Input
               type="number"
               placeholder="#"
-              value={jerseyNumber}
-              onChange={(e) => setJerseyNumber(e.target.value)}
+              value={localPlayerNumber}
+              onChange={(e) => setLocalPlayerNumber(e.target.value)}
               className="bg-white/5 border-white/10 text-white font-semibold py-3 rounded-lg"
             />
           </div>
