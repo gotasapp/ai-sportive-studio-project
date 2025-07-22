@@ -353,7 +353,7 @@ export default function MarketplacePage() {
   const launchpadItemsFixed = launchpadCollections.map(item => ({
     ...item,
     status: item.status?.toLowerCase() === 'ended' ? 'Ended' : 'Live'
-  }));
+  })) as LaunchpadItem[];
 
   if (isMobile) {
     return (
