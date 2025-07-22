@@ -50,6 +50,7 @@ export default function MarketplaceMobileLayout({
   const itemsPerPage = 20;
   const totalPages = Math.ceil(nfts.length / itemsPerPage);
   const paginatedNFTs = nfts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   // Renderização dos cards conforme o tipo de grid
   const renderNFTGrid = () => {
@@ -110,12 +111,9 @@ export default function MarketplaceMobileLayout({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] flex flex-col overflow-x-hidden">
       <Header />
       <div className="py-2">
-        <LaunchpadCarouselMobile launchpadItems={launchpadItems} />
-      </div>
-      <div className="px-4 pt-2">
         <MarketplaceStatsBarMobile
           volume24h={volume24h}
           volumeChange={volumeChange}
@@ -123,16 +121,25 @@ export default function MarketplaceMobileLayout({
           salesChange={salesChange}
         />
       </div>
-      <div className="flex gap-2 overflow-x-auto px-4 py-2 bg-[#14101e]">
-        {FILTERS.map(f => (
-          <Button
-            key={f.value}
-            variant={filters.active === f.value ? "default" : "outline"}
-            className={`rounded-full px-4 py-2 text-sm whitespace-nowrap ${filters.active === f.value ? 'bg-[#A20131] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
-            onClick={() => filters.onChange(f.value)}
+      <div className="px-2 pt-2">
+        <LaunchpadCarouselMobile launchpadItems={launchpadItems} />
+      </div>
+      {/* Filtros */}
+      <div className="flex items-center gap-2 mt-4 mb-2 w-full justify-center">
+        {['All', 'Jersey', 'Stadium', 'Badge'].map((filter) => (
+          <button
+            key={filter}
+            onClick={() => setActiveFilter(filter)}
+            className={
+              (activeFilter === filter
+                ? 'bg-[#A20131] text-white'
+                : 'text-white/80') +
+              ' px-4 py-1.5 rounded-lg font-semibold text-xs border-none min-w-[60px] transition-all duration-150'
+            }
+            style={activeFilter !== filter ? { background: 'rgba(20,16,30,0.4)' } : {}}
           >
-            {f.label}
-          </Button>
+            {filter}
+          </button>
         ))}
       </div>
       {/* Filtro e busca */}

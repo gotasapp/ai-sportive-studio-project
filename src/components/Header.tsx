@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { ConnectButton, useActiveAccount, useActiveWallet } from "thirdweb/react";
 import { Shield, Menu, X } from 'lucide-react';
+import { CgMenuOreos } from 'react-icons/cg';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import NavLink from './ui/NavLink';
@@ -254,7 +255,7 @@ export default function Header() {
                 {mobileMenuOpen ? (
                   <X className="h-5 w-5" />
                 ) : (
-                  <Menu className="h-5 w-5" />
+                  <CgMenuOreos className="h-6 w-6" color="white" />
                 )}
               </Button>
             )}
