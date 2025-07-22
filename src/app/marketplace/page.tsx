@@ -20,8 +20,12 @@ import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
 
 export default function MarketplacePage() {
+  const isMobile = useIsMobile();
+
   // Thirdweb hooks
   const chain = useActiveWalletChain();
   const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
@@ -293,6 +297,75 @@ export default function MarketplacePage() {
 
     return viewType === 'grid' ? renderGridView() : renderListView();
   };
+
+  // Filtros para o mobile layout
+  const mobileFilters = {
+    active: tokenType,
+    onChange: (value: string) => setTokenType(value as any),
+  };
+
+  // Handler de busca para o mobile layout
+  const handleMobileSearch = (term: string) => setSearchTerm(term);
+
+  // Handler de compra (placeholder, adapte conforme sua lógica)
+  const handleMobileBuy = (nft: any) => {
+    // Aqui você pode abrir modal, navegar para detalhes, etc.
+    alert(`Comprar NFT: ${nft.name}`);
+  };
+
+  // Dados mock do launchpad (copiados do launchpad/page.tsx)
+  const launchpadCollections = [
+    {
+      id: 'flamengo-heritage',
+      name: 'Flamengo Heritage Collection',
+      imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
+      status: 'Live',
+      endDate: '2024-02-15',
+      blockchain: 'chz',
+    },
+    {
+      id: 'palmeiras-badges',
+      name: 'Palmeiras Championship Badges',
+      imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png',
+      status: 'Live',
+      endDate: '2024-02-10',
+      blockchain: 'chz',
+    },
+    {
+      id: 'maracana-legends',
+      name: 'Maracanã Legends Stadium',
+      imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636630/bafybeicw37rbxeqti3ty5i6gc4gbciro27gacizwywirur5lag6obxcfh4_x0ijvi.png',
+      status: 'Ended',
+      endDate: '2024-03-01',
+      blockchain: 'chz',
+    },
+    {
+      id: 'vasco-retro',
+      name: 'Vasco da Gama Retro Collection',
+      imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png',
+      status: 'Ended',
+      endDate: '2024-03-20',
+      blockchain: 'chz',
+    },
+  ];
+
+  if (isMobile) {
+    return (
+      <MarketplaceMobileLayout
+        nfts={filteredNfts}
+        collections={[]}
+        filters={mobileFilters}
+        onBuy={handleMobileBuy}
+        onSearch={handleMobileSearch}
+        searchTerm={searchTerm}
+        volume24h={"$0.00"} // placeholder, ajuste para dados reais
+        volumeChange={0} // placeholder
+        sales24h={"0"} // placeholder
+        salesChange={0} // placeholder
+        launchpadItems={launchpadCollections}
+      />
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col text-[#FDFDFD] bg-gradient-to-b from-[#030303] to-[#0b0518]">
