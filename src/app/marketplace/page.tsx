@@ -349,6 +349,12 @@ export default function MarketplacePage() {
     },
   ];
 
+  // Corrigir status para o tipo correto
+  const launchpadItemsFixed = launchpadCollections.map(item => ({
+    ...item,
+    status: item.status?.toLowerCase() === 'ended' ? 'Ended' : 'Live'
+  }));
+
   if (isMobile) {
     return (
       <MarketplaceMobileLayout
@@ -362,7 +368,7 @@ export default function MarketplacePage() {
         volumeChange={0} // placeholder
         sales24h={"0"} // placeholder
         salesChange={0} // placeholder
-        launchpadItems={launchpadCollections}
+        launchpadItems={launchpadItemsFixed}
       />
     );
   }
