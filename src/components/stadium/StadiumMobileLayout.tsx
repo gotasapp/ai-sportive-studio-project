@@ -122,8 +122,8 @@ export default function StadiumMobileLayout({
           customPrompt={customPrompt}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
+          isAnalyzing={false}
           availableStadiums={availableStadiums}
-          quality="standard"
         />
       </div>
 
