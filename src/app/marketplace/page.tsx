@@ -22,6 +22,7 @@ import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
+import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMobile';
 
 export default function MarketplacePage() {
   const isMobile = useIsMobile();
