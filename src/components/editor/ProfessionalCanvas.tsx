@@ -93,6 +93,33 @@ export default function ProfessionalCanvas({
     }
   }
 
+  // Suporte a touch para mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (generatedImage) {
+      setIsDragging(true);
+      const touch = e.touches[0];
+      const startX = touch.clientX - pan.x;
+      const startY = touch.clientY - pan.y;
+
+      const handleTouchMove = (e: TouchEvent) => {
+        const touch = e.touches[0];
+        setPan({
+          x: touch.clientX - startX,
+          y: touch.clientY - startY
+        });
+      };
+
+      const handleTouchEnd = () => {
+        setIsDragging(false);
+        document.removeEventListener('touchmove', handleTouchMove);
+        document.removeEventListener('touchend', handleTouchEnd);
+      };
+
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('touchend', handleTouchEnd);
+    }
+  };
+
   const renderPlaceholder = () => (
     <div className="flex-1 flex items-center justify-center bg-[#14101e]">
       <div className="placeholder-content text-center text-[#444444]">
@@ -236,6 +263,7 @@ export default function ProfessionalCanvas({
         ref={canvasRef}
         className="canvas-area flex-1 relative overflow-hidden bg-[#14101e] cursor-move"
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
         style={{ cursor: isDragging ? 'grabbing' : generatedImage ? 'grab' : 'default' }}
       >
         {/* Grid Overlay */}

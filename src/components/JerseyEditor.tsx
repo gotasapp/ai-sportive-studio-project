@@ -24,6 +24,7 @@ import ProfessionalActionBar from '@/components/editor/ProfessionalActionBar'
 import { useIsMobile } from "@/hooks/useIsMobile";
 import JerseyMobileMainPage from "@/components/jersey/JerseyMobileMainPage";
 import JerseyMobileAdvancedPage from "@/components/jersey/JerseyMobileAdvancedPage";
+import JerseyMobileLayout from "@/components/jersey/JerseyMobileLayout";
 
 const STYLE_FILTERS = [
   { id: 'modern', label: 'Modern', icon: Zap },
@@ -1310,26 +1311,49 @@ Design based on analysis: ${analysisText}`
   const [mobilePage, setMobilePage] = useState<'main' | 'advanced'>('main');
 
   if (isMobile) {
-    if (mobilePage === 'main') {
-      return (
-        <JerseyMobileMainPage
-          onGoToAdvanced={() => setMobilePage('advanced')}
-          generatedImage={null}
-          isLoading={false}
-          error={null}
-          onResetError={() => {}}
-          playerName=""
-          playerNumber=""
-          selectedTeam=""
-          selectedStyle=""
-          quality="standard"
-          referenceImage={null}
-          isVisionMode={false}
-        />
-      );
-    } else {
-      return <JerseyMobileAdvancedPage onBack={() => setMobilePage('main')} />;
-    }
+    return (
+      <JerseyMobileLayout
+        playerName={playerName}
+        setPlayerName={setPlayerName}
+        playerNumber={playerNumber}
+        setPlayerNumber={setPlayerNumber}
+        selectedTeam={selectedTeam}
+        setSelectedTeam={setSelectedTeam}
+        selectedStyle={selectedStyle}
+        setSelectedStyle={setSelectedStyle}
+        quality={quality}
+        setQuality={setQuality}
+        generatedImage={generatedImage}
+        isLoading={isLoading}
+        error={error}
+        onResetError={resetError}
+        referenceImage={referenceImage}
+        isVisionMode={isVisionMode}
+        onGenerate={generateContent}
+        onFileUpload={handleFileUpload}
+        customPrompt={customPrompt}
+        setCustomPrompt={setCustomPrompt}
+        isConnected={isConnected}
+        isOnSupportedChain={isOnSupportedChain}
+        isUserAdmin={isUserAdmin}
+        canMintLegacy={Boolean(canMintLegacy)}
+        canMintGasless={!!canMintGasless}
+        isMinting={isMinting}
+        mintStatus={mintStatus}
+        mintSuccess={mintSuccess}
+        mintError={mintError}
+        transactionHash={transactionHash}
+        onMintLegacy={handleMintNFT}
+        onMintGasless={handleEngineNormalMint}
+        generationCost={generationCost}
+        availableTeams={availableTeams}
+        walletAddress={address || ""}
+        nftName={selectedTeam && playerName && playerNumber ? `${selectedTeam} ${playerName} #${playerNumber}` : ""}
+        hasGeneratedImage={!!generatedImage}
+        metadataUri={ipfsUrl || ""}
+        collection="jerseys"
+      />
+    );
   }
 
   return (
