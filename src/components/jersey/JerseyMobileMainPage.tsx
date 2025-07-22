@@ -57,7 +57,7 @@ export default function JerseyMobileMainPage({
           playerNumber={playerNumber}
           selectedTeam={team}
           selectedStyle={style}
-          quality={quality === "" ? "standard" : quality}
+          quality={quality}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
         />
