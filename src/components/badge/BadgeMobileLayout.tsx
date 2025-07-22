@@ -93,14 +93,13 @@ export default function BadgeMobileLayout({
           isLoading={isLoading}
           error={error}
           onResetError={onResetError}
-          selectedBadge={selectedBadge}
-          badgeStyle={badgeStyle}
-          badgeLevel={badgeLevel}
+          badgeName={nftName}
+          selectedStyle={badgeStyle}
+          quality={"standard"}
           customPrompt={customPrompt}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
-          availableBadges={availableBadges}
-          quality={"standard"}
+          isAnalyzing={false}
         />
       </div>
 
