@@ -49,7 +49,7 @@ export type JerseyMobileLayoutProps = {
   nftName: string | null;
   hasGeneratedImage: boolean;
   metadataUri: string | null;
-  collection: string | null;
+  collection: 'jerseys' | 'stadiums' | 'badges';
   // ...outros props necessários
 };
 
@@ -304,7 +304,7 @@ export default function JerseyMobileLayout({
                   to={walletAddress}
                   metadataUri={metadataUri || ''}
                   nftName={nftName || ''}
-                  collection={collection || 'jerseys'}
+                  collection={collection}
                   disabled={!canMintGasless || isMinting}
                 />
               )}
