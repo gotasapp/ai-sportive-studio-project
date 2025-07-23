@@ -114,7 +114,7 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
           <CreateListingModal isOpen={showCreateListing} onOpenChange={setShowCreateListing} nft={{ assetContractAddress: assetContract, tokenId, name, imageUrl }} />
         )}
         {showCreateAuction && assetContract && (
-          <CreateAuctionModal isOpen={showCreateAuction} onOpenChange={setShowCreateAuction} nft={{ assetContractAddress: assetContract, tokenId, name, imageUrl }} />
+          <CreateAuctionModal isOpen={showCreateAuction} onOpenChange={setShowCreateAuction} nft={{ assetContractAddress: assetContract, tokenId, name, imageUrl: imageUrl || "" }} />
         )}
       </> : <MakeOfferButton assetContract={assetContract} tokenId={tokenId} nftName={name} className="w-full h-10 text-sm" />}
     </>;
