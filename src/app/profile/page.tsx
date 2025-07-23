@@ -53,6 +53,12 @@ interface NFTItem {
   status: 'owned' | 'listed' | 'sold' | 'created'
   createdAt: string
   collection: 'jerseys' | 'stadiums' | 'badges'
+  metadata?: {
+    image: string;
+    name: string;
+    description: string;
+    attributes: any[];
+  };
 }
 
 // Helper functions
@@ -244,7 +250,8 @@ export default function ProfilePage() {
             price: nft.price,
             status: nft.status,
             createdAt: nft.createdAt,
-            collection: nft.collection
+            collection: nft.collection,
+            metadata: nft.metadata
           }))
         setUserNFTs(userNFTs)
       } catch (error) {
@@ -910,15 +917,23 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
           onClick={() => onNFTClick?.(nft)}
         >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
-            {nft.imageUrl ? (
+            {nft.metadata?.image || nft.imageUrl ? (
               <img
-                key={nft.imageUrl}
-                src={normalizeIpfsUri(nft.imageUrl)}
-                alt={nft.name}
+                key={nft.id}
+                src={normalizeIpfsUri(nft.metadata?.image ?? nft.imageUrl)}
+                alt={nft.metadata?.name ?? nft.name}
                 width={300}
                 height={300}
                 className="w-full h-full object-cover"
-                onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                loading="lazy"
+                onError={e => {
+                  const fallbackUrl = normalizeIpfsUri(nft.metadata?.image ?? nft.imageUrl, true);
+                  if (e.currentTarget.src !== fallbackUrl) {
+                    e.currentTarget.src = fallbackUrl;
+                  } else {
+                    e.currentTarget.src = '/fallback.jpg';
+                  }
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>

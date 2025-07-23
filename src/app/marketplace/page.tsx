@@ -226,15 +226,23 @@ export default function MarketplacePage() {
           className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-            {item.imageUrl ? (
+            {item.metadata?.image || item.imageUrl ? (
               <img
-                key={item.imageUrl}
-                src={normalizeIpfsUri(item.imageUrl)}
-                alt={item.name}
+                key={item.id}
+                src={normalizeIpfsUri(item.metadata?.image ?? item.imageUrl)}
+                alt={item.metadata?.name ?? item.name}
                 className="w-full h-full object-cover"
                 width={64}
                 height={64}
-                onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                loading="lazy"
+                onError={e => {
+                  const fallbackUrl = normalizeIpfsUri(item.metadata?.image ?? item.imageUrl, true);
+                  if (e.currentTarget.src !== fallbackUrl) {
+                    e.currentTarget.src = fallbackUrl;
+                  } else {
+                    e.currentTarget.src = '/fallback.jpg';
+                  }
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>

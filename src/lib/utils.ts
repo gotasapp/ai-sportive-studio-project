@@ -67,13 +67,15 @@ export function convertIpfsToHttp(src: string): string {
 }
 
 /**
- * Normaliza uma URI IPFS para um gateway HTTP público (Pinata por padrão)
+ * Normaliza uma URI IPFS para um gateway HTTP público (Pinata por padrão, Cloudflare como fallback)
  * @param uri - A URI IPFS ou HTTP
+ * @param fallback - Se true, usa Cloudflare como fallback
  * @returns URI HTTP normalizada
  */
-export function normalizeIpfsUri(uri: string): string {
+export function normalizeIpfsUri(uri: string, fallback = false): string {
   if (!uri) return '';
-  return uri.startsWith('ipfs://')
-    ? uri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')
-    : uri;
+  const hash = uri.replace('ipfs://', '').replace(/^https?:\/\/[^/]+\/ipfs\//, '');
+  return fallback
+    ? `https://cloudflare-ipfs.com/ipfs/${hash}`
+    : `https://gateway.pinata.cloud/ipfs/${hash}`;
 }
