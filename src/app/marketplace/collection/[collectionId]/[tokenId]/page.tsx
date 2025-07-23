@@ -34,7 +34,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import Header from '@/components/Header';
-import { convertIpfsToHttp } from '@/lib/utils';
+import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 import { useNFTData } from '@/hooks/useNFTData';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 
@@ -396,12 +396,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardContent className="p-2 lg:p-3">
                 <div className="h-[480px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
                   {displayData.imageUrl ? (
-                    <Image
-                      src={displayData.imageUrl}
+                    <img
+                      src={normalizeIpfsUri(displayData.imageUrl)}
                       alt={displayData.name}
-                      fill
-                      className="object-cover"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="object-cover w-full h-full"
+                      style={{ aspectRatio: '1/1', objectFit: 'cover' }}
+                      onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

@@ -912,6 +912,7 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             {nft.imageUrl ? (
               <img
+                key={nft.imageUrl}
                 src={normalizeIpfsUri(nft.imageUrl)}
                 alt={nft.name}
                 width={300}
@@ -920,10 +921,7 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
                 onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
               />
             ) : (
-              <div className="w-full h-full bg-[#14101e] flex items-center justify-center">
-                {getCollectionIcon(nft.collection)}
-                <span className="ml-2 text-[#FDFDFD]/60 text-sm">No Image</span>
-              </div>
+              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>
             )}
             <div className="absolute top-2 right-2">
               {getStatusBadge(nft.status)}

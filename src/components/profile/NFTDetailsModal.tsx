@@ -288,6 +288,7 @@ export function NFTDetailsModal({
               <div className="aspect-square relative overflow-hidden rounded-lg bg-[#FDFDFD]/10">
                 {(displayData?.imageUrl || nftData?.imageUrl) ? (
                   <img
+                    key={displayData?.imageUrl || nftData?.imageUrl || ''}
                     src={normalizeIpfsUri(displayData?.imageUrl || nftData?.imageUrl || '')}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
@@ -296,12 +297,7 @@ export function NFTDetailsModal({
                     onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-[#14101e] text-[#FDFDFD]/60">
-                    <div className="text-center">
-                      <ImageIcon className="h-12 w-12 mx-auto mb-2" />
-                      <p className="text-sm">No Image Available</p>
-                    </div>
-                  </div>
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>
                 )}
                 {(displayData as any)?.status && (
                   <div className="absolute top-3 right-3">

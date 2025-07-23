@@ -450,14 +450,19 @@ export default function CollectionsTable({
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-                      <img
-                        src={normalizeIpfsUri(collection.imageUrl)}
-                        alt={collection.name}
-                        width={48}
-                        height={48}
-                        className="w-12 h-12 object-cover rounded"
-                        onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
-                      />
+                      {collection.imageUrl ? (
+                        <img
+                          key={collection.imageUrl}
+                          src={normalizeIpfsUri(collection.imageUrl)}
+                          alt={collection.name}
+                          width={48}
+                          height={48}
+                          className="w-12 h-12 object-cover rounded"
+                          onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                        />
+                      ) : (
+                        <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">Loading NFT...</div>
+                      )}
                     </div>
                     <div>
                       <div className="font-semibold text-[#FDFDFD] flex items-center gap-2">
