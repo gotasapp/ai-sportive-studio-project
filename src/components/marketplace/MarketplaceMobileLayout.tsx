@@ -191,13 +191,13 @@ export default function MarketplaceMobileLayout({
         <div className="flex justify-center gap-3 mt-4">
           {currentPage > 1 && (
             <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
-              Anterior
+              Previous
             </Button>
           )}
-          <span className="text-white/70 text-sm flex items-center">Página {currentPage} de {totalPages}</span>
+          <span className="text-white/70 text-sm flex items-center">Page {currentPage} of {totalPages}</span>
           {currentPage < totalPages && (
             <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
-              Próxima
+              Next
             </Button>
           )}
         </div>

@@ -165,6 +165,21 @@ export default function MarketplacePage() {
   const renderGridView = () => {
     // Usar dados filtrados para respeitar os filtros aplicados
     const itemsToShow = filteredNfts;
+
+    if (marketplaceLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mb-4"></div>
+          <div className="text-white">Loading NFTs...</div>
+        </div>
+      );
+    }
+
+    if (itemsToShow.length === 0) {
+      return (
+        <div className="text-center text-white/60 py-12">No NFTs found.</div>
+      );
+    }
     
     console.log('🎯 GRID VIEW RENDER:', {
       filteredNftsLength: filteredNfts.length,

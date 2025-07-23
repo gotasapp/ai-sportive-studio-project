@@ -23,7 +23,8 @@ import {
   Clock,
   DollarSign,
   CheckCircle,
-  XCircle
+  XCircle,
+  ArrowRight
 } from 'lucide-react'
 import { useActiveWalletChain } from 'thirdweb/react'
 
@@ -310,7 +311,21 @@ export function NFTDetailsModal({
                 )}
               </div>
 
-              {/* Quick Actions */}
+              {/* Quick Actions - SWIPE/SCROLL HORIZONTAL */}
+              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  <Tag className="w-4 h-4" /> List
+                </Button>
+                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4" /> Transfer
+                </Button>
+                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                  <DollarSign className="w-4 h-4" /> Sell
+                </Button>
+                {/* Adicione mais ações conforme necessário */}
+              </div>
+
+              {/* Quick Actions originais (Copy, Explorer) */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"

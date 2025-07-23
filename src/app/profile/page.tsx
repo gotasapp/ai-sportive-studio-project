@@ -100,6 +100,18 @@ function determineCategory(metadata: any): 'jerseys' | 'stadiums' | 'badges' {
   return 'jerseys';
 }
 
+// Hook para detectar mobile
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 export default function ProfilePage() {
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
@@ -120,6 +132,26 @@ export default function ProfilePage() {
   // NFT Modal states
   const [selectedNFT, setSelectedNFT] = useState<NFTItem | null>(null)
   const [showNFTModal, setShowNFTModal] = useState(false)
+
+  // Adicionar estados de paginação
+  const isMobile = useIsMobile();
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = isMobile ? 5 : userNFTs.length || 1; // 5 para mobile, tudo para desktop
+
+  // Adicionar estado para tab ativa
+  const [activeTab, setActiveTab] = useState<'all' | 'listed' | 'created'>('all');
+
+  // Resetar currentPage ao trocar de tab
+  useEffect(() => { setCurrentPage(1); }, [activeTab]);
+
+  // Função para obter NFTs paginados por tab
+  const getPaginatedNFTs = (nfts: NFTItem[]) => {
+    const totalPages = isMobile ? Math.ceil(nfts.length / itemsPerPage) || 1 : 1;
+    const paginatedNFTs = isMobile
+      ? nfts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+      : nfts;
+    return { paginatedNFTs, totalPages };
+  };
 
   // REATIVANDO - Load user profile data com timeout
   useEffect(() => {
@@ -432,11 +464,20 @@ export default function ProfilePage() {
           message="Connect your wallet to view and manage your NFT collection, profile settings, and marketplace activities."
           feature="profile management"
         >
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="max-w-7xl mx-auto space-y-6 relative">
+            {/* Botão Settings - mobile, canto superior direito, só ícone, dentro do container */}
+            {/* <button
+              type="button"
+              className="absolute top-4 right-4 z-30 md:hidden bg-[#14101e] border border-gray-700 rounded-full p-2 shadow-lg hover:bg-[#222] transition-colors"
+              onClick={() => setShowSettings(true)}
+              aria-label="Settings"
+            >
+              <Settings className="h-6 w-6 text-white" />
+            </button> */}
         
-        {/* Header Section */}
-        <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-6">
+        {/* Header Section - MOBILE FRIENDLY */}
+        <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-4 md:gap-0">
+          <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-6">
             <div className="relative">
               <Avatar className="h-24 w-24 border-2 border-[#A20131]">
                 <AvatarImage src={userProfile?.avatar} />
@@ -444,6 +485,15 @@ export default function ProfilePage() {
                   {userProfile?.username?.charAt(0) || 'U'}
                 </AvatarFallback>
               </Avatar>
+              {/* Botão Settings - mobile, canto superior direito do avatar */}
+              <button
+                type="button"
+                className="absolute top-0 right-0 z-30 md:hidden bg-[#14101e] border border-gray-700 rounded-full p-2 shadow-lg hover:bg-[#222] transition-colors"
+                onClick={() => setShowSettings(true)}
+                aria-label="Settings"
+              >
+                <Settings className="h-6 w-6 text-white" />
+              </button>
               <label className="absolute bottom-0 right-0 bg-[#A20131] rounded-full p-2 cursor-pointer hover:bg-[#8a0129] transition-colors">
                 <Upload className="h-3 w-3 text-white" />
                 <input
@@ -454,8 +504,7 @@ export default function ProfilePage() {
                 />
               </label>
             </div>
-            
-            <div className="space-y-2">
+            <div className="flex flex-col items-center md:items-start gap-1">
               {isEditing ? (
                 <div className="flex items-center space-x-2">
                   <Input
@@ -467,8 +516,9 @@ export default function ProfilePage() {
                   <Button onClick={() => setIsEditing(false)} variant="outline" size="sm">Cancel</Button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2">
-                  <h1 className="text-3xl font-bold text-white">{userProfile?.username}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl md:text-3xl font-bold text-white text-center md:text-left">{userProfile?.username}</h1>
+                  {/* Botão de editar nome (desktop e mobile) */}
                   <Button 
                     onClick={() => setIsEditing(true)} 
                     variant="ghost" 
@@ -479,32 +529,71 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               )}
-              
-              {/* Social Name Display */}
-              <div className="text-gray-400 text-sm">
+              {/* Botão Settings - mobile: logo abaixo do nome, com ícone e texto */}
+              <div className="flex md:hidden w-full mb-2">
+                <Button
+                  variant="outline"
+                  className="border-gray-600 text-white hover:bg-[#14101e] w-full"
+                  onClick={() => setShowSettings(true)}
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  Settings
+                </Button>
+              </div>
+              {/* Remover endereço da wallet duplicado */}
+              {/* <div className="text-gray-400 text-sm text-center md:text-left">
                 <AccountName 
                   className="font-medium"
                   fallbackToAddress={true}
                   formatFn={(name) => `@${name}`}
                 />
-              </div>
-              
-              <div className="flex items-center space-x-4 text-gray-400">
-                <div className="flex items-center space-x-1">
+              </div> */}
+              <div className="flex flex-col md:flex-row items-center gap-2 text-gray-400 mt-1">
+                <div className="hidden md:flex items-center space-x-1">
                   <Wallet className="h-4 w-4" />
-                  <span className="text-sm font-mono">
-                    {account?.address.slice(0, 6)}...{account?.address.slice(-4)}
-                  </span>
+                  <span className="text-sm font-mono">{account?.address.slice(0, 6)}...{account?.address.slice(-4)}</span>
                 </div>
-                <div className="flex items-center space-x-1">
+                <div className="hidden md:flex items-center space-x-1">
                   <Coins className="h-4 w-4" />
                   <span className="text-sm">{chain?.name || 'CHZ Chain'}</span>
                 </div>
               </div>
-              
+              {/* Stats em chips/cards horizontais */}
+              <div className="flex gap-2 mt-2 overflow-x-auto w-full justify-center md:justify-start">
+                <button
+                  className={`px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none focus:outline-none ${
+                    'bg-[#A20131] text-white'
+                  }`}
+                  style={{ boxShadow: '0 1px 4px 0 rgba(0,0,0,0.10)' }}
+                  disabled
+                >
+                  NFTs: {userProfile?.totalNFTs ?? userNFTs.length}
+                </button>
+                <button
+                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
+                  style={{ background: 'rgba(20,16,30,0.4)' }}
+                  disabled
+                >
+                  Sales: {userProfile?.totalSales ?? 0}
+                </button>
+                <button
+                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
+                  style={{ background: 'rgba(20,16,30,0.4)' }}
+                  disabled
+                >
+                  Purchases: {userProfile?.totalPurchases ?? 0}
+                </button>
+                <button
+                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
+                  style={{ background: 'rgba(20,16,30,0.4)' }}
+                  disabled
+                >
+                  Balance: {userProfile?.balance ?? '0'} CHZ
+                </button>
+              </div>
               {/* Contact Information */}
               {(hasEmail || hasPhone) && (
-                <div className="flex items-center space-x-4 text-gray-400 text-sm">
+                <div className="flex items-center space-x-4 text-gray-400 text-sm mt-2">
                   {hasEmail && (
                     <div className="flex items-center space-x-1">
                       <span>📧</span>
@@ -521,15 +610,28 @@ export default function ProfilePage() {
               )}
             </div>
           </div>
-          
-          <Button 
-            variant="outline" 
-            className="border-gray-600 text-white hover:bg-[#14101e]"
-            onClick={() => setShowSettings(true)}
-          >
-            <Settings className="h-4 w-4 mr-2" />
-            Settings
-          </Button>
+          {/* Settings button para desktop */}
+          <div className="hidden md:flex">
+            <Button 
+              variant="outline" 
+              className="border-gray-600 text-white hover:bg-[#14101e] mt-4 md:mt-0"
+              onClick={() => setShowSettings(true)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </div>
+          {/* Botão Settings - mobile: abaixo do nome, acima dos cards de stats */}
+          {/* <div className="flex md:hidden w-full">
+            <Button
+              variant="outline"
+              className="border-gray-600 text-white hover:bg-[#14101e] mt-2 mb-1 w-full"
+              onClick={() => setShowSettings(true)}
+            >
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Button>
+          </div> */}
         </div>
 
 
@@ -553,7 +655,7 @@ export default function ProfilePage() {
           </div>
         )}
 
-        {/* NFT Collections Tabs */}
+        {/* NFT Collections Tabs - MOBILE FRIENDLY */}
         <Card className="bg-[#14101e] border-gray-700">
           <CardHeader>
             <CardTitle className="text-white">My Collections</CardTitle>
@@ -562,19 +664,12 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-[#0b0518]">
-                <TabsTrigger value="all" className="text-white data-[state=active]:bg-[#A20131]">
-                  All ({userNFTs.length})
-                </TabsTrigger>
-                <TabsTrigger value="listed" className="text-white data-[state=active]:bg-[#A20131]">
-                  Listed ({listedNFTs.length})
-                </TabsTrigger>
-                <TabsTrigger value="created" className="text-white data-[state=active]:bg-[#A20131]">
-                  Created ({createdNFTs.length})
-                </TabsTrigger>
+            <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} defaultValue="all" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-[#0b0518] rounded-lg overflow-hidden">
+                <TabsTrigger value="all" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">All ({userNFTs.length})</TabsTrigger>
+                <TabsTrigger value="listed" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">Listed ({listedNFTs.length})</TabsTrigger>
+                <TabsTrigger value="created" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">Created ({createdNFTs.length})</TabsTrigger>
               </TabsList>
-              
               <TabsContent value="all" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -585,35 +680,30 @@ export default function ProfilePage() {
                       {dataSource === 'fallback' && 'Using backup data source...'}
                     </div>
                   </div>
-                ) : nftsError ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="text-red-400 text-center">
-                      <p className="font-medium">Unable to load NFTs</p>
-                      <p className="text-sm text-gray-400 mt-2">{nftsError}</p>
-                    </div>
-                    <Button 
-                      onClick={() => window.location.reload()} 
-                      variant="outline" 
-                      className="border-gray-600 text-white hover:bg-[#14101e]"
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                ) : userNFTs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <ImageIcon className="h-16 w-16 text-gray-600" />
-                    <div className="text-center">
-                      <p className="text-white font-medium">No NFTs found</p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        Your NFTs will appear here once you own or create them
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <NFTGrid nfts={userNFTs} onNFTClick={handleNFTClick} />
-                )}
+                ) : (() => {
+                  const { paginatedNFTs, totalPages } = getPaginatedNFTs(userNFTs);
+                  return (
+                    <>
+                      <NFTGrid nfts={paginatedNFTs} onNFTClick={handleNFTClick} />
+                      {isMobile && totalPages > 1 && (
+                        <div className="flex justify-center gap-3 mt-4">
+                          {currentPage > 1 && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
+                              Previous
+                            </Button>
+                          )}
+                          <span className="text-white/70 text-sm flex items-center">Page {currentPage} of {totalPages}</span>
+                          {currentPage < totalPages && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
+                              Next
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </TabsContent>
-              
               <TabsContent value="listed" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -624,35 +714,30 @@ export default function ProfilePage() {
                       {dataSource === 'fallback' && 'Using backup data source...'}
                     </div>
                   </div>
-                ) : nftsError ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="text-red-400 text-center">
-                      <p className="font-medium">Unable to load NFTs</p>
-                      <p className="text-sm text-gray-400 mt-2">{nftsError}</p>
-                    </div>
-                    <Button 
-                      onClick={() => window.location.reload()} 
-                      variant="outline" 
-                      className="border-gray-600 text-white hover:bg-[#14101e]"
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                ) : listedNFTs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <Tag className="h-16 w-16 text-gray-600" />
-                    <div className="text-center">
-                      <p className="text-white font-medium">No listed NFTs</p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        NFTs you list for sale will appear here
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <NFTGrid nfts={listedNFTs} onNFTClick={handleNFTClick} />
-                )}
+                ) : (() => {
+                  const { paginatedNFTs, totalPages } = getPaginatedNFTs(listedNFTs);
+                  return (
+                    <>
+                      <NFTGrid nfts={paginatedNFTs} onNFTClick={handleNFTClick} />
+                      {isMobile && totalPages > 1 && (
+                        <div className="flex justify-center gap-3 mt-4">
+                          {currentPage > 1 && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
+                              Previous
+                            </Button>
+                          )}
+                          <span className="text-white/70 text-sm flex items-center">Page {currentPage} of {totalPages}</span>
+                          {currentPage < totalPages && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
+                              Next
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </TabsContent>
-              
               <TabsContent value="created" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
@@ -663,36 +748,30 @@ export default function ProfilePage() {
                       {dataSource === 'fallback' && 'Using backup data source...'}
                     </div>
                   </div>
-                ) : nftsError ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="text-red-400 text-center">
-                      <p className="font-medium">Unable to load NFTs</p>
-                      <p className="text-sm text-gray-400 mt-2">{nftsError}</p>
-                    </div>
-                    <Button 
-                      onClick={() => window.location.reload()} 
-                      variant="outline" 
-                      className="border-gray-600 text-white hover:bg-[#14101e]"
-                    >
-                      Try Again
-                    </Button>
-                  </div>
-                ) : createdNFTs.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <Trophy className="h-16 w-16 text-gray-600" />
-                    <div className="text-center">
-                      <p className="text-white font-medium">No created NFTs</p>
-                      <p className="text-gray-400 text-sm mt-2">
-                        NFTs you create will appear here
-                      </p>
-                    </div>
-                  </div>
-                ) : (
-                  <NFTGrid nfts={createdNFTs} onNFTClick={handleNFTClick} />
-                )}
+                ) : (() => {
+                  const { paginatedNFTs, totalPages } = getPaginatedNFTs(createdNFTs);
+                  return (
+                    <>
+                      <NFTGrid nfts={paginatedNFTs} onNFTClick={handleNFTClick} />
+                      {isMobile && totalPages > 1 && (
+                        <div className="flex justify-center gap-3 mt-4">
+                          {currentPage > 1 && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage - 1)}>
+                              Previous
+                            </Button>
+                          )}
+                          <span className="text-white/70 text-sm flex items-center">Page {currentPage} of {totalPages}</span>
+                          {currentPage < totalPages && (
+                            <Button variant="outline" size="sm" className="px-4 py-1" onClick={() => setCurrentPage(currentPage + 1)}>
+                              Next
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </TabsContent>
-              
-
             </Tabs>
           </CardContent>
         </Card>
@@ -811,10 +890,8 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
       sold: "outline",
       created: "default"
     }
-    
     return <Badge variant={variants[status] || "default"}>{status}</Badge>
   }
-
   const getCollectionIcon = (collection: string) => {
     switch (collection) {
       case 'jerseys': return <ImageIcon className="h-4 w-4" />
@@ -823,7 +900,6 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
       default: return <ImageIcon className="h-4 w-4" />
     }
   }
-
   if (nfts.length === 0) {
     return (
       <div className="text-center py-12 text-gray-400">
@@ -832,7 +908,6 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
       </div>
     )
   }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
       {nfts.map((nft) => (
