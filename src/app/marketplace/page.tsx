@@ -166,7 +166,7 @@ export default function MarketplacePage() {
 
   const NFTGrid = dynamic(() => import('@/components/marketplace/NFTGrid'), { ssr: false });
   const renderGridView = () => (
-    <NFTGrid items={itemsToShow} getContractByCategory={getContractByCategory} />
+    <NFTGrid items={filteredNfts} getContractByCategory={getContractByCategory} />
   );
 
   const renderListView = () => (
