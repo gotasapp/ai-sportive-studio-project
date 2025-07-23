@@ -23,7 +23,7 @@ import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/market
 import { useIsMobile } from '@/hooks/useIsMobile';
 import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
 import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMobile';
-import { convertIpfsToHttp } from '@/lib/utils';
+import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 
 export default function MarketplacePage() {
   const isMobile = useIsMobile();
@@ -226,12 +226,13 @@ export default function MarketplacePage() {
           className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-            <Image 
-              src={convertIpfsToHttp(item.imageUrl)} 
+            <img
+              src={normalizeIpfsUri(item.imageUrl)}
               alt={item.name}
+              className="w-full h-full object-cover"
               width={64}
               height={64}
-              className="w-full h-full object-cover"
+              onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
             />
           </div>
           <div className="flex-1">

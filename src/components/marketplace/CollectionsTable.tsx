@@ -23,6 +23,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ViewType, TimeFilter, PriceSort, TokenType, CollectionTab } from './MarketplaceFilters'
+import { normalizeIpfsUri } from '@/lib/utils';
 
 interface NFTData {
   _id: string
@@ -449,11 +450,13 @@ export default function CollectionsTable({
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-                      <Image
-                        src={collection.imageUrl}
+                      <img
+                        src={normalizeIpfsUri(collection.imageUrl)}
                         alt={collection.name}
-                        fill
-                        className="object-cover"
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 object-cover rounded"
+                        onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
                       />
                     </div>
                     <div>

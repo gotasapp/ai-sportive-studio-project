@@ -65,3 +65,15 @@ export function convertIpfsToHttp(src: string): string {
   const selectedGateway = getRandomGateway(ipfsHash);
   return `${selectedGateway}/${ipfsHash}`;
 }
+
+/**
+ * Normaliza uma URI IPFS para um gateway HTTP público (Pinata por padrão)
+ * @param uri - A URI IPFS ou HTTP
+ * @returns URI HTTP normalizada
+ */
+export function normalizeIpfsUri(uri: string): string {
+  if (!uri) return '';
+  return uri.startsWith('ipfs://')
+    ? uri.replace('ipfs://', 'https://gateway.pinata.cloud/ipfs/')
+    : uri;
+}

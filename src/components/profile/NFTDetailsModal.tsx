@@ -27,6 +27,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { useActiveWalletChain } from 'thirdweb/react'
+import { normalizeIpfsUri } from '@/lib/utils';
 
 interface NFTDetailsModalProps {
   isOpen: boolean
@@ -286,15 +287,13 @@ export function NFTDetailsModal({
             <div className="space-y-4">
               <div className="aspect-square relative overflow-hidden rounded-lg bg-[#FDFDFD]/10">
                 {(displayData?.imageUrl || nftData?.imageUrl) ? (
-                  <Image 
-                    src={displayData?.imageUrl || nftData?.imageUrl || ''}
+                  <img
+                    src={normalizeIpfsUri(displayData?.imageUrl || nftData?.imageUrl || '')}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
                     height={400}
                     className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('❌ Image failed to load:', e)
-                    }}
+                    onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-[#14101e] text-[#FDFDFD]/60">

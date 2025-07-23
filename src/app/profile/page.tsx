@@ -31,7 +31,7 @@ import Header from '@/components/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { RequireWallet } from '@/components/RequireWallet'
-import { convertIpfsToHttp } from '@/lib/utils';
+import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 
 interface UserProfile {
   id: string
@@ -56,14 +56,6 @@ interface NFTItem {
 }
 
 // Helper functions
-function convertIpfsToHttp(ipfsUrl: string): string {
-  if (!ipfsUrl) return '';
-  if (ipfsUrl.startsWith('ipfs://')) {
-    return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/');
-  }
-  return ipfsUrl;
-}
-
 function determineCategory(metadata: any): 'jerseys' | 'stadiums' | 'badges' {
   const name = (metadata.name || '').toLowerCase();
   const description = (metadata.description || '').toLowerCase();
@@ -919,12 +911,13 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
         >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             {nft.imageUrl ? (
-              <Image 
-                src={convertIpfsToHttp(nft.imageUrl)} 
+              <img
+                src={normalizeIpfsUri(nft.imageUrl)}
                 alt={nft.name}
                 width={300}
                 height={300}
                 className="w-full h-full object-cover"
+                onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
               />
             ) : (
               <div className="w-full h-full bg-[#14101e] flex items-center justify-center">
