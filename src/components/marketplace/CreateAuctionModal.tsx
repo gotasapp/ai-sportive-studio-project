@@ -211,7 +211,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft }: CreateAuctionM
           <div className="bg-[#333333]/20 rounded-lg p-3 border border-[#FDFDFD]/10">
             <div className="flex items-center gap-3">
               <Image 
-                src={nft.imageUrl} 
+                src={require('@/lib/utils').convertIpfsToHttp(nft.imageUrl)} 
                 alt={nft.name}
                 width={48}
                 height={48}
