@@ -919,7 +919,7 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             {nft.imageUrl ? (
               <Image 
-              src={nft.imageUrl} 
+              src={convertIpfsToHttp(nft.imageUrl)} 
               alt={nft.name}
                 width={300}
                 height={300}
