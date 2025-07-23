@@ -24,6 +24,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
 import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMobile';
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
+import dynamic from 'next/dynamic';
 
 export default function MarketplacePage() {
   const isMobile = useIsMobile();
@@ -163,60 +164,10 @@ export default function MarketplacePage() {
     }
   };
 
-  const renderGridView = () => {
-    // Usar dados filtrados para respeitar os filtros aplicados
-    const itemsToShow = filteredNfts;
-
-    if (marketplaceLoading) {
-      return (
-        <div className="flex flex-col items-center justify-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mb-4"></div>
-          <div className="text-white">Loading NFTs...</div>
-        </div>
-      );
-    }
-
-    if (itemsToShow.length === 0) {
-      return (
-        <div className="text-center text-white/60 py-12">No NFTs found.</div>
-      );
-    }
-    
-    console.log('🎯 GRID VIEW RENDER:', {
-      filteredNftsLength: filteredNfts.length,
-      itemsToShowLength: itemsToShow.length,
-      tokenType,
-      firstFewItems: itemsToShow.slice(0, 3).map(item => ({ name: item.name, category: item.category }))
-    });
-    
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-        {itemsToShow.map((item) => (
-          <MarketplaceCard 
-            key={item.id}
-            name={item.name}
-            imageUrl={item.imageUrl}
-            price={item.price || 'Not for sale'}
-            collection={item.category || `By ${item.creator || 'Anonymous'}`}
-            category={item.category}
-            // Dados específicos do marketplace
-            tokenId={item.tokenId}
-            assetContract={item.contractAddress || getContractByCategory(item.category)}
-            owner={item.owner || item.creator}
-            isListed={item.isListed || false}
-            listingId={item.listingId}
-            // Dados de leilão
-            isAuction={item.isAuction || false}
-            auctionId={item.auctionId}
-            currentBid={item.currentBid}
-            endTime={item.endTime}
-            // Dados de ofertas
-            activeOffers={item.activeOffers || 0}
-          />
-        ))}
-      </div>
-    );
-  };
+  const NFTGrid = dynamic(() => import('@/components/marketplace/NFTGrid'), { ssr: false });
+  const renderGridView = () => (
+    <NFTGrid items={itemsToShow} getContractByCategory={getContractByCategory} />
+  );
 
   const renderListView = () => (
     <div className="p-6 space-y-4">
