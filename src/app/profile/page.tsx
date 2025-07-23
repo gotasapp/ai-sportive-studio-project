@@ -31,6 +31,7 @@ import Header from '@/components/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { RequireWallet } from '@/components/RequireWallet'
+import { convertIpfsToHttp } from '@/lib/utils';
 
 interface UserProfile {
   id: string
@@ -919,12 +920,12 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             {nft.imageUrl ? (
               <Image 
-              src={convertIpfsToHttp(nft.imageUrl)} 
-              alt={nft.name}
+                src={convertIpfsToHttp(nft.imageUrl)} 
+                alt={nft.name}
                 width={300}
                 height={300}
-              className="w-full h-full object-cover"
-            />
+                className="w-full h-full object-cover"
+              />
             ) : (
               <div className="w-full h-full bg-[#14101e] flex items-center justify-center">
                 {getCollectionIcon(nft.collection)}

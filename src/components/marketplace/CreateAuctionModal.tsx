@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
 import { Gavel, Clock, DollarSign, Timer } from 'lucide-react';
+import { convertIpfsToHttp } from '@/lib/utils';
 
 interface CreateAuctionModalProps {
   isOpen: boolean;
@@ -211,7 +212,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft }: CreateAuctionM
           <div className="bg-[#333333]/20 rounded-lg p-3 border border-[#FDFDFD]/10">
             <div className="flex items-center gap-3">
               <Image 
-                src={require('@/lib/utils').convertIpfsToHttp(nft.imageUrl)} 
+                src={convertIpfsToHttp(nft.imageUrl)}
                 alt={nft.name}
                 width={48}
                 height={48}

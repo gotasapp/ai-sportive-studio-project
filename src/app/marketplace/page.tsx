@@ -23,6 +23,7 @@ import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/market
 import { useIsMobile } from '@/hooks/useIsMobile';
 import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
 import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMobile';
+import { convertIpfsToHttp } from '@/lib/utils';
 
 export default function MarketplacePage() {
   const isMobile = useIsMobile();
@@ -226,7 +227,7 @@ export default function MarketplacePage() {
         >
           <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
             <Image 
-              src={item.imageUrl} 
+              src={convertIpfsToHttp(item.imageUrl)} 
               alt={item.name}
               width={64}
               height={64}
