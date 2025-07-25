@@ -57,6 +57,7 @@ interface StadiumNFT {
   name: string;
   imageUrl: string;
   createdAt: string;
+  status: 'Active' | 'Inactive' | 'Banned';
 }
 
 export default function StadiumsPage() {
@@ -137,7 +138,8 @@ export default function StadiumsPage() {
         const response = await fetch('/api/admin/stadiums');
         if (!response.ok) throw new Error('Failed to fetch stadiums');
         const data = await response.json();
-        setStadiums(data);
+        // Preencher status como 'Active' para todos os stadiums, para garantir compatibilidade
+        setStadiums(data.map((stadium: any) => ({ ...stadium, status: 'Active' })));
       } catch (err: any) {
         setStadiumsError(err.message);
       } finally {
