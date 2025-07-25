@@ -100,6 +100,19 @@ export default function JerseysPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
+  // ESTADO DE PAGINAÇÃO PARA TIMES
+  const [currentTeamPage, setCurrentTeamPage] = useState(1);
+  const teamsPerPage = 8;
+  const totalTeamPages = Math.ceil(teamReferences.length / teamsPerPage);
+  const paginatedTeams = teamReferences.slice((currentTeamPage - 1) * teamsPerPage, currentTeamPage * teamsPerPage);
+
+  // ESTADO DE PAGINAÇÃO PARA IMAGENS DE REFERÊNCIA
+  const [currentImagePage, setCurrentImagePage] = useState(1);
+  const imagesPerPage = 12;
+  const allReferenceImages = teamReferences.flatMap(team => team.referenceImages.map(img => ({ ...img, teamName: team.teamName })));
+  const totalImagePages = Math.ceil(allReferenceImages.length / imagesPerPage);
+  const paginatedImages = allReferenceImages.slice((currentImagePage - 1) * imagesPerPage, currentImagePage * imagesPerPage);
+
   // Filtros aprimorados para dados reais
   const filteredJerseys = jerseys.filter(jersey => {
     // Busca por nome, creator, ou wallet
@@ -311,6 +324,279 @@ export default function JerseysPage() {
         </div>
       </div>
       
+      {/* Team References Section */}
+      <Card className="cyber-card border-cyan-500/30">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-gray-200 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Team References Management
+              </CardTitle>
+              <CardDescription className="text-gray-400">
+                Manage team references, base prompts, and upload reference images for Vision Generation
+              </CardDescription>
+            </div>
+            <Dialog open={showCreateTeamDialog} onOpenChange={setShowCreateTeamDialog}>
+              <DialogTrigger asChild>
+                <Button className="cyber-button">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Team
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
+                <DialogHeader>
+                  <DialogTitle className="text-gray-200">Create New Team</DialogTitle>
+                  <DialogDescription className="text-gray-400">
+                    Add a new team with base prompt for jersey generation
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="teamName" className="text-gray-200">Team Name</Label>
+                    <Input
+                      id="teamName"
+                      value={newTeamName}
+                      onChange={(e) => setNewTeamName(e.target.value)}
+                      placeholder="e.g., Manchester United"
+                      className="cyber-input"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="teamPrompt" className="text-gray-200">Base Prompt</Label>
+                    <Textarea
+                      id="teamPrompt"
+                      value={newTeamPrompt}
+                      onChange={(e) => setNewTeamPrompt(e.target.value)}
+                      placeholder="Base prompt for this team's jersey generation..."
+                      className="cyber-input min-h-[100px]"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={() => setShowCreateTeamDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleCreateTeam} className="cyber-button">
+                    Create Team
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="teams" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+              <TabsTrigger value="teams" className="data-[state=active]:bg-cyan-500/20">Teams</TabsTrigger>
+              <TabsTrigger value="images" className="data-[state=active]:bg-cyan-500/20">Images</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="teams" className="space-y-4">
+              {referencesLoading ? (
+                <div className="flex items-center justify-center p-8">
+                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
+                  <span className="ml-2 text-gray-400">Loading team references...</span>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-4">
+                    {paginatedTeams.map((team) => (
+                      <Card key={team._id || team.teamName} className="cyber-card border-gray-700">
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h3 className="font-normal text-gray-200">{team.teamName}</h3>
+                                <Badge variant="outline" className="text-xs">
+                                  {team.referenceImages.length} images
+                                </Badge>
+                              </div>
+                              <p className="text-sm text-gray-400 mb-3">{team.teamBasePrompt}</p>
+                              <div className="flex flex-wrap gap-2">
+                                {team.referenceImages.slice(0, 3).map((img) => (
+                                  <div key={img.id} className="relative w-12 h-12 rounded-md overflow-hidden">
+                                    <Image
+                                      src={img.url}
+                                      alt={img.filename}
+                                      fill
+                                      className="object-cover"
+                                    />
+                                  </div>
+                                ))}
+                                {team.referenceImages.length > 3 && (
+                                  <div className="w-12 h-12 rounded-md bg-gray-700 flex items-center justify-center">
+                                    <span className="text-xs text-gray-400">+{team.referenceImages.length - 3}</span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setSelectedTeamForUpload(team.teamName);
+                                  setShowUploadImageDialog(true);
+                                }}
+                              >
+                                <Upload className="w-4 h-4" />
+                              </Button>
+                              <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(team)}>
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  {/* PAGINAÇÃO DOS TIMES */}
+                  {teamReferences.length > teamsPerPage && (
+                    <div className="flex justify-between items-center mt-4">
+                      <span className="text-gray-400 text-sm">
+                        Page {currentTeamPage} of {totalTeamPages}
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentTeamPage === 1}
+                          onClick={() => setCurrentTeamPage(currentTeamPage - 1)}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={currentTeamPage === totalTeamPages}
+                          onClick={() => setCurrentTeamPage(currentTeamPage + 1)}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="images" className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-gray-200">Reference Images</h3>
+                <Dialog open={showUploadImageDialog} onOpenChange={setShowUploadImageDialog}>
+                  <DialogTrigger asChild>
+                    <Button className="cyber-button">
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Image
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
+                    <DialogHeader>
+                      <DialogTitle className="text-gray-200">Upload Reference Image</DialogTitle>
+                      <DialogDescription className="text-gray-400">
+                        Upload a reference image for a team
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="teamSelect" className="text-gray-200">Select Team</Label>
+                        <Select value={selectedTeamForUpload} onValueChange={setSelectedTeamForUpload}>
+                          <SelectTrigger className="cyber-input">
+                            <SelectValue placeholder="Choose a team" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-gray-900 border-gray-700">
+                            {teamReferences.map((team) => (
+                              <SelectItem key={team._id} value={team.teamName}>
+                                {team.teamName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="imageFile" className="text-gray-200">Image File</Label>
+                        <Input
+                          id="imageFile"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleUploadImage}
+                          className="cyber-input"
+                          disabled={uploadingImage}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setShowUploadImageDialog(false)}>
+                        Cancel
+                      </Button>
+                      <Button disabled={uploadingImage} className="cyber-button">
+                        {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {paginatedImages.map(img => (
+                  <Card key={img.id} className="cyber-card border-gray-700">
+                    <CardContent className="p-4">
+                      <div className="relative aspect-square rounded-md overflow-hidden mb-3">
+                        <Image
+                          src={img.url}
+                          alt={img.filename}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-sm font-normal text-gray-200">{img.teamName}</p>
+                        <p className="text-xs text-gray-400 truncate">{img.filename}</p>
+                        <div className="flex items-center justify-between">
+                          <Badge variant="outline" className="text-xs">
+                            {img.isPrimary ? 'Primary' : 'Reference'}
+                          </Badge>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              {/* PAGINAÇÃO DAS IMAGENS */}
+              {allReferenceImages.length > imagesPerPage && (
+                <div className="flex justify-between items-center mt-4">
+                  <span className="text-gray-400 text-sm">
+                    Page {currentImagePage} of {totalImagePages}
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentImagePage === 1}
+                      onClick={() => setCurrentImagePage(currentImagePage - 1)}
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={currentImagePage === totalImagePages}
+                      onClick={() => setCurrentImagePage(currentImagePage + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <Card className="cyber-card border-cyan-500/30">
         <CardContent className="pt-6">
@@ -426,227 +712,6 @@ export default function JerseysPage() {
               </div>
             </div>
           )}
-        </CardContent>
-      </Card>
-
-      {/* Team References Section */}
-      <Card className="cyber-card border-cyan-500/30">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl text-gray-200 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Team References Management
-              </CardTitle>
-              <CardDescription className="text-gray-400">
-                Manage team references, base prompts, and upload reference images for Vision Generation
-              </CardDescription>
-            </div>
-            <Dialog open={showCreateTeamDialog} onOpenChange={setShowCreateTeamDialog}>
-              <DialogTrigger asChild>
-                <Button className="cyber-button">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Team
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
-                <DialogHeader>
-                  <DialogTitle className="text-gray-200">Create New Team</DialogTitle>
-                  <DialogDescription className="text-gray-400">
-                    Add a new team with base prompt for jersey generation
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="teamName" className="text-gray-200">Team Name</Label>
-                    <Input
-                      id="teamName"
-                      value={newTeamName}
-                      onChange={(e) => setNewTeamName(e.target.value)}
-                      placeholder="e.g., Manchester United"
-                      className="cyber-input"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="teamPrompt" className="text-gray-200">Base Prompt</Label>
-                    <Textarea
-                      id="teamPrompt"
-                      value={newTeamPrompt}
-                      onChange={(e) => setNewTeamPrompt(e.target.value)}
-                      placeholder="Base prompt for this team's jersey generation..."
-                      className="cyber-input min-h-[100px]"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button variant="outline" onClick={() => setShowCreateTeamDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleCreateTeam} className="cyber-button">
-                    Create Team
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="teams" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-800">
-              <TabsTrigger value="teams" className="data-[state=active]:bg-cyan-500/20">Teams</TabsTrigger>
-              <TabsTrigger value="images" className="data-[state=active]:bg-cyan-500/20">Images</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="teams" className="space-y-4">
-              {referencesLoading ? (
-                <div className="flex items-center justify-center p-8">
-                  <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
-                  <span className="ml-2 text-gray-400">Loading team references...</span>
-                </div>
-              ) : (
-                <div className="grid gap-4">
-                  {teamReferences.map((team) => (
-                    <Card key={team._id} className="cyber-card border-gray-700">
-                      <CardContent className="pt-6">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-normal text-gray-200">{team.teamName}</h3>
-                              <Badge variant="outline" className="text-xs">
-                                {team.referenceImages.length} images
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-gray-400 mb-3">{team.teamBasePrompt}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {team.referenceImages.slice(0, 3).map((img) => (
-                                <div key={img.id} className="relative w-12 h-12 rounded-md overflow-hidden">
-                                  <Image
-                                    src={img.url}
-                                    alt={img.filename}
-                                    fill
-                                    className="object-cover"
-                                  />
-                                </div>
-                              ))}
-                              {team.referenceImages.length > 3 && (
-                                <div className="w-12 h-12 rounded-md bg-gray-700 flex items-center justify-center">
-                                  <span className="text-xs text-gray-400">+{team.referenceImages.length - 3}</span>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedTeamForUpload(team.teamName);
-                                setShowUploadImageDialog(true);
-                              }}
-                            >
-                              <Upload className="w-4 h-4" />
-                            </Button>
-                            <Button variant="outline" size="sm" onClick={() => handleOpenEditDialog(team)}>
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="images" className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-200">Reference Images</h3>
-                <Dialog open={showUploadImageDialog} onOpenChange={setShowUploadImageDialog}>
-                  <DialogTrigger asChild>
-                    <Button className="cyber-button">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Upload Image
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] bg-gray-900 border-cyan-500/30">
-                    <DialogHeader>
-                      <DialogTitle className="text-gray-200">Upload Reference Image</DialogTitle>
-                      <DialogDescription className="text-gray-400">
-                        Upload a reference image for a team
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="teamSelect" className="text-gray-200">Select Team</Label>
-                        <Select value={selectedTeamForUpload} onValueChange={setSelectedTeamForUpload}>
-                          <SelectTrigger className="cyber-input">
-                            <SelectValue placeholder="Choose a team" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-gray-900 border-gray-700">
-                            {teamReferences.map((team) => (
-                              <SelectItem key={team._id} value={team.teamName}>
-                                {team.teamName}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="grid gap-2">
-                        <Label htmlFor="imageFile" className="text-gray-200">Image File</Label>
-                        <Input
-                          id="imageFile"
-                          type="file"
-                          accept="image/*"
-                          onChange={handleUploadImage}
-                          className="cyber-input"
-                          disabled={uploadingImage}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setShowUploadImageDialog(false)}>
-                        Cancel
-                      </Button>
-                      <Button disabled={uploadingImage} className="cyber-button">
-                        {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Upload'}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </div>
-              
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {teamReferences.flatMap(team => 
-                  team.referenceImages.map(img => (
-                    <Card key={img.id} className="cyber-card border-gray-700">
-                      <CardContent className="p-4">
-                        <div className="relative aspect-square rounded-md overflow-hidden mb-3">
-                          <Image
-                            src={img.url}
-                            alt={img.filename}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <p className="text-sm font-normal text-gray-200">{team.teamName}</p>
-                          <p className="text-xs text-gray-400 truncate">{img.filename}</p>
-                          <div className="flex items-center justify-between">
-                            <Badge variant="outline" className="text-xs">
-                              {img.isPrimary ? 'Primary' : 'Reference'}
-                            </Badge>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                              <X className="w-3 h-3" />
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
-                )}
-              </div>
-            </TabsContent>
-          </Tabs>
         </CardContent>
       </Card>
 
