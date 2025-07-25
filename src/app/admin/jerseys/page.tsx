@@ -599,12 +599,14 @@ export default function JerseysPage() {
 
       {/* Filters */}
       <Card className="cyber-card border-cyan-500/30">
-        <CardContent className="pt-6">
+        <CardContent className="py-2">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
+                {searchTerm.length === 0 && (
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+                )}
+                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-12" />
               </div>
             </div>
             <div className="flex items-center space-x-2">
