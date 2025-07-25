@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
   Building, Search, Filter, MoreHorizontal, Download, RefreshCw, Loader2,
-  Plus, Upload, Edit, Settings, ImageIcon, X
+  Plus, Upload, Edit, Settings, ImageIcon, X, Eye
 } from 'lucide-react'
 import { 
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger 
@@ -19,6 +19,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import React from 'react';
 
 // Interfaces para Team References (reutilizáveis)
 interface ReferenceImage {
@@ -105,6 +106,9 @@ export default function StadiumsPage() {
   const allRefImages = teamReferences.flatMap(team => team.referenceImages.map(img => ({ ...img, teamName: team.teamName })));
   const totalImgPages = Math.ceil(allRefImages.length / imgsPerPage);
   const paginatedImages = allRefImages.slice((currentImgPage - 1) * imgsPerPage, currentImgPage * imgsPerPage);
+
+  // Estado para controlar linha expandida
+  const [openRow, setOpenRow] = useState<string | null>(null);
 
   const API_ENDPOINT = '/api/admin/stadiums/references';
 
@@ -468,11 +472,13 @@ export default function StadiumsPage() {
 
       {/* Card de Filtro acima da listagem de stadiums */}
       <Card className="cyber-card border-cyan-500/30">
-        <CardContent className="pt-6">
+        <CardContent className="py-2">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                {searchTerm.length === 0 && (
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
+                )}
                 <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="cyber-input pl-12" />
               </div>
             </div>
@@ -515,15 +521,32 @@ export default function StadiumsPage() {
                 </thead>
                 <tbody>
                   {paginatedStadiums.map(stadium => (
-                    <tr key={stadium.id} className="border-b border-gray-800 hover:bg-cyan-500/5">
-                      <td className="p-3 text-white font-normal">{stadium.name}</td>
-                      <td className="p-3 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
-                      <td className="p-3 text-right">
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
-                      </td>
-                    </tr>
+                    <React.Fragment key={stadium.id}>
+                      <tr className="border-b border-gray-800 hover:bg-cyan-500/5">
+                        <td className="p-3 text-white font-normal">{stadium.name}</td>
+                        <td className="p-3 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
+                        <td className="p-3 text-right">
+                          <Button variant="ghost" size="icon" onClick={() => setOpenRow(openRow === stadium.id ? null : stadium.id)}>
+                            {openRow === stadium.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
+                          </Button>
+                        </td>
+                      </tr>
+                      {openRow === stadium.id && (
+                        <tr className="bg-gray-900/80 border-b border-gray-800">
+                          <td colSpan={3} className="p-6">
+                            <div className="flex flex-col md:flex-row gap-6">
+                              <div className="flex-1">
+                                <h4 className="text-lg font-semibold text-cyan-400 mb-2">Stadium Details</h4>
+                                <div className="text-gray-300 text-sm mb-2">ID: {stadium.id}</div>
+                                <div className="text-gray-300 text-sm mb-2">Name: {stadium.name}</div>
+                                <div className="text-gray-300 text-sm mb-2">Created At: {new Date(stadium.createdAt).toLocaleString()}</div>
+                                {/* Adicione mais detalhes se necessário */}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>
