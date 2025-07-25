@@ -49,6 +49,7 @@ interface BadgeNFT {
   name: string;
   imageUrl: string;
   createdAt: string;
+  status: 'Active' | 'Inactive' | 'Banned';
 }
 
 export default function BadgesPage() {
@@ -126,7 +127,8 @@ export default function BadgesPage() {
         const response = await fetch('/api/admin/badges');
         if (!response.ok) throw new Error('Failed to fetch badges');
         const data = await response.json();
-        setBadges(data);
+        // Preencher status como 'Active' para todos os badges, para garantir compatibilidade
+        setBadges(data.map((badge: any) => ({ ...badge, status: 'Active' })));
       } catch (err: any) {
         setBadgesError(err.message);
       } finally {
