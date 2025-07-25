@@ -173,18 +173,10 @@ export default function AdminMarketplace() {
 
           <Tabs defaultValue="general" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 bg-[#333333]/20">
-              <TabsTrigger value="general" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
-                Geral
-              </TabsTrigger>
-              <TabsTrigger value="trading" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
-                Negociação
-              </TabsTrigger>
-              <TabsTrigger value="fees" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
-                Taxas
-              </TabsTrigger>
-              <TabsTrigger value="contracts" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
-                Contratos
-              </TabsTrigger>
+              <TabsTrigger value="general" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Geral</TabsTrigger>
+              <TabsTrigger value="trading" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Negociação</TabsTrigger>
+              <TabsTrigger value="fees" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Taxas</TabsTrigger>
+              <TabsTrigger value="contracts" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Contratos</TabsTrigger>
             </TabsList>
 
             {/* Geral */}

@@ -307,17 +307,17 @@ export default function JerseysPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Jersey Management</h1>
-          <p className="text-gray-400 mt-2">Browse, review, and manage all generated jerseys.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">Jersey Management</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">Browse, review, and manage all generated jerseys.</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" className="border-cyan-500/30">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <Button variant="outline" className="border-cyan-500/30 w-full sm:w-auto">
             <Download className="w-4 h-4 mr-2" />
             Export Data
           </Button>
-          <Button className="cyber-button" onClick={() => window.location.reload()}>
+          <Button className="cyber-button w-full sm:w-auto" onClick={() => window.location.reload()}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
@@ -327,19 +327,19 @@ export default function JerseysPage() {
       {/* Team References Section */}
       <Card className="cyber-card border-cyan-500/30">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
             <div>
-              <CardTitle className="text-xl text-gray-200 flex items-center gap-2">
+              <CardTitle className="text-lg md:text-xl text-gray-200 flex items-center gap-2">
                 <Settings className="w-5 h-5" />
                 Team References Management
               </CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-gray-400 text-sm md:text-base">
                 Manage team references, base prompts, and upload reference images for Vision Generation
               </CardDescription>
             </div>
             <Dialog open={showCreateTeamDialog} onOpenChange={setShowCreateTeamDialog}>
               <DialogTrigger asChild>
-                <Button className="cyber-button">
+                <Button className="cyber-button w-full md:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Team
                 </Button>
@@ -609,9 +609,9 @@ export default function JerseysPage() {
                 <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-12" />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full md:w-auto">
               <Filter className="h-4 w-4 text-gray-400" />
-              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input">
+              <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input w-full md:w-auto">
                 <option value="all">All Statuses</option>
                 <option value="Minted">Minted</option>
                 <option value="Pending">Pending</option>
@@ -632,8 +632,8 @@ export default function JerseysPage() {
                   <th className="p-4 text-left font-semibold text-gray-200">Name</th>
                   <th className="p-4 text-left font-semibold text-gray-200">Creator</th>
                   <th className="p-4 text-left font-semibold text-gray-200">Status</th>
-                  <th className="p-4 font-semibold text-gray-200">Mint Progress</th>
-                  <th className="p-4 font-semibold text-gray-200">Created At</th>
+                  <th className="p-4 font-semibold text-gray-200 hidden sm:table-cell">Mint Progress</th>
+                  <th className="p-4 font-semibold text-gray-200 hidden md:table-cell">Created At</th>
                   <th className="p-4 font-semibold text-gray-200">Actions</th>
                 </tr>
               </thead>
@@ -642,7 +642,7 @@ export default function JerseysPage() {
                   <React.Fragment key={jersey.id}>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 align-top">
-                        <div className="font-normal text-lg text-white">{jersey.name}</div>
+                        <div className="font-normal text-base md:text-lg text-white">{jersey.name}</div>
                         <div className="text-xs text-white/80">ID: {jersey.id}</div>
                       </td>
                       <td className="p-4">
@@ -652,15 +652,15 @@ export default function JerseysPage() {
                       <td className="p-4">
                         <Badge className={statusColors[jersey.status]}>{jersey.status}</Badge>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 hidden sm:table-cell">
                         <div className="text-white">{jersey.mintCount} / {jersey.editionSize}</div>
                         <div className="w-full bg-gray-700 rounded-full h-1.5 mt-1">
                           <div className="bg-cyan-400 h-1.5 rounded-full" style={{width: `${(jersey.mintCount / jersey.editionSize) * 100}%`}}></div>
                         </div>
                       </td>
-                      <td className="p-4 text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
+                      <td className="p-4 hidden md:table-cell text-gray-400">{new Date(jersey.createdAt).toLocaleDateString()}</td>
                       <td className="p-4">
-                        <Button variant="ghost" size="sm" onClick={() => setOpenRow(openRow === jersey.id ? null : jersey.id)}>
+                        <Button variant="ghost" size="sm" className="w-10 h-10" onClick={() => setOpenRow(openRow === jersey.id ? null : jersey.id)}>
                           {openRow === jersey.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
                         </Button>
                       </td>
@@ -671,7 +671,7 @@ export default function JerseysPage() {
                           {/* Conteúdo expandido: detalhes, atributos, ações extras */}
                           <div className="flex flex-col md:flex-row gap-6">
                             <div className="flex-1">
-                              <h4 className="text-lg font-semibold text-cyan-400 mb-2">Detalhes da Jersey</h4>
+                              <h4 className="text-base md:text-lg font-semibold text-cyan-400 mb-2">Detalhes da Jersey</h4>
                               <div className="text-gray-300 text-sm mb-2">ID: {jersey.id}</div>
                               <div className="text-gray-300 text-sm mb-2">Criador: {jersey.creator?.name || 'Unknown'} ({jersey.creator?.wallet || 'Unknown'})</div>
                               <div className="text-gray-300 text-sm mb-2">Status: {jersey.status}</div>

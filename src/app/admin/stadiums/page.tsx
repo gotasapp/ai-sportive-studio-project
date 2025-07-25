@@ -263,33 +263,32 @@ export default function StadiumsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Stadium Management</h1>
-          <p className="text-gray-400 mt-2">Manage stadium references, base prompts, and reference images.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">Stadium Management</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">Manage stadium references, base prompts, and reference images.</p>
         </div>
-        <Button className="cyber-button" onClick={refreshReferences}>
-            <RefreshCw className="w-4 h-4 mr-2" />
+        <Button className="cyber-button w-full md:w-auto" onClick={refreshReferences}>
+          <RefreshCw className="w-4 h-4 mr-2" />
           Refresh Data
-          </Button>
+        </Button>
       </div>
-
       {/* Stadium Management Section (management/referências) */}
       <Card className="cyber-card border-cyan-500/30">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
             <div>
-              <CardTitle className="text-xl text-gray-200 flex items-center gap-2">
+              <CardTitle className="text-lg md:text-xl text-gray-200 flex items-center gap-2">
                 <Settings className="w-5 h-5" />
                 Stadium References
               </CardTitle>
-              <CardDescription className="text-gray-400">
+              <CardDescription className="text-gray-400 text-sm md:text-base">
                 Manage references for Vision Generation
               </CardDescription>
             </div>
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
               <DialogTrigger asChild>
-                <Button className="cyber-button">
+                <Button className="cyber-button w-full md:w-auto">
                   <Plus className="w-4 h-4 mr-2" />
                   Add Stadium
                 </Button>
@@ -482,9 +481,9 @@ export default function StadiumsPage() {
                 <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="cyber-input pl-12" />
               </div>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full md:w-auto">
               <Filter className="h-4 w-4 text-gray-400" />
-              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="cyber-input">
+              <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} className="cyber-input w-full md:w-auto">
                 <option value="all">All Statuses</option>
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
@@ -515,7 +514,7 @@ export default function StadiumsPage() {
                 <thead>
                   <tr className="border-b border-cyan-500/20 text-cyan-300">
                     <th className="p-3 font-semibold">Name</th>
-                    <th className="p-3 font-semibold">Created At</th>
+                    <th className="p-3 font-semibold hidden md:table-cell">Created At</th>
                     <th className="p-3 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
@@ -524,9 +523,9 @@ export default function StadiumsPage() {
                     <React.Fragment key={stadium.id}>
                       <tr className="border-b border-gray-800 hover:bg-cyan-500/5">
                         <td className="p-3 text-white font-normal">{stadium.name}</td>
-                        <td className="p-3 text-gray-400">{new Date(stadium.createdAt).toLocaleDateString()}</td>
+                        <td className="p-3 text-gray-400 hidden md:table-cell">{new Date(stadium.createdAt).toLocaleDateString()}</td>
                         <td className="p-3 text-right">
-                          <Button variant="ghost" size="icon" onClick={() => setOpenRow(openRow === stadium.id ? null : stadium.id)}>
+                          <Button variant="ghost" size="icon" className="w-10 h-10" onClick={() => setOpenRow(openRow === stadium.id ? null : stadium.id)}>
                             {openRow === stadium.id ? <Eye className="w-4 h-4" /> : <MoreHorizontal className="w-4 h-4" />}
                           </Button>
                         </td>
@@ -536,7 +535,7 @@ export default function StadiumsPage() {
                           <td colSpan={3} className="p-6">
                             <div className="flex flex-col md:flex-row gap-6">
                               <div className="flex-1">
-                                <h4 className="text-lg font-semibold text-cyan-400 mb-2">Stadium Details</h4>
+                                <h4 className="text-base md:text-lg font-semibold text-cyan-400 mb-2">Stadium Details</h4>
                                 <div className="text-gray-300 text-sm mb-2">ID: {stadium.id}</div>
                                 <div className="text-gray-300 text-sm mb-2">Name: {stadium.name}</div>
                                 <div className="text-gray-300 text-sm mb-2">Created At: {new Date(stadium.createdAt).toLocaleString()}</div>

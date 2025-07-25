@@ -142,10 +142,10 @@ export default function UsersPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">User Management</h1>
-          <p className="text-gray-400 mt-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">User Management</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">
             Manage users, permissions and activity
             {userStats && (
               <span className="ml-2 text-cyan-400">
@@ -154,13 +154,13 @@ export default function UsersPage() {
             )}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" className="border-cyan-500/30" disabled={loading}>
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <Button variant="outline" className="border-cyan-500/30 w-full sm:w-auto" disabled={loading}>
             <Download className="w-4 h-4 mr-2" />
             Export Users
           </Button>
           <Button 
-            className="cyber-button" 
+            className="cyber-button w-full sm:w-auto" 
             onClick={() => window.location.reload()}
             disabled={loading}
           >
@@ -175,7 +175,7 @@ export default function UsersPage() {
       </div>
 
       {/* Stats Cards - Dados Reais */}
-       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Total Users</CardTitle>
@@ -250,9 +250,9 @@ export default function UsersPage() {
                     <Input placeholder="Search by name, email, or wallet..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 w-full md:w-auto">
                   <Filter className="h-4 w-4 text-gray-400" />
-                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input">
+                  <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="cyber-input w-full md:w-auto">
                     <option value="all">All Statuses</option>
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
@@ -272,7 +272,7 @@ export default function UsersPage() {
                       <th className="p-4 font-medium">User</th>
                       <th className="p-4 font-medium">Status</th>
                       <th className="p-4 font-medium">NFTs Created</th>
-                      <th className="p-4 font-medium">Joined</th>
+                      <th className="p-4 font-medium hidden md:table-cell">Joined</th>
                       <th className="p-4 font-medium">Actions</th>
                     </tr>
                   </thead>
@@ -326,7 +326,7 @@ export default function UsersPage() {
                                   <div className="text-xs text-green-400">Creator</div>
                                 )}
                               </td>
-                              <td className="p-4 text-gray-400">
+                              <td className="p-4 text-gray-400 hidden md:table-cell">
                                 <div>{joinDate}</div>
                                 {user.stats.daysSinceJoined > 0 && (
                                   <div className="text-xs text-gray-500">
@@ -338,6 +338,7 @@ export default function UsersPage() {
                                 <Button 
                                   variant="ghost" 
                                   size="sm"
+                                  className="w-10 h-10"
                                   onClick={() => handleUserAction(user._id, 'view')}
                                 >
                                   <MoreHorizontal className="w-4 h-4" />

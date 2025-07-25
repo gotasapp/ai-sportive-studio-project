@@ -324,20 +324,18 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto space-y-6">
         
         {/* Header responsivo */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0">
           <div>
             <h1 className="text-xl md:text-2xl font-semibold text-white">Dashboard</h1>
-            <p className="text-sm text-gray-medium mt-1">
-              System control and monitoring
-            </p>
+            <p className="text-sm text-gray-medium mt-1">System control and monitoring</p>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
             <Button 
               onClick={handleRefresh}
               disabled={loadingOverview}
               variant="outline"
               size="sm"
-              className="text-xs"
+              className="text-xs w-full sm:w-auto"
             >
               {loadingOverview ? (
                 <Loader2 className="h-3 w-3 animate-spin mr-2" />

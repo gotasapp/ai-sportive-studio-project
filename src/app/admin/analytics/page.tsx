@@ -149,13 +149,13 @@ export default function AnalyticsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Analytics & Insights</h1>
-          <p className="text-gray-400 mt-2">Performance metrics and business intelligence</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">Analytics & Insights</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">Performance metrics and business intelligence</p>
         </div>
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center space-x-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             {timeRanges.map((range) => (
               <Button
                 key={range.value}
@@ -172,13 +172,13 @@ export default function AnalyticsPage() {
             onClick={handleRefresh}
             variant="outline"
             size="sm"
-            className="border-cyan-500/30"
+            className="border-cyan-500/30 w-full sm:w-auto"
             disabled={refreshing}
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button onClick={() => handleExport('full')} className="cyber-button">
+          <Button onClick={() => handleExport('full')} className="cyber-button w-full sm:w-auto">
             <Download className="w-4 h-4 mr-2" />
             Export Report
           </Button>
@@ -264,20 +264,14 @@ export default function AnalyticsPage() {
       </div>
 
       <Tabs defaultValue="teams" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 cyber-card border-cyan-500/30">
           <TabsTrigger value="teams" className="data-[state=active]:bg-cyan-500/20">
             <Users className="w-4 h-4 mr-2" />
             Popular Teams
           </TabsTrigger>
-          <TabsTrigger value="performance" className="data-[state=active]:bg-cyan-500/20">
-            Performance
-          </TabsTrigger>
-          <TabsTrigger value="users" className="data-[state=active]:bg-cyan-500/20">
-            User Behavior
-          </TabsTrigger>
-          <TabsTrigger value="system" className="data-[state=active]:bg-cyan-500/20">
-            System Health
-          </TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-cyan-500/20">Performance</TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-cyan-500/20">User Behavior</TabsTrigger>
+          <TabsTrigger value="system" className="data-[state=active]:bg-cyan-500/20">System Health</TabsTrigger>
         </TabsList>
 
         {/* Popular Teams Tab */}

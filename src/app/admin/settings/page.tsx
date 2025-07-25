@@ -142,19 +142,19 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">System Settings</h1>
-          <p className="text-gray-400 mt-2">Global platform configuration and integrations.</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">System Settings</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">Global platform configuration and integrations.</p>
         </div>
-        <Button onClick={handleSave} disabled={saving} className="cyber-button">
+        <Button onClick={handleSave} disabled={saving} className="cyber-button w-full md:w-auto">
             {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
             {saving ? 'Saving...' : 'Save Settings'}
         </Button>
       </div>
 
       <Tabs defaultValue="general" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 cyber-card border-cyan-500/30">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 cyber-card border-cyan-500/30">
           <TabsTrigger value="general"><Settings className="w-4 h-4 mr-2" />General</TabsTrigger>
           {/* <TabsTrigger value="api"><Key className="w-4 h-4 mr-2" />API Keys</TabsTrigger> */}
           <TabsTrigger value="features"><ToggleLeft className="w-4 h-4 mr-2" />Features</TabsTrigger>

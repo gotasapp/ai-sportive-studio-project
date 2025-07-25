@@ -388,21 +388,21 @@ export default function ModerationPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-200">Content Moderation</h1>
-          <p className="text-gray-400 mt-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-200">Content Moderation</h1>
+          <p className="text-gray-400 mt-2 text-sm md:text-base">
             Manage pending content and configure content filters.
           </p>
         </div>
-        <Button variant="outline" className="border-cyan-500/30" onClick={() => fetchItems(true)} disabled={loading}>
+        <Button variant="outline" className="border-cyan-500/30 w-full md:w-auto" onClick={() => fetchItems(true)} disabled={loading}>
           <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh Queue
         </Button>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4 cyber-card border-cyan-500/30">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 cyber-card border-cyan-500/30">
           <TabsTrigger value="queue">
             <Shield className="w-4 h-4 mr-2" />
             Moderation Queue ({items.length})
