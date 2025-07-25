@@ -71,6 +71,7 @@ const statusColors: { [key in Jersey['status']]: string } = {
 }
 
 export default function JerseysPage() {
+  // Estados
   const [jerseys, setJerseys] = useState<Jersey[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,6 +95,29 @@ export default function JerseysPage() {
 
   // Estado para controlar linhas expandidas
   const [openRow, setOpenRow] = useState<string | null>(null);
+
+  // PAGINAÇÃO
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
+
+  // Filtros aprimorados para dados reais
+  const filteredJerseys = jerseys.filter(jersey => {
+    // Busca por nome, creator, ou wallet
+    const matchesSearch =
+      jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (jersey.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (jersey.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
+    // Filtro por status
+    const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const totalPages = Math.ceil(filteredJerseys.length / itemsPerPage);
+
+  // Atualiza currentPage se filtros mudarem e página ficou inválida
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(1);
+  }, [filteredJerseys.length, totalPages]);
 
   useEffect(() => {
     const fetchJerseys = async () => {
@@ -133,17 +157,8 @@ export default function JerseysPage() {
     fetchTeamReferences();
   }, []);
 
-  // Filtros aprimorados para dados reais
-  const filteredJerseys = jerseys.filter(jersey => {
-    // Busca por nome, creator, ou wallet
-    const matchesSearch =
-      jersey.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (jersey.creator?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (jersey.creator?.wallet || '').toLowerCase().includes(searchTerm.toLowerCase());
-    // Filtro por status
-    const matchesStatus = filterStatus === 'all' || jersey.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // Jerseys da página atual
+  const paginatedJerseys = filteredJerseys.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   // Funções para Team References
   const handleCreateTeam = async () => {
@@ -303,7 +318,7 @@ export default function JerseysPage() {
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input placeholder="Search by name, creator, or wallet..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
+                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="cyber-input pl-10" />
               </div>
             </div>
             <div className="flex items-center space-x-2">
@@ -325,22 +340,22 @@ export default function JerseysPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-gray-800 text-gray-400">
-                  <th className="p-4 text-left font-semibold text-secondary/80">Name</th>
-                  <th className="p-4 text-left font-semibold text-secondary/80">Creator</th>
-                  <th className="p-4 text-left font-semibold text-secondary/80">Status</th>
-                  <th className="p-4 font-medium">Mint Progress</th>
-                  <th className="p-4 font-medium">Created At</th>
-                  <th className="p-4 font-medium">Actions</th>
+                <tr className="border-b border-gray-800">
+                  <th className="p-4 text-left font-semibold text-gray-200">Name</th>
+                  <th className="p-4 text-left font-semibold text-gray-200">Creator</th>
+                  <th className="p-4 text-left font-semibold text-gray-200">Status</th>
+                  <th className="p-4 font-semibold text-gray-200">Mint Progress</th>
+                  <th className="p-4 font-semibold text-gray-200">Created At</th>
+                  <th className="p-4 font-semibold text-gray-200">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {loading ? renderSkeleton() : filteredJerseys.map(jersey => (
+                {loading ? renderSkeleton() : paginatedJerseys.map(jersey => (
                   <React.Fragment key={jersey.id}>
                     <tr className="border-b border-gray-800 hover:bg-gray-800/50">
                       <td className="p-4 align-top">
-                        <div className="font-bold text-lg text-secondary">{jersey.name}</div>
-                        <div className="text-xs text-secondary/60">ID: {jersey.id}</div>
+                        <div className="font-normal text-lg text-white">{jersey.name}</div>
+                        <div className="text-xs text-white/80">ID: {jersey.id}</div>
                       </td>
                       <td className="p-4">
                         <div className="text-white">{jersey.creator?.name || 'Unknown'}</div>
@@ -385,6 +400,32 @@ export default function JerseysPage() {
               </tbody>
             </table>
           </div>
+          {/* PAGINATION */}
+          {!loading && filteredJerseys.length > itemsPerPage && (
+            <div className="flex justify-between items-center mt-4">
+              <span className="text-gray-400 text-sm">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -470,7 +511,7 @@ export default function JerseysPage() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="font-semibold text-gray-200">{team.teamName}</h3>
+                              <h3 className="font-normal text-gray-200">{team.teamName}</h3>
                               <Badge variant="outline" className="text-xs">
                                 {team.referenceImages.length} images
                               </Badge>
@@ -588,7 +629,7 @@ export default function JerseysPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-medium text-gray-200">{team.teamName}</p>
+                          <p className="text-sm font-normal text-gray-200">{team.teamName}</p>
                           <p className="text-xs text-gray-400 truncate">{img.filename}</p>
                           <div className="flex items-center justify-between">
                             <Badge variant="outline" className="text-xs">
