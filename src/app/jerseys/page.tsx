@@ -13,6 +13,7 @@ import { ImageGenerationRequest } from '../../types'
 import { getTransactionUrl } from '../../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../../lib/admin-config'
+import { useLaunchpadSubmission } from '../../hooks/useLaunchpadSubmission'
 
 // Importando os novos componentes profissionais
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
@@ -121,6 +122,9 @@ export default function JerseyEditor() {
   // Marketplace state
   const [marketplaceNFTs, setMarketplaceNFTs] = useState<MarketplaceNFT[]>([])
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
+  
+  // Hook para envio ao Launchpad
+  const { submitToLaunchpad, isSubmitting, submitError, submitSuccess, resetSubmission } = useLaunchpadSubmission()
 
   // ===== NEW VISION ANALYSIS STATES =====
   const [isVisionMode, setIsVisionMode] = useState(false)
@@ -1183,6 +1187,47 @@ Design based on analysis: ${analysisText}`
     setSaveError(null);
   }
 
+  // Função para enviar imagem para o Launchpad
+  const handleSendToLaunchpad = async () => {
+    if (!generatedImage) {
+      setError('Nenhuma imagem gerada para enviar')
+      return
+    }
+
+    try {
+      const metadata = {
+        team: selectedTeam,
+        playerName,
+        playerNumber,
+        style: selectedStyle,
+        quality,
+        isVisionMode,
+        // Dados adicionais se disponíveis
+        ...(referenceImage && { referenceImage }),
+        ...(customPrompt && { customPrompt })
+      }
+
+      await submitToLaunchpad({
+        imageUrl: generatedImage,
+        category: 'jerseys',
+        metadata,
+        description: `${selectedTeam} ${playerName} #${playerNumber} - ${selectedStyle} style jersey`,
+        price: '0.1',
+        maxSupply: 100,
+        creator: {
+          name: 'Admin',
+          wallet: address || '0x0000000000000000000000000000000000000000'
+        }
+      })
+
+      // Mostrar sucesso
+      console.log('✅ Imagem enviada para aprovação do Launchpad')
+    } catch (error) {
+      console.error('❌ Erro ao enviar para Launchpad:', error)
+      setError('Erro ao enviar imagem para o Launchpad')
+    }
+  }
+
   // ✅ Monitor transaction status and update database when minted
   useEffect(() => {
     if (mintStatus === 'pending' && mintedTokenId) {
@@ -1418,6 +1463,8 @@ Design based on analysis: ${analysisText}`
           quality={quality}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
+          onSendToLaunchpad={handleSendToLaunchpad}
+          isAdmin={isUserAdmin}
         />
       }
       actionBar={
