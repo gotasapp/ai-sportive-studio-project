@@ -44,7 +44,6 @@ export function useLaunchpadSubmission() {
 
       if (result.success) {
         setSubmitSuccess(true);
-        console.log('✅ Image submitted to launchpad successfully:', result.pendingImageId);
         return result;
       } else {
         throw new Error(result.error || 'Failed to submit image to launchpad');
@@ -52,7 +51,6 @@ export function useLaunchpadSubmission() {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       setSubmitError(errorMessage);
-      console.error('❌ Error submitting to launchpad:', error);
       throw error;
     } finally {
       setIsSubmitting(false);

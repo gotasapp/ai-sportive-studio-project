@@ -30,8 +30,6 @@ interface ProfessionalCanvasProps {
   quality?: 'standard' | 'hd'
   referenceImage?: string | null
   isVisionMode?: boolean
-  onSendToLaunchpad?: () => void
-  isAdmin?: boolean
 }
 
 export default function ProfessionalCanvas({
@@ -45,10 +43,9 @@ export default function ProfessionalCanvas({
   selectedStyle,
   quality,
   referenceImage,
-  isVisionMode,
-  onSendToLaunchpad,
-  isAdmin
+  isVisionMode
 }: ProfessionalCanvasProps) {
+  
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
@@ -220,28 +217,7 @@ export default function ProfessionalCanvas({
         </div>
         
         <div className="flex items-center gap-2">
-          {/* Botão Enviar para Launchpad (só para admin) */}
-          {isAdmin && generatedImage && onSendToLaunchpad && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onSendToLaunchpad}
-                    className="text-blue-400 border-blue-500/30 hover:bg-blue-500/10 hover:text-blue-300"
-                  >
-                    <Rocket className="h-3.5 w-3.5 mr-1" />
-                    Enviar para Launchpad
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Enviar imagem para aprovação do Launchpad</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-          
+
           <TooltipProvider>
             <div className="zoom-controls flex items-center gap-1">
               <Tooltip>

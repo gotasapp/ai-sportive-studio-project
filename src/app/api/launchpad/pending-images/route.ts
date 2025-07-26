@@ -8,8 +8,6 @@ const DB_NAME = 'chz-app-db';
  */
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 POST Pending Images - Salvando imagem para aprovação do Launchpad');
-    
     const data = await request.json();
     
     // Validar dados obrigatórios
@@ -44,8 +42,6 @@ export async function POST(request: NextRequest) {
     // Inserir no banco
     const result = await db.collection('pending_launchpad_images').insertOne(pendingImage);
     
-    console.log(`✅ Saved pending image for launchpad: ${data.category} (ID: ${result.insertedId})`);
-    
     return NextResponse.json({
       success: true,
       pendingImageId: result.insertedId.toString(),
@@ -66,7 +62,6 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('📋 GET Pending Images - Listando imagens pendentes para admin');
     
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -99,7 +94,7 @@ export async function GET(request: NextRequest) {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
     
-    console.log(`✅ Found ${pendingImages.length} pending images (page ${page}/${totalPages})`);
+
     
     return NextResponse.json({
       success: true,

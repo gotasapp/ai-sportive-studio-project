@@ -459,6 +459,8 @@ export default function LaunchpadPage() {
         const response = await fetch(endpoint);
         const data = await response.json();
         
+        console.log('🔍 Fetch result:', { isUserAdmin, success: data.success, collectionsCount: data.collections?.length || 0 });
+        
         if (data.success) {
           // Admin gets all collections, regular users get filtered collections
           const collectionsToSet = isUserAdmin 
@@ -466,6 +468,7 @@ export default function LaunchpadPage() {
             : data.collections || [];
             
           setCollections(collectionsToSet);
+          console.log('✅ Collections loaded:', collectionsToSet.length, 'collections');
         } else {
           console.error('Failed to fetch collections:', data.error);
           toast.error('Failed to load collections');
@@ -563,10 +566,8 @@ export default function LaunchpadPage() {
       <Header />
       
       <div className="flex-1">
-        {/* Featured Carousel - Full width like marketplace */}
-        <div className="w-full">
-          <FeaturedLaunchpadCarousel />
-        </div>
+        {/* Featured Launchpad Carousel */}
+        <FeaturedLaunchpadCarousel />
 
         {/* Launchpad Stats - Small and discrete like marketplace */}
         <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
@@ -618,12 +619,30 @@ export default function LaunchpadPage() {
         <div className="container mx-auto px-6 md:px-8 lg:px-12 pb-8">
           <div className="max-w-7xl mx-auto">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4 animate-spin">
-                  <Settings className="w-8 h-8 text-[#A20131]" />
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Loading collections...</h2>
-                <p className="text-gray-400">Please wait while we fetch the latest launchpad data</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
+                {Array.from({ length: 8 }).map((_, index) => (
+                  <Card key={index} className="cyber-card overflow-hidden">
+                    <div className="aspect-square w-full bg-[#FDFDFD]/10 animate-pulse" />
+                    <CardContent className="p-4 space-y-3">
+                      <div className="h-4 w-3/4 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                      <div className="h-3 w-1/2 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <div className="h-3 w-16 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                          <div className="h-3 w-20 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                        </div>
+                        <div className="h-1.5 w-full bg-[#FDFDFD]/10 animate-pulse rounded" />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="h-3 w-8 bg-[#FDFDFD]/10 animate-pulse rounded mb-1" />
+                          <div className="h-4 w-16 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                        </div>
+                        <div className="h-8 w-20 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             ) : filteredCollections.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -638,11 +657,16 @@ export default function LaunchpadPage() {
                   }
                 </p>
                 {isUserAdmin && collections.length === 0 && (
-                  <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-                    <p className="text-sm text-gray-300 mb-2">Admin Tip:</p>
-                    <p className="text-xs text-gray-400">
+                  <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 max-w-md">
+                    <p className="text-sm text-gray-300 mb-2">💡 Admin Tip:</p>
+                    <p className="text-xs text-gray-400 mb-3">
                       Use the "Enviar para Launchpad" button in the jersey generation page to add collections for approval.
                     </p>
+                    <Link href="/jerseys">
+                      <Button size="sm" className="bg-[#A20131] hover:bg-[#A20131]/90 text-white">
+                        Go to Jersey Generator
+                      </Button>
+                    </Link>
                   </div>
                 )}
               </div>

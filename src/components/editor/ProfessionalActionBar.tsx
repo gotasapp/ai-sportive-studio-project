@@ -59,6 +59,9 @@ interface ProfessionalActionBarProps {
 
   // Utils
   getTransactionUrl: (hash: string) => string
+
+  // Launchpad
+  onSendToLaunchpad?: () => void
 }
 
 export default function ProfessionalActionBar({
@@ -88,7 +91,8 @@ export default function ProfessionalActionBar({
   isUserAdmin,
   progress,
   progressText,
-  getTransactionUrl
+  getTransactionUrl,
+  onSendToLaunchpad
 }: ProfessionalActionBarProps) {
 
   const renderGenerateButton = () => (
@@ -228,6 +232,36 @@ export default function ProfessionalActionBar({
             }}
           />
         )
+      )}
+
+      {/* Botão Enviar para Launchpad */}
+      {onSendToLaunchpad && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onSendToLaunchpad}
+                disabled={isMinting}
+                variant="outline"
+                className={cn(
+                  "h-12 px-6 text-base font-medium transition-all duration-200",
+                  "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                  // Mobile responsiveness
+                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
+                )}
+              >
+                <div className="flex items-center gap-2 max-lg:gap-1.5">
+                  <Rocket className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                  <span>Enviar para Launchpad</span>
+                </div>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Enviar imagem para aprovação do Launchpad</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   )

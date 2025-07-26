@@ -29,6 +29,8 @@ export const ADMIN_ADDRESSES = [
   '0xEf381c5fB1697b0f21F99c7A7b546821cF481B56'.toLowerCase(), // jeff
 ].filter(Boolean) as string[];
 
+
+
 // Admin emails - for social/email login admin access
 export const ADMIN_EMAILS = [
   process.env.NEXT_PUBLIC_ADMIN_EMAIL?.toLowerCase(),
