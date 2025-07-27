@@ -30,7 +30,8 @@ import {
   Pause,
   CalendarDays,
   CheckCircle,
-  XCircle
+  XCircle,
+  Trash2
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -38,6 +39,7 @@ import { isAdmin } from '@/lib/admin-config';
 import { toast } from 'sonner';
 import { Collection, LaunchpadStatus } from '@/types';
 import { LAUNCHPAD_STATUSES, VISIBLE_LAUNCHPAD_STATUSES } from '@/lib/collection-config';
+import { getCurrentUTC, getCurrentLocalFormatted, addDaysToUTC, isUTCDatePassed } from '@/lib/collection-utils';
 
 // Componente do Carrossel Featured (igual ao marketplace)
 function FeaturedLaunchpadCarousel() {
@@ -226,7 +228,7 @@ function LaunchpadCollectionCard({
 
   const handleStatusUpdate = () => {
     if (onUpdateStatus) {
-      onUpdateStatus(collection.id, selectedStatus, launchDate);
+      onUpdateStatus((collection._id || collection.id), selectedStatus, launchDate);
       setShowAdminControls(false);
     }
   };
@@ -362,7 +364,7 @@ function LaunchpadCollectionCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onUpdateStatus?.(collection.id, 'active')}
+                onClick={() => onUpdateStatus?.((collection._id || collection.id), 'active')}
                 className="text-green-400 border-green-400 hover:bg-green-400/10"
               >
                 <Play className="w-3 h-3" />
@@ -371,7 +373,7 @@ function LaunchpadCollectionCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onUpdateStatus?.(collection.id, 'hidden')}
+                onClick={() => onUpdateStatus?.((collection._id || collection.id), 'hidden')}
                 className="text-gray-400 border-gray-400 hover:bg-gray-400/10"
               >
                 <EyeOff className="w-3 h-3" />
@@ -402,7 +404,7 @@ function LaunchpadCollectionCard({
             <p className="text-xs text-[#FDFDFD]/70">From</p>
             <p className="font-semibold text-[#FDFDFD]">{collection.price || 'TBD'}</p>
           </div>
-          <Link href={`/launchpad/${collection.id}`}>
+          <Link href={`/launchpad/${collection._id || collection.id}`}>
             <Button 
               size="sm" 
               className={`${
@@ -432,8 +434,13 @@ export default function LaunchpadPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [collections, setCollections] = useState<Collection[]>([]);
+  const [pendingImages, setPendingImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [pendingLoading, setPendingLoading] = useState(false);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
+  const [showApprovalModal, setShowApprovalModal] = useState(false);
+  const [selectedPendingImage, setSelectedPendingImage] = useState<any>(null);
+  const [approvalLaunchDate, setApprovalLaunchDate] = useState('');
 
   // Check if user is admin
   useEffect(() => {
@@ -484,6 +491,76 @@ export default function LaunchpadPage() {
     fetchCollections();
   }, [isUserAdmin, address]);
 
+  // Fetch pending images (admin only)
+  useEffect(() => {
+    const fetchPendingImages = async () => {
+      if (!isUserAdmin) return;
+      
+      try {
+        setPendingLoading(true);
+        const response = await fetch('/api/launchpad/pending-images');
+        const data = await response.json();
+        
+        if (data.success) {
+          setPendingImages(data.pendingImages || []);
+          console.log('✅ Pending images loaded:', data.count, 'images');
+        } else {
+          console.error('Failed to fetch pending images:', data.error);
+        }
+      } catch (error) {
+        console.error('Error fetching pending images:', error);
+      } finally {
+        setPendingLoading(false);
+      }
+    };
+
+    fetchPendingImages();
+  }, [isUserAdmin]);
+
+  // Auto-update collection statuses based on launch dates
+  useEffect(() => {
+    const checkAndUpdateStatuses = async () => {
+      if (!isUserAdmin) return;
+      
+      try {
+        // ✅ CORRIGIDO: Usar funções utilitárias UTC
+        console.log('🔄 Verificando status em (local):', getCurrentLocalFormatted())
+        console.log('🔄 Verificando status em (UTC):', getCurrentUTC().toISOString())
+        
+        const collectionsToUpdate = collections.filter(collection => {
+          if (collection.status === 'upcoming' && collection.launchDate) {
+            return isUTCDatePassed(collection.launchDate);
+          }
+          return false;
+        });
+
+        if (collectionsToUpdate.length > 0) {
+          console.log('🔄 Auto-updating status for', collectionsToUpdate.length, 'collections');
+          
+          for (const collection of collectionsToUpdate) {
+            // ✅ CORRIGIDO: Usar _id em vez de id
+            const collectionId = collection._id || collection.id;
+            if (collectionId) {
+              await updateCollectionStatus(collectionId, 'active');
+            } else {
+              console.error('❌ Collection sem ID válido:', collection);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error auto-updating collection statuses:', error);
+      }
+    };
+
+    // Check every 5 minutes
+    const interval = setInterval(checkAndUpdateStatuses, 5 * 60 * 1000);
+    
+    // Also check immediately when component mounts
+    checkAndUpdateStatuses();
+
+    return () => clearInterval(interval);
+  }, [collections, isUserAdmin]);
+
   // Function to update collection status (admin only)
   const updateCollectionStatus = async (collectionId: string, newStatus: LaunchpadStatus, launchDate?: string) => {
     if (!isUserAdmin) return;
@@ -507,18 +584,228 @@ export default function LaunchpadPage() {
       if (data.success) {
         toast.success(`Collection ${newStatus} successfully`);
         
-        // Update local state
-        setCollections(prev => prev.map(collection => 
-          collection.id === collectionId 
+        // Update local state - ✅ CORRIGIDO: Usar _id em vez de id
+        setCollections(prev => prev.map(collection => {
+          const currentId = collection._id || collection.id;
+          return currentId === collectionId 
             ? { ...collection, status: newStatus, launchDate: launchDate || collection.launchDate }
-            : collection
-        ));
+            : collection;
+        }));
       } else {
         toast.error(data.error || 'Failed to update collection status');
       }
     } catch (error) {
       console.error('Error updating collection status:', error);
       toast.error('Error updating collection status');
+    }
+  };
+
+  // Function to approve pending image (admin only)
+  const approvePendingImage = async (pendingImageId: string, customLaunchDate?: string) => {
+    if (!isUserAdmin) return;
+
+    try {
+      // ✅ CORRIGIDO: Usar funções utilitárias UTC
+      const defaultDate = addDaysToUTC(7); // 7 days from now
+      
+      const response = await fetch(`/api/launchpad/pending-images/${pendingImageId}/approve`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: 'upcoming',
+          launchDate: customLaunchDate || defaultDate.toISOString() // 7 days from now
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Image approved and converted to collection!');
+        
+        // Remove from pending images
+        setPendingImages(prev => prev.filter(img => img._id !== pendingImageId));
+        
+        // Refresh collections
+        const collectionsResponse = await fetch('/api/launchpad/collections');
+        const collectionsData = await collectionsResponse.json();
+        if (collectionsData.success) {
+          setCollections(collectionsData.collections || []);
+        }
+      } else {
+        toast.error(data.error || 'Failed to approve image');
+      }
+    } catch (error) {
+      console.error('Error approving pending image:', error);
+      toast.error('Error approving image');
+    }
+  };
+
+  // Function to open approval modal
+  const openApprovalModal = (image: any) => {
+    setSelectedPendingImage(image);
+    // ✅ CORRIGIDO: Usar funções utilitárias UTC
+    const defaultDate = addDaysToUTC(7);
+    setApprovalLaunchDate(defaultDate.toISOString().slice(0, 16)); // Default 7 days from now
+    setShowApprovalModal(true);
+  };
+
+  // Function to confirm approval with custom date
+  const confirmApproval = async () => {
+    if (!selectedPendingImage) return;
+    
+    try {
+      await approvePendingImage(selectedPendingImage._id, approvalLaunchDate);
+      setShowApprovalModal(false);
+      setSelectedPendingImage(null);
+      setApprovalLaunchDate('');
+    } catch (error) {
+      console.error('Error confirming approval:', error);
+    }
+  };
+
+  // Function to manually trigger auto-update
+  const triggerAutoUpdate = async () => {
+    try {
+      const response = await fetch('/api/launchpad/auto-update-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Auto-updated ${data.updatedCount} collections`);
+        
+        // Refresh collections
+        const collectionsResponse = await fetch('/api/launchpad/collections');
+        const collectionsData = await collectionsResponse.json();
+        if (collectionsData.success) {
+          setCollections(collectionsData.collections || []);
+        }
+      } else {
+        toast.error(data.error || 'Failed to auto-update');
+      }
+    } catch (error) {
+      console.error('Error triggering auto-update:', error);
+      toast.error('Error triggering auto-update');
+    }
+  };
+
+  // Function to reject pending image (admin only)
+  const rejectPendingImage = async (pendingImageId: string) => {
+    if (!isUserAdmin) return;
+
+    try {
+      const response = await fetch(`/api/launchpad/pending-images/${pendingImageId}/reject`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Image rejected');
+        
+        // Remove from pending images
+        setPendingImages(prev => prev.filter(img => img._id !== pendingImageId));
+      } else {
+        toast.error(data.error || 'Failed to reject image');
+      }
+    } catch (error) {
+      console.error('Error rejecting pending image:', error);
+      toast.error('Error rejecting image');
+    }
+  };
+
+  // Function to clean mock collections (admin only)
+  const cleanMockCollections = async () => {
+    if (!isUserAdmin) return;
+
+    try {
+      const response = await fetch('/api/debug/clean-mock-collections', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Cleaned ${data.deletedCount} mock collections`);
+        
+        // Refresh collections
+        const collectionsResponse = await fetch('/api/launchpad/collections');
+        const collectionsData = await collectionsResponse.json();
+        if (collectionsData.success) {
+          setCollections(collectionsData.collections || []);
+        }
+      } else {
+        toast.error(data.error || 'Failed to clean mock collections');
+      }
+    } catch (error) {
+      console.error('Error cleaning mock collections:', error);
+      toast.error('Error cleaning mock collections');
+    }
+  };
+
+
+
+  // Function to investigate active collections (admin only)
+  const investigateCollections = async () => {
+    if (!isUserAdmin) return;
+
+    try {
+      const response = await fetch('/api/debug/investigate-collections?type=launchpad&status=active');
+      const data = await response.json();
+      
+      if (data.success) {
+        console.log('🔍 Investigação das coleções ativas:', data);
+        toast.success(`Analisadas ${data.count} coleções ativas`);
+        
+        // Mostrar detalhes no console
+        if (data.problematicCollections && data.problematicCollections.length > 0) {
+          console.log('⚠️ Coleções problemáticas encontradas:', data.problematicCollections);
+          toast.error(`${data.problematicCollections.length} coleções com problemas encontradas`);
+        }
+        
+        // Mostrar estatísticas
+        console.log('📊 Estatísticas:', data.stats);
+      } else {
+        toast.error('Failed to investigate collections');
+      }
+    } catch (error) {
+      console.error('Error investigating collections:', error);
+      toast.error('Error investigating collections');
+    }
+  };
+
+  // Function to clean problematic collections (admin only)
+  const cleanProblematicCollections = async () => {
+    if (!isUserAdmin) return;
+
+    try {
+      const response = await fetch('/api/debug/investigate-collections?action=clean&type=launchpad&status=active', {
+        method: 'POST'
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`Cleaned ${data.deletedCount} problematic collections`);
+        // Recarregar coleções
+        window.location.reload();
+      } else {
+        toast.error('Failed to clean problematic collections');
+      }
+    } catch (error) {
+      console.error('Error cleaning problematic collections:', error);
+      toast.error('Error cleaning problematic collections');
     }
   };
 
@@ -551,7 +838,7 @@ export default function LaunchpadPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
         {filteredCollections.map((collection) => (
           <LaunchpadCollectionCard 
-            key={collection.id} 
+            key={collection._id || collection.id} 
             collection={collection}
             isAdmin={isUserAdmin}
             onUpdateStatus={updateCollectionStatus}
@@ -615,6 +902,127 @@ export default function LaunchpadPage() {
           </div>
         </div>
 
+        {/* Pending Images Section - Admin Only */}
+        {isUserAdmin && pendingImages.length > 0 && (
+          <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
+            <div className="max-w-7xl mx-auto">
+                             <div className="mb-6 flex items-center justify-between">
+                 <div>
+                   <h2 className="text-2xl font-bold text-white mb-2">Pending Images for Approval</h2>
+                   <p className="text-gray-400">Review and approve images for Launchpad collections</p>
+                 </div>
+                 
+                 <Button
+                   onClick={triggerAutoUpdate}
+                   size="sm"
+                   variant="outline"
+                   className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+                 >
+                   <Zap className="w-4 h-4 mr-2" />
+                   Auto-Update Status
+                 </Button>
+                 
+                 <Button
+                   onClick={cleanMockCollections}
+                   size="sm"
+                   variant="outline"
+                   className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+                 >
+                   <XCircle className="w-4 h-4 mr-2" />
+                   Clean Mock Collections
+                 </Button>
+                 
+                 
+                 
+                 <Button
+                   onClick={investigateCollections}
+                   size="sm"
+                   variant="outline"
+                   className="bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
+                 >
+                   <Search className="w-4 h-4 mr-2" />
+                   Investigate Collections
+                 </Button>
+                 
+                 <Button
+                   onClick={cleanProblematicCollections}
+                   size="sm"
+                   variant="outline"
+                   className="bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
+                 >
+                   <Trash2 className="w-4 h-4 mr-2" />
+                   Clean Problematic
+                 </Button>
+               </div>
+              
+              {pendingLoading ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {Array.from({ length: 3 }).map((_, index) => (
+                    <Card key={index} className="cyber-card overflow-hidden">
+                      <div className="aspect-square w-full bg-[#FDFDFD]/10 animate-pulse" />
+                      <CardContent className="p-4 space-y-3">
+                        <div className="h-4 w-3/4 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                        <div className="h-3 w-1/2 bg-[#FDFDFD]/10 animate-pulse rounded" />
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pendingImages.map((image) => (
+                    <Card key={image._id} className="cyber-card overflow-hidden">
+                      <div className="aspect-square w-full relative overflow-hidden">
+                        <Image
+                          src={image.imageUrl}
+                          alt={image.name}
+                          fill
+                          style={{ objectFit: 'cover' }}
+                          className="transition-transform duration-300 hover:scale-105"
+                        />
+                      </div>
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-white mb-1">{image.name}</h3>
+                          <p className="text-sm text-gray-400">{image.description}</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <Badge variant="secondary" className="cyber-badge">
+                            {image.category}
+                          </Badge>
+                          <span className="text-gray-400">
+                            {new Date(image.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        
+                                                 <div className="flex gap-2">
+                           <Button
+                             onClick={() => openApprovalModal(image)}
+                             size="sm"
+                             className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                           >
+                             <CheckCircle className="w-4 h-4 mr-1" />
+                             Approve
+                           </Button>
+                          <Button
+                            onClick={() => rejectPendingImage(image._id)}
+                            size="sm"
+                            variant="outline"
+                            className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
+                          >
+                            <XCircle className="w-4 h-4 mr-1" />
+                            Reject
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Content - Collections Grid */}
         <div className="container mx-auto px-6 md:px-8 lg:px-12 pb-8">
           <div className="max-w-7xl mx-auto">
@@ -674,8 +1082,59 @@ export default function LaunchpadPage() {
               renderGridView()
             )}
           </div>
-        </div>
-      </div>
-    </main>
-  );
-} 
+                 </div>
+       </div>
+
+       {/* Approval Modal */}
+       {showApprovalModal && selectedPendingImage && (
+         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4">
+             <h3 className="text-xl font-bold text-white mb-4">Approve Collection</h3>
+             
+             <div className="space-y-4">
+               <div>
+                 <label className="block text-sm font-medium text-gray-300 mb-2">
+                   Collection Name
+                 </label>
+                 <p className="text-white">{selectedPendingImage.name}</p>
+               </div>
+               
+               <div>
+                 <label className="block text-sm font-medium text-gray-300 mb-2">
+                   Launch Date & Time
+                 </label>
+                 <input
+                   type="datetime-local"
+                   value={approvalLaunchDate}
+                   onChange={(e) => setApprovalLaunchDate(e.target.value)}
+                   className="w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                   min={new Date().toISOString().slice(0, 16)}
+                 />
+                 <p className="text-xs text-gray-400 mt-1">
+                   When this date arrives, the collection will automatically become active
+                 </p>
+               </div>
+             </div>
+             
+             <div className="flex gap-3 mt-6">
+               <Button
+                 onClick={() => setShowApprovalModal(false)}
+                 variant="outline"
+                 className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+               >
+                 Cancel
+               </Button>
+               <Button
+                 onClick={confirmApproval}
+                 className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+               >
+                 <CheckCircle className="w-4 h-4 mr-2" />
+                 Approve Collection
+               </Button>
+             </div>
+           </div>
+         </div>
+       )}
+     </main>
+   );
+ } 

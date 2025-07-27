@@ -229,3 +229,52 @@ export function validateCreateCollectionData(data: any): { isValid: boolean; err
     errors
   };
 } 
+
+// ✅ FUNÇÕES UTILITÁRIAS PARA FUSO HORÁRIO UTC
+/**
+ * Converte data local para UTC
+ */
+export function getCurrentUTC(): Date {
+  const now = new Date();
+  return new Date(now.getTime() - (now.getTimezoneOffset() * 60000));
+}
+
+/**
+ * Converte data local para string UTC ISO
+ */
+export function getCurrentUTCISO(): string {
+  return getCurrentUTC().toISOString();
+}
+
+/**
+ * Converte data local para string local formatada (Brasil)
+ */
+export function getCurrentLocalFormatted(): string {
+  const now = new Date();
+  return now.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+}
+
+/**
+ * Adiciona dias a uma data UTC
+ */
+export function addDaysToUTC(days: number, baseDate?: Date): Date {
+  const base = baseDate || getCurrentUTC();
+  return new Date(base.getTime() + days * 24 * 60 * 60 * 1000);
+}
+
+/**
+ * Compara se uma data UTC já passou
+ */
+export function isUTCDatePassed(dateString: string): boolean {
+  const targetDate = new Date(dateString);
+  const nowUTC = getCurrentUTC();
+  return nowUTC >= targetDate;
+}
+
+/**
+ * Formata data UTC para exibição local
+ */
+export function formatUTCToLocal(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+} 

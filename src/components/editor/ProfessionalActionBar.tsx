@@ -99,18 +99,7 @@ export default function ProfessionalActionBar({
   onToggleLaunchpadMode
 }: ProfessionalActionBarProps) {
   
-  // Debug: Log props at component render
-  console.log('🔍 ProfessionalActionBar props:', {
-    hasGeneratedImage,
-    isUserAdmin,
-    onSendToLaunchpad: !!onSendToLaunchpad,
-    onSendToLaunchpadType: typeof onSendToLaunchpad,
-    shouldShowLaunchpadButton: hasGeneratedImage && isUserAdmin,
-    isLaunchpadMode,
-    onToggleLaunchpadMode: !!onToggleLaunchpadMode,
-    onToggleLaunchpadModeType: typeof onToggleLaunchpadMode,
-    shouldShowToggleButton: !hasGeneratedImage && isUserAdmin && !!onToggleLaunchpadMode
-  })
+
 
   const renderGenerateButton = () => (
     <Button
@@ -394,28 +383,7 @@ export default function ProfessionalActionBar({
         </Button>
       </div>
       
-      {/* Botão de teste para verificar imagens pendentes */}
-      <div className="flex items-center justify-center">
-        <Button
-          onClick={async () => {
-            try {
-              const response = await fetch('/api/launchpad/pending-images')
-              const result = await response.json()
-              console.log('📋 Imagens pendentes:', result)
-              toast.success(`Encontradas ${result.count} imagens pendentes`)
-            } catch (error) {
-              console.error('❌ Erro ao buscar imagens:', error)
-              toast.error('Erro ao buscar imagens')
-            }
-          }}
-          variant="outline"
-          size="sm"
-          className="h-8 px-4 text-sm bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
-        >
-          <span>Verificar Pendentes</span>
-        </Button>
-        </Button>
-      </div>
+
 
       {/* Main Action Bar - Centralizado no desktop, stacked no mobile */}
       <div className="flex items-center justify-center gap-6 max-lg:flex-col max-lg:gap-3">
