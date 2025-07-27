@@ -3,110 +3,24 @@ import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
 
-/**
- * POST - Salvar imagem pendente para o Launchpad
- */
-export async function POST(request: NextRequest) {
-  try {
-    const data = await request.json();
-    
-    // Validar dados obrigatórios
-    if (!data.imageUrl || !data.category || !data.metadata) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: imageUrl, category, metadata' },
-        { status: 400 }
-      );
-    }
-    
-    const client = await clientPromise;
-    const db = client.db(DB_NAME);
-    
-    // Preparar documento da imagem pendente
-    const pendingImage = {
-      imageUrl: data.imageUrl,
-      category: data.category, // 'jerseys' | 'stadiums' | 'badges'
-      metadata: data.metadata, // Dados da geração (team, player, style, etc.)
-      status: 'pending_launchpad',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      // Campos opcionais
-      description: data.description || '',
-      price: data.price || '0.1',
-      maxSupply: data.maxSupply || 100,
-      creator: data.creator || {
-        name: 'Admin',
-        wallet: '0x0000000000000000000000000000000000000000'
-      }
-    };
-    
-    // Inserir no banco
-    const result = await db.collection('pending_launchpad_images').insertOne(pendingImage);
-    
-    return NextResponse.json({
-      success: true,
-      pendingImageId: result.insertedId.toString(),
-      message: 'Image saved for admin approval'
-    });
-    
-  } catch (error) {
-    console.error('❌ Error saving pending image:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to save pending image' },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * GET - Listar imagens pendentes (apenas para admin)
- */
 export async function GET(request: NextRequest) {
   try {
-    
-    const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '20');
-    const skip = (page - 1) * limit;
+    console.log('📋 GET /api/launchpad/pending-images chamado')
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Construir filtro
-    const filter: any = { status: 'pending_launchpad' };
-    if (category) {
-      filter.category = category;
-    }
-    
-    // Buscar imagens pendentes
     const pendingImages = await db.collection('pending_launchpad_images')
-      .find(filter)
+      .find({})
       .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
       .toArray();
     
-    // Contar total para paginação
-    const total = await db.collection('pending_launchpad_images').countDocuments(filter);
-    
-    // Calcular metadados de paginação
-    const totalPages = Math.ceil(total / limit);
-    const hasNextPage = page < totalPages;
-    const hasPrevPage = page > 1;
-    
-
+    console.log(`✅ Encontradas ${pendingImages.length} imagens pendentes`)
     
     return NextResponse.json({
       success: true,
       pendingImages,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage,
-        hasPrevPage
-      }
+      count: pendingImages.length
     });
     
   } catch (error) {
@@ -115,5 +29,66 @@ export async function GET(request: NextRequest) {
       { success: false, error: 'Failed to fetch pending images' },
       { status: 500 }
     );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('🚀 POST /api/launchpad/pending-images chamado')
+    const data = await request.json();
+    console.log('📥 Dados recebidos:', JSON.stringify(data, null, 2))
+    
+    if (!data.imageUrl || !data.category) {
+      console.log('❌ Dados obrigatórios faltando:', { imageUrl: !!data.imageUrl, category: !!data.category })
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: imageUrl, category' },
+        { status: 400 }
+      );
+    }
+    
+    const client = await clientPromise;
+    const db = client.db(DB_NAME);
+    
+    const pendingImage = {
+      imageUrl: data.imageUrl,
+      category: data.category,
+      name: data.name || '',
+      description: data.description || '',
+      price: data.price || '0.1',
+      maxSupply: data.maxSupply || 100,
+      creator: data.creator || {
+        name: 'Admin',
+        wallet: '0x0000000000000000000000000000000000000000'
+      },
+      metadata: data.metadata || {},
+      traits: data.traits || [],
+      tags: data.tags || [],
+      status: 'pending_launchpad',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    
+    console.log('💾 Salvando no MongoDB...')
+    const result = await db.collection('pending_launchpad_images').insertOne(pendingImage);
+    console.log('✅ Salvo no MongoDB com ID:', result.insertedId.toString())
+    
+    const response = {
+      success: true,
+      pendingImageId: result.insertedId.toString(),
+      message: 'Image saved for admin approval'
+    }
+    
+    console.log('📤 Retornando resposta:', response)
+    return NextResponse.json(response);
+    
+  } catch (error) {
+    console.error('❌ Error saving pending image:', error);
+    const errorResponse = { 
+      success: false, 
+      error: 'Failed to save pending image',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }
+    console.log('📤 Retornando erro:', errorResponse)
+    return NextResponse.json(errorResponse, { status: 500 });
   }
 } 

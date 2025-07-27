@@ -62,6 +62,8 @@ interface ProfessionalActionBarProps {
 
   // Launchpad
   onSendToLaunchpad?: () => void
+  isLaunchpadMode?: boolean
+  onToggleLaunchpadMode?: () => void
 }
 
 export default function ProfessionalActionBar({
@@ -92,8 +94,23 @@ export default function ProfessionalActionBar({
   progress,
   progressText,
   getTransactionUrl,
-  onSendToLaunchpad
+  onSendToLaunchpad,
+  isLaunchpadMode,
+  onToggleLaunchpadMode
 }: ProfessionalActionBarProps) {
+  
+  // Debug: Log props at component render
+  console.log('🔍 ProfessionalActionBar props:', {
+    hasGeneratedImage,
+    isUserAdmin,
+    onSendToLaunchpad: !!onSendToLaunchpad,
+    onSendToLaunchpadType: typeof onSendToLaunchpad,
+    shouldShowLaunchpadButton: hasGeneratedImage && isUserAdmin,
+    isLaunchpadMode,
+    onToggleLaunchpadMode: !!onToggleLaunchpadMode,
+    onToggleLaunchpadModeType: typeof onToggleLaunchpadMode,
+    shouldShowToggleButton: !hasGeneratedImage && isUserAdmin && !!onToggleLaunchpadMode
+  })
 
   const renderGenerateButton = () => (
     <Button
@@ -234,35 +251,7 @@ export default function ProfessionalActionBar({
         )
       )}
 
-      {/* Botão Enviar para Launchpad */}
-      {onSendToLaunchpad && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onSendToLaunchpad}
-                disabled={isMinting}
-                variant="outline"
-                className={cn(
-                  "h-12 px-6 text-base font-medium transition-all duration-200",
-                  "bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  // Mobile responsiveness
-                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-                )}
-              >
-                <div className="flex items-center gap-2 max-lg:gap-1.5">
-                  <Rocket className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                  <span>Enviar para Launchpad</span>
-                </div>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Enviar imagem para aprovação do Launchpad</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
+      
     </div>
   )
 
@@ -341,9 +330,96 @@ export default function ProfessionalActionBar({
       {/* Status Display */}
       {renderStatus()}
 
+      {/* Botão Launchpad - FUNÇÃO SIMPLES */}
+      <div className="flex items-center justify-center">
+        <Button
+          onClick={async () => {
+            console.log('🚀 Enviando imagem para Launchpad...')
+            
+            try {
+              // 1. Upload para Cloudinary
+              const formData = new FormData()
+              formData.append('file', generatedImageBlob, 'launchpad_image.png')
+              formData.append('fileName', `launchpad_${Date.now()}`)
+              
+              const uploadResponse = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData,
+              })
+              
+              if (!uploadResponse.ok) {
+                throw new Error('Falha no upload')
+              }
+              
+              const uploadResult = await uploadResponse.json()
+              console.log('✅ Upload OK:', uploadResult.url)
+              
+              // 2. Salvar no banco
+              const response = await fetch('/api/launchpad/pending-images', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  imageUrl: uploadResult.url,
+                  category: 'jerseys',
+                  name: 'Jersey para Launchpad',
+                  description: 'Imagem enviada para aprovação',
+                  price: '0.1',
+                  maxSupply: 100,
+                  status: 'pending_launchpad'
+                })
+              })
+              
+              const result = await response.json()
+              
+              if (result.success) {
+                toast.success('Imagem enviada para o Launchpad!')
+                console.log('✅ Sucesso:', result)
+              } else {
+                throw new Error(result.error || 'Falha ao salvar')
+              }
+              
+            } catch (error) {
+              console.error('❌ Erro:', error)
+              toast.error('Erro ao enviar para Launchpad')
+            }
+          }}
+          disabled={!generatedImageBlob}
+          variant="outline"
+          className="h-12 px-6 text-base font-medium bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20 disabled:opacity-50"
+        >
+          <div className="flex items-center gap-2">
+            <Rocket className="w-5 h-5" />
+            <span>Enviar para Launchpad</span>
+          </div>
+        </Button>
+      </div>
+      
+      {/* Botão de teste para verificar imagens pendentes */}
+      <div className="flex items-center justify-center">
+        <Button
+          onClick={async () => {
+            try {
+              const response = await fetch('/api/launchpad/pending-images')
+              const result = await response.json()
+              console.log('📋 Imagens pendentes:', result)
+              toast.success(`Encontradas ${result.count} imagens pendentes`)
+            } catch (error) {
+              console.error('❌ Erro ao buscar imagens:', error)
+              toast.error('Erro ao buscar imagens')
+            }
+          }}
+          variant="outline"
+          size="sm"
+          className="h-8 px-4 text-sm bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/20"
+        >
+          <span>Verificar Pendentes</span>
+        </Button>
+        </Button>
+      </div>
+
       {/* Main Action Bar - Centralizado no desktop, stacked no mobile */}
       <div className="flex items-center justify-center gap-6 max-lg:flex-col max-lg:gap-3">
-        {/* ANTES de gerar imagem: Apenas Generate Button centralizado */}
+        {/* ANTES de gerar imagem: Generate Button */}
         {!hasGeneratedImage && renderGenerateButton()}
 
         {/* DEPOIS de gerar imagem: Mint Buttons */}

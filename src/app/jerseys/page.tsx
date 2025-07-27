@@ -13,7 +13,8 @@ import { ImageGenerationRequest } from '../../types'
 import { getTransactionUrl } from '../../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../../lib/admin-config'
-import { useLaunchpadSubmission } from '../../hooks/useLaunchpadSubmission'
+
+import { toast } from 'sonner'
 
 // Importando os novos componentes profissionais
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
@@ -124,7 +125,7 @@ export default function JerseyEditor() {
   const [marketplaceLoading, setMarketplaceLoading] = useState(true)
   
   // Hook para envio ao Launchpad
-  const { submitToLaunchpad, isSubmitting, submitError, submitSuccess, resetSubmission } = useLaunchpadSubmission()
+
 
   // ===== NEW VISION ANALYSIS STATES =====
   const [isVisionMode, setIsVisionMode] = useState(false)
@@ -147,10 +148,43 @@ export default function JerseyEditor() {
   
   // Admin check
   const isUserAdmin = isAdmin(account)
+  console.log('🔍 Admin check in jerseys/page:', { 
+    address: account?.address, 
+    isUserAdmin,
+    account: !!account 
+  })
   
   // Mint conditions
   const canMintLegacy = isConnected && isOnSupportedChain && generatedImage // Legacy needs wallet
   const canMintGasless = generatedImage && selectedTeam && playerName && playerNumber && isUserAdmin // Gasless only for admins
+
+  // Estado para controlar se a imagem vai para o Launchpad
+  const [isLaunchpadMode, setIsLaunchpadMode] = useState(false)
+
+  // Função para ativar/desativar modo Launchpad
+  const toggleLaunchpadMode = () => {
+    console.log('🚀 toggleLaunchpadMode chamada!', { currentMode: isLaunchpadMode })
+    setIsLaunchpadMode(!isLaunchpadMode)
+    if (!isLaunchpadMode) {
+      toast.success('Modo Launchpad ativado! A próxima imagem será enviada automaticamente.')
+    } else {
+      toast.info('Modo Launchpad desativado.')
+    }
+  }
+  
+  // Debug: Log da função
+  console.log('🔍 toggleLaunchpadMode definida:', {
+    toggleLaunchpadMode: !!toggleLaunchpadMode,
+    toggleLaunchpadModeType: typeof toggleLaunchpadMode,
+    isLaunchpadMode
+  })
+  
+  // Debug: Log da função
+  console.log('🔍 toggleLaunchpadMode definida:', {
+    toggleLaunchpadMode: !!toggleLaunchpadMode,
+    toggleLaunchpadModeType: typeof toggleLaunchpadMode,
+    isLaunchpadMode
+  })
 
   // ===== NEW VISION ANALYSIS FUNCTIONS =====
   
@@ -1114,6 +1148,12 @@ Design based on analysis: ${analysisText}`
           throw new Error(result.error || 'Image generation failed, no image data returned from API.')
         }
       }
+
+      // ✅ AUTOMATIC LAUNCHPAD: Se o modo Launchpad estiver ativo, enviar automaticamente
+      if (isLaunchpadMode && generatedImage && generatedImageBlob) {
+        console.log('🚀 Modo Launchpad ativo - enviando imagem automaticamente...')
+        await handleSendToLaunchpad()
+      }
     } catch (err: any) {
       console.error('Generation failed:', err)
       setError(err.message || 'An unexpected error occurred.')
@@ -1187,44 +1227,125 @@ Design based on analysis: ${analysisText}`
     setSaveError(null);
   }
 
-  // Função para enviar imagem para o Launchpad
+
+
+  // Função para enviar imagem para o Launchpad (será chamada automaticamente)
   const handleSendToLaunchpad = async () => {
-    if (!generatedImage) {
-      setError('Nenhuma imagem gerada para enviar')
+    console.log('🚀 handleSendToLaunchpad chamada!')
+    
+    if (!generatedImage || !generatedImageBlob) {
+      console.log('❌ Nenhuma imagem gerada')
+      toast.error('Nenhuma imagem gerada para enviar')
       return
     }
 
     try {
-      const metadata = {
-        team: selectedTeam,
-        playerName,
-        playerNumber,
-        style: selectedStyle,
-        quality,
-        isVisionMode,
-        // Dados adicionais se disponíveis
-        ...(referenceImage && { referenceImage }),
-        ...(customPrompt && { customPrompt })
+      console.log('📤 Enviando imagem para Launchpad...')
+      
+      // 1. PRIMEIRO: Upload para Cloudinary
+      console.log('📤 Uploading image to Cloudinary...')
+      const formData = new FormData();
+      formData.append('file', generatedImageBlob, `${selectedTeam}_${playerName}_${playerNumber}_launchpad.png`);
+      formData.append('fileName', `${selectedTeam}_${playerName}_${playerNumber}_launchpad_${Date.now()}`);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
       }
 
-      await submitToLaunchpad({
-        imageUrl: generatedImage,
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+      // 2. SEGUNDO: Salvar no banco com URL do Cloudinary
+      const launchpadData = {
+        imageUrl: uploadResult.url,
+        cloudinaryPublicId: uploadResult.publicId,
         category: 'jerseys',
-        metadata,
-        description: `${selectedTeam} ${playerName} #${playerNumber} - ${selectedStyle} style jersey`,
+        name: `${selectedTeam} ${playerName} #${playerNumber}`,
+        description: `AI-generated jersey for ${selectedTeam} - ${playerName} #${playerNumber}. ${selectedStyle} style jersey created with advanced AI technology.`,
         price: '0.1',
         maxSupply: 100,
         creator: {
           name: 'Admin',
           wallet: address || '0x0000000000000000000000000000000000000000'
-        }
+        },
+        metadata: {
+          team: selectedTeam || 'Unknown',
+          playerName: playerName || 'Unknown',
+          playerNumber: playerNumber || '0',
+          style: selectedStyle || 'Classic',
+          quality: quality || 'Standard',
+          generationMode: isVisionMode ? 'vision_enhanced' : 'standard',
+          isVisionMode: isVisionMode,
+          selectedSport: selectedSport,
+          selectedView: selectedView,
+          ...(referenceImage && { referenceImage }),
+          ...(customPrompt && { customPrompt }),
+          ...(analysisResult && { analysisResult }),
+          ...(generationCost && { generationCost }),
+          generatedAt: new Date().toISOString()
+        },
+        traits: (() => {
+          const baseTraits = [
+            { trait_type: 'Team', value: selectedTeam || 'Unknown' },
+            { trait_type: 'Player Name', value: playerName || 'Unknown' },
+            { trait_type: 'Player Number', value: playerNumber || '0' },
+            { trait_type: 'Style', value: selectedStyle || 'Classic' },
+            { trait_type: 'Quality', value: quality || 'Standard' },
+            { trait_type: 'Type', value: 'Jersey' },
+            { trait_type: 'Generator', value: 'AI Sports NFT' },
+            { trait_type: 'Generation Mode', value: isVisionMode ? 'Vision Enhanced' : 'Standard' }
+          ]
+          
+          if (selectedSport) {
+            baseTraits.push({ trait_type: 'Sport', value: selectedSport })
+          }
+          if (selectedView) {
+            baseTraits.push({ trait_type: 'View', value: selectedView })
+          }
+          
+          return baseTraits.filter(trait => trait.value && trait.value !== 'Unknown' && trait.value !== '0')
+        })(),
+        tags: [
+          selectedTeam,
+          selectedStyle,
+          'launchpad-pending',
+          selectedSport,
+          selectedView
+        ].filter(Boolean),
+        status: 'pending_launchpad',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+
+      console.log('📋 Dados completos preparados:', launchpadData)
+
+      // POST para o endpoint do Launchpad
+      const response = await fetch('/api/launchpad/pending-images', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(launchpadData)
       })
 
-      // Mostrar sucesso
-      console.log('✅ Imagem enviada para aprovação do Launchpad')
+      const result = await response.json()
+
+      if (result.success) {
+        console.log('✅ Imagem enviada com sucesso:', result)
+        toast.success('Imagem enviada automaticamente para o Launchpad!')
+        // Desativar modo Launchpad após sucesso
+        setIsLaunchpadMode(false)
+      } else {
+        throw new Error(result.error || 'Falha ao enviar imagem')
+      }
     } catch (error) {
       console.error('❌ Erro ao enviar para Launchpad:', error)
-      setError('Erro ao enviar imagem para o Launchpad')
+      toast.error('Erro ao enviar imagem para o Launchpad')
     }
   }
 
@@ -1420,6 +1541,16 @@ Design based on analysis: ${analysisText}`
     loadTopCollectionsData();
   }, []);
 
+  // Debug: Log admin check and button conditions
+  console.log('🔍 Admin check:', { 
+    address: account?.address, 
+    isUserAdmin, 
+    hasGeneratedImage: !!generatedImage,
+    onSendToLaunchpad: !!handleSendToLaunchpad,
+    handleSendToLaunchpadType: typeof handleSendToLaunchpad,
+    handleSendToLaunchpadDefined: typeof handleSendToLaunchpad === 'function'
+  })
+
   return (
     <ProfessionalEditorLayout
       sidebar={
@@ -1463,8 +1594,6 @@ Design based on analysis: ${analysisText}`
           quality={quality}
           referenceImage={referenceImage}
           isVisionMode={isVisionMode}
-          onSendToLaunchpad={handleSendToLaunchpad}
-          isAdmin={isUserAdmin}
         />
       }
       actionBar={
@@ -1502,6 +1631,9 @@ Design based on analysis: ${analysisText}`
             { trait_type: 'Generator', value: 'AI Sports NFT' }
           ]}
           getTransactionUrl={getTransactionUrl}
+          onSendToLaunchpad={handleSendToLaunchpad}
+          isLaunchpadMode={isLaunchpadMode}
+          onToggleLaunchpadMode={toggleLaunchpadMode}
         />
       }
       marketplace={
