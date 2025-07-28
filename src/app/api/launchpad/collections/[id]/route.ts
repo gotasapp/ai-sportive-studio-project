@@ -52,66 +52,24 @@ export async function GET(
       totalSupply: collection.totalSupply || collection.maxSupply,
       minted: collection.minted || 0,
       creator: collection.creator?.name || 'Unknown',
-      creatorAvatar: '/api/placeholder/40/40', // Placeholder por enquanto
-      contractAddress: '0x1234...5678', // Placeholder por enquanto
+      creatorAvatar: collection.creatorAvatar,
+      contractAddress: collection.contractAddress,
       launchDate: collection.launchDate,
       endDate: collection.launchDate ? new Date(new Date(collection.launchDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() : null, // 30 dias após launch
-      website: null,
-      twitter: null,
-      discord: null,
+      website: collection.website,
+      twitter: collection.twitter,
+      discord: collection.discord,
       price: collection.price,
       maxSupply: collection.maxSupply,
       type: collection.type,
       createdAt: collection.createdAt,
       updatedAt: collection.updatedAt,
-      // Dados mockados para funcionalidades que ainda não implementamos
-      mintStages: [
-        {
-          id: 'public',
-          name: 'Public',
-          description: 'Open to everyone',
-          price: collection.price || '0.1 CHZ',
-          walletLimit: 3,
-          status: collection.status === 'active' ? 'live' : 'upcoming',
-          startTime: collection.launchDate,
-          endTime: collection.launchDate ? new Date(new Date(collection.launchDate).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() : null
-        }
-      ],
-      vision: collection.description || 'A unique collection created through our AI-powered platform.',
-      utility: [
-        'Exclusive access to community events',
-        'Priority access to future NFT drops',
-        'Special discounts on merchandise',
-        'Access to holder-only channels'
-      ],
-      team: [
-        {
-          name: collection.creator?.name || 'Creator',
-          role: 'Creator',
-          avatar: '/api/placeholder/60/60',
-          bio: 'Creator of this unique collection'
-        }
-      ],
-      roadmap: [
-        {
-          phase: 'Phase 1',
-          title: 'Collection Launch',
-          description: 'Launch of unique NFT collection',
-          status: 'completed'
-        },
-        {
-          phase: 'Phase 2',
-          title: 'Utility Activation',
-          description: 'Activate exclusive holder benefits',
-          status: 'in-progress'
-        },
-        {
-          phase: 'Phase 3',
-          title: 'Community Expansion',
-          description: 'Expand community and partnerships',
-          status: 'upcoming'
-        }
-      ]
+      // Dados reais do banco (sem fallbacks mockados)
+      mintStages: collection.mintStages,
+      vision: collection.vision,
+      utility: collection.utility,
+      team: collection.team,
+      roadmap: collection.roadmap
     };
     
     return NextResponse.json({

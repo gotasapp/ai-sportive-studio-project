@@ -1,59 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ObjectId } from 'mongodb';
 import clientPromise from '@/lib/mongodb';
+import { getCurrentUTC } from '@/lib/collection-utils';
 
 const DB_NAME = 'chz-app-db';
 
-/**
- * GET - Buscar coleção por ID
- */
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const collectionId = params.id;
-    const isAdmin = request.nextUrl.searchParams.get('isAdmin') === 'true';
-    
-    console.log(`📋 GET Collection by ID: ${collectionId}`);
-    
-    if (!collectionId) {
-      return NextResponse.json(
-        { success: false, error: 'Collection ID is required' },
-        { status: 400 }
-      );
-    }
+    console.log('🚀 GET Collection by ID:', params.id);
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Buscar coleção
-    const collection = await db.collection('collections').findOne({
-      _id: new ObjectId(collectionId)
-    });
+    let collection;
+    try {
+      collection = await db.collection('collections').findOne({
+        _id: new ObjectId(params.id)
+      });
+    } catch (error) {
+      console.log('❌ Erro ao converter ID para ObjectId:', error);
+      return NextResponse.json(
+        { success: false, error: 'Invalid ID format' },
+        { status: 400 }
+      );
+    }
     
     if (!collection) {
+      console.log('❌ Coleção não encontrada');
       return NextResponse.json(
         { success: false, error: 'Collection not found' },
         { status: 404 }
       );
     }
     
-    // Se não for admin, verificar se a coleção está visível
-    if (!isAdmin) {
-      const isVisible = 
-        (collection.type === 'launchpad' && ['upcoming', 'active'].includes(collection.status)) ||
-        (collection.type === 'marketplace' && collection.status === 'active');
-      
-      if (!isVisible) {
-        return NextResponse.json(
-          { success: false, error: 'Collection not available' },
-          { status: 403 }
-        );
-      }
-    }
-    
-    console.log(`✅ Found collection: ${collection.name}`);
+    console.log('✅ Coleção encontrada:', collection.name);
     
     return NextResponse.json({
       success: true,
@@ -69,77 +52,73 @@ export async function GET(
   }
 }
 
-/**
- * PATCH - Atualizar coleção por ID (apenas admin)
- */
-export async function PATCH(
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const collectionId = params.id;
-    const updates = await request.json();
+    console.log('🚀 PUT Update Collection:', params.id);
     
-    console.log(`🔧 PATCH Collection by ID: ${collectionId}`);
-    
-    if (!collectionId) {
-      return NextResponse.json(
-        { success: false, error: 'Collection ID is required' },
-        { status: 400 }
-      );
-    }
-    
-    if (!updates || Object.keys(updates).length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No updates provided' },
-        { status: 400 }
-      );
-    }
+    const data = await request.json();
+    console.log('📥 Dados recebidos:', JSON.stringify(data, null, 2));
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Preparar dados de atualização
-    const updateData: any = {
-      ...updates,
-      updatedAt: new Date()
-    };
-    
-    // Se está ativando para marketplace
-    if (updates.marketplaceEnabled === true) {
-      updateData.marketplaceListedAt = new Date();
+    // Verificar se a coleção existe
+    let existingCollection;
+    try {
+      existingCollection = await db.collection('collections').findOne({
+        _id: new ObjectId(params.id)
+      });
+    } catch (error) {
+      console.log('❌ Erro ao converter ID para ObjectId:', error);
+      return NextResponse.json(
+        { success: false, error: 'Invalid ID format' },
+        { status: 400 }
+      );
     }
     
-    // Se está aprovando para launchpad
-    if (updates.status === 'upcoming' || updates.status === 'active') {
-      updateData.approvedAt = new Date();
-      updateData.approvedBy = 'admin'; // TODO: pegar do usuário logado
-    }
-    
-    // Atualizar no banco
-    const result = await db.collection('collections').updateOne(
-      { _id: new ObjectId(collectionId) },
-      { $set: updateData }
-    );
-    
-    if (result.matchedCount === 0) {
+    if (!existingCollection) {
+      console.log('❌ Coleção não encontrada');
       return NextResponse.json(
         { success: false, error: 'Collection not found' },
         { status: 404 }
       );
     }
     
-    console.log(`✅ Updated collection ${collectionId}: ${result.modifiedCount} fields modified`);
+    // Preparar dados para atualização
+    const updateData = {
+      ...data,
+      updatedAt: getCurrentUTC()
+    };
     
-    // Buscar coleção atualizada
-    const updatedCollection = await db.collection('collections').findOne({
-      _id: new ObjectId(collectionId)
-    });
+    // Remover campos que não devem ser atualizados
+    delete updateData._id;
+    delete updateData.createdAt;
+    delete updateData.type;
+    
+    console.log('💾 Atualizando coleção...');
+    const result = await db.collection('collections').updateOne(
+      { _id: new ObjectId(params.id) },
+      { $set: updateData }
+    );
+    
+    if (result.modifiedCount === 0) {
+      console.log('⚠️ Nenhuma alteração foi feita');
+      return NextResponse.json({
+        success: true,
+        message: 'No changes were made',
+        collectionId: params.id
+      });
+    }
+    
+    console.log('✅ Coleção atualizada com sucesso');
     
     return NextResponse.json({
       success: true,
-      updated: result.modifiedCount > 0,
-      collection: updatedCollection
+      message: 'Collection updated successfully',
+      collectionId: params.id
     });
     
   } catch (error) {

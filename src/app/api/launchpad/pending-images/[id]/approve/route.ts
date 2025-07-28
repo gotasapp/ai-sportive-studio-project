@@ -59,21 +59,38 @@ export async function POST(
     const defaultLaunchDate = addDaysToUTC(7);
     
     const newCollection = {
-      name: pendingImage.name,
-      description: pendingImage.description,
+      // Dados básicos da imagem pendente
+      name: data.name || pendingImage.name,
+      description: data.description || pendingImage.description,
       image: pendingImage.imageUrl, // Campo usado pelo frontend para exibir imagem
       imageUrl: pendingImage.imageUrl, // Campo original
       category: pendingImage.category,
-      price: pendingImage.price,
-      maxSupply: pendingImage.maxSupply,
-      totalSupply: pendingImage.maxSupply, // Campo usado pelo frontend para supply
-      creator: pendingImage.creator,
+      price: data.price || pendingImage.price,
+      maxSupply: data.maxSupply || pendingImage.maxSupply,
+      totalSupply: data.maxSupply || pendingImage.maxSupply, // Campo usado pelo frontend para supply
+      creator: {
+        name: data.creatorName || pendingImage.creator?.name || 'Creator',
+        ...pendingImage.creator
+      },
       metadata: pendingImage.metadata,
       traits: pendingImage.traits,
       tags: pendingImage.tags,
       type: 'launchpad',
       status: data.status || 'upcoming',
       launchDate: data.launchDate || defaultLaunchDate.toISOString(),
+      
+      // Dados configurados pelo admin (sem fallbacks mockados)
+      creatorAvatar: data.creatorAvatar,
+      contractAddress: data.contractAddress,
+      website: data.website,
+      twitter: data.twitter,
+      discord: data.discord,
+      vision: data.vision,
+      utility: data.utility,
+      team: data.team,
+      roadmap: data.roadmap,
+      mintStages: data.mintStages,
+      
       createdAt: nowUTC,
       updatedAt: nowUTC
     };

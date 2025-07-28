@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { 
   Calendar, 
   Clock, 
@@ -31,7 +33,10 @@ import {
   CalendarDays,
   CheckCircle,
   XCircle,
-  Trash2
+  Trash2,
+  Edit,
+  Plus,
+  Minus
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -212,11 +217,13 @@ function LaunchpadStats({ stats }: { stats: any }) {
 function LaunchpadCollectionCard({ 
   collection, 
   isAdmin = false, 
-  onUpdateStatus 
+  onUpdateStatus,
+  onEdit
 }: { 
   collection: Collection; 
   isAdmin?: boolean; 
   onUpdateStatus?: (collectionId: string, status: LaunchpadStatus, launchDate?: string) => void;
+  onEdit?: (collection: any) => void;
 }) {
   const [showAdminControls, setShowAdminControls] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<LaunchpadStatus>(collection.status as LaunchpadStatus);
@@ -286,14 +293,24 @@ function LaunchpadCollectionCard({
           </Badge>
         </div>
 
-        {/* Admin Controls Toggle */}
+        {/* Admin Controls */}
         {isAdmin && (
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onEdit?.(collection)}
+              className="bg-black/80 text-white hover:bg-black/90"
+              title="Edit Collection"
+            >
+              <Edit className="w-4 h-4" />
+            </Button>
             <Button
               size="sm"
               variant="ghost"
               onClick={() => setShowAdminControls(!showAdminControls)}
               className="bg-black/80 text-white hover:bg-black/90"
+              title="Admin Controls"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -441,6 +458,64 @@ export default function LaunchpadPage() {
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [selectedPendingImage, setSelectedPendingImage] = useState<any>(null);
   const [approvalLaunchDate, setApprovalLaunchDate] = useState('');
+  const [approvalForm, setApprovalForm] = useState({
+    // Basic info
+    name: '',
+    description: '',
+    price: '0.1 CHZ',
+    maxSupply: 100,
+    status: 'upcoming' as LaunchpadStatus,
+    
+    // Creator info
+    creatorName: '',
+    creatorAvatar: '/api/placeholder/40/40',
+    contractAddress: '0x1234...5678',
+    
+    // Social links
+    website: '',
+    twitter: '',
+    discord: '',
+    
+    // Collection details
+    vision: '',
+    utility: ['Exclusive access to community events'],
+    team: [{ name: '', role: '', avatar: '/api/placeholder/60/60', bio: '' }],
+    roadmap: [
+      { phase: 'Phase 1', title: '', description: '', status: 'completed' },
+      { phase: 'Phase 2', title: '', description: '', status: 'in-progress' },
+      { phase: 'Phase 3', title: '', description: '', status: 'upcoming' }
+    ],
+    mintStages: [
+      { 
+        id: 'public', 
+        name: 'Public', 
+        description: 'Open to everyone', 
+        price: '0.1 CHZ', 
+        walletLimit: 3, 
+        status: 'upcoming',
+        startTime: '',
+        endTime: ''
+      }
+    ]
+  });
+  
+  // Estados para modal de edição de coleção
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<any>(null);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    vision: '',
+    creatorAvatar: '',
+    contractAddress: '',
+    website: '',
+    twitter: '',
+    discord: '',
+    utility: [''],
+    team: [{ name: '', role: '', avatar: '', bio: '' }],
+    roadmap: [{ phase: '', title: '', description: '', status: 'upcoming' }],
+    mintStages: [{ id: 'public', name: 'Public', description: '', price: '', walletLimit: 3, status: 'upcoming', startTime: '', endTime: '' }]
+  });
 
   // Check if user is admin
   useEffect(() => {
@@ -601,28 +676,22 @@ export default function LaunchpadPage() {
   };
 
   // Function to approve pending image (admin only)
-  const approvePendingImage = async (pendingImageId: string, customLaunchDate?: string) => {
+  const approvePendingImage = async (pendingImageId: string, approvalData: any) => {
     if (!isUserAdmin) return;
 
     try {
-      // ✅ CORRIGIDO: Usar funções utilitárias UTC
-      const defaultDate = addDaysToUTC(7); // 7 days from now
-      
       const response = await fetch(`/api/launchpad/pending-images/${pendingImageId}/approve`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          status: 'upcoming',
-          launchDate: customLaunchDate || defaultDate.toISOString() // 7 days from now
-        }),
+        body: JSON.stringify(approvalData),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        toast.success('Image approved and converted to collection!');
+        toast.success('Collection approved and created!');
         
         // Remove from pending images
         setPendingImages(prev => prev.filter(img => img._id !== pendingImageId));
@@ -634,20 +703,69 @@ export default function LaunchpadPage() {
           setCollections(collectionsData.collections || []);
         }
       } else {
-        toast.error(data.error || 'Failed to approve image');
+        toast.error(data.error || 'Failed to approve collection');
       }
     } catch (error) {
       console.error('Error approving pending image:', error);
-      toast.error('Error approving image');
+      toast.error('Error approving collection');
     }
   };
 
   // Function to open approval modal
   const openApprovalModal = (image: any) => {
     setSelectedPendingImage(image);
+    
     // ✅ CORRIGIDO: Usar funções utilitárias UTC
     const defaultDate = addDaysToUTC(7);
     setApprovalLaunchDate(defaultDate.toISOString().slice(0, 16)); // Default 7 days from now
+    
+    // Initialize approval form with pending image data
+    setApprovalForm({
+      // Basic info from pending image
+      name: image.name || '',
+      description: image.description || '',
+      price: image.price || '0.1 CHZ',
+      maxSupply: image.maxSupply || 100,
+      status: 'upcoming' as LaunchpadStatus,
+      
+      // Creator info
+      creatorName: image.creator?.name || '',
+      creatorAvatar: '/api/placeholder/40/40',
+      contractAddress: '0x1234...5678',
+      
+      // Social links
+      website: '',
+      twitter: '',
+      discord: '',
+      
+      // Collection details
+      vision: image.description || '',
+      utility: ['Exclusive access to community events'],
+      team: [{ 
+        name: image.creator?.name || 'Creator', 
+        role: 'Creator', 
+        avatar: '/api/placeholder/60/60', 
+        bio: 'Creator of this unique collection' 
+      }],
+      roadmap: [
+        { phase: 'Phase 1', title: 'Collection Launch', description: 'Launch of unique NFT collection', status: 'completed' },
+        { phase: 'Phase 2', title: 'Utility Activation', description: 'Activate exclusive holder benefits', status: 'in-progress' },
+        { phase: 'Phase 3', title: 'Community Expansion', description: 'Expand community and partnerships', status: 'upcoming' }
+      ],
+      mintStages: [
+        { 
+          id: 'public', 
+          name: 'Public', 
+          description: 'Open to everyone', 
+          price: image.price || '0.1 CHZ', 
+          walletLimit: 3, 
+          status: 'upcoming',
+          startTime: defaultDate.toISOString(),
+          endTime: new Date(defaultDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
+        }
+      ]
+    });
+    
     setShowApprovalModal(true);
   };
 
@@ -656,10 +774,55 @@ export default function LaunchpadPage() {
     if (!selectedPendingImage) return;
     
     try {
-      await approvePendingImage(selectedPendingImage._id, approvalLaunchDate);
+      // Validate required fields
+      if (!approvalForm.name || !approvalForm.description || !approvalForm.vision) {
+        toast.error('Please fill in all required fields (Name, Description, Vision)');
+        return;
+      }
+      
+      // Prepare approval data with form data
+      const approvalData = {
+        launchDate: approvalLaunchDate,
+        ...approvalForm
+      };
+      
+      await approvePendingImage(selectedPendingImage._id, approvalData);
       setShowApprovalModal(false);
       setSelectedPendingImage(null);
       setApprovalLaunchDate('');
+      setApprovalForm({
+        name: '',
+        description: '',
+        price: '0.1 CHZ',
+        maxSupply: 100,
+        status: 'upcoming' as LaunchpadStatus,
+        creatorName: '',
+        creatorAvatar: '/api/placeholder/40/40',
+        contractAddress: '0x1234...5678',
+        website: '',
+        twitter: '',
+        discord: '',
+        vision: '',
+        utility: ['Exclusive access to community events'],
+        team: [{ name: '', role: '', avatar: '/api/placeholder/60/60', bio: '' }],
+        roadmap: [
+          { phase: 'Phase 1', title: '', description: '', status: 'completed' },
+          { phase: 'Phase 2', title: '', description: '', status: 'in-progress' },
+          { phase: 'Phase 3', title: '', description: '', status: 'upcoming' }
+        ],
+        mintStages: [
+          { 
+            id: 'public', 
+            name: 'Public', 
+            description: 'Open to everyone', 
+            price: '0.1 CHZ', 
+            walletLimit: 3, 
+            status: 'upcoming',
+            startTime: '',
+            endTime: ''
+          }
+        ]
+      });
     } catch (error) {
       console.error('Error confirming approval:', error);
     }
@@ -809,6 +972,150 @@ export default function LaunchpadPage() {
     }
   };
 
+  // Function to check launchpad collections debug (admin only)
+  const checkLaunchpadCollections = async () => {
+    if (!isUserAdmin) return;
+
+    try {
+      const response = await fetch('/api/debug/check-launchpad-collections');
+      const data = await response.json();
+
+      if (data.success) {
+        console.log('🔍 Launchpad Collections Analysis:', data);
+        toast.success(`Analysis complete: ${data.stats.total} collections, ${data.stats.withIssues} with issues`);
+        
+        // Log detailed analysis to console
+        console.log('📊 Statistics:', data.stats);
+        console.log('🚨 Common Issues:', data.commonIssues);
+        console.log('📋 Collections with Issues:', data.collections.filter((c: any) => c.hasIssues));
+      } else {
+        toast.error(data.error || 'Failed to analyze launchpad collections');
+      }
+    } catch (error) {
+      console.error('Error analyzing launchpad collections:', error);
+      toast.error('Error analyzing launchpad collections');
+    }
+  };
+
+  // Funções para modal de edição
+  const openEditModal = (collection: any) => {
+    setSelectedCollection(collection);
+    setEditForm({
+      name: collection.name || '',
+      description: collection.description || '',
+      vision: collection.vision || '',
+      creatorAvatar: collection.creatorAvatar || '',
+      contractAddress: collection.contractAddress || '',
+      website: collection.website || '',
+      twitter: collection.twitter || '',
+      discord: collection.discord || '',
+      utility: collection.utility?.length > 0 ? collection.utility : [''],
+      team: collection.team?.length > 0 ? collection.team : [{ name: '', role: '', avatar: '', bio: '' }],
+      roadmap: collection.roadmap?.length > 0 ? collection.roadmap : [{ phase: '', title: '', description: '', status: 'upcoming' }],
+      mintStages: collection.mintStages?.length > 0 ? collection.mintStages : [{ id: 'public', name: 'Public', description: '', price: '', walletLimit: 3, status: 'upcoming', startTime: '', endTime: '' }]
+    });
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setSelectedCollection(null);
+    setEditForm({
+      name: '',
+      description: '',
+      vision: '',
+      creatorAvatar: '',
+      contractAddress: '',
+      website: '',
+      twitter: '',
+      discord: '',
+      utility: [''],
+      team: [{ name: '', role: '', avatar: '', bio: '' }],
+      roadmap: [{ phase: '', title: '', description: '', status: 'upcoming' }],
+      mintStages: [{ id: 'public', name: 'Public', description: '', price: '', walletLimit: 3, status: 'upcoming', startTime: '', endTime: '' }]
+    });
+  };
+
+  const updateEditForm = (field: string, value: any, index?: number) => {
+    if (index !== undefined) {
+      setEditForm(prev => ({
+        ...prev,
+        [field]: prev[field].map((item: any, i: number) => 
+          i === index ? { ...item, ...value } : item
+        )
+      }));
+    } else {
+      setEditForm(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  // Functions for approval form management
+  const updateApprovalForm = (field: string, value: any, index?: number) => {
+    if (index !== undefined) {
+      setApprovalForm(prev => ({
+        ...prev,
+        [field]: prev[field].map((item: any, i: number) => 
+          i === index ? value : item
+        )
+      }));
+    } else {
+      setApprovalForm(prev => ({ ...prev, [field]: value }));
+    }
+  };
+
+  const addApprovalArrayItem = (field: string, template: any) => {
+    setApprovalForm(prev => ({
+      ...prev,
+      [field]: [...prev[field], template]
+    }));
+  };
+
+  const removeApprovalArrayItem = (field: string, index: number) => {
+    setApprovalForm(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_: any, i: number) => i !== index)
+    }));
+  };
+
+  const addArrayItem = (field: string, template: any) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: [...prev[field], template]
+    }));
+  };
+
+  const removeArrayItem = (field: string, index: number) => {
+    setEditForm(prev => ({
+      ...prev,
+      [field]: prev[field].filter((_: any, i: number) => i !== index)
+    }));
+  };
+
+  const saveCollectionEdit = async () => {
+    if (!selectedCollection) return;
+
+    try {
+      const response = await fetch(`/api/collections/${selectedCollection._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editForm)
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('Collection updated successfully');
+        closeEditModal();
+        fetchCollections(); // Refresh collections
+      } else {
+        toast.error(data.error || 'Failed to update collection');
+      }
+    } catch (error) {
+      console.error('Error updating collection:', error);
+      toast.error('Error updating collection');
+    }
+  };
+
   // Filter collections
   const filteredCollections = collections.filter(collection => {
     const matchesSearch = collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -842,6 +1149,7 @@ export default function LaunchpadPage() {
             collection={collection}
             isAdmin={isUserAdmin}
             onUpdateStatus={updateCollectionStatus}
+            onEdit={openEditModal}
           />
         ))}
       </div>
@@ -952,6 +1260,16 @@ export default function LaunchpadPage() {
                  >
                    <Trash2 className="w-4 h-4 mr-2" />
                    Clean Problematic
+                 </Button>
+                 
+                 <Button
+                   onClick={checkLaunchpadCollections}
+                   size="sm"
+                   variant="outline"
+                   className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                 >
+                   <Search className="w-4 h-4 mr-2" />
+                   Check Launchpad
                  </Button>
                </div>
               
@@ -1087,36 +1405,442 @@ export default function LaunchpadPage() {
 
        {/* Approval Modal */}
        {showApprovalModal && selectedPendingImage && (
-         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4">
-             <h3 className="text-xl font-bold text-white mb-4">Approve Collection</h3>
+         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-y-auto">
+           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+             <div className="flex justify-between items-center mb-6">
+               <h3 className="text-xl font-bold text-white">Configure Collection: {selectedPendingImage.name}</h3>
+               <Button
+                 onClick={() => setShowApprovalModal(false)}
+                 variant="ghost"
+                 className="text-gray-400 hover:text-white"
+               >
+                 <XCircle className="w-5 h-5" />
+               </Button>
+             </div>
              
-             <div className="space-y-4">
-               <div>
-                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                   Collection Name
-                 </label>
-                 <p className="text-white">{selectedPendingImage.name}</p>
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               {/* Basic Information */}
+               <div className="space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Basic Information</h4>
+                 
+                 <div>
+                   <Label htmlFor="approval-name" className="text-gray-300">Name *</Label>
+                   <Input
+                     id="approval-name"
+                     value={approvalForm.name}
+                     onChange={(e) => updateApprovalForm('name', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     placeholder="Collection name"
+                   />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="approval-description" className="text-gray-300">Description *</Label>
+                   <Textarea
+                     id="approval-description"
+                     value={approvalForm.description}
+                     onChange={(e) => updateApprovalForm('description', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     rows={3}
+                     placeholder="Collection description"
+                   />
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <Label htmlFor="approval-price" className="text-gray-300">Price</Label>
+                     <Input
+                       id="approval-price"
+                       value={approvalForm.price}
+                       onChange={(e) => updateApprovalForm('price', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="0.1 CHZ"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="approval-maxSupply" className="text-gray-300">Max Supply</Label>
+                     <Input
+                       id="approval-maxSupply"
+                       type="number"
+                       value={approvalForm.maxSupply}
+                       onChange={(e) => updateApprovalForm('maxSupply', parseInt(e.target.value))}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="100"
+                     />
+                   </div>
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="approval-status" className="text-gray-300">Status</Label>
+                   <select
+                     id="approval-status"
+                     value={approvalForm.status}
+                     onChange={(e) => updateApprovalForm('status', e.target.value)}
+                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                   >
+                     <option value="upcoming">Upcoming</option>
+                     <option value="active">Active</option>
+                     <option value="hidden">Hidden</option>
+                   </select>
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="approval-launchDate" className="text-gray-300">Launch Date & Time *</Label>
+                   <input
+                     type="datetime-local"
+                     id="approval-launchDate"
+                     value={approvalLaunchDate}
+                     onChange={(e) => setApprovalLaunchDate(e.target.value)}
+                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                     min={new Date().toISOString().slice(0, 16)}
+                   />
+                   <p className="text-xs text-gray-400 mt-1">
+                     When this date arrives, the collection will automatically become active
+                   </p>
+                 </div>
                </div>
                
-               <div>
-                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                   Launch Date & Time
-                 </label>
-                 <input
-                   type="datetime-local"
-                   value={approvalLaunchDate}
-                   onChange={(e) => setApprovalLaunchDate(e.target.value)}
-                   className="w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
-                   min={new Date().toISOString().slice(0, 16)}
-                 />
-                 <p className="text-xs text-gray-400 mt-1">
-                   When this date arrives, the collection will automatically become active
-                 </p>
+               {/* Creator Information */}
+               <div className="space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Creator Information</h4>
+                 
+                 <div>
+                   <Label htmlFor="approval-creatorName" className="text-gray-300">Creator Name</Label>
+                   <Input
+                     id="approval-creatorName"
+                     value={approvalForm.creatorName}
+                     onChange={(e) => updateApprovalForm('creatorName', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     placeholder="Creator name"
+                   />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="approval-creatorAvatar" className="text-gray-300">Creator Avatar URL</Label>
+                   <Input
+                     id="approval-creatorAvatar"
+                     value={approvalForm.creatorAvatar}
+                     onChange={(e) => updateApprovalForm('creatorAvatar', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     placeholder="/api/placeholder/40/40"
+                   />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="approval-contractAddress" className="text-gray-300">Contract Address</Label>
+                   <Input
+                     id="approval-contractAddress"
+                     value={approvalForm.contractAddress}
+                     onChange={(e) => updateApprovalForm('contractAddress', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     placeholder="0x1234...5678"
+                   />
+                 </div>
+                 
+                 <div className="grid grid-cols-3 gap-4">
+                   <div>
+                     <Label htmlFor="approval-website" className="text-gray-300">Website</Label>
+                     <Input
+                       id="approval-website"
+                       value={approvalForm.website}
+                       onChange={(e) => updateApprovalForm('website', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="https://..."
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="approval-twitter" className="text-gray-300">Twitter</Label>
+                     <Input
+                       id="approval-twitter"
+                       value={approvalForm.twitter}
+                       onChange={(e) => updateApprovalForm('twitter', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="https://twitter.com/..."
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="approval-discord" className="text-gray-300">Discord</Label>
+                     <Input
+                       id="approval-discord"
+                       value={approvalForm.discord}
+                       onChange={(e) => updateApprovalForm('discord', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="https://discord.gg/..."
+                     />
+                   </div>
+                 </div>
                </div>
              </div>
              
-             <div className="flex gap-3 mt-6">
+             {/* Collection Details */}
+             <div className="mt-8 space-y-6">
+               <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Collection Details</h4>
+               
+               <div>
+                 <Label htmlFor="approval-vision" className="text-gray-300">Vision *</Label>
+                 <Textarea
+                   id="approval-vision"
+                   value={approvalForm.vision}
+                   onChange={(e) => updateApprovalForm('vision', e.target.value)}
+                   className="mt-1 bg-gray-800 border-gray-600 text-white"
+                   rows={3}
+                   placeholder="Collection vision and goals"
+                 />
+               </div>
+               
+               {/* Utility */}
+               <div>
+                 <div className="flex justify-between items-center mb-2">
+                   <Label className="text-gray-300">Utility & Benefits</Label>
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     onClick={() => addApprovalArrayItem('utility', 'New benefit')}
+                     className="text-xs"
+                   >
+                     <Plus className="w-3 h-3 mr-1" />
+                     Add Benefit
+                   </Button>
+                 </div>
+                 {approvalForm.utility.map((benefit, index) => (
+                   <div key={index} className="flex gap-2 mb-2">
+                     <Input
+                       value={benefit || ''}
+                       onChange={(e) => updateApprovalForm('utility', e.target.value, index)}
+                       className="flex-1 bg-gray-800 border-gray-600 text-white"
+                       placeholder="Exclusive access to community events"
+                     />
+                     <Button
+                       type="button"
+                       size="sm"
+                       variant="outline"
+                       onClick={() => removeApprovalArrayItem('utility', index)}
+                       className="text-red-400 hover:text-red-300"
+                     >
+                       <Minus className="w-3 h-3" />
+                     </Button>
+                   </div>
+                 ))}
+               </div>
+               
+               {/* Team */}
+               <div>
+                 <div className="flex justify-between items-center mb-2">
+                   <Label className="text-gray-300">Team Members</Label>
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     onClick={() => addApprovalArrayItem('team', { name: '', role: '', avatar: '/api/placeholder/60/60', bio: '' })}
+                     className="text-xs"
+                   >
+                     <Plus className="w-3 h-3 mr-1" />
+                     Add Member
+                   </Button>
+                 </div>
+                 {approvalForm.team.map((member, index) => (
+                   <div key={index} className="border border-gray-700 rounded p-3 mb-3">
+                     <div className="grid grid-cols-2 gap-3 mb-2">
+                       <Input
+                         value={member.name}
+                         onChange={(e) => updateApprovalForm('team', { ...member, name: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Member name"
+                       />
+                       <Input
+                         value={member.role}
+                         onChange={(e) => updateApprovalForm('team', { ...member, role: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Role"
+                       />
+                     </div>
+                     <Input
+                       value={member.avatar}
+                       onChange={(e) => updateApprovalForm('team', { ...member, avatar: e.target.value }, index)}
+                       className="bg-gray-800 border-gray-600 text-white mb-2"
+                       placeholder="Avatar URL"
+                     />
+                     <Textarea
+                       value={member.bio}
+                       onChange={(e) => updateApprovalForm('team', { ...member, bio: e.target.value }, index)}
+                       className="bg-gray-800 border-gray-600 text-white"
+                       rows={2}
+                       placeholder="Member bio"
+                     />
+                     <Button
+                       type="button"
+                       size="sm"
+                       variant="outline"
+                       onClick={() => removeApprovalArrayItem('team', index)}
+                       className="text-red-400 hover:text-red-300 mt-2"
+                     >
+                       <Minus className="w-3 h-3 mr-1" />
+                       Remove Member
+                     </Button>
+                   </div>
+                 ))}
+               </div>
+               
+               {/* Roadmap */}
+               <div>
+                 <div className="flex justify-between items-center mb-2">
+                   <Label className="text-gray-300">Roadmap</Label>
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     onClick={() => addApprovalArrayItem('roadmap', { phase: '', title: '', description: '', status: 'upcoming' })}
+                     className="text-xs"
+                   >
+                     <Plus className="w-3 h-3 mr-1" />
+                     Add Phase
+                   </Button>
+                 </div>
+                 {approvalForm.roadmap.map((phase, index) => (
+                   <div key={index} className="border border-gray-700 rounded p-3 mb-3">
+                     <div className="grid grid-cols-2 gap-3 mb-2">
+                       <Input
+                         value={phase.phase}
+                         onChange={(e) => updateApprovalForm('roadmap', { ...phase, phase: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Phase name"
+                       />
+                       <select
+                         value={phase.status}
+                         onChange={(e) => updateApprovalForm('roadmap', { ...phase, status: e.target.value }, index)}
+                         className="bg-gray-800 border border-gray-600 text-white rounded px-3 py-2"
+                       >
+                         <option value="completed">Completed</option>
+                         <option value="in-progress">In Progress</option>
+                         <option value="upcoming">Upcoming</option>
+                       </select>
+                     </div>
+                     <Input
+                       value={phase.title}
+                       onChange={(e) => updateApprovalForm('roadmap', { ...phase, title: e.target.value }, index)}
+                       className="bg-gray-800 border-gray-600 text-white mb-2"
+                       placeholder="Phase title"
+                     />
+                     <Textarea
+                       value={phase.description}
+                       onChange={(e) => updateApprovalForm('roadmap', { ...phase, description: e.target.value }, index)}
+                       className="bg-gray-800 border-gray-600 text-white"
+                       rows={2}
+                       placeholder="Phase description"
+                     />
+                     <Button
+                       type="button"
+                       size="sm"
+                       variant="outline"
+                       onClick={() => removeApprovalArrayItem('roadmap', index)}
+                       className="text-red-400 hover:text-red-300 mt-2"
+                     >
+                       <Minus className="w-3 h-3 mr-1" />
+                       Remove Phase
+                     </Button>
+                   </div>
+                 ))}
+               </div>
+               
+               {/* Mint Stages */}
+               <div>
+                 <div className="flex justify-between items-center mb-2">
+                   <Label className="text-gray-300">Mint Stages</Label>
+                   <Button
+                     type="button"
+                     size="sm"
+                     variant="outline"
+                     onClick={() => addApprovalArrayItem('mintStages', { 
+                       id: 'stage', 
+                       name: 'Stage', 
+                       description: '', 
+                       price: '0.1 CHZ', 
+                       walletLimit: 3, 
+                       status: 'upcoming',
+                       startTime: '',
+                       endTime: ''
+                     })}
+                     className="text-xs"
+                   >
+                     <Plus className="w-3 h-3 mr-1" />
+                     Add Stage
+                   </Button>
+                 </div>
+                 {approvalForm.mintStages.map((stage, index) => (
+                   <div key={index} className="border border-gray-700 rounded p-3 mb-3">
+                     <div className="grid grid-cols-3 gap-3 mb-2">
+                       <Input
+                         value={stage.name}
+                         onChange={(e) => updateApprovalForm('mintStages', { ...stage, name: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Stage name"
+                       />
+                       <Input
+                         value={stage.price}
+                         onChange={(e) => updateApprovalForm('mintStages', { ...stage, price: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Price"
+                       />
+                       <Input
+                         type="number"
+                         value={stage.walletLimit}
+                         onChange={(e) => updateApprovalForm('mintStages', { ...stage, walletLimit: parseInt(e.target.value) }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Wallet limit"
+                       />
+                     </div>
+                     <Textarea
+                       value={stage.description}
+                       onChange={(e) => updateApprovalForm('mintStages', { ...stage, description: e.target.value }, index)}
+                       className="bg-gray-800 border-gray-600 text-white mb-2"
+                       rows={2}
+                       placeholder="Stage description"
+                     />
+                     <div className="grid grid-cols-2 gap-3 mb-2">
+                       <Input
+                         type="datetime-local"
+                         value={stage.startTime ? stage.startTime.slice(0, 16) : ''}
+                         onChange={(e) => updateApprovalForm('mintStages', { ...stage, startTime: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Start time"
+                       />
+                       <Input
+                         type="datetime-local"
+                         value={stage.endTime ? stage.endTime.slice(0, 16) : ''}
+                         onChange={(e) => updateApprovalForm('mintStages', { ...stage, endTime: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="End time"
+                       />
+                     </div>
+                     <select
+                       value={stage.status}
+                       onChange={(e) => updateApprovalForm('mintStages', { ...stage, status: e.target.value }, index)}
+                       className="bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 mb-2 w-full"
+                     >
+                       <option value="upcoming">Upcoming</option>
+                       <option value="live">Live</option>
+                       <option value="ended">Ended</option>
+                     </select>
+                     <Button
+                       type="button"
+                       size="sm"
+                       variant="outline"
+                       onClick={() => removeApprovalArrayItem('mintStages', index)}
+                       className="text-red-400 hover:text-red-300"
+                     >
+                       <Minus className="w-3 h-3 mr-1" />
+                       Remove Stage
+                     </Button>
+                   </div>
+                 ))}
+               </div>
+             </div>
+             
+             <div className="flex gap-3 mt-8">
                <Button
                  onClick={() => setShowApprovalModal(false)}
                  variant="outline"
@@ -1130,6 +1854,224 @@ export default function LaunchpadPage() {
                >
                  <CheckCircle className="w-4 h-4 mr-2" />
                  Approve Collection
+               </Button>
+             </div>
+           </div>
+         </div>
+       )}
+
+       {/* Edit Collection Modal */}
+       {showEditModal && selectedCollection && (
+         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 overflow-y-auto">
+           <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+             <div className="flex justify-between items-center mb-6">
+               <h3 className="text-xl font-bold text-white">Edit Collection: {selectedCollection.name}</h3>
+               <Button
+                 onClick={closeEditModal}
+                 variant="ghost"
+                 className="text-gray-400 hover:text-white"
+               >
+                 <XCircle className="w-5 h-5" />
+               </Button>
+             </div>
+             
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+               {/* Basic Information */}
+               <div className="space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Basic Information</h4>
+                 
+                 <div>
+                   <Label htmlFor="name" className="text-gray-300">Name</Label>
+                   <Input
+                     id="name"
+                     value={editForm.name}
+                     onChange={(e) => updateEditForm('name', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                   />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="description" className="text-gray-300">Description</Label>
+                   <Textarea
+                     id="description"
+                     value={editForm.description}
+                     onChange={(e) => updateEditForm('description', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     rows={3}
+                   />
+                 </div>
+                 
+                 <div>
+                   <Label htmlFor="vision" className="text-gray-300">Vision</Label>
+                   <Textarea
+                     id="vision"
+                     value={editForm.vision}
+                     onChange={(e) => updateEditForm('vision', e.target.value)}
+                     className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     rows={3}
+                   />
+                 </div>
+                 
+                 <div className="grid grid-cols-2 gap-4">
+                   <div>
+                     <Label htmlFor="creatorAvatar" className="text-gray-300">Creator Avatar URL</Label>
+                     <Input
+                       id="creatorAvatar"
+                       value={editForm.creatorAvatar}
+                       onChange={(e) => updateEditForm('creatorAvatar', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="contractAddress" className="text-gray-300">Contract Address</Label>
+                     <Input
+                       id="contractAddress"
+                       value={editForm.contractAddress}
+                       onChange={(e) => updateEditForm('contractAddress', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     />
+                   </div>
+                 </div>
+                 
+                 <div className="grid grid-cols-3 gap-4">
+                   <div>
+                     <Label htmlFor="website" className="text-gray-300">Website</Label>
+                     <Input
+                       id="website"
+                       value={editForm.website}
+                       onChange={(e) => updateEditForm('website', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="twitter" className="text-gray-300">Twitter</Label>
+                     <Input
+                       id="twitter"
+                       value={editForm.twitter}
+                       onChange={(e) => updateEditForm('twitter', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     />
+                   </div>
+                   
+                   <div>
+                     <Label htmlFor="discord" className="text-gray-300">Discord</Label>
+                     <Input
+                       id="discord"
+                       value={editForm.discord}
+                       onChange={(e) => updateEditForm('discord', e.target.value)}
+                       className="mt-1 bg-gray-800 border-gray-600 text-white"
+                     />
+                   </div>
+                 </div>
+               </div>
+               
+               {/* Advanced Information */}
+               <div className="space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Advanced Information</h4>
+                 
+                 {/* Utility */}
+                 <div>
+                   <div className="flex justify-between items-center mb-2">
+                     <Label className="text-gray-300">Utility & Benefits</Label>
+                     <Button
+                       size="sm"
+                       onClick={() => addArrayItem('utility', '')}
+                       className="bg-[#A20131] hover:bg-[#A20131]/90"
+                     >
+                       <Plus className="w-4 h-4" />
+                     </Button>
+                   </div>
+                   {editForm.utility.map((item, index) => (
+                     <div key={index} className="flex gap-2 mb-2">
+                       <Input
+                         value={item}
+                         onChange={(e) => updateEditForm('utility', e.target.value, index)}
+                         className="flex-1 bg-gray-800 border-gray-600 text-white"
+                         placeholder="Enter utility benefit"
+                       />
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={() => removeArrayItem('utility', index)}
+                         className="text-red-400 hover:text-red-300"
+                       >
+                         <Minus className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   ))}
+                 </div>
+                 
+                 {/* Team */}
+                 <div>
+                   <div className="flex justify-between items-center mb-2">
+                     <Label className="text-gray-300">Team Members</Label>
+                     <Button
+                       size="sm"
+                       onClick={() => addArrayItem('team', { name: '', role: '', avatar: '', bio: '' })}
+                       className="bg-[#A20131] hover:bg-[#A20131]/90"
+                     >
+                       <Plus className="w-4 h-4" />
+                     </Button>
+                   </div>
+                   {editForm.team.map((member, index) => (
+                     <div key={index} className="border border-gray-700 rounded p-3 mb-3">
+                       <div className="grid grid-cols-2 gap-2 mb-2">
+                         <Input
+                           value={member.name}
+                           onChange={(e) => updateEditForm('team', { name: e.target.value }, index)}
+                           className="bg-gray-800 border-gray-600 text-white"
+                           placeholder="Name"
+                         />
+                         <Input
+                           value={member.role}
+                           onChange={(e) => updateEditForm('team', { role: e.target.value }, index)}
+                           className="bg-gray-800 border-gray-600 text-white"
+                           placeholder="Role"
+                         />
+                       </div>
+                       <Input
+                         value={member.avatar}
+                         onChange={(e) => updateEditForm('team', { avatar: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white mb-2"
+                         placeholder="Avatar URL"
+                       />
+                       <Textarea
+                         value={member.bio}
+                         onChange={(e) => updateEditForm('team', { bio: e.target.value }, index)}
+                         className="bg-gray-800 border-gray-600 text-white"
+                         placeholder="Bio"
+                         rows={2}
+                       />
+                       <Button
+                         size="sm"
+                         variant="outline"
+                         onClick={() => removeArrayItem('team', index)}
+                         className="text-red-400 hover:text-red-300 mt-2"
+                       >
+                         <Minus className="w-4 h-4" />
+                       </Button>
+                     </div>
+                   ))}
+                 </div>
+               </div>
+             </div>
+             
+             <div className="flex gap-3 mt-6 pt-4 border-t border-gray-700">
+               <Button
+                 onClick={closeEditModal}
+                 variant="outline"
+                 className="flex-1 border-gray-600 text-gray-300 hover:bg-gray-800"
+               >
+                 Cancel
+               </Button>
+               <Button
+                 onClick={saveCollectionEdit}
+                 className="flex-1 bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+               >
+                 <CheckCircle className="w-4 h-4 mr-2" />
+                 Save Changes
                </Button>
              </div>
            </div>
