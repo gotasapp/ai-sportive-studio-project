@@ -31,188 +31,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 
-// Mock data for collections
-const collectionsData = {
-  'flamengo-heritage': {
-    id: 'flamengo-heritage',
-    name: 'Flamengo Heritage Collection',
-    description: 'Historic jerseys celebrating the legendary 1981 World Championship victory. Each NFT features unique designs inspired by iconic moments and legendary players.',
-    image: '/api/placeholder/600/600',
-    bannerImage: '/api/placeholder/1200/400',
-    status: 'live',
-    category: 'jerseys',
-    totalSupply: 1981,
-    minted: 1456,
-    creator: 'Clube de Regatas do Flamengo',
-    creatorAvatar: '/api/placeholder/40/40',
-    contractAddress: '0x1234...5678',
-    launchDate: '2024-01-15T00:00:00Z',
-    endDate: '2024-02-15T23:59:59Z',
-    website: 'https://flamengo.com.br',
-    twitter: 'https://twitter.com/flamengo',
-    discord: 'https://discord.gg/flamengo',
-    mintStages: [
-      {
-        id: 'gtd',
-        name: 'GTD',
-        description: 'Guaranteed allowlist',
-        price: '0.00013 CHZ',
-        walletLimit: 1,
-        status: 'ended',
-        startTime: '2024-01-10T00:00:00Z',
-        endTime: '2024-01-12T23:59:59Z'
-      },
-      {
-        id: 'fcfs',
-        name: 'FCFS',
-        description: 'First come, first served',
-        price: '0.00013 CHZ',
-        walletLimit: 2,
-        status: 'ended',
-        startTime: '2024-01-12T00:00:00Z',
-        endTime: '2024-01-14T23:59:59Z'
-      },
-      {
-        id: 'public',
-        name: 'Public',
-        description: 'Open to everyone',
-        price: '0.00015 CHZ',
-        walletLimit: 3,
-        status: 'live',
-        startTime: '2024-01-14T00:00:00Z',
-        endTime: '2024-02-15T23:59:59Z'
-      }
-    ],
-    vision: 'The Flamengo Heritage Collection aims to preserve and celebrate the rich history of one of Brazil\'s most beloved football clubs. Through AI-generated art, we capture the essence of legendary moments, iconic players, and the passionate spirit that defines Flamengo.',
-    utility: [
-      'Exclusive access to Flamengo events and experiences',
-      'Priority access to future Flamengo NFT drops',
-      'Special discounts on official Flamengo merchandise',
-      'Access to holder-only Discord channels',
-      'Voting rights on future collection decisions'
-    ],
-    team: [
-      {
-        name: 'Gabriel Barbosa',
-        role: 'Creative Director',
-        avatar: '/api/placeholder/60/60',
-        bio: 'Leading striker and creative vision behind the collection'
-      },
-      {
-        name: 'Bruno Henrique',
-        role: 'Community Manager',
-        avatar: '/api/placeholder/60/60',
-        bio: 'Connecting fans with the digital revolution'
-      }
-    ],
-    roadmap: [
-      {
-        phase: 'Phase 1',
-        title: 'Collection Launch',
-        description: 'Launch of 1981 unique jersey NFTs',
-        status: 'completed'
-      },
-      {
-        phase: 'Phase 2',
-        title: 'Utility Activation',
-        description: 'Activate exclusive holder benefits',
-        status: 'in-progress'
-      },
-      {
-        phase: 'Phase 3',
-        title: 'Stadium Access',
-        description: 'Physical stadium experiences for holders',
-        status: 'upcoming'
-      },
-      {
-        phase: 'Phase 4',
-        title: 'Global Expansion',
-        description: 'International partnerships and events',
-        status: 'upcoming'
-      }
-    ]
-  },
-  'palmeiras-badges': {
-    id: 'palmeiras-badges',
-    name: 'Palmeiras Championship Badges',
-    description: 'Exclusive badges commemorating championship victories and historic moments of Sociedade Esportiva Palmeiras.',
-    image: '/api/placeholder/600/600',
-    bannerImage: '/api/placeholder/1200/400',
-    status: 'live',
-    category: 'badges',
-    totalSupply: 500,
-    minted: 342,
-    creator: 'Sociedade Esportiva Palmeiras',
-    creatorAvatar: '/api/placeholder/40/40',
-    contractAddress: '0x5678...9012',
-    launchDate: '2024-01-10T00:00:00Z',
-    endDate: '2024-02-10T23:59:59Z',
-    website: 'https://palmeiras.com.br',
-    twitter: 'https://twitter.com/palmeiras',
-    discord: 'https://discord.gg/palmeiras',
-    mintStages: [
-      {
-        id: 'gtd',
-        name: 'GTD',
-        description: 'Season ticket holders',
-        price: '0.00036 CHZ',
-        walletLimit: 1,
-        status: 'ended',
-        startTime: '2024-01-08T00:00:00Z',
-        endTime: '2024-01-10T23:59:59Z'
-      },
-      {
-        id: 'fcfs',
-        name: 'FCFS',
-        description: 'Fan token holders',
-        price: '0.00036 CHZ',
-        walletLimit: 2,
-        status: 'ended',
-        startTime: '2024-01-10T00:00:00Z',
-        endTime: '2024-01-12T23:59:59Z'
-      },
-      {
-        id: 'public',
-        name: 'Public',
-        description: 'Public mint',
-        price: '0.00036 CHZ',
-        walletLimit: 3,
-        status: 'live',
-        startTime: '2024-01-12T00:00:00Z',
-        endTime: '2024-02-10T23:59:59Z'
-      }
-    ],
-    vision: 'Celebrating the championship legacy of Palmeiras through digital collectibles that honor our victories and achievements.',
-    utility: [
-      'Access to exclusive Palmeiras championship events',
-      'Priority seating for major matches',
-      'Exclusive merchandise discounts',
-      'Voting rights on fan initiatives'
-    ],
-    team: [
-      {
-        name: 'Leila Pereira',
-        role: 'President',
-        avatar: '/api/placeholder/60/60',
-        bio: 'Leading Palmeiras into the digital age'
-      }
-    ],
-    roadmap: [
-      {
-        phase: 'Phase 1',
-        title: 'Badge Collection',
-        description: 'Launch championship badge NFTs',
-        status: 'in-progress'
-      },
-      {
-        phase: 'Phase 2',
-        title: 'Stadium Integration',
-        description: 'Digital badges for stadium access',
-        status: 'upcoming'
-      }
-    ]
-  }
-};
+// Remover dados mockados - agora vamos buscar do banco de dados
 
 export default function CollectionMintPage() {
   const params = useParams();
@@ -223,12 +42,41 @@ export default function CollectionMintPage() {
   const [email, setEmail] = useState('');
   const [activeTab, setActiveTab] = useState('overview');
   const [timeRemaining, setTimeRemaining] = useState('');
+  const [collection, setCollection] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const collection = collectionsData[collectionId as keyof typeof collectionsData];
+  // Buscar dados da coleção do banco de dados
+  useEffect(() => {
+    const fetchCollection = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(`/api/launchpad/collections/${collectionId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setCollection(data.collection);
+        } else {
+          setError(data.error || 'Failed to load collection');
+        }
+      } catch (error) {
+        console.error('Error fetching collection:', error);
+        setError('Failed to load collection');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (collectionId) {
+      fetchCollection();
+    }
+  }, [collectionId]);
 
   // Countdown timer
   useEffect(() => {
-    if (!collection) return;
+    if (!collection || !collection.endDate) return;
     
     const updateTimer = () => {
       const now = new Date().getTime();
@@ -253,11 +101,26 @@ export default function CollectionMintPage() {
     return () => clearInterval(timer);
   }, [collection]);
 
-  if (!collection) {
+  // Loading state
+  if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-white mb-4">Collection not found</h1>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto mb-4"></div>
+          <h1 className="text-xl font-bold text-white">Loading collection...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !collection) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-white mb-4">
+            {error || 'Collection not found'}
+          </h1>
           <Link href="/launchpad">
             <Button>Back to Launchpad</Button>
           </Link>
@@ -266,9 +129,11 @@ export default function CollectionMintPage() {
     );
   }
 
-  const progress = (collection.minted / collection.totalSupply) * 100;
-  const currentStage = collection.mintStages.find(stage => stage.status === 'live');
-  const currentPrice = currentStage?.price || collection.mintStages[collection.mintStages.length - 1].price;
+  const progress = collection.minted && collection.totalSupply 
+    ? (collection.minted / collection.totalSupply) * 100 
+    : 0;
+  const currentStage = collection.mintStages?.find(stage => stage.status === 'live');
+  const currentPrice = currentStage?.price || collection.mintStages?.[0]?.price || '0.1 CHZ';
   const maxQuantity = currentStage?.walletLimit || 1;
 
   const handleQuantityChange = (change: number) => {
@@ -391,15 +256,15 @@ export default function CollectionMintPage() {
                     <div className="text-sm text-gray-400">Minted</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{collection.minted}</div>
+                    <div className="text-2xl font-bold text-white">{collection.minted || 0}</div>
                     <div className="text-sm text-gray-400">Total Minted</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{collection.totalSupply}</div>
+                    <div className="text-2xl font-bold text-white">{collection.totalSupply || 0}</div>
                     <div className="text-sm text-gray-400">Supply</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white">{timeRemaining}</div>
+                    <div className="text-2xl font-bold text-white">{timeRemaining || 'N/A'}</div>
                     <div className="text-sm text-gray-400">Time Left</div>
                   </div>
                 </div>
@@ -407,7 +272,7 @@ export default function CollectionMintPage() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400">Progress</span>
-                    <span className="text-white">{collection.minted} / {collection.totalSupply}</span>
+                    <span className="text-white">{collection.minted || 0} / {collection.totalSupply || 0}</span>
                   </div>
                   <Progress value={progress} className="h-2" />
                 </div>
@@ -446,7 +311,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {collection.roadmap.map((phase, index) => (
+                      {collection.roadmap?.map((phase, index) => (
                         <div key={index} className="flex items-start gap-4">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                             phase.status === 'completed' ? 'bg-green-500' :
@@ -478,7 +343,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {collection.team.map((member, index) => (
+                      {collection.team?.map((member, index) => (
                         <div key={index} className="flex items-start gap-4">
                           <img
                             src={member.avatar}
@@ -504,7 +369,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {collection.utility.map((benefit, index) => (
+                      {collection.utility?.map((benefit, index) => (
                         <div key={index} className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                           <p className="text-gray-400">{benefit}</p>
@@ -526,7 +391,7 @@ export default function CollectionMintPage() {
                   <CardTitle className="text-white">Mint Stages</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {collection.mintStages.map((stage) => (
+                  {collection.mintStages?.map((stage) => (
                     <div 
                       key={stage.id}
                       className={`p-4 rounded-lg border ${
