@@ -497,8 +497,12 @@ export default function LaunchpadPage() {
         endTime: ''
       }
     ]
-  });
-  
+    });
+
+  // Estados para private wallets
+  const [privateWallets, setPrivateWallets] = useState<string[]>(['']);
+  const [privateWalletStage, setPrivateWalletStage] = useState('private');
+
   // Estados para modal de edição de coleção
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<any>(null);
@@ -693,6 +697,20 @@ export default function LaunchpadPage() {
       if (data.success) {
         toast.success('Collection approved and created!');
         
+        // Save private wallets if any are provided
+        const validWallets = privateWallets.filter(wallet => 
+          wallet && wallet.length === 42 && wallet.startsWith('0x')
+        );
+        
+        if (validWallets.length > 0 && data.collectionId) {
+          try {
+            await savePrivateWallets(data.collectionId);
+          } catch (error) {
+            console.error('Error saving private wallets:', error);
+            // Don't fail the approval if private wallets fail to save
+          }
+        }
+        
         // Remove from pending images
         setPendingImages(prev => prev.filter(img => img._id !== pendingImageId));
         
@@ -787,6 +805,7 @@ export default function LaunchpadPage() {
       };
       
       await approvePendingImage(selectedPendingImage._id, approvalData);
+      
       setShowApprovalModal(false);
       setSelectedPendingImage(null);
       setApprovalLaunchDate('');
@@ -997,6 +1016,70 @@ export default function LaunchpadPage() {
     }
   };
 
+  // Private wallets management functions
+  const addPrivateWallet = () => {
+    setPrivateWallets(prev => [...prev, '']);
+  };
+
+  const removePrivateWallet = (index: number) => {
+    setPrivateWallets(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updatePrivateWallet = (index: number, value: string) => {
+    setPrivateWallets(prev => prev.map((wallet, i) => i === index ? value : wallet));
+  };
+
+  const savePrivateWallets = async (collectionId: string) => {
+    try {
+      const validWallets = privateWallets.filter(wallet => 
+        wallet && wallet.length === 42 && wallet.startsWith('0x')
+      );
+
+      if (validWallets.length === 0) {
+        toast.error('No valid wallet addresses provided');
+        return;
+      }
+
+      const response = await fetch('/api/launchpad/private-wallets', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collectionId,
+          wallets: validWallets,
+          stage: privateWalletStage
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success(`Added ${data.addedCount} private wallets`);
+        setPrivateWallets(['']); // Reset form
+      } else {
+        toast.error(data.error || 'Failed to save private wallets');
+      }
+    } catch (error) {
+      console.error('❌ Error saving private wallets:', error);
+      toast.error('Failed to save private wallets');
+    }
+  };
+
+  const fetchPrivateWallets = async (collectionId: string) => {
+    try {
+      const response = await fetch(`/api/launchpad/private-wallets?collectionId=${collectionId}`);
+      const data = await response.json();
+
+      if (data.success) {
+        const walletAddresses = data.privateWallets.map((wallet: any) => wallet.walletAddress);
+        setPrivateWallets(walletAddresses.length > 0 ? walletAddresses : ['']);
+      }
+    } catch (error) {
+      console.error('❌ Error fetching private wallets:', error);
+    }
+  };
+
   // Funções para modal de edição
   const openEditModal = (collection: any) => {
     setSelectedCollection(collection);
@@ -1014,6 +1097,12 @@ export default function LaunchpadPage() {
       roadmap: collection.roadmap?.length > 0 ? collection.roadmap : [{ phase: '', title: '', description: '', status: 'upcoming' }],
       mintStages: collection.mintStages?.length > 0 ? collection.mintStages : [{ id: 'public', name: 'Public', description: '', price: '', walletLimit: 3, status: 'upcoming', startTime: '', endTime: '' }]
     });
+    
+    // Fetch existing private wallets for this collection
+    if (collection._id) {
+      fetchPrivateWallets(collection._id);
+    }
+    
     setShowEditModal(true);
   };
 
@@ -1838,6 +1927,64 @@ export default function LaunchpadPage() {
                    </div>
                  ))}
                </div>
+
+               {/* Private Wallets Section */}
+               <div className="mt-8 space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Private Wallets</h4>
+                 <p className="text-sm text-gray-400 mb-4">
+                   Add wallet addresses that will be enabled for private minting phases
+                 </p>
+                 
+                 <div className="space-y-3">
+                   <div className="flex justify-between items-center">
+                     <Label className="text-gray-300">Wallet Addresses</Label>
+                     <Button
+                       type="button"
+                       size="sm"
+                       variant="outline"
+                       onClick={addPrivateWallet}
+                       className="text-xs"
+                     >
+                       <Plus className="w-3 h-3 mr-1" />
+                       Add Wallet
+                     </Button>
+                   </div>
+                   
+                   {privateWallets.map((wallet, index) => (
+                     <div key={index} className="flex gap-2">
+                       <Input
+                         value={wallet}
+                         onChange={(e) => updatePrivateWallet(index, e.target.value)}
+                         className="flex-1 bg-gray-800 border-gray-600 text-white"
+                         placeholder="0x1234...5678"
+                       />
+                       <Button
+                         type="button"
+                         size="sm"
+                         variant="outline"
+                         onClick={() => removePrivateWallet(index)}
+                         className="text-red-400 hover:text-red-300"
+                       >
+                         <Minus className="w-3 h-3" />
+                       </Button>
+                     </div>
+                   ))}
+                   
+                   <div>
+                     <Label htmlFor="private-wallet-stage" className="text-gray-300">Stage</Label>
+                     <select
+                       id="private-wallet-stage"
+                       value={privateWalletStage}
+                       onChange={(e) => setPrivateWalletStage(e.target.value)}
+                       className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                     >
+                       <option value="private">Private</option>
+                       <option value="whitelist">Whitelist</option>
+                       <option value="vip">VIP</option>
+                     </select>
+                   </div>
+                 </div>
+               </div>
              </div>
              
              <div className="flex gap-3 mt-8">
@@ -2054,6 +2201,67 @@ export default function LaunchpadPage() {
                        </Button>
                      </div>
                    ))}
+                 </div>
+
+                 {/* Private Wallets Section */}
+                 <div className="mt-6 space-y-4">
+                   <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Private Wallets</h4>
+                   <p className="text-sm text-gray-400 mb-4">
+                     Manage wallet addresses enabled for private minting phases
+                   </p>
+                   
+                   <div className="space-y-3">
+                     <div className="flex justify-between items-center">
+                       <Label className="text-gray-300">Wallet Addresses</Label>
+                       <Button
+                         size="sm"
+                         onClick={addPrivateWallet}
+                         className="bg-[#A20131] hover:bg-[#A20131]/90"
+                       >
+                         <Plus className="w-4 h-4" />
+                       </Button>
+                     </div>
+                     
+                     {privateWallets.map((wallet, index) => (
+                       <div key={index} className="flex gap-2">
+                         <Input
+                           value={wallet}
+                           onChange={(e) => updatePrivateWallet(index, e.target.value)}
+                           className="flex-1 bg-gray-800 border-gray-600 text-white"
+                           placeholder="0x1234...5678"
+                         />
+                         <Button
+                           size="sm"
+                           variant="outline"
+                           onClick={() => removePrivateWallet(index)}
+                           className="text-red-400 hover:text-red-300"
+                         >
+                           <Minus className="w-4 h-4" />
+                         </Button>
+                       </div>
+                     ))}
+                     
+                     <div>
+                       <Label htmlFor="edit-private-wallet-stage" className="text-gray-300">Stage</Label>
+                       <select
+                         id="edit-private-wallet-stage"
+                         value={privateWalletStage}
+                         onChange={(e) => setPrivateWalletStage(e.target.value)}
+                         className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                       >
+                         <option value="private">Private</option>
+                         <option value="whitelist">Whitelist</option>
+                         <option value="vip">VIP</option>
+                       </select>
+                     </div>
+                     
+                     <Button
+                       onClick={() => selectedCollection && savePrivateWallets(selectedCollection._id)}
+                       className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                     >
+                       Save Private Wallets
+                     </Button>
+                   </div>
                  </div>
                </div>
              </div>

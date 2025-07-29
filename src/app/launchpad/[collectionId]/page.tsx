@@ -32,8 +32,10 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { useEngine } from '@/lib/useEngine';
+import { useLaunchpadContract } from '@/lib/useLaunchpadContract';
 import { IPFSService } from '@/lib/services/ipfs-service';
+import { isAdmin } from '@/lib/admin-config';
+import { mintGasless } from '@/lib/useEngine';
 
 // Remover dados mockados - agora vamos buscar do banco de dados
 
@@ -47,12 +49,15 @@ export default function CollectionMintPage() {
   const address = account?.address;
   const isConnected = !!account;
   
-  // Engine hooks for minting
+  // Admin check
+  const isUserAdmin = isAdmin(account);
+  
+  // Launchpad contract hooks for minting
   const { 
-    mintGasless,
-    isLoading: isEngineLoading,
-    error: engineError,
-  } = useEngine();
+    mintLaunchpadNFT,
+    isLoading: isLaunchpadLoading,
+    error: launchpadError,
+  } = useLaunchpadContract();
   
   const [mintQuantity, setMintQuantity] = useState(1);
   const [email, setEmail] = useState('');
@@ -66,6 +71,11 @@ export default function CollectionMintPage() {
   const [isMinting, setIsMinting] = useState(false);
   const [mintError, setMintError] = useState<string | null>(null);
   const [mintSuccess, setMintSuccess] = useState<string | null>(null);
+  
+  // Gasless mint states for admin
+  const [isGaslessMinting, setIsGaslessMinting] = useState(false);
+  const [gaslessMintError, setGaslessMintError] = useState<string | null>(null);
+  const [gaslessMintSuccess, setGaslessMintSuccess] = useState<string | null>(null);
 
   // Buscar dados da coleção do banco de dados
   useEffect(() => {
@@ -235,11 +245,13 @@ export default function CollectionMintPage() {
       
       console.log('✅ IPFS upload completed:', ipfsResult.metadataUrl);
       
-      // Mint using the engine
-      const result = await mintGasless({
+      // Mint using the Launchpad contract
+      const result = await mintLaunchpadNFT({
         to: address!,
         metadataUri: ipfsResult.metadataUrl,
-        chainId: 80002, // Polygon Amoy
+        collectionId: collection._id,
+        price: collection.price || "0",
+        quantity: mintQuantity,
       });
       
       console.log('✅ Mint successful:', result);
@@ -272,6 +284,123 @@ export default function CollectionMintPage() {
       toast.error(errorMessage);
     } finally {
       setIsMinting(false);
+    }
+  };
+
+  // Gasless mint function for admin
+  const handleGaslessMint = async () => {
+    if (!isUserAdmin) {
+      toast.error('Admin access required for gasless mint');
+      return;
+    }
+    
+    if (!address) {
+      toast.error('Please connect your wallet to receive the NFT');
+      return;
+    }
+    
+    if (!collection || collection.status !== 'active') {
+      toast.error('This collection is not available for minting');
+      return;
+    }
+    
+    if (collection.minted >= collection.totalSupply) {
+      toast.error('All NFTs in this collection have been minted');
+      return;
+    }
+    
+    setIsGaslessMinting(true);
+    setGaslessMintError(null);
+    setGaslessMintSuccess(null);
+    
+    try {
+      console.log('🚀 Starting Admin Gasless mint process...', {
+        collectionId: collection._id,
+        collectionName: collection.name,
+        mintQuantity,
+        adminAddress: address
+      });
+      
+      // Create metadata for the NFT
+      const nftName = `${collection.name} #${collection.minted + 1}`;
+      const nftDescription = `${collection.description} - Part of the ${collection.name} collection.`;
+      
+      const attributes = [
+        { trait_type: 'Collection', value: collection.name },
+        { trait_type: 'Category', value: collection.category },
+        { trait_type: 'Creator', value: collection.creator },
+        { trait_type: 'Status', value: collection.status },
+        { trait_type: 'Mint Number', value: (collection.minted + 1).toString() },
+        { trait_type: 'Total Supply', value: collection.totalSupply.toString() },
+        { trait_type: 'Mint Type', value: 'Admin Gasless' }
+      ];
+      
+      // Add collection-specific traits if available
+      if (collection.traits && Array.isArray(collection.traits)) {
+        collection.traits.forEach((trait: any) => {
+          if (trait.trait_type && trait.value) {
+            attributes.push({ trait_type: trait.trait_type, value: trait.value });
+          }
+        });
+      }
+      
+      // For Launchpad collections, we'll use the collection image
+      const imageUrl = collection.image;
+      
+      // Download the image and convert to blob
+      const imageResponse = await fetch(imageUrl);
+      const imageBlob = await imageResponse.blob();
+      
+      // Upload to IPFS
+      const ipfsResult = await IPFSService.uploadComplete(
+        imageBlob,
+        nftName,
+        nftDescription,
+        collection.name,
+        collection.category,
+        collection.creator,
+        (collection.minted + 1).toString()
+      );
+      
+      console.log('✅ IPFS upload completed for gasless mint:', ipfsResult.metadataUrl);
+      
+      // Gasless mint using Engine
+      const result = await mintGasless({
+        to: address,
+        metadataUri: ipfsResult.metadataUrl,
+        chainId: 80002, // Polygon Amoy
+      });
+      
+      console.log('✅ Gasless mint successful:', result);
+      
+      // Update collection mint count in database
+      const updateResponse = await fetch(`/api/collections/${collection._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          minted: (collection.minted || 0) + mintQuantity
+        })
+      });
+      
+      if (updateResponse.ok) {
+        // Refresh collection data
+        const refreshResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
+        const refreshData = await refreshResponse.json();
+        if (refreshData.success) {
+          setCollection(refreshData.collection);
+        }
+      }
+      
+      setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}! Queue ID: ${result.queueId}`);
+      toast.success(`Successfully gasless minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
+      
+    } catch (error: any) {
+      console.error('❌ Gasless mint failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Gasless minting failed';
+      setGaslessMintError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsGaslessMinting(false);
     }
   };
 
@@ -655,15 +784,63 @@ export default function CollectionMintPage() {
                       onClick={handleMint}
                       className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
                       size="lg"
-                      disabled={!isConnected || isMinting || collection.status !== 'active' || collection.minted >= collection.totalSupply}
+                      disabled={!isConnected || isMinting || isLaunchpadLoading || collection.status !== 'active' || collection.minted >= collection.totalSupply}
                     >
                       <Wallet className="w-4 h-4 mr-2" />
-                      {isMinting ? 'Minting...' : 
+                      {isMinting || isLaunchpadLoading ? 'Minting...' : 
                        !isConnected ? 'Connect Wallet to mint' : 
                        collection.status !== 'active' ? 'Minting not available' :
                        collection.minted >= collection.totalSupply ? 'All NFTs minted' :
                        `Mint ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}`}
                     </Button>
+
+                    {/* Admin Gasless Mint Button */}
+                    {isUserAdmin && (
+                      <>
+                        <Separator className="bg-gray-700" />
+                        
+                        <div className="text-center">
+                          <div className="text-xs text-gray-400 mb-2">Admin Only</div>
+                        </div>
+
+                        {/* Gasless Mint Status Messages */}
+                        {gaslessMintError && (
+                          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+                            <div className="flex items-center gap-2 text-red-400">
+                              <AlertCircle className="w-4 h-4" />
+                              <span className="text-sm">{gaslessMintError}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {gaslessMintSuccess && (
+                          <div className="p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
+                            <div className="flex items-center gap-2 text-green-400">
+                              <CheckCircle className="w-4 h-4" />
+                              <span className="text-sm">{gaslessMintSuccess}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <Button 
+                          onClick={handleGaslessMint}
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                          size="lg"
+                          disabled={!isConnected || isGaslessMinting || collection.status !== 'active' || collection.minted >= collection.totalSupply}
+                        >
+                          <Zap className="w-4 h-4 mr-2" />
+                          {isGaslessMinting ? 'Gasless Minting...' : 
+                           !isConnected ? 'Connect Wallet for gasless mint' : 
+                           collection.status !== 'active' ? 'Gasless mint not available' :
+                           collection.minted >= collection.totalSupply ? 'All NFTs minted' :
+                           `Gasless Mint ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}`}
+                        </Button>
+                        
+                        <div className="text-xs text-gray-400 text-center mt-2">
+                          Backend pays gas fees
+                        </div>
+                      </>
+                    )}
                   </div>
                 </CardContent>
               </Card>
