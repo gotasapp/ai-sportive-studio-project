@@ -7,6 +7,7 @@ import { useActiveAccount } from 'thirdweb/react';
 export interface MintRequest {
   to: string;
   metadataUri: string;
+  collectionId?: string; // Para validações de launchpad
   chainId?: number; // Opcional para compatibilidade com componentes existentes
 }
 
@@ -41,7 +42,7 @@ export function useEngine() {
     try {
       console.log('🚀 Engine Hook: Sending mint request to API...');
       
-      const response = await fetch('/api/engine/mint', {
+      const response = await fetch('/api/launchpad/mint', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request)

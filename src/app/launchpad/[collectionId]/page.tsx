@@ -32,10 +32,10 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { useLaunchpadContract } from '@/lib/useLaunchpadContract';
+import { useWeb3 } from '@/lib/useWeb3';
+import { useEngine } from '@/lib/useEngine';
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { isAdmin } from '@/lib/admin-config';
-import { mintGasless } from '@/lib/useEngine';
 
 // Remover dados mockados - agora vamos buscar do banco de dados
 
@@ -52,12 +52,17 @@ export default function CollectionMintPage() {
   // Admin check
   const isUserAdmin = isAdmin(account);
   
-  // Launchpad contract hooks for minting
+  // Web3 hooks for public mint using claim conditions
   const { 
-    mintLaunchpadNFT,
-    isLoading: isLaunchpadLoading,
-    error: launchpadError,
-  } = useLaunchpadContract();
+    claimLaunchpadNFT,
+    getLaunchpadClaimCondition
+  } = useWeb3();
+  
+  // Engine hook for gasless admin mint
+  const { 
+    mintGasless,
+    isLoading: isGaslessMintingEngine
+  } = useEngine();
   
   const [mintQuantity, setMintQuantity] = useState(1);
   const [email, setEmail] = useState('');
@@ -66,6 +71,10 @@ export default function CollectionMintPage() {
   const [collection, setCollection] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Claim conditions state
+  const [claimCondition, setClaimCondition] = useState<any>(null);
+  const [isLoadingClaimCondition, setIsLoadingClaimCondition] = useState(true);
   
   // Minting states
   const [isMinting, setIsMinting] = useState(false);
@@ -104,6 +113,27 @@ export default function CollectionMintPage() {
       fetchCollection();
     }
   }, [collectionId]);
+
+  // Carregar claim conditions quando a collection estiver disponível
+  useEffect(() => {
+    const loadClaimConditions = async () => {
+      if (!collection) return;
+      
+      try {
+        setIsLoadingClaimCondition(true);
+        const condition = await getLaunchpadClaimCondition();
+        setClaimCondition(condition);
+        console.log('📋 Claim condition loaded successfully');
+      } catch (error) {
+        console.error('❌ Failed to load claim conditions:', error);
+        setClaimCondition(null);
+      } finally {
+        setIsLoadingClaimCondition(false);
+      }
+    };
+
+    loadClaimConditions();
+  }, [collection]); // Removida a dependência getLaunchpadClaimCondition
 
   // Countdown timer
   useEffect(() => {
@@ -163,9 +193,23 @@ export default function CollectionMintPage() {
   const progress = collection.minted && collection.totalSupply 
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
-  const currentStage = collection.mintStages?.find(stage => stage.status === 'live');
-  const currentPrice = currentStage?.price || collection.mintStages?.[0]?.price || collection.price || '0.1 CHZ';
-  const maxQuantity = currentStage?.walletLimit || 1;
+  
+  // Helper para formatar preço das claim conditions
+  const formatPrice = (priceWei: bigint) => {
+    if (priceWei === BigInt(0)) return '0 MATIC';
+    
+    // Converter de wei para MATIC (18 decimais)
+    const priceInMatic = Number(priceWei) / Math.pow(10, 18);
+    return `${priceInMatic.toFixed(4)} MATIC`;
+  };
+  
+  // Usar claim conditions para determinar preço e limites
+  const currentPrice = claimCondition ? formatPrice(claimCondition.pricePerToken) : (collection.price || '0 MATIC');
+  const maxQuantity = claimCondition ? Math.min(
+    Number(claimCondition.quantityLimitPerWallet),
+    Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed),
+    10 // Máximo absoluto
+  ) : 1;
 
   const handleQuantityChange = (change: number) => {
     const newQuantity = mintQuantity + change;
@@ -176,17 +220,28 @@ export default function CollectionMintPage() {
 
   const handleMint = async () => {
     if (!isConnected) {
-      toast.error('Please connect your wallet to mint');
+      toast.error('Por favor conecte sua wallet para mintar');
+      return;
+    }
+    
+    if (!claimCondition) {
+      toast.error('Claim conditions não carregadas. Tente novamente.');
       return;
     }
     
     if (!collection || collection.status !== 'active') {
-      toast.error('This collection is not available for minting');
+      toast.error('Esta coleção não está disponível para mint');
       return;
     }
     
-    if (collection.minted >= collection.totalSupply) {
-      toast.error('All NFTs in this collection have been minted');
+    const remaining = Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed);
+    if (remaining <= 0) {
+      toast.error('Todos os NFTs desta coleção já foram mintados');
+      return;
+    }
+    
+    if (mintQuantity > remaining) {
+      toast.error(`Apenas ${remaining} NFTs restantes`);
       return;
     }
     
@@ -195,91 +250,54 @@ export default function CollectionMintPage() {
     setMintSuccess(null);
     
     try {
-      console.log('🚀 Starting Launchpad mint process...', {
+      console.log('🚀 Starting public mint with claim conditions...', {
         collectionId: collection._id,
         collectionName: collection.name,
         mintQuantity,
-        userAddress: address
+        userAddress: address,
+        pricePerToken: claimCondition.pricePerToken.toString(),
+        totalCost: (claimCondition.pricePerToken * BigInt(mintQuantity)).toString()
       });
       
-      // Create metadata for the NFT
-      const nftName = `${collection.name} #${collection.minted + 1}`;
-      const nftDescription = `${collection.description} - Part of the ${collection.name} collection.`;
+      // Mint público usando claim conditions (usuário paga gas + preço)
+      const result = await claimLaunchpadNFT(mintQuantity);
       
-      const attributes = [
-        { trait_type: 'Collection', value: collection.name },
-        { trait_type: 'Category', value: collection.category },
-        { trait_type: 'Creator', value: collection.creator },
-        { trait_type: 'Status', value: collection.status },
-        { trait_type: 'Mint Number', value: (collection.minted + 1).toString() },
-        { trait_type: 'Total Supply', value: collection.totalSupply.toString() }
-      ];
+      console.log('✅ Public mint successful:', result);
       
-      // Add collection-specific traits if available
-      if (collection.traits && Array.isArray(collection.traits)) {
-        collection.traits.forEach((trait: any) => {
-          if (trait.trait_type && trait.value) {
-            attributes.push({ trait_type: trait.trait_type, value: trait.value });
+      // Atualizar claim conditions após o mint
+      try {
+        const updatedCondition = await getLaunchpadClaimCondition();
+        setClaimCondition(updatedCondition);
+      } catch (error) {
+        console.warn('Failed to refresh claim conditions:', error);
+      }
+      
+      // Opcional: Atualizar dados da coleção no banco
+      if (collection._id) {
+        fetch(`/api/collections/${collection._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            minted: (collection.minted || 0) + mintQuantity
+          })
+        }).then(async (updateResponse) => {
+          if (updateResponse.ok) {
+            // Refresh collection data
+            const refreshResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
+            const refreshData = await refreshResponse.json();
+            if (refreshData.success) {
+              setCollection(refreshData.collection);
+            }
           }
-        });
+        }).catch(console.warn);
       }
       
-      // For Launchpad collections, we'll use the collection image
-      // In a real implementation, you might want to generate unique variations
-      const imageUrl = collection.image;
-      
-      // Download the image and convert to blob
-      const imageResponse = await fetch(imageUrl);
-      const imageBlob = await imageResponse.blob();
-      
-      // Upload to IPFS
-      const ipfsResult = await IPFSService.uploadComplete(
-        imageBlob,
-        nftName,
-        nftDescription,
-        collection.name,
-        collection.category,
-        collection.creator,
-        (collection.minted + 1).toString()
-      );
-      
-      console.log('✅ IPFS upload completed:', ipfsResult.metadataUrl);
-      
-      // Mint using the Launchpad contract
-      const result = await mintLaunchpadNFT({
-        to: address!,
-        metadataUri: ipfsResult.metadataUrl,
-        collectionId: collection._id,
-        price: collection.price || "0",
-        quantity: mintQuantity,
-      });
-      
-      console.log('✅ Mint successful:', result);
-      
-      // Update collection mint count in database
-      const updateResponse = await fetch(`/api/collections/${collection._id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          minted: (collection.minted || 0) + mintQuantity
-        })
-      });
-      
-      if (updateResponse.ok) {
-        // Refresh collection data
-        const refreshResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
-        const refreshData = await refreshResponse.json();
-        if (refreshData.success) {
-          setCollection(refreshData.collection);
-        }
-      }
-      
-      setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}! Queue ID: ${result.queueId}`);
-      toast.success(`Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
+      setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
+      toast.success(`Mint successful`);
       
     } catch (error: any) {
-      console.error('❌ Mint failed:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Minting failed';
+      console.error('❌ Public mint failed:', error);
+      const errorMessage = error?.reason || error?.message || 'Mint failed';
       setMintError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -351,27 +369,36 @@ export default function CollectionMintPage() {
       const imageResponse = await fetch(imageUrl);
       const imageBlob = await imageResponse.blob();
       
-      // Upload to IPFS
-      const ipfsResult = await IPFSService.uploadComplete(
-        imageBlob,
-        nftName,
-        nftDescription,
-        collection.name,
-        collection.category,
-        collection.creator,
-        (collection.minted + 1).toString()
-      );
+      // Criar metadados simplificados
+      const metadata = {
+        name: nftName,
+        description: nftDescription,
+        image: imageUrl,
+        attributes
+      };
       
-      console.log('✅ IPFS upload completed for gasless mint:', ipfsResult.metadataUrl);
+      // Upload metadata to IPFS
+      const metadataUrl = await IPFSService.uploadMetadata(metadata);
+      
+      console.log('✅ IPFS upload completed for gasless mint:', metadataUrl);
       
       // Gasless mint using Engine
       const result = await mintGasless({
         to: address,
-        metadataUri: ipfsResult.metadataUrl,
+        metadataUri: metadataUrl,
+        collectionId: collection._id,
         chainId: 80002, // Polygon Amoy
       });
       
       console.log('✅ Gasless mint successful:', result);
+      
+      // Atualizar claim conditions após o mint
+      try {
+        const updatedCondition = await getLaunchpadClaimCondition();
+        setClaimCondition(updatedCondition);
+      } catch (error) {
+        console.warn('Failed to refresh claim conditions:', error);
+      }
       
       // Update collection mint count in database
       const updateResponse = await fetch(`/api/collections/${collection._id}`, {
@@ -712,11 +739,40 @@ export default function CollectionMintPage() {
               <Card className="bg-[#14101e] border-gray-700">
                 <CardContent className="p-6 space-y-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold text-white mb-1">{currentPrice}</div>
+                    <div className="text-2xl font-bold text-white mb-1">
+                      {isLoadingClaimCondition ? 'Loading...' : currentPrice}
+                    </div>
                     <div className="text-sm text-gray-400">
-                      {collection.price && collection.price !== '0.1 CHZ' ? `(${collection.price})` : ''}
+                      {claimCondition && (
+                        <div className="space-y-1">
+                          <div>Price per NFT</div>
+                          {mintQuantity > 1 && (
+                            <div className="text-xs">
+                              Total: {formatPrice(claimCondition.pricePerToken * BigInt(mintQuantity))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
+
+                  {/* Claim Condition Info */}
+                  {claimCondition && (
+                    <div className="grid grid-cols-2 gap-3 text-xs bg-gray-800/50 p-3 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-gray-400">Available</div>
+                        <div className="text-white font-medium">
+                          {Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed)}
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-gray-400">Max per Wallet</div>
+                        <div className="text-white font-medium">
+                          {Number(claimCondition.quantityLimitPerWallet)}
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   <Separator className="bg-gray-700" />
 
@@ -784,14 +840,16 @@ export default function CollectionMintPage() {
                       onClick={handleMint}
                       className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
                       size="lg"
-                      disabled={!isConnected || isMinting || isLaunchpadLoading || collection.status !== 'active' || collection.minted >= collection.totalSupply}
+                      disabled={!isConnected || isMinting || isLoadingClaimCondition || !claimCondition || collection.status !== 'active' || maxQuantity <= 0}
                     >
                       <Wallet className="w-4 h-4 mr-2" />
-                      {isMinting || isLaunchpadLoading ? 'Minting...' : 
+                      {isMinting ? 'Minting...' : 
+                       isLoadingClaimCondition ? 'Loading...' :
                        !isConnected ? 'Connect Wallet to mint' : 
+                       !claimCondition ? 'Claim conditions not available' :
                        collection.status !== 'active' ? 'Minting not available' :
-                       collection.minted >= collection.totalSupply ? 'All NFTs minted' :
-                       `Mint ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}`}
+                       maxQuantity <= 0 ? 'All NFTs minted' :
+                       `Mint ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''} - ${claimCondition ? formatPrice(claimCondition.pricePerToken * BigInt(mintQuantity)) : '...'}`}
                     </Button>
 
                     {/* Admin Gasless Mint Button */}
@@ -826,13 +884,12 @@ export default function CollectionMintPage() {
                           onClick={handleGaslessMint}
                           className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
                           size="lg"
-                          disabled={!isConnected || isGaslessMinting || collection.status !== 'active' || collection.minted >= collection.totalSupply}
+                          disabled={!isConnected || isGaslessMinting || isGaslessMintingEngine || collection.status !== 'active'}
                         >
                           <Zap className="w-4 h-4 mr-2" />
-                          {isGaslessMinting ? 'Gasless Minting...' : 
+                          {isGaslessMinting || isGaslessMintingEngine ? 'Gasless Minting...' : 
                            !isConnected ? 'Connect Wallet for gasless mint' : 
                            collection.status !== 'active' ? 'Gasless mint not available' :
-                           collection.minted >= collection.totalSupply ? 'All NFTs minted' :
                            `Gasless Mint ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}`}
                         </Button>
                         

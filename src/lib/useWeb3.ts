@@ -1,10 +1,11 @@
 'use client'
 
 import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
-import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
+import { createThirdwebClient, getContract, sendTransaction, readContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 import { claimTo as claimToERC1155 } from 'thirdweb/extensions/erc1155';
+import { claimTo, getActiveClaimCondition } from 'thirdweb/extensions/erc721';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -27,22 +28,14 @@ export function useWeb3() {
   // Configuração simplificada - usar diretamente as variáveis configuradas no Vercel
   const activeChain = amoy; // Polygon Amoy testnet
     
-  console.log('[DEBUG] useWeb3 Hook:', {
-    activeChainId: activeChain.id,
-    chainName: 'Polygon Amoy'
-  });
-    
-  // Usar diretamente a variável configurada no Vercel
+  // Usar diretamente a variável configurada no Vercel para NFT Collection (ERC721)
   const contractAddress = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
   // Edition Drop Contract - usar o mesmo por simplicidade
   const editionDropContractAddress = contractAddress;
   
-  console.log('[DEBUG] useWeb3 Contracts:', {
-    contractAddress: contractAddress,
-    editionDropContractAddress: editionDropContractAddress,
-    source: 'NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS'
-  });
+  // Launchpad Contract (OpenEditionERC721) - usar o novo endereço correto
+  const launchpadContractAddress = process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || "0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639";
   
   // NFT Collection contract (ERC721) for unique individual NFTs
   const contract = getContract({
@@ -56,6 +49,13 @@ export function useWeb3() {
     client,
     chain: activeChain,
     address: editionDropContractAddress,
+  });
+
+  // Launchpad contract (OpenEditionERC721) for public mint with claim conditions
+  const launchpadContract = getContract({
+    client,
+    chain: activeChain,
+    address: launchpadContractAddress,
   });
 
   // 🎯 LEGACY MINT - User pays gas (Thirdweb v5 implementation with NFT Drop)
@@ -230,6 +230,73 @@ export function useWeb3() {
     }
   };
 
+  // 🎯 LAUNCHPAD MINT - Public mint using claim conditions (OpenEditionERC721)
+  const claimLaunchpadNFT = async (quantity: number = 1) => {
+    if (!account?.address) throw new Error('No wallet connected');
+
+    try {
+      console.log(`🎯 Launchpad Claim: ${quantity} NFTs`);
+      console.log('🎯 Recipient:', account.address);
+      console.log('💳 User pays gas based on claim conditions');
+
+      // Get active claim condition to determine price
+      const claimCondition = await getActiveClaimCondition({
+        contract: launchpadContract,
+      });
+
+      console.log('📋 Active claim condition:', claimCondition);
+
+      // Calculate total cost
+      const totalCost = claimCondition.pricePerToken * BigInt(quantity);
+      
+      // Prepare claim transaction
+      const transaction = claimTo({
+        contract: launchpadContract,
+        to: account.address,
+        quantity: BigInt(quantity),
+      });
+
+      console.log('✅ Transaction prepared for Launchpad claim');
+      console.log('💰 Total cost:', totalCost.toString(), 'wei');
+
+      // Send transaction (user pays gas + price)
+      console.log('📤 Sending transaction...');
+      const result = await sendTransaction({
+        transaction,
+        account,
+        value: totalCost, // Include the cost of the NFTs
+      });
+
+      console.log('✅ LAUNCHPAD CLAIM successful:', result);
+
+      return {
+        success: true,
+        transactionHash: result.transactionHash,
+        quantity: quantity,
+        totalCost: totalCost.toString(),
+        claimCondition,
+      };
+
+    } catch (error: any) {
+      console.error('❌ Launchpad claim failed:', error);
+      throw error;
+    }
+  };
+
+  // 🎯 Get Launchpad claim condition info
+  const getLaunchpadClaimCondition = async () => {
+    try {
+      const claimCondition = await getActiveClaimCondition({
+        contract: launchpadContract,
+      });
+      
+      return claimCondition;
+    } catch (error: any) {
+      console.error('❌ Failed to get claim condition:', error);
+      throw error;
+    }
+  };
+
   return {
     // Connection state
     address,
@@ -241,6 +308,8 @@ export function useWeb3() {
     createNFTMetadata,
     mintNFTWithMetadata, // Legacy mint (NFT Collection ERC721)
     mintEditionWithMetadata, // Edition Drop claim (ERC1155)
+    claimLaunchpadNFT, // Launchpad mint (OpenEditionERC721)
+    getLaunchpadClaimCondition, // Get claim condition info
     setClaimConditions,
     setTokenURI,
     lazyMint,
@@ -250,5 +319,6 @@ export function useWeb3() {
     // Contracts
     contract, // Legacy NFT Collection contract
     editionDropContract, // Edition Drop contract
+    launchpadContract, // Launchpad contract (OpenEditionERC721)
   };
 } 
