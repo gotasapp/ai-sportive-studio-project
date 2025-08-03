@@ -16,7 +16,6 @@ import { TransactionButton } from 'thirdweb/react'
 import { getContract, createThirdwebClient } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
 import { mintTo } from 'thirdweb/extensions/erc721'
-import { SimpleDeployButton } from '@/components/ui/SimpleDeployButton';
 import { toast } from 'sonner'
 
 interface ProfessionalActionBarProps {
@@ -180,6 +179,7 @@ export default function ProfessionalActionBar({
           collection={collection}
           disabled={!isConnected || isMinting}
           isUserAdmin={isUserAdmin}
+          generatedImageBlob={generatedImageBlob}
         />
       )}
 
@@ -335,11 +335,6 @@ export default function ProfessionalActionBar({
 
         {/* DEPOIS de gerar imagem: Mint Buttons */}
         {hasGeneratedImage && renderMintButtons()}
-      </div>
-
-      {/* Botão de Teste para Deploy */}
-      <div className="mt-4">
-        <SimpleDeployButton />
       </div>
 
       {/* Connection Warning - Apenas se necessário */}
