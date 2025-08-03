@@ -49,39 +49,29 @@ export function useMarketplaceData() {
   const fetchNFTsFromContract = useCallback(async () => {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
-      console.log('🎯 [V2] Fetching NFTs from marketplace API (includes launchpad)...');
+      console.log('🎯 [V2] Fetching NFTs from BOTH sources (API + Thirdweb)...');
       
-      // Usar nossa API que inclui coleções launchpad
-      const response = await fetch('/api/marketplace/nfts');
-      if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
-      }
+      // 1. Buscar da nossa API (inclui launchpad)
+      const [apiResponse, thirdwebData] = await Promise.all([
+        fetch('/api/marketplace/nfts').then(res => res.json()),
+        getThirdwebDataWithFallback()
+      ]);
       
-      const apiData = await response.json();
-      if (!apiData.success) {
-        throw new Error(apiData.error || 'API returned error');
-      }
-      
-      console.log('✅ [V2] API Data received:', {
-        total: apiData.data.length,
-        stats: apiData.stats
+      console.log('✅ [V2] Data sources loaded:', {
+        apiItems: apiResponse.success ? apiResponse.data.length : 0,
+        thirdwebNFTs: thirdwebData.nfts.length,
+        thirdwebListings: thirdwebData.listings.length,
+        thirdwebAuctions: thirdwebData.auctions.length
       });
       
-      // Processar dados da API (já vem formatados)
-      const allNFTs = apiData.data;
-      const listings: any[] = []; // A API já inclui informações de listing
-      const auctions: any[] = []; // A API já inclui informações de auction
-
-      console.log(`✅ [V2] Found ${allNFTs.length} NFTs, ${listings.length} listings, ${auctions.length} auctions.`);
-      
-      // Os dados já vêm processados da nossa API
-      const validProcessedNFTs = allNFTs.map((nft: any) => ({
+      // 2. Processar dados da API (coleções launchpad)
+      const apiNFTs = apiResponse.success ? apiResponse.data.map((nft: any) => ({
         id: nft._id || nft.tokenId,
         tokenId: nft.tokenId,
         name: nft.metadata?.name || nft.name || 'Untitled',
         description: nft.metadata?.description || nft.description || '',
-        image: nft.metadata?.image || nft.image || nft.imageUrl,
-        imageUrl: nft.metadata?.image || nft.image || nft.imageUrl,
+        image: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
+        imageUrl: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
         price: nft.marketplace?.isListed ? 'Listed' : 'Not for sale',
         currency: 'MATIC',
         owner: nft.owner || 'Unknown',
@@ -104,7 +94,101 @@ export function useMarketplaceData() {
         auctionId: undefined,
         currentBid: undefined,
         endTime: undefined,
-      }));
+        source: 'api'
+      })) : [];
+
+      // 3. Processar dados do Thirdweb (NFTs normais)
+      const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
+      
+      // === BUSCAR BLACKLIST DO BACKEND ===
+      let hiddenIds: string[] = [];
+      try {
+        const res = await fetch('/api/marketplace/hidden-nfts');
+        if (res.ok) {
+          const data = await res.json();
+          hiddenIds = data.hiddenIds || [];
+        }
+      } catch (err) {
+        console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
+      }
+      
+      const filteredThirdwebNFTs = thirdwebNFTs.filter((nft: any) => !hiddenIds.includes(nft.id?.toString()));
+      const listingsByTokenId = new Map(listings.map((l: any) => [l.tokenId.toString(), l]));
+      const auctionsByTokenId = new Map(auctions.map((a: any) => [a.tokenId.toString(), a]));
+      
+      const thirdwebProcessedPromises = filteredThirdwebNFTs.map(async (nft: any, index: number) => {
+        try {
+          const tokenId = nft.id.toString();
+          const metadata = nft.metadata || {};
+          const contractAddress = NFT_CONTRACT_ADDRESS;
+          const contractType = nft.type || 'ERC721';
+          
+          let nftOwner = nft.owner || 'Unknown';
+
+          // Buscar owner real da blockchain
+          try {
+            const contract = getContract({ client, chain: polygonAmoy, address: contractAddress });
+            const realOwner = await ownerOf({ contract, tokenId: BigInt(tokenId) });
+            if (realOwner) {
+              nftOwner = realOwner;
+            }
+          } catch (ownerError) {
+            console.warn(`[V2] Não foi possível buscar owner real para tokenId ${tokenId}:`, ownerError);
+          }
+          
+          const listing = listingsByTokenId.get(tokenId);
+          const auction = auctionsByTokenId.get(tokenId);
+          const imageUrlHttp = convertIpfsToHttp(metadata.image || '');
+
+          return {
+            id: tokenId,
+            tokenId: tokenId,
+            name: metadata.name || 'Untitled NFT',
+            description: metadata.description || '',
+            image: imageUrlHttp,
+            imageUrl: imageUrlHttp,
+            price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
+            currency: listing?.currencyValuePerToken?.symbol || 'MATIC',
+            owner: nftOwner,
+            creator: nftOwner,
+            category: determineNFTCategoryFromMetadata(metadata),
+            type: contractType,
+            attributes: metadata.attributes || [],
+            isListed: !!listing,
+            isVerified: true,
+            blockchain: {
+              verified: true,
+              tokenId: tokenId,
+              owner: nftOwner,
+              contractType: contractType,
+            },
+            contractAddress: contractAddress,
+            isAuction: !!auction,
+            activeOffers: 0,
+            listingId: listing?.id.toString(),
+            auctionId: auction?.id.toString(),
+            currentBid: auction?.minimumBidAmount?.toString(),
+            endTime: auction?.endTimeInSeconds ? new Date(Number(auction.endTimeInSeconds) * 1000) : undefined,
+            source: 'thirdweb'
+          };
+
+        } catch (error) {
+          console.error(`❌ [V2] Failed to process NFT at index ${index} (ID: ${nft.id?.toString()}):`, error);
+          return null; 
+        }
+      });
+
+      const thirdwebProcessedResults = await Promise.all(thirdwebProcessedPromises);
+      const validThirdwebNFTs = thirdwebProcessedResults.filter(Boolean) as MarketplaceNFT[];
+      
+      // 4. Combinar todos os NFTs
+      const validProcessedNFTs = [...apiNFTs, ...validThirdwebNFTs];
+
+      console.log(`✅ [V2] Combined NFTs:`, {
+        apiNFTs: apiNFTs.length,
+        thirdwebNFTs: validThirdwebNFTs.length,
+        total: validProcessedNFTs.length
+      });
       
       console.log(`✅ [V2] Processed ${validProcessedNFTs.length} valid NFTs successfully`);
       

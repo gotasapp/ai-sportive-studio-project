@@ -27,6 +27,11 @@ export function getAddressUrl(address: string): string {
  * @returns HTTP gateway URL
  */
 export function convertIpfsToHttp(src: string): string {
+  // Verificar se src é válido
+  if (!src || typeof src !== 'string') {
+    return '/api/placeholder/400/400'; // Placeholder para imagens inválidas
+  }
+  
   // Se já é uma URL HTTP, retornar como está
   if (src.startsWith('http://') || src.startsWith('https://')) {
     return src;
