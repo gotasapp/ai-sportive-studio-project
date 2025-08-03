@@ -123,11 +123,17 @@ export default function CollectionsTable({
                  name.includes('achievement') || description.includes('achievement');
         });
         
+        // Launchpad Collections
+        const launchpadCollections = marketplaceData.filter(item => {
+          return item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
+        });
+        
         console.log('📊 Categories breakdown:', {
           total: marketplaceData.length,
           jerseys: jerseys.length,
           stadiums: stadiums.length,
-          badges: badges.length
+          badges: badges.length,
+          launchpadCollections: launchpadCollections.length
         });
 
         // Gerar estatísticas realísticas baseadas nos dados reais
@@ -227,6 +233,47 @@ export default function CollectionsTable({
           })
         }
 
+        // Launchpad Collections
+        console.log('🚀 Checking launchpad collections, count:', launchpadCollections.length);
+        launchpadCollections.forEach((collection, index) => {
+          console.log('🚀 Processing launchpad collection:', collection.name, 'with image:', collection.metadata?.image);
+          
+          // Calcular estatísticas específicas para launchpad
+          const calculateLaunchpadStats = (collection: any) => {
+            const totalSupply = collection.marketplace?.totalUnits || collection.collectionData?.totalSupply || 100;
+            const mintedUnits = collection.marketplace?.mintedUnits || collection.collectionData?.minted || 0;
+            const availableUnits = collection.marketplace?.availableUnits || (totalSupply - mintedUnits);
+            const price = parseFloat(collection.collectionData?.price || '0');
+            
+            return {
+              floorPrice: price,
+              volume24h: mintedUnits * price, // Volume baseado no mintado
+              sales24h: mintedUnits,
+              supply: totalSupply,
+              owners: collection.stats?.uniqueOwners || 1
+            };
+          };
+
+          const stats = calculateLaunchpadStats(collection);
+          collectionsData.push({
+            rank: collectionsData.length + 1,
+            name: collection.metadata?.name || collection.name || 'Launchpad Collection',
+            imageUrl: collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl,
+            floorPrice: stats.floorPrice,
+            floorPriceChange: 0,
+            volume24h: stats.volume24h,
+            volumeChange: 0,
+            sales24h: stats.sales24h,
+            salesChange: 0,
+            supply: stats.supply,
+            owners: stats.owners,
+            category: 'launchpad',
+            trendData: generateTrendData(),
+            isWatchlisted: false,
+            isOwned: false
+          });
+        });
+
         // Aplicar filtros
         let filteredCollections = collectionsData
 
@@ -235,7 +282,8 @@ export default function CollectionsTable({
           const categoryMap = {
             'jerseys': 'jersey',
             'stadiums': 'stadium',
-            'badges': 'badge'
+            'badges': 'badge',
+            'launchpad': 'launchpad'
           }
           filteredCollections = filteredCollections.filter(c => 
             c.category === categoryMap[tokenType as keyof typeof categoryMap]

@@ -487,21 +487,46 @@ export default function LaunchpadPage() {
     ],
     mintStages: [
       { 
-        id: 'public', 
-        name: 'Public', 
-        description: 'Open to everyone', 
-        price: '0.1 CHZ', 
+        id: 'vip', 
+        name: 'VIP Sale', 
+        description: 'Exclusive early access for VIP members', 
+        price: '0.05 MATIC', 
+        walletLimit: 5, 
+        status: 'upcoming',
+        startTime: '',
+        endTime: ''
+      },
+      { 
+        id: 'whitelist', 
+        name: 'Whitelist Sale', 
+        description: 'Early access for whitelisted wallets', 
+        price: '0.08 MATIC', 
         walletLimit: 3, 
         status: 'upcoming',
         startTime: '',
         endTime: ''
+      },
+      { 
+        id: 'public', 
+        name: 'Public Sale', 
+        description: 'Open to everyone', 
+        price: '0.1 MATIC', 
+        walletLimit: 2, 
+        status: 'upcoming',
+        startTime: '',
+        endTime: ''
       }
-    ]
+    ],
+    
+    // ✨ NOVOS CAMPOS PARA CLAIM CONDITIONS
+    autoConfigureClaimConditions: false,
+    claimCurrency: 'MATIC',
+    maxSupplyPerPhase: 100
     });
 
   // Estados para private wallets
   const [privateWallets, setPrivateWallets] = useState<string[]>(['']);
-  const [privateWalletStage, setPrivateWalletStage] = useState('private');
+  const [privateWalletStage, setPrivateWalletStage] = useState('vip');
 
   // Estados para modal de edição de coleção
   const [showEditModal, setShowEditModal] = useState(false);
@@ -1844,11 +1869,11 @@ export default function LaunchpadPage() {
                      size="sm"
                      variant="outline"
                      onClick={() => addApprovalArrayItem('mintStages', { 
-                       id: 'stage', 
-                       name: 'Stage', 
-                       description: '', 
-                       price: '0.1 CHZ', 
-                       walletLimit: 3, 
+                       id: 'public', 
+                       name: 'Public Sale', 
+                       description: 'Open to everyone', 
+                       price: '0.1 MATIC', 
+                       walletLimit: 2, 
                        status: 'upcoming',
                        startTime: '',
                        endTime: ''
@@ -1928,6 +1953,114 @@ export default function LaunchpadPage() {
                  ))}
                </div>
 
+               {/* Claim Conditions Configuration */}
+               <div className="mt-8 space-y-4">
+                 <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">
+                   ⚙️ Claim Conditions Configuration
+                 </h4>
+                 <p className="text-sm text-gray-400 mb-4">
+                   Configure automatic claim conditions based on mint stages. This will set up on-chain conditions for your contract.
+                 </p>
+                 
+                 <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-4">
+                   <div className="flex items-center justify-between mb-4">
+                     <div>
+                       <h5 className="text-white font-medium">Auto-Configure Claim Conditions</h5>
+                       <p className="text-xs text-gray-400">Map mint stages to blockchain claim conditions</p>
+                     </div>
+                     <div className="flex items-center space-x-2">
+                       <input
+                         type="checkbox"
+                         id="autoConfigureClaimConditions"
+                         checked={approvalForm.autoConfigureClaimConditions || false}
+                         onChange={(e) => updateApprovalForm('autoConfigureClaimConditions', e.target.checked)}
+                         className="rounded"
+                       />
+                       <Label htmlFor="autoConfigureClaimConditions" className="text-gray-300 text-sm">
+                         Enable Auto-Configuration
+                       </Label>
+                     </div>
+                   </div>
+                   
+                   {approvalForm.autoConfigureClaimConditions && (
+                     <div className="space-y-4">
+                       <div className="grid grid-cols-2 gap-4">
+                         <div>
+                           <Label className="text-gray-300 text-sm">Default Currency</Label>
+                           <select
+                             value={approvalForm.claimCurrency || 'MATIC'}
+                             onChange={(e) => updateApprovalForm('claimCurrency', e.target.value)}
+                             className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 text-sm"
+                           >
+                             <option value="MATIC">MATIC (Native - Polygon Amoy)</option>
+                             <option value="USDC_AMOY">USDC (Polygon Amoy Testnet)</option>
+                             <option value="USDT_AMOY">USDT (Polygon Amoy Testnet)</option>
+                             <option value="WETH_AMOY">WETH (Polygon Amoy Testnet)</option>
+                             <option value="FREE">Free Mint (0 cost)</option>
+                           </select>
+                         </div>
+                         
+                         <div>
+                           <Label className="text-gray-300 text-sm">Max Supply per Phase</Label>
+                           <Input
+                             type="number"
+                             value={approvalForm.maxSupplyPerPhase || ''}
+                             onChange={(e) => updateApprovalForm('maxSupplyPerPhase', parseInt(e.target.value))}
+                             className="mt-1 bg-gray-800 border-gray-600 text-white text-sm"
+                             placeholder="100"
+                           />
+                         </div>
+                       </div>
+                       
+                       <div className="border-t border-gray-600 pt-4">
+                         <h6 className="text-white text-sm font-medium mb-3">🔄 Auto-Generated Claim Conditions Preview</h6>
+                         <div className="space-y-2">
+                           {approvalForm.mintStages && approvalForm.mintStages.length > 0 ? (
+                             approvalForm.mintStages.map((stage, index) => (
+                               <div key={index} className="bg-gray-900/50 border border-gray-600 rounded p-3">
+                                 <div className="flex justify-between items-start">
+                                   <div>
+                                     <div className="text-white text-sm font-medium">{stage.name || `Phase ${index + 1}`}</div>
+                                     <div className="text-xs text-gray-400 mt-1">
+                                       Price: {approvalForm.claimCurrency === 'FREE' ? 'Free Mint' : `${stage.price || '0'} ${(approvalForm.claimCurrency || 'MATIC').replace('_AMOY', '')}`} • 
+                                       Limit: {stage.walletLimit || 'Unlimited'} per wallet
+                                     </div>
+                                     <div className="text-xs text-gray-500 mt-1">
+                                       {stage.startTime ? `Start: ${new Date(stage.startTime).toLocaleDateString()}` : 'Start: Not set'} • 
+                                       {stage.endTime ? `End: ${new Date(stage.endTime).toLocaleDateString()}` : 'End: Not set'}
+                                     </div>
+                                   </div>
+                                   <div className="text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded">
+                                     Auto-configured
+                                   </div>
+                                 </div>
+                               </div>
+                             ))
+                           ) : (
+                             <div className="text-gray-400 text-sm italic">
+                               Add mint stages above to see claim conditions preview
+                             </div>
+                           )}
+                         </div>
+                       </div>
+                       
+                       <div className="bg-yellow-500/10 border border-yellow-500/30 rounded p-3">
+                         <div className="flex items-start space-x-2">
+                           <div className="text-yellow-400 mt-0.5">⚠️</div>
+                           <div>
+                             <div className="text-yellow-400 text-sm font-medium">Important</div>
+                             <div className="text-yellow-300 text-xs mt-1">
+                               Claim conditions will be automatically configured on your contract when this collection is approved.
+                               Make sure your contract address is correct and you have admin permissions.
+                             </div>
+                           </div>
+                         </div>
+                       </div>
+                     </div>
+                   )}
+                 </div>
+               </div>
+
                {/* Private Wallets Section */}
                <div className="mt-8 space-y-4">
                  <h4 className="text-lg font-semibold text-white border-b border-gray-700 pb-2">Private Wallets</h4>
@@ -1978,9 +2111,9 @@ export default function LaunchpadPage() {
                        onChange={(e) => setPrivateWalletStage(e.target.value)}
                        className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
                      >
-                       <option value="private">Private</option>
-                       <option value="whitelist">Whitelist</option>
-                       <option value="vip">VIP</option>
+                       <option value="vip">VIP (Earliest Access)</option>
+                       <option value="whitelist">Whitelist (Early Access)</option>
+                       <option value="public">Public (Open to All)</option>
                      </select>
                    </div>
                  </div>
@@ -2249,9 +2382,9 @@ export default function LaunchpadPage() {
                          onChange={(e) => setPrivateWalletStage(e.target.value)}
                          className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
                        >
-                         <option value="private">Private</option>
-                         <option value="whitelist">Whitelist</option>
-                         <option value="vip">VIP</option>
+                         <option value="vip">VIP (Earliest Access)</option>
+                         <option value="whitelist">Whitelist (Early Access)</option>
+                         <option value="public">Public (Open to All)</option>
                        </select>
                      </div>
                      

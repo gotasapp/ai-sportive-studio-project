@@ -99,6 +99,92 @@ export async function POST(
     const collectionResult = await db.collection('collections').insertOne(newCollection);
     console.log('✅ Coleção criada com ID:', collectionResult.insertedId.toString())
     
+    // 🎯 Configurar claim conditions automaticamente se habilitado
+    if (data.autoConfigureClaimConditions && data.contractAddress && data.mintStages) {
+      console.log('🔧 Auto-configuring claim conditions...');
+      try {
+        const claimConditionsResponse = await fetch(new URL('/api/launchpad/configure-claim-conditions', request.url), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contractAddress: data.contractAddress,
+            mintStages: data.mintStages,
+            claimCurrency: data.claimCurrency || 'MATIC',
+            maxSupplyPerPhase: data.maxSupplyPerPhase || newCollection.maxSupply
+          })
+        });
+
+        const claimResult = await claimConditionsResponse.json();
+        
+        if (claimResult.success) {
+          console.log('✅ Claim conditions configured automatically:', claimResult.queueId);
+          
+          // Atualizar a coleção com o queue ID das claim conditions
+          await db.collection('collections').updateOne(
+            { _id: collectionResult.insertedId },
+            { 
+              $set: { 
+                claimConditionsQueueId: claimResult.queueId,
+                autoConfigured: true,
+                updatedAt: nowUTC
+              } 
+            }
+          );
+        } else {
+          console.warn('⚠️ Failed to auto-configure claim conditions:', claimResult.error);
+        }
+      } catch (claimError) {
+        console.error('❌ Error auto-configuring claim conditions:', claimError);
+        // Não falhar a aprovação se as claim conditions falharem
+      }
+    }
+
+    // 🎨 Configurar shared metadata automaticamente para o contrato
+    if (data.contractAddress) {
+      console.log('🎨 Auto-configuring shared metadata...');
+      try {
+        const metadataResponse = await fetch(new URL('/api/launchpad/set-shared-metadata', request.url), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contractAddress: data.contractAddress,
+            name: newCollection.name,
+            description: newCollection.description,
+            image: newCollection.image,
+            attributes: [
+              { trait_type: 'Collection', value: newCollection.name },
+              { trait_type: 'Type', value: 'launchpad' },
+              { trait_type: 'Creator', value: newCollection.creator?.name || 'Unknown' },
+              { trait_type: 'Total Supply', value: newCollection.totalSupply?.toString() || 'Unknown' }
+            ]
+          })
+        });
+
+        const metadataResult = await metadataResponse.json();
+        
+        if (metadataResult.success) {
+          console.log('✅ Shared metadata configured automatically:', metadataResult.queueId);
+          
+          // Atualizar a coleção com o queue ID da metadata
+          await db.collection('collections').updateOne(
+            { _id: collectionResult.insertedId },
+            { 
+              $set: { 
+                sharedMetadataQueueId: metadataResult.queueId,
+                metadataConfigured: true,
+                updatedAt: nowUTC
+              } 
+            }
+          );
+        } else {
+          console.warn('⚠️ Failed to auto-configure shared metadata:', metadataResult.error);
+        }
+      } catch (metadataError) {
+        console.error('❌ Error auto-configuring shared metadata:', metadataError);
+        // Não falhar a aprovação se a metadata falhar
+      }
+    }
+    
     // 3. Remover a imagem pendente - ✅ CORRIGIDO: Usar ObjectId
     console.log('🗑️ Removendo imagem pendente...')
     await db.collection('pending_launchpad_images').deleteOne({

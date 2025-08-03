@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, Engine } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { claimTo } from 'thirdweb/extensions/erc721';
+import { mintTo } from 'thirdweb/extensions/erc721';
 import clientPromise from '@/lib/mongodb';
 
 // Define a chain Amoy com RPC dedicado
@@ -131,12 +131,20 @@ export async function POST(request: NextRequest) {
       vaultAccessToken: THIRDWEB_SECRET_KEY,
     });
 
-    // Preparar transação de claim (mint) direta - mais simples que signature
-    const transaction = claimTo({
+    // Preparar transação de mint direto (gasless admin mint)
+    // Usar mintTo em vez de claimTo para evitar dependência de claim conditions
+    const transaction = mintTo({
       contract,
       to,
-      quantity: BigInt(quantity),
+      nft: {
+        name: metadata.name,
+        description: metadata.description,
+        image: metadata.image,
+        attributes: metadata.attributes || []
+      }
     });
+    
+    console.log('🎯 Using mintTo for gasless admin mint (bypasses claim conditions)');
 
     console.log('🔧 Transaction prepared for gasless mint');
 

@@ -36,7 +36,7 @@ import {
 export type ViewType = 'grid' | 'list' | 'table'
 export type TimeFilter = '24h' | '7d' | '30d' | 'all'
 export type PriceSort = 'low-to-high' | 'high-to-low' | 'volume-desc' | 'volume-asc'
-export type TokenType = 'all' | 'jerseys' | 'stadiums' | 'badges'
+export type TokenType = 'all' | 'jerseys' | 'stadiums' | 'badges' | 'launchpad'
 export type CollectionTab = 'all' | 'watchlist' | 'owned'
 
 interface MarketplaceFiltersProps {
@@ -200,6 +200,7 @@ export default function MarketplaceFilters({
               <SelectItem value="jerseys">Jerseys</SelectItem>
               <SelectItem value="stadiums">Stadiums</SelectItem>
               <SelectItem value="badges">Badges</SelectItem>
+              <SelectItem value="launchpad">Launchpad</SelectItem>
             </SelectContent>
           </Select>
 

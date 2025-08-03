@@ -1,77 +1,111 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createThirdwebClient, getContract, prepareContractCall, sendTransaction } from 'thirdweb';
+import { createThirdwebClient, getContract, Engine } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
+import { setSharedMetadata } from 'thirdweb/extensions/erc721';
 
-// Define Amoy chain
-const amoy = defineChain(80002);
+// Define a chain Amoy
+const amoy = defineChain({
+  id: 80002,
+  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
+});
 
-// Environment variables
+// Variáveis de ambiente
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
-const LAUNCHPAD_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS;
-const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
 export async function POST(request: NextRequest) {
-  try {
-    if (!THIRDWEB_SECRET_KEY || !LAUNCHPAD_CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
-      return NextResponse.json({ 
-        error: 'Missing environment variables' 
-      }, { status: 500 });
-    }
+  console.log('🎨 Set Shared Metadata API: Processing request...');
 
-    console.log('🎯 Setting shared metadata for OpenEditionERC721...');
-    console.log('📄 Contract:', LAUNCHPAD_CONTRACT_ADDRESS);
+  // Validação das variáveis de ambiente
+  if (!THIRDWEB_SECRET_KEY || !BACKEND_WALLET_ADDRESS) {
+    const missing = [
+      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
+    ].filter(Boolean).join(", ");
 
-    // Create Thirdweb client with secret key
-    const client = createThirdwebClient({ 
-      secretKey: THIRDWEB_SECRET_KEY 
-    });
-
-    // Get contract
-    const contract = getContract({
-      client,
-      chain: amoy,
-      address: LAUNCHPAD_CONTRACT_ADDRESS,
-    });
-
-    // Prepare setSharedMetadata transaction
-    const transaction = prepareContractCall({
-      contract,
-      method: "function setSharedMetadata(string _metadata) external",
-      params: [
-        JSON.stringify({
-          name: "AI Sports NFT Collection",
-          description: "AI-generated sports NFT collection from Launchpad",
-          image: "https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle",
-          attributes: [
-            { trait_type: "Collection", value: "Launchpad" },
-            { trait_type: "Type", value: "AI Generated" },
-            { trait_type: "Category", value: "Sports" }
-          ]
-        })
-      ]
-    });
-
-    console.log('✅ Shared metadata transaction prepared');
-
-    // Send transaction
-    const result = await sendTransaction({
-      transaction,
-      account: { address: BACKEND_WALLET_ADDRESS },
-    });
-    
-    console.log(`✅ Shared metadata set successfully! Transaction: ${result.transactionHash}`);
-
-    return NextResponse.json({
-      success: true,
-      transactionHash: result.transactionHash,
-      contractAddress: LAUNCHPAD_CONTRACT_ADDRESS,
-      message: 'Shared metadata set successfully'
-    });
-
-  } catch (error: any) {
-    console.error('❌ Error setting shared metadata:', error);
+    console.error(`❌ API Error: Missing variables: ${missing}`);
     return NextResponse.json({ 
-      error: error.message || 'Failed to set shared metadata' 
+      success: false, 
+      error: `Server configuration error. Missing: ${missing}` 
     }, { status: 500 });
   }
-} 
+
+  try {
+    const body: { 
+      contractAddress: string;
+      name: string;
+      description: string;
+      image: string;
+      attributes?: any[];
+    } = await request.json();
+    
+    const { contractAddress, name, description, image, attributes = [] } = body;
+
+    if (!contractAddress || !name || !image) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Contract address, name, and image are required.' 
+      }, { status: 400 });
+    }
+
+    console.log('🎨 Setting shared metadata for contract:', contractAddress);
+
+    // Criar cliente Thirdweb
+    const thirdwebClient = createThirdwebClient({ 
+      secretKey: THIRDWEB_SECRET_KEY 
+    });
+    
+    const contract = getContract({ 
+      client: thirdwebClient, 
+      chain: amoy, 
+      address: contractAddress 
+    });
+
+    // Configurar Engine para gasless transaction
+    const serverWallet = Engine.serverWallet({
+      address: BACKEND_WALLET_ADDRESS,
+      client: thirdwebClient,
+      vaultAccessToken: THIRDWEB_SECRET_KEY,
+    });
+
+    // Preparar metadata para OpenEditionERC721
+    const sharedMetadata = {
+      name,
+      description,
+      image,
+      attributes
+    };
+
+    console.log('📋 Shared metadata:', sharedMetadata);
+
+    // Preparar transação para configurar shared metadata
+    const transaction = setSharedMetadata({
+      contract,
+      metadata: sharedMetadata
+    });
+
+    console.log('🔧 Enqueueing shared metadata transaction...');
+
+    // Enfileirar a transação via Engine
+    const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
+    
+    console.log(`✅ Shared metadata configured! Queue ID: ${transactionId}`);
+
+    return NextResponse.json({ 
+      success: true,
+      queueId: transactionId,
+      message: 'Shared metadata configured successfully',
+      contractAddress,
+      metadata: sharedMetadata
+    });
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    console.error('❌ Set Shared Metadata CRITICAL ERROR:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to set shared metadata.', 
+      details: errorMessage 
+    }, { status: 500 });
+  }
+}
