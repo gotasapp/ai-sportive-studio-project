@@ -16,6 +16,7 @@ import { TransactionButton } from 'thirdweb/react'
 import { getContract, createThirdwebClient } from 'thirdweb'
 import { defineChain } from 'thirdweb/chains'
 import { mintTo } from 'thirdweb/extensions/erc721'
+import { SimpleDeployButton } from '@/components/ui/SimpleDeployButton';
 import { toast } from 'sonner'
 
 interface ProfessionalActionBarProps {
@@ -26,9 +27,7 @@ interface ProfessionalActionBarProps {
   generationCost: number | null
 
   // Minting
-  onMintLegacy: () => void
   onMintGasless: () => void
-  canMintLegacy: boolean
   canMintGasless: boolean
   isMinting: boolean
   mintStatus: 'idle' | 'pending' | 'success' | 'error'
@@ -71,9 +70,7 @@ export default function ProfessionalActionBar({
   isLoading,
   canGenerate,
   generationCost,
-  onMintLegacy,
   onMintGasless,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,
@@ -133,36 +130,8 @@ export default function ProfessionalActionBar({
 
   const renderMintButtons = () => (
     <div className="flex items-center gap-3 max-lg:flex-col max-lg:gap-2 max-lg:w-full">
-      {/* Legacy Mint - Sempre visível após gerar imagem */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onMintLegacy}
-              disabled={!canMintLegacy || isMinting}
-              variant="outline"
-              className={cn(
-                "h-12 px-6 text-base font-medium transition-all duration-200",
-                "bg-[#333333]/10 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/20",
-                "disabled:opacity-50 disabled:cursor-not-allowed",
-                // Mobile responsiveness
-                "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-              )}
-            >
-              <div className="flex items-center gap-2 max-lg:gap-1.5">
-                <Wallet className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                <span>Mint</span>
-              </div>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Mint using your wallet (requires gas)</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Gasless Mint - TEMPORARIAMENTE OCULTO (código mantido) */}
-      {false && isUserAdmin && (
+      {/* Gasless Mint - Somente para Admin */}
+      {isUserAdmin && canMintGasless && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -179,8 +148,8 @@ export default function ProfessionalActionBar({
                 )}
               >
                 <div className="flex items-center gap-2 max-lg:gap-1.5">
-                  <Rocket className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                  <span>Mint (Gasless)</span>
+                  <Zap className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
+                  <span>Gasless</span>
                 </div>
               </Button>
             </TooltipTrigger>
@@ -192,52 +161,26 @@ export default function ProfessionalActionBar({
       )}
 
       {/* Batch Mint Logic - Diferente para Admin vs Usuário Comum */}
-      {isUserAdmin ? (
-        // ADMIN: Batch Mint via Backend
-        walletAddress && nftName && hasGeneratedImage && (
-          <BatchMintDialog
-            trigger={
-              <Button
-                disabled={!canMintGasless || isMinting}
-                variant="outline"
-                className={cn(
-                  "h-12 px-6 text-base font-medium transition-all duration-200",
-                  "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  // Mobile responsiveness
-                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-                )}
-                onClick={() => console.log('🎯 Admin Batch Mint clicked!')}
-              >
-                <div className="flex items-center gap-2 max-lg:gap-1.5">
-                  <Hash className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                  <span>Batch Mint</span>
-                </div>
-              </Button>
-            }
-            to={walletAddress}
-            metadataUri={metadataUri || ''}
-            nftName={nftName}
-            collection={collection}
-            disabled={!canMintGasless || isMinting}
-          />
-        )
-      ) : (
-        // USUÁRIO COMUM: Public Mint (Edition Drop)
-        isConnected && generatedImageBlob && nftName && (
-          <PublicMint
-            imageBlob={generatedImageBlob}
-            metadata={{
-              name: nftName,
-              description: nftDescription || `AI-generated ${collection || 'NFT'} created with CHZ Fan Token Studio`,
-              attributes: nftAttributes || [
-                { trait_type: 'Generator', value: 'AI Sports NFT' },
-                { trait_type: 'Collection', value: collection || 'General' },
-                { trait_type: 'Type', value: 'Public Mint' }
-              ]
-            }}
-          />
-        )
+      {/* MINT INTELIGENTE: Todos os usuários podem usar */}
+      {walletAddress && nftName && hasGeneratedImage && (
+        <BatchMintDialog
+          trigger={
+            <Button
+              disabled={!isConnected || isMinting}
+              variant="outline"
+              className="h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
+              onClick={() => console.log('🎯 Smart Mint clicked!')}
+            >
+              <span>Mint</span>
+            </Button>
+          }
+          to={walletAddress}
+          metadataUri={metadataUri || ''}
+          nftName={nftName}
+          collection={collection}
+          disabled={!isConnected || isMinting}
+          isUserAdmin={isUserAdmin}
+        />
       )}
 
       
@@ -392,6 +335,11 @@ export default function ProfessionalActionBar({
 
         {/* DEPOIS de gerar imagem: Mint Buttons */}
         {hasGeneratedImage && renderMintButtons()}
+      </div>
+
+      {/* Botão de Teste para Deploy */}
+      <div className="mt-4">
+        <SimpleDeployButton />
       </div>
 
       {/* Connection Warning - Apenas se necessário */}

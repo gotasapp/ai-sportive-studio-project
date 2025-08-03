@@ -279,33 +279,37 @@ export default function JerseyMobileLayout({
         {generatedImage && (
           <div className="mt-6 flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              <Button
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white disabled:opacity-50"
-                onClick={onMintLegacy}
-                disabled={!canMintLegacy || isMinting}
-              >
-                {isMinting && mintStatus === 'pending' ? (
-                  <span>Minting...</span>
-                ) : (
-                  <span>Mint</span>
-                )}
-              </Button>
-              {/* Batch Mint para admin, igual ao desktop */}
-              {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
+              {/* Gasless Mint - Somente para Admin */}
+              {isUserAdmin && canMintGasless && (
+                <Button
+                  onClick={onMintGasless}
+                  disabled={!canMintGasless || isMinting}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white"
+                >
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-4 h-4" />
+                    <span>Gasless</span>
+                  </div>
+                </Button>
+              )}
+              {/* Batch Mint para todos os usuários */}
+              {walletAddress && nftName && hasGeneratedImage && (
                 <BatchMintDialog
                   trigger={
                     <Button
-                      disabled={!canMintGasless || isMinting}
-                      className="w-full bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white"
+                      disabled={!isConnected || isMinting}
+                      variant="outline"
+                      className="w-full h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
                     >
-                      Batch Mint
+                      Mint
                     </Button>
                   }
                   to={walletAddress}
                   metadataUri={metadataUri || ''}
                   nftName={nftName || ''}
                   collection={collection}
-                  disabled={!canMintGasless || isMinting}
+                  disabled={!isConnected || isMinting}
+                  isUserAdmin={isUserAdmin}
                 />
               )}
             </div>

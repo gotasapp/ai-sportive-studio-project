@@ -76,50 +76,45 @@ export default function ProfessionalBadgeActionBar({
 
   const renderMintButtons = () => (
     <div className="flex items-center gap-3">
-      {/* Legacy Mint - Sempre visível após gerar imagem */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={onMintLegacy}
-              disabled={!canMintLegacy || isMinting}
-              variant="outline"
-              className={cn(
-                "h-12 px-6 text-base font-medium transition-all duration-200",
-                "bg-[#333333]/20 border-[#333333] text-[#FDFDFD] hover:bg-[#333333]/40",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
-            >
-              <div className="flex items-center gap-2">
-                <Wallet className="w-5 h-5" />
-                <span>Mint Legacy</span>
-              </div>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Mint using your wallet (requires gas)</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {/* Gasless Mint - Somente para Admin */}
+      {isUserAdmin && canMintGasless && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onMintGasless}
+                disabled={!canMintGasless || isMinting}
+                variant="outline"
+                className={cn(
+                  "h-12 px-6 text-base font-medium transition-all duration-200",
+                  "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
+                  "disabled:opacity-50 disabled:cursor-not-allowed"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Gasless</span>
+                </div>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Gasless mint via admin wallet</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
 
       {/* Batch Mint Button - Admin: "Batch Mint", Usuário Comum: "Mint Batch" */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={() => console.log(`🎯 ${isUserAdmin ? 'Admin Batch' : 'User Batch'} Mint clicked!`)}
-              disabled={!canMintLegacy || isMinting}
+              onClick={() => console.log('🎯 Smart Mint clicked!')}
+              disabled={!isConnected || isMinting}
               variant="outline"
-              className={cn(
-                "h-12 px-6 text-base font-medium transition-all duration-200",
-                "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
-              )}
+              className="h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
             >
-              <div className="flex items-center gap-2">
-                <Shield className="w-5 h-5" />
-                <span>{isUserAdmin ? 'Batch Mint' : 'Mint Batch'}</span>
-              </div>
+              <span>Mint</span>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

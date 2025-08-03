@@ -205,32 +205,36 @@ export default function BadgeMobileLayout({
         {/* Bloco de Mint - só aparece após imagem gerada */}
         {generatedImage && (
           <div className="flex flex-col items-center gap-3 w-full mb-2">
-            <Button
-              className="cyber-button inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-[#000000] hover:text-[#FFFFFF] py-2 group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-white !text-black hover:bg-[#A20131] hover:!text-white w-full"
-              onClick={onMintLegacy}
-              disabled={!canMintLegacy || isMinting}
-            >
-              {isMinting && mintStatus === 'pending' ? (
-                <span>Minting...</span>
-              ) : (
-                <span>Mint</span>
-              )}
-            </Button>
-            {isUserAdmin && walletAddress && nftName && hasGeneratedImage && (
+            {/* Gasless Mint - Somente para Admin */}
+            {isUserAdmin && canMintGasless && (
+              <Button
+                onClick={onMintGasless}
+                disabled={!canMintGasless || isMinting}
+                className="cyber-button inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-[#000000] hover:text-[#FFFFFF] py-2 group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-white !text-black hover:bg-[#A20131] hover:!text-white w-full"
+              >
+                <div className="flex items-center gap-2">
+                  <Zap className="w-4 h-4" />
+                  <span>Gasless</span>
+                </div>
+              </Button>
+            )}
+            {walletAddress && nftName && hasGeneratedImage && (
               <BatchMintDialog
                 trigger={
-                  <Button
-                    disabled={!canMintGasless || isMinting}
-                    className="cyber-button inline-flex items-center justify-center gap-2 whitespace-nowrap focus-visible:outline-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 text-[#000000] hover:text-[#FFFFFF] py-2 group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-white !text-black hover:bg-[#A20131] hover:!text-white w-full"
-                  >
-                    Batch Mint
-                  </Button>
+                                      <Button
+                      disabled={!isConnected || isMinting}
+                      variant="outline"
+                      className="w-full h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
+                    >
+                      Mint
+                    </Button>
                 }
                 to={walletAddress}
                 metadataUri={metadataUri}
                 nftName={nftName}
                 collection={collection}
-                disabled={!canMintGasless || isMinting}
+                disabled={!isConnected || isMinting}
+                isUserAdmin={isUserAdmin}
               />
             )}
           </div>
