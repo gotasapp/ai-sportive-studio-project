@@ -4,6 +4,102 @@ import clientPromise from '@/lib/mongodb';
 const DB_NAME = 'chz-app-db';
 
 /**
+ * Função para buscar NFTs do Launchpad mintados
+ */
+async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
+  try {
+    // Buscar coleções ativas do launchpad com NFTs mintados
+    const launchpadCollections = await db.collection('collections').find({
+      type: 'launchpad',
+      status: { $in: ['active', 'upcoming'] },
+      minted: { $gt: 0 }
+    }).toArray();
+
+    const launchpadNFTs = [];
+
+    for (const collection of launchpadCollections) {
+      // Filtrar por owner se especificado (para coleções do criador)
+      if (owner && collection.creator?.wallet !== owner) continue;
+
+      // ✅ CRIAR APENAS UMA ENTRADA POR COLEÇÃO (não por unidade mintada)
+      const collectionNFT = {
+        // 🔑 DADOS OBRIGATÓRIOS PARA THIRDWEB MARKETPLACE V3
+        tokenId: "collection", // Identificador especial para coleções
+        contractAddress: collection.contractAddress || "0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639",
+        owner: collection.creator?.wallet || "0x0000000000000000000000000000000000000000",
+        
+        // 📋 METADADOS DA COLEÇÃO (uma imagem representa toda a coleção)
+        metadata: {
+          name: collection.name,
+          description: collection.description || `${collection.name} Collection from Launchpad`,
+          image: collection.image || collection.imageUrl,
+          attributes: [
+            { trait_type: 'Type', value: 'launchpad_collection' },
+            { trait_type: 'Total Supply', value: collection.totalSupply?.toString() || 'Unknown' },
+            { trait_type: 'Minted', value: collection.minted?.toString() || '0' },
+            { trait_type: 'Available', value: ((collection.totalSupply || 0) - (collection.minted || 0)).toString() },
+            { trait_type: 'Creator', value: collection.creator?.name || 'Unknown' },
+            { trait_type: 'Status', value: collection.status || 'active' },
+            { trait_type: 'Launch Date', value: collection.launchDate || 'Unknown' }
+          ]
+        },
+        
+        // 🏪 DADOS PARA MARKETPLACE (específicos para coleções)
+        marketplace: {
+          isListed: false, // Coleções não são "listadas" individualmente
+          isListable: false, // Não pode ser listada (é uma coleção, não NFT individual)
+          canTrade: false, // Coleção não é negociável (unidades sim)
+          verified: true,
+          collection: collection.name,
+          category: 'launchpad_collection',
+          isCollection: true, // ✨ NOVO: Marca como entrada de coleção
+          mintedUnits: collection.minted || 0, // ✨ NOVO: Quantidade de unidades mintadas
+          totalUnits: collection.totalSupply || 0, // ✨ NOVO: Total de unidades disponíveis
+          availableUnits: (collection.totalSupply || 0) - (collection.minted || 0) // ✨ NOVO: Unidades disponíveis
+        },
+        
+        // ⛓️ DADOS DA BLOCKCHAIN
+        blockchain: {
+          chainId: 80002, // Polygon Amoy
+          network: 'Polygon Amoy',
+          transactionHash: null,
+          explorerUrl: null,
+          mintedAt: collection.createdAt
+        },
+        
+        // 📊 DADOS EXTRAS (específicos para coleções)
+        stats: {
+          views: 0,
+          likes: 0,
+          sales: 0,
+          totalMints: collection.minted || 0, // ✨ NOVO: Total de mints da coleção
+          uniqueOwners: 1 // Em produção, seria calculado dos eventos do contrato
+        },
+        
+        // 🗂️ IDENTIFICADORES
+        _id: `collection_${collection._id}`,
+        mongoId: collection._id.toString(),
+        type: 'launchpad_collection', // ✨ MUDANÇA: Tipo específico para coleções
+        collectionData: collection,
+        
+        // 📅 TIMESTAMPS
+        createdAt: collection.createdAt,
+        updatedAt: collection.updatedAt || collection.createdAt
+      };
+
+      launchpadNFTs.push(collectionNFT);
+    }
+
+    console.log(`🚀 Found ${launchpadNFTs.length} launchpad NFTs from ${launchpadCollections.length} collections`);
+    return launchpadNFTs.slice(0, limit);
+
+  } catch (error) {
+    console.error('❌ Error fetching launchpad NFTs:', error);
+    return [];
+  }
+}
+
+/**
  * GET handler para buscar todos os NFTs mintados em formato compatível com Thirdweb Marketplace V3
  * Retorna tokenId, contractAddress, owner, metadata, etc.
  */
@@ -19,9 +115,12 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Buscar NFTs de todas as coleções
+    // Buscar NFTs de todas as coleções (incluindo launchpad)
     const collections = ['jerseys', 'stadiums', 'badges'];
     const allNFTs = [];
+    
+    // Adicionar NFTs do launchpad de coleções ativas
+    const launchpadNFTs = await getLaunchpadNFTs(db, owner, limit);
 
     for (const collectionName of collections) {
       // Filtrar por tipo se especificado
@@ -118,6 +217,9 @@ export async function GET(request: NextRequest) {
       allNFTs.push(...processedNFTs);
     }
 
+    // Adicionar NFTs do launchpad aos resultados
+    allNFTs.push(...launchpadNFTs);
+
     // Ordenar por data de criação (mais recentes primeiro)
     allNFTs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -142,7 +244,9 @@ export async function GET(request: NextRequest) {
       byType: {
         jerseys: finalNFTs.filter(n => n.type === 'jersey').length,
         stadiums: finalNFTs.filter(n => n.type === 'stadium').length,
-        badges: finalNFTs.filter(n => n.type === 'badge').length
+        badges: finalNFTs.filter(n => n.type === 'badge').length,
+        launchpad_collections: finalNFTs.filter(n => n.type === 'launchpad_collection').length,
+        launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0)
       },
       chainId: parseInt(chainId),
       network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain',

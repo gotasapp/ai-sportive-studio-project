@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, Engine } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { generateMintSignature, mintWithSignature } from 'thirdweb/extensions/erc721';
+import { claimTo } from 'thirdweb/extensions/erc721';
 import clientPromise from '@/lib/mongodb';
 
 // Define a chain Amoy com RPC dedicado
@@ -124,24 +124,6 @@ export async function POST(request: NextRequest) {
 
     console.log('📄 Metadata fetched:', metadata);
 
-    // Gerar signature para mint
-    const { payload, signature } = await generateMintSignature({
-      contract,
-      to,
-      metadata: {
-        name: metadata.name,
-        description: metadata.description,
-        image: metadata.image,
-        attributes: metadata.attributes || []
-      },
-      price,
-      currency: "0x0000000000000000000000000000000000000000", // Native token
-      validityStartTimestamp: new Date(),
-      validityEndTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
-    });
-
-    console.log('✍️ Signature generated for mint');
-
     // Configurar Engine para gasless mint
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
@@ -149,12 +131,14 @@ export async function POST(request: NextRequest) {
       vaultAccessToken: THIRDWEB_SECRET_KEY,
     });
 
-    // Preparar transação de mint com signature
-    const transaction = mintWithSignature({
+    // Preparar transação de claim (mint) direta - mais simples que signature
+    const transaction = claimTo({
       contract,
-      payload,
-      signature,
+      to,
+      quantity: BigInt(quantity),
     });
+
+    console.log('🔧 Transaction prepared for gasless mint');
 
     console.log('🔧 Engine configured, enqueueing transaction...');
 

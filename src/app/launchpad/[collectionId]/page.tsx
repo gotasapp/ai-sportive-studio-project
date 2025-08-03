@@ -272,6 +272,10 @@ export default function CollectionMintPage() {
         console.warn('Failed to refresh claim conditions:', error);
       }
       
+      // ✅ Coleção aparecerá automaticamente no marketplace
+      // baseado no contador 'minted' que será atualizado abaixo
+      console.log('✅ Collection will appear in marketplace automatically');
+
       // Opcional: Atualizar dados da coleção no banco
       if (collection._id) {
         fetch(`/api/collections/${collection._id}`, {

@@ -45,6 +45,20 @@ export const NFT_CONTRACTS = {
   80002: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
 } as const;
 
+// Launchpad contracts - OpenEditionERC721 contracts
+export const LAUNCHPAD_CONTRACTS = {
+  // Polygon Amoy Testnet - contrato do launchpad  
+  [polygonAmoy.id]: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
+  // Fallback explícito para Polygon Amoy por ID numérico
+  80002: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
+} as const;
+
+// All supported contracts (NFT + Launchpad)
+export const ALL_SUPPORTED_CONTRACTS = {
+  ...NFT_CONTRACTS,
+  ...LAUNCHPAD_CONTRACTS
+} as const;
+
 // Helper para obter contrato de marketplace por rede
 export function getMarketplaceContract(chainId: number) {
   const contractAddress = MARKETPLACE_CONTRACTS[chainId];
