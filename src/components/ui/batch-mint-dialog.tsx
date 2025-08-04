@@ -89,7 +89,37 @@ export function BatchMintDialog({
         clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
       });
 
-      // Define Polygon Amoy chain com RPC Ankr
+      setDeployStep('signing-deploy');
+      console.log('🔄 ETAPA 1: Backend deploying contract...');
+
+      // Deploy via backend (sua wallet)
+      const deployResponse = await fetch('/api/collection/backend-deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
+          description: `AI Collection of ${quantity} NFTs with shared metadata`,
+          quantity: quantity,
+          imageUri: 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle',
+          userWallet: account.address, // Wallet do usuário para royalties
+        }),
+      });
+
+      if (!deployResponse.ok) {
+        const errorText = await deployResponse.text();
+        throw new Error(`Backend deploy failed: ${deployResponse.status} ${errorText}`);
+      }
+
+      const deployResult = await deployResponse.json();
+      if (!deployResult.success) {
+        throw new Error(`Backend deploy failed: ${deployResult.error}`);
+      }
+
+      const newContractAddress = deployResult.contractAddress;
+      setContractAddress(newContractAddress);
+      console.log('✅ ETAPA 1 completed - Contract deployed by backend:', newContractAddress);
+      
+      // Define Polygon Amoy chain para usar no frontend
       const amoyChain = defineChain({
         id: 80002,
         name: 'Polygon Amoy Testnet',
@@ -103,89 +133,21 @@ export function BatchMintDialog({
         ],
       });
 
-      setDeployStep('signing-deploy');
-      console.log('🔄 ETAPA 1: User signing contract deployment...');
-
-      const newContractAddress = await deployERC721Contract({
-        client,
-        chain: amoyChain,
-        account,
-        type: "DropERC721",
-        params: {
-          name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
-          symbol: `${collection?.toUpperCase()}${Date.now()}`,
-          description: `AI Collection of ${quantity} NFTs with shared metadata`,
-          image: 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle',
-          primary_sale_recipient: account.address,
-          royalty_recipient: account.address,
-          royalty_bps: 500, // 5%
-        },
-      });
-
-      setContractAddress(newContractAddress);
-      console.log('✅ ETAPA 1 completed - Contract deployed:', newContractAddress);
+      setDeployStep('signing-mint');
+      console.log('🔄 ETAPA 2: User claiming NFTs...');
       
-      setDeployStep('setting-claims');
-      console.log('🔄 ETAPA 2: Setting up claim conditions...');
+      // Aguardar um pouco para o backend terminar setup
+      await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // ETAPA 2: Configurar claim conditions
-      const { getContract } = await import('thirdweb');
-      const { setClaimConditions } = await import('thirdweb/extensions/erc721');
-      const { sendTransaction } = await import('thirdweb');
+      // ETAPA 2B: Claim NFTs no novo contrato
+      const { getContract, sendTransaction } = await import('thirdweb');
+      const { claimTo } = await import('thirdweb/extensions/erc721');
       
       const contract = getContract({
         client,
         chain: amoyChain,
         address: newContractAddress,
       });
-
-      const claimConditionTx = setClaimConditions({
-        contract,
-        phases: [{
-          startTime: new Date(),
-          maxClaimableSupply: BigInt(quantity),
-          maxClaimablePerWallet: BigInt(quantity),
-          price: "0", // Free
-          currency: "0x0000000000000000000000000000000000000000", // Native token
-        }],
-      });
-
-      await sendTransaction({
-        transaction: claimConditionTx,
-        account,
-      });
-
-      console.log('✅ ETAPA 2 completed - Claim conditions configured');
-      
-      setDeployStep('signing-mint');
-      console.log('🔄 ETAPA 3: Lazy minting tokens...');
-      
-      // ETAPA 3A: Lazy mint tokens primeiro
-      const { lazyMint } = await import('thirdweb/extensions/erc721');
-      
-      const lazyMintTx = lazyMint({
-        contract,
-        nfts: Array(quantity).fill({
-          name: `${collection?.toUpperCase()} #`,
-          description: `AI Generated ${collection} NFT`,
-          image: 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle',
-        }),
-      });
-
-      await sendTransaction({
-        transaction: lazyMintTx,
-        account,
-      });
-
-      console.log('✅ ETAPA 3A completed - Tokens lazy minted');
-      
-      console.log('🔄 ETAPA 3B: User claiming NFTs...');
-      
-      // Aguardar um pouco para lazy mint propagar
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // ETAPA 3B: Claim NFTs no novo contrato
-      const { claimTo } = await import('thirdweb/extensions/erc721');
       
       // Retry logic para claim
       let claimAttempts = 0;
@@ -318,8 +280,59 @@ export function BatchMintDialog({
         if (saveResponse.ok) {
           const saveResult = await saveResponse.json();
           console.log('✅ Collection saved to database:', saveResult);
+
+          // 4. Salvar coleção e NFTs individuais no banco (para marketplace)
+          console.log('💾 Saving custom collection and individual NFTs to database...');
+          try {
+            // Primeiro criar a custom collection
+            const customCollectionResponse = await fetch('/api/custom-collections', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
+                description: `AI Generated ${collection} collection with ${quantity} NFTs`,
+                imageUrl: cloudinaryUrl,
+                category: collection || 'jersey', // jersey, stadium, badge
+                contractAddress: newContractAddress,
+                totalSupply: quantity,
+                price: "0",
+                creatorWallet: account.address,
+                teamName: collection || '',
+                season: new Date().getFullYear().toString(),
+                subcategoryType: 'ai_generated'
+              })
+            });
+
+            if (customCollectionResponse.ok) {
+              const customCollectionResult = await customCollectionResponse.json();
+              const customCollectionId = customCollectionResult.id;
+
+              // Agora salvar cada NFT individual mintada
+              for (let tokenId = 0; tokenId < quantity; tokenId++) {
+                await fetch('/api/custom-collections/mint', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    customCollectionId: customCollectionId,
+                    tokenId: tokenId.toString(),
+                    metadataUrl: ipfsMetadataUrl,
+                    imageUrl: cloudinaryUrl,
+                    transactionHash: mintResult.transactionHash,
+                    minterAddress: account.address,
+                    price: "0"
+                  })
+                });
+              }
+              
+              console.log(`✅ Saved custom collection and ${quantity} individual NFTs to marketplace database`);
+            }
+          } catch (nftSaveError) {
+            console.error('❌ Error saving custom collection/NFTs:', nftSaveError);
+            // Não falhar a operação por isso
+          }
         } else {
-          console.error('❌ Failed to save collection to database');
+          const errorText = await saveResponse.text();
+          console.error('❌ Failed to save collection to database:', saveResponse.status, errorText);
         }
       } catch (saveError) {
         console.error('❌ Error uploading/saving collection:', saveError);
@@ -397,21 +410,12 @@ export function BatchMintDialog({
               <div className="p-3 bg-[#0a0a0a] rounded border border-[#FDFDFD]/10 space-y-2">
                 <div className={`flex items-center gap-2 text-xs ${
                   deployStep === 'preparing' || deployStep === 'signing-deploy' ? 'text-yellow-400' : 
-                  ['setting-claims', 'signing-mint', 'completed'].includes(deployStep) ? 'text-green-400' : 'text-[#FDFDFD]/50'
-                }`}>
-                  {['setting-claims', 'signing-mint', 'completed'].includes(deployStep) ? '✅' : 
-                   deployStep === 'preparing' || deployStep === 'signing-deploy' ? '🔄' : '⏳'}
-                  <span>Step 1: Deploy collection contract</span>
-            </div>
-                
-                <div className={`flex items-center gap-2 text-xs ${
-                  deployStep === 'setting-claims' ? 'text-yellow-400' : 
                   ['signing-mint', 'completed'].includes(deployStep) ? 'text-green-400' : 'text-[#FDFDFD]/50'
                 }`}>
                   {['signing-mint', 'completed'].includes(deployStep) ? '✅' : 
-                   deployStep === 'setting-claims' ? '🔄' : '⏳'}
-                  <span>Step 2: Configure collection settings</span>
-              </div>
+                   deployStep === 'preparing' || deployStep === 'signing-deploy' ? '🔄' : '⏳'}
+                  <span>Step 1: Backend deploying contract (no signature required)</span>
+            </div>
               
                 <div className={`flex items-center gap-2 text-xs ${
                   deployStep === 'signing-mint' ? 'text-yellow-400' : 
@@ -419,7 +423,7 @@ export function BatchMintDialog({
                 }`}>
                   {deployStep === 'completed' ? '✅' : 
                    deployStep === 'signing-mint' ? '🔄' : '⏳'}
-                  <span>Step 3: Prepare & claim {quantity} NFTs</span>
+                  <span>Step 2: User signs mint for {quantity} NFTs</span>
                 </div>
               </div>
 

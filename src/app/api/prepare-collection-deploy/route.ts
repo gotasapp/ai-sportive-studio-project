@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     
     const account = privateKeyToAccount({
         client,
-        privateKey: process.env.NEXT_PUBLIC_BACKEND_WALLET_PRIVATE_KEY!,
+        privateKey: process.env.BACKEND_WALLET_PRIVATE_KEY!,
     });
 
     const metadata = {

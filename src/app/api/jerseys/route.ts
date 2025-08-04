@@ -54,9 +54,24 @@ export async function POST(request: Request) {
       mintCount: 0,
       editionSize: 100,
       tags: data.tags || [],
+      
+      // Campos adicionais para coleções
+      transactionHash: data.transactionHash || null,
+      metadataUri: data.metadataUri || null,
+      attributes: data.attributes || [],
+      metadata: data.metadata || {},
+      cloudinaryPublicId: data.cloudinaryPublicId || null,
     };
 
+    console.log('💾 Attempting to save jersey:', {
+      name: newJersey.name,
+      transactionHash: newJersey.transactionHash,
+      tags: newJersey.tags
+    });
+
     const result = await jerseys.insertOne(newJersey);
+    
+    console.log('✅ Jersey saved with ID:', result.insertedId);
 
     return NextResponse.json({ 
       message: 'Jersey created successfully and is now available',
