@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { getContract, readContract } from 'thirdweb';
 import { thirdwebClient } from '@/lib/thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
+import { ObjectId } from 'mongodb';
 
 // Mapear endereço do contrato por coleção
 const CONTRACT_ADDRESSES: Record<string, string> = {
@@ -11,9 +12,15 @@ const CONTRACT_ADDRESSES: Record<string, string> = {
   badges: process.env.NEXT_PUBLIC_BADGES_CONTRACT_POLYGON_TESTNET || ''
 };
 
+// Função para verificar se é um ObjectId válido
+function isValidObjectId(id: string): boolean {
+  return /^[0-9a-fA-F]{24}$/.test(id);
+}
+
 /**
- * GET /api/marketplace/nft-collection/stats?collection=jerseys|stadiums|badges
+ * GET /api/marketplace/nft-collection/stats?collection=jerseys|stadiums|badges|{customCollectionId}
  * Retorna stats agregados: totalSupply, mintedNFTs, activity (salesVolume, transactions)
+ * Agora suporta custom collections por ID
  */
 export async function GET(request: NextRequest) {
   try {
@@ -22,6 +29,89 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing collection parameter' }, { status: 400 });
     }
 
+    const client = await clientPromise;
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db');
+
+    // Verificar se é um custom collection ID
+    if (isValidObjectId(collection)) {
+      return await getCustomCollectionStats(db, collection);
+    }
+
+    // Caso contrário, continuar com a lógica original para standard collections
+    return await getStandardCollectionStats(db, collection);
+  } catch (error) {
+    console.error('Error in nft-collection stats endpoint:', error);
+    return NextResponse.json({ success: false, error: 'Internal server error', details: error instanceof Error ? error.message : error }, { status: 500 });
+  }
+}
+
+// Função para buscar stats de custom collection
+async function getCustomCollectionStats(db: any, customCollectionId: string) {
+  try {
+    console.log('🔍 Buscando stats para custom collection:', customCollectionId);
+
+    // Buscar a custom collection
+    const customCollection = await db.collection('custom_collections').findOne({
+      _id: new ObjectId(customCollectionId)
+    });
+
+    if (!customCollection) {
+      return NextResponse.json({ success: false, error: 'Custom collection not found' }, { status: 404 });
+    }
+
+    // Buscar NFTs mintadas desta coleção
+    const mintedNFTs = await db.collection('custom_collection_mints')
+      .find({ customCollectionId: new ObjectId(customCollectionId) })
+      .toArray();
+
+    // Calcular stats
+    const totalSupply = customCollection.totalSupply || 0;
+    const mintedCount = mintedNFTs.length;
+    const uniqueOwners = [...new Set(mintedNFTs.map(nft => nft.minterAddress))].length;
+    const contractsUsed = [...new Set(mintedNFTs.map(nft => nft.contractAddress))].length;
+
+    console.log('✅ Custom collection stats calculadas:', {
+      name: customCollection.name,
+      totalSupply,
+      mintedCount,
+      uniqueOwners
+    });
+
+    return NextResponse.json({
+      success: true,
+      totalSupply,
+      mintedNFTs: mintedCount,
+      activity: {
+        salesVolume: 0, // TODO: Implementar quando houver sistema de vendas para custom collections
+        transactions: mintedCount
+      },
+      // Dados extras específicos para custom collections
+      customCollection: {
+        name: customCollection.name,
+        description: customCollection.description,
+        image: customCollection.imageUrl,
+        category: customCollection.category,
+        teamName: customCollection.teamName,
+        uniqueOwners,
+        contractsUsed,
+        mintedNFTs: mintedNFTs.map(nft => ({
+          tokenId: nft.tokenId,
+          owner: nft.minterAddress,
+          contractAddress: nft.contractAddress,
+          mintedAt: nft.mintedAt
+        }))
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error fetching custom collection stats:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch custom collection stats' }, { status: 500 });
+  }
+}
+
+// Função para buscar stats de standard collection (lógica original)
+async function getStandardCollectionStats(db: any, collection: string) {
+  try {
     // 1. Buscar totalSupply do contrato
     let totalSupply = 0;
     const contractAddress = CONTRACT_ADDRESSES[collection];
@@ -46,8 +136,6 @@ export async function GET(request: NextRequest) {
 
     // 2. Contar NFTs mintadas (MongoDB)
     let mintedNFTs = 0;
-    const client = await clientPromise;
-    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db');
     const nftCollection = db.collection(collection);
     const mintedFilter = {
       status: 'Approved',
@@ -78,6 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     return NextResponse.json({
+      success: true,
       totalSupply,
       mintedNFTs,
       activity: {
@@ -85,8 +174,9 @@ export async function GET(request: NextRequest) {
         transactions
       }
     });
+
   } catch (error) {
-    console.error('Error in nft-collection stats endpoint:', error);
-    return NextResponse.json({ success: false, error: 'Internal server error', details: error instanceof Error ? error.message : error }, { status: 500 });
+    console.error('❌ Error fetching standard collection stats:', error);
+    return NextResponse.json({ success: false, error: 'Failed to fetch standard collection stats' }, { status: 500 });
   }
 } 

@@ -139,14 +139,14 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         const statsResponse = await fetch(`/api/marketplace/nft-collection/stats?collection=${params.collectionId}`);
         if (statsResponse.ok) {
           const statsResult = await statsResponse.json();
-          if (statsResult.success) {
+          if (statsResult.success !== false) {
             setMarketplaceStats(prev => ({
               ...prev,
-              totalSupply: statsResult.data.totalSupply,
-              mintedNFTs: statsResult.data.mintedNFTs,
-              totalVolume: `${statsResult.data.salesVolume.toFixed(2)} CHZ`,
-              totalListings: statsResult.data.totalListings || 0,
-              totalAuctions: statsResult.data.totalAuctions || 0
+              totalSupply: statsResult.totalSupply || 0,
+              mintedNFTs: statsResult.mintedNFTs || 0,
+              totalVolume: `${(statsResult.activity?.salesVolume || 0).toFixed(2)} CHZ`,
+              totalListings: statsResult.totalListings || 0,
+              totalAuctions: statsResult.totalAuctions || 0
             }));
           }
         }
