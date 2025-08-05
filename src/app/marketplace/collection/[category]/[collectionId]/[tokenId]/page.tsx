@@ -115,45 +115,107 @@ interface ActivityItem {
 export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
-  // 🔍 DETECÇÃO AUTOMÁTICA: Verificar se tokenId é ObjectId (nova coleção) ou tokenId numérico (NFT antigo)
+  // 🔍 DETECÇÃO AUTOMÁTICA: Verificar tipo de coleção
   const isObjectIdToken = /^[0-9a-fA-F]{24}$/.test(params.tokenId);
+  const isLaunchpadCollection = params.tokenId === 'collection';
+  const isNumericToken = !isNaN(Number(params.tokenId));
+  
+  let detectionRoute = 'Unknown';
+  if (isObjectIdToken) {
+    detectionRoute = 'Custom Collection NFT (MongoDB ObjectId)';
+  } else if (isLaunchpadCollection) {
+    detectionRoute = 'Launchpad Collection (tokenId: collection)';
+  } else if (isNumericToken) {
+    detectionRoute = 'Legacy NFT (Thirdweb TokenId)';
+  }
   
   console.log('🔍 NFT Detail Route Detection:', {
     category: params.category,
-    collectionId: params.collectionId, // Nome da coleção (jersey, stadium, etc.)
+    collectionId: params.collectionId,
     tokenId: params.tokenId,
     isObjectIdToken,
-    route: isObjectIdToken ? 'Custom Collection NFT (MongoDB ObjectId)' : 'Legacy NFT (Thirdweb TokenId)'
+    isLaunchpadCollection,
+    isNumericToken,
+    route: detectionRoute
   });
   
   // 🎯 LÓGICA CORRETA: APIs diferentes para tipos diferentes
-  const { data: nftResponse, isLoading: nftLoading, error: nftError } = isObjectIdToken 
-    ? useQuery({
-        queryKey: ['custom-collection', params.tokenId],
-        queryFn: async () => {
-          console.log('🔥 FETCHING CUSTOM COLLECTION:', `/api/custom-collections/${params.tokenId}`);
-          const response = await fetch(`/api/custom-collections/${params.tokenId}`);
-          console.log('🔥 RESPONSE STATUS:', response.status);
-          
-          if (!response.ok) {
-            console.log('❌ API ERROR:', response.status, response.statusText);
-            throw new Error(`Failed to fetch custom collection: ${response.status}`);
-          }
-          
-          const data = await response.json();
-          console.log('🔥 API RESPONSE DATA:', data);
-          
-          const result = {
-            success: data.success,
-            data: data.collection || data, // Simplificar: dados da coleção
-            source: 'custom_collection'
-          };
-          console.log('🔥 FINAL RESULT:', result);
-          return result;
-        },
-        enabled: !!params.tokenId
-      })
-    : useNFTData(params.tokenId); // NFTs antigos usam a API original
+  const { data: nftResponse, isLoading: nftLoading, error: nftError } = 
+    isObjectIdToken 
+      ? useQuery({
+          queryKey: ['custom-collection', params.tokenId],
+          queryFn: async () => {
+            console.log('🔥 FETCHING CUSTOM COLLECTION:', `/api/custom-collections/${params.tokenId}`);
+            const response = await fetch(`/api/custom-collections/${params.tokenId}`);
+            console.log('🔥 RESPONSE STATUS:', response.status);
+            
+            if (!response.ok) {
+              console.log('❌ API ERROR:', response.status, response.statusText);
+              throw new Error(`Failed to fetch custom collection: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('🔥 API RESPONSE DATA:', data);
+            
+            const result = {
+              success: data.success,
+              data: data.collection || data,
+              source: 'custom_collection'
+            };
+            console.log('🔥 FINAL RESULT:', result);
+            return result;
+          },
+          enabled: !!params.tokenId
+        })
+      : isLaunchpadCollection
+        ? useQuery({
+            queryKey: ['launchpad-collection', params.collectionId, params.tokenId],
+            queryFn: async () => {
+              console.log('🚀 FETCHING LAUNCHPAD COLLECTION from marketplace API');
+              const response = await fetch('/api/marketplace/nfts');
+              console.log('🚀 MARKETPLACE RESPONSE STATUS:', response.status);
+              
+              if (!response.ok) throw new Error('Failed to fetch marketplace data');
+              
+              const data = await response.json();
+              console.log('🚀 MARKETPLACE DATA:', data);
+              
+              // Buscar a coleção específica do launchpad
+              const launchpadCollection = data.data.find((item: any) => 
+                item.type === 'launchpad_collection' && 
+                item.marketplace?.category === params.category
+              );
+              
+              console.log('🚀 FOUND LAUNCHPAD:', launchpadCollection);
+              
+              if (!launchpadCollection) {
+                throw new Error('Launchpad collection not found');
+              }
+              
+              const result = {
+                success: true,
+                data: {
+                  tokenId: launchpadCollection.tokenId,
+                  name: launchpadCollection.metadata?.name || 'Launchpad Collection',
+                  description: launchpadCollection.metadata?.description || '',
+                  image: launchpadCollection.metadata?.image || '',
+                  imageUrl: launchpadCollection.metadata?.image || '',
+                  attributes: launchpadCollection.metadata?.attributes || [],
+                  collection: launchpadCollection.marketplace?.collection || '',
+                  category: launchpadCollection.marketplace?.category || '',
+                  owner: launchpadCollection.owner || '',
+                  contractAddress: launchpadCollection.contractAddress || '',
+                  collectionData: launchpadCollection.collectionData || {}
+                },
+                source: 'launchpad_collection'
+              };
+              
+              console.log('🚀 LAUNCHPAD FINAL RESULT:', result);
+              return result;
+            },
+            enabled: !!params.tokenId
+          })
+        : useNFTData(params.tokenId); // NFTs antigos usam a API original
   const { nfts: marketplaceNFTs, loading: marketplaceLoading, totalCount, categories } = useMarketplaceData();
   
   // 🖼️ DEBUG COMPLETO: Ver exatamente o que chega
