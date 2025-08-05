@@ -6,10 +6,17 @@ import { polygonAmoy } from 'thirdweb/chains';
 import { ObjectId } from 'mongodb';
 
 // Mapear endereço do contrato por coleção
+// 🎯 SOLUÇÃO SEGURA: Tentar ambas as variáveis para máxima compatibilidade
 const CONTRACT_ADDRESSES: Record<string, string> = {
-  jerseys: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
-  stadiums: process.env.NEXT_PUBLIC_STADIUMS_CONTRACT_POLYGON_TESTNET || '',
-  badges: process.env.NEXT_PUBLIC_BADGES_CONTRACT_POLYGON_TESTNET || ''
+  jerseys: process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || 
+           process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || 
+           '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+  stadiums: process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || 
+            process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || 
+            '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+  badges: process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || 
+          process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || 
+          '0xfF973a4aFc5A96DEc81366461A461824c4f80254'
 };
 
 // Função para verificar se é um ObjectId válido
@@ -112,11 +119,21 @@ async function getCustomCollectionStats(db: any, customCollectionId: string) {
 // Função para buscar stats de standard collection (lógica original)
 async function getStandardCollectionStats(db: any, collection: string) {
   try {
-    // 1. Buscar totalSupply do contrato
+    // 1. Buscar totalSupply do contrato (com fallback inteligente)
     let totalSupply = 0;
     const contractAddress = CONTRACT_ADDRESSES[collection];
-    if (contractAddress) {
+    
+    console.log(`🔧 Debug contractAddress for ${collection}:`, {
+      contractAddress,
+      hasAddress: !!contractAddress,
+      addressLength: contractAddress?.length,
+      env_NFT_COLLECTION: !!process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS,
+      env_NFT_DROP: !!process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET
+    });
+
+    if (contractAddress && contractAddress !== '') {
       try {
+        console.log(`🔗 Connecting to contract ${contractAddress} for ${collection}`);
         const contract = getContract({
           address: contractAddress,
           chain: polygonAmoy,
@@ -128,10 +145,14 @@ async function getStandardCollectionStats(db: any, collection: string) {
           params: []
         });
         totalSupply = Number(supply);
+        console.log(`✅ Contract totalSupply for ${collection}: ${totalSupply}`);
       } catch (err) {
-        console.error(`Erro ao buscar totalSupply do contrato para ${collection}:`, err);
-        totalSupply = 0;
+        console.error(`⚠️ Erro ao buscar totalSupply do contrato para ${collection}:`, err);
+        console.log(`🔄 Usando fallback MongoDB para ${collection}`);
+        totalSupply = 0; // Será definido pelo fallback abaixo
       }
+    } else {
+      console.log(`⚠️ Contrato não configurado para ${collection}, usando dados MongoDB`);
     }
 
     // 2. Contar NFTs mintadas (MongoDB)
@@ -163,6 +184,21 @@ async function getStandardCollectionStats(db: any, collection: string) {
       console.error(`Erro ao buscar activity (sales) para ${collection}:`, err);
       salesVolume = 0;
       transactions = 0;
+    }
+
+    console.log(`📊 MongoDB count results for ${collection}:`, {
+      mintedNFTs,
+      totalSupply: totalSupply,
+      needsFallback: totalSupply === 0 && mintedNFTs > 0
+    });
+
+    // 🔄 FALLBACK INTELIGENTE: Se totalSupply é 0, usar dados do MongoDB
+    if (totalSupply === 0 && mintedNFTs > 0) {
+      // Para coleções sem contrato ou com erro, usar mintedNFTs como base para totalSupply
+      totalSupply = mintedNFTs;
+      console.log(`🔄 Fallback totalSupply para ${collection}: ${totalSupply} (baseado em mintedNFTs)`);
+    } else if (totalSupply === 0 && mintedNFTs === 0) {
+      console.log(`⚠️ PROBLEMA: Tanto totalSupply quanto mintedNFTs são 0 para ${collection}`);
     }
 
     return NextResponse.json({

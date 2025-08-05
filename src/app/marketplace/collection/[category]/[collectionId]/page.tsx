@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
-import { notFound } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 async function fetchCollectionData(collectionId: string, category: string) {
@@ -86,8 +86,23 @@ export default function CollectionDetailPage({
 }: { 
   params: { category: string; collectionId: string } 
 }) {
+  const router = useRouter();
   const [collectionData, setCollectionData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // 🚨 DETECÇÃO DE URL INCORRETA: Verificar se há um tokenId na URL que deveria ir para página individual
+  useEffect(() => {
+    const currentPath = window.location.pathname;
+    const pathParts = currentPath.split('/');
+    
+    // Se a URL tem 6 partes: ['', 'marketplace', 'collection', category, collectionId, tokenId]
+    if (pathParts.length === 6 && pathParts[5]) {
+      const tokenId = pathParts[5];
+      console.log('🔄 Detected tokenId in collection URL, redirecting to NFT page:', tokenId);
+      router.replace(`/marketplace/collection/${params.category}/${params.collectionId}/${tokenId}`);
+      return;
+    }
+  }, [params.category, params.collectionId, router]);
 
   useEffect(() => {
     const loadCollectionData = async () => {
@@ -188,7 +203,12 @@ export default function CollectionDetailPage({
               </div>
               <div className="flex-1 cyber-card p-4">
                 <div className="text-xs text-[#FDFDFD]/70">Activity</div>
-                <div className="text-xl font-bold mt-1 text-[#FDFDFD]">0.00 CHZ</div>
+                <div className="text-xl font-bold mt-1 text-[#FDFDFD]">
+                  {collectionData?.activity?.salesVolume ? 
+                    `${collectionData.activity.salesVolume.toFixed(2)} CHZ` : 
+                    `${collectionData?.activity?.transactions || 0} txs`
+                  }
+                </div>
               </div>
             </div>
             
