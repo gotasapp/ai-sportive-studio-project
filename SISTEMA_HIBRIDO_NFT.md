@@ -241,12 +241,13 @@ badges                    // NFTs antigos (legacy)
 
 ### **IDs de exemplo para teste:**
 - **Coleção nova**: `6890b3c52d2d8b663a8ecffb`
+- **Coleção launchpad**: `collection` 
 - **NFT antigo**: `6871949387240af31fccc2d1`
 
 ---
 
 **✅ SISTEMA HÍBRIDO NFT - FUNCIONANDO PERFEITAMENTE**  
-**🎯 Suporta: Coleções Personalizadas + NFTs Legacy**  
+**🎯 Suporta: Coleções Personalizadas + Launchpad + NFTs Legacy**  
 **🚀 Preparado para: Escalonamento e Novos Recursos**
 
 ---
