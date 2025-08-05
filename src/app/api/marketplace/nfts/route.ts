@@ -4,6 +4,123 @@ import clientPromise from '@/lib/mongodb';
 const DB_NAME = 'chz-app-db';
 
 /**
+ * Função para buscar Custom Collections mintadas
+ */
+async function getCustomCollections(db: any, limit: number = 50) {
+  try {
+    console.log('🎨 Fetching custom collections...');
+    
+    // Buscar custom collections ativas com NFTs mintados
+    const customCollections = await db.collection('custom_collections').find({
+      status: 'active'
+    }).toArray();
+
+    const customCollectionNFTs = [];
+
+    for (const collection of customCollections) {
+      // Buscar NFTs mintadas desta coleção
+      const mintedNFTs = await db.collection('custom_collection_mints')
+        .find({ customCollectionId: collection._id })
+        .toArray();
+
+      if (mintedNFTs.length === 0) continue;
+
+      // Criar entrada para a coleção (representada pelo primeiro NFT)
+      const firstNFT = mintedNFTs[0];
+      
+      const collectionEntry = {
+        // 🔑 DADOS OBRIGATÓRIOS PARA MARKETPLACE
+        tokenId: collection._id.toString(),
+        contractAddress: collection.contractAddress || firstNFT.contractAddress,
+        owner: collection.creatorWallet || firstNFT.minterAddress,
+        
+        // 📋 METADADOS DA COLEÇÃO
+        metadata: {
+          name: collection.name,
+          description: collection.description,
+          image: collection.imageUrl,
+          attributes: [
+            { trait_type: 'Type', value: 'custom_collection' },
+            { trait_type: 'Category', value: collection.category },
+            { trait_type: 'Team', value: collection.teamName },
+            { trait_type: 'Season', value: collection.season },
+            { trait_type: 'Total Supply', value: collection.totalSupply?.toString() },
+            { trait_type: 'Minted', value: mintedNFTs.length.toString() },
+            { trait_type: 'Unique Owners', value: [...new Set(mintedNFTs.map(n => n.minterAddress))].length.toString() },
+            { trait_type: 'Contracts Used', value: [...new Set(mintedNFTs.map(n => n.contractAddress))].length.toString() }
+          ]
+        },
+        
+        // 🏪 DADOS PARA MARKETPLACE
+        marketplace: {
+          isListed: false,
+          isListable: false,
+          canTrade: false,
+          verified: true,
+          collection: collection.name,
+          category: collection.category,
+          isCollection: true,
+          isCustomCollection: true, // ✨ MARCADOR IMPORTANTE
+          mintedUnits: mintedNFTs.length,
+          totalUnits: collection.totalSupply || mintedNFTs.length,
+          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length
+        },
+        
+        // ⛓️ DADOS DA BLOCKCHAIN
+        blockchain: {
+          chainId: 80002,
+          network: 'Polygon Amoy',
+          verified: true,
+          tokenId: collection._id.toString(),
+          owner: collection.creatorWallet,
+          contractType: 'Custom Collection'
+        },
+        
+        // 📊 DADOS EXTRAS
+        stats: {
+          views: 0,
+          likes: 0,
+          sales: 0,
+          totalMints: mintedNFTs.length,
+          uniqueOwners: [...new Set(mintedNFTs.map(n => n.minterAddress))].length
+        },
+        
+        // 🗂️ IDENTIFICADORES
+        _id: collection._id.toString(),
+        mongoId: collection._id.toString(),
+        customCollectionId: collection._id.toString(), // ✨ ID PARA DETECÇÃO
+        type: 'custom_collection',
+        category: collection.category,
+        
+        // 🎨 DADOS ESPECÍFICOS DE CUSTOM COLLECTION
+        customCollection: {
+          mintedNFTs: mintedNFTs.map(nft => ({
+            tokenId: nft.tokenId,
+            contractAddress: nft.contractAddress,
+            owner: nft.minterAddress,
+            mintedAt: nft.mintedAt,
+            transactionHash: nft.transactionHash
+          }))
+        },
+        
+        // 📅 TIMESTAMPS
+        createdAt: collection.createdAt,
+        updatedAt: collection.updatedAt || collection.createdAt
+      };
+
+      customCollectionNFTs.push(collectionEntry);
+    }
+
+    console.log(`🎨 Found ${customCollectionNFTs.length} custom collections`);
+    return customCollectionNFTs.slice(0, limit);
+
+  } catch (error) {
+    console.error('❌ Error fetching custom collections:', error);
+    return [];
+  }
+}
+
+/**
  * Função para buscar NFTs do Launchpad mintados
  */
 async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
@@ -136,6 +253,12 @@ export async function GET(request: NextRequest) {
           { isMinted: true },
           { mintStatus: 'minted' },
           { mintStatus: 'success' }
+        ],
+        // 🚫 EXCLUIR NFTs que pertencem a Custom Collections (evitar duplicatas)
+        // Verificar se a imagem não é de uma custom collection
+        $nor: [
+          { 'metadata.image': { $regex: 'collection_jerseys' } },
+          { name: { $regex: 'Collection #' } }
         ]
       };
 
@@ -220,6 +343,10 @@ export async function GET(request: NextRequest) {
     // Adicionar NFTs do launchpad aos resultados
     allNFTs.push(...launchpadNFTs);
 
+    // Buscar e adicionar custom collections
+    const customCollections = await getCustomCollections(db, limit);
+    allNFTs.push(...customCollections);
+
     // Ordenar por data de criação (mais recentes primeiro)
     allNFTs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -246,7 +373,9 @@ export async function GET(request: NextRequest) {
         stadiums: finalNFTs.filter(n => n.type === 'stadium').length,
         badges: finalNFTs.filter(n => n.type === 'badge').length,
         launchpad_collections: finalNFTs.filter(n => n.type === 'launchpad_collection').length,
-        launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0)
+        custom_collections: finalNFTs.filter(n => n.type === 'custom_collection').length,
+        launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0),
+        custom_total_units: finalNFTs.filter(n => n.type === 'custom_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0)
       },
       chainId: parseInt(chainId),
       network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain',

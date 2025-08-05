@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
@@ -40,6 +41,7 @@ import { useMarketplaceData } from '@/hooks/useMarketplaceData';
 
 interface NFTDetailPageProps {
   params: { 
+    category: string;
     collectionId: string;
     tokenId: string;
   };
@@ -113,9 +115,62 @@ interface ActivityItem {
 export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
-  // Usar hooks existentes para dados reais
-  const { data: nftResponse, isLoading: nftLoading, error: nftError } = useNFTData(params.tokenId);
+  // 🔍 DETECÇÃO AUTOMÁTICA: Verificar se tokenId é ObjectId (nova coleção) ou tokenId numérico (NFT antigo)
+  const isObjectIdToken = /^[0-9a-fA-F]{24}$/.test(params.tokenId);
+  
+  console.log('🔍 NFT Detail Route Detection:', {
+    category: params.category,
+    collectionId: params.collectionId, // Nome da coleção (jersey, stadium, etc.)
+    tokenId: params.tokenId,
+    isObjectIdToken,
+    route: isObjectIdToken ? 'Custom Collection NFT (MongoDB ObjectId)' : 'Legacy NFT (Thirdweb TokenId)'
+  });
+  
+  // 🎯 LÓGICA CORRETA: APIs diferentes para tipos diferentes
+  const { data: nftResponse, isLoading: nftLoading, error: nftError } = isObjectIdToken 
+    ? useQuery({
+        queryKey: ['custom-collection', params.tokenId],
+        queryFn: async () => {
+          console.log('🔥 FETCHING CUSTOM COLLECTION:', `/api/custom-collections/${params.tokenId}`);
+          const response = await fetch(`/api/custom-collections/${params.tokenId}`);
+          console.log('🔥 RESPONSE STATUS:', response.status);
+          
+          if (!response.ok) {
+            console.log('❌ API ERROR:', response.status, response.statusText);
+            throw new Error(`Failed to fetch custom collection: ${response.status}`);
+          }
+          
+          const data = await response.json();
+          console.log('🔥 API RESPONSE DATA:', data);
+          
+          const result = {
+            success: data.success,
+            data: data.collection || data, // Simplificar: dados da coleção
+            source: 'custom_collection'
+          };
+          console.log('🔥 FINAL RESULT:', result);
+          return result;
+        },
+        enabled: !!params.tokenId
+      })
+    : useNFTData(params.tokenId); // NFTs antigos usam a API original
   const { nfts: marketplaceNFTs, loading: marketplaceLoading, totalCount, categories } = useMarketplaceData();
+  
+  // 🖼️ DEBUG COMPLETO: Ver exatamente o que chega
+  console.log('🔍 RESPONSE CHECK:', {
+    hasResponse: !!nftResponse,
+    hasData: !!nftResponse?.data,
+    hasImage: !!nftResponse?.data?.image,
+    dataKeys: nftResponse?.data ? Object.keys(nftResponse.data) : 'NO_DATA',
+    fullResponse: nftResponse
+  });
+  
+  if (nftResponse?.data?.image) {
+    console.log('🖼️ ORIGINAL URL:', nftResponse.data.image);
+    console.log('🖼️ NORMALIZED URL:', normalizeIpfsUri(nftResponse.data.image));
+  } else {
+    console.log('❌ NO IMAGE DATA FOUND');
+  }
   
   // Estados locais
   const [salesData, setSalesData] = useState<SaleData[]>([]);
@@ -135,8 +190,9 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
       try {
         setStatsLoading(true);
 
-        // Buscar stats da coleção
-        const statsResponse = await fetch(`/api/marketplace/nft-collection/stats?collection=${params.collectionId}`);
+        // Buscar stats da coleção usando collectionId que agora é o nome da coleção (jersey, stadium, etc.)
+        const collectionParam = params.collectionId; // collectionId é agora o nome da coleção
+        const statsResponse = await fetch(`/api/marketplace/nft-collection/stats?collection=${collectionParam}`);
         if (statsResponse.ok) {
           const statsResult = await statsResponse.json();
           if (statsResult.success !== false) {
@@ -152,7 +208,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         }
 
         // Buscar dados de vendas específicas deste NFT
-        const salesResponse = await fetch(`/api/marketplace/sales?collection=${params.collectionId}&tokenId=${params.tokenId}`);
+        const salesResponse = await fetch(`/api/marketplace/sales?collection=${collectionParam}&tokenId=${params.tokenId}`);
         if (salesResponse.ok) {
           const salesResult = await salesResponse.json();
           if (salesResult.success && salesResult.data) {
@@ -289,7 +345,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     description: nftData.description || '',
     imageUrl: convertIpfsToHttp(nftData.imageHttp || nftData.image || ''),
     tokenId: params.tokenId,
-    collection: params.collectionId,
+    collection: params.collectionId, // Nome da coleção (jersey, stadium, badge)
     creator: nftData.metadata?.creator || '',
     owner: nftData.owner || '',
     price: currentMarketplaceNFT?.price || '0.047',
@@ -397,11 +453,14 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 <div className="h-[480px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
                   {displayData.imageUrl ? (
                     <img
-                      src={normalizeIpfsUri(displayData.imageUrl)}
+                      src={displayData.imageUrl.startsWith('http') ? displayData.imageUrl : normalizeIpfsUri(displayData.imageUrl)}
                       alt={displayData.name}
                       className="object-cover w-full h-full"
                       style={{ aspectRatio: '1/1', objectFit: 'cover' }}
-                      onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                      onError={e => { 
+                        console.log('🖼️ Image failed to load:', e.currentTarget.src);
+                        e.currentTarget.style.display = 'none';
+                      }}
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -632,7 +691,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardContent className="p-2 lg:p-3 pt-0">
                 {displayData.traits && displayData.traits.length > 0 ? (
                                       <div className="grid grid-cols-2 gap-1">
-                      {displayData.traits.map((trait, index) => (
+                      {displayData.traits.map((trait: any, index: number) => (
                         <div key={index} className="p-1.5 rounded bg-[#14101e] border border-[#FDFDFD]/10">
                           <div className="text-xs text-[#FDFDFD]/50 uppercase tracking-wider">
                             {trait.trait_type}

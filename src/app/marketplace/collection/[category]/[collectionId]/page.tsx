@@ -8,17 +8,75 @@ import { Separator } from '@/components/ui/separator';
 import { notFound } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-async function fetchCollectionData(collectionId: string) {
+async function fetchCollectionData(collectionId: string, category: string) {
   try {
-    // Usar o endpoint mais completo de custom collections
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/custom-collections/${collectionId}`,
-      { next: { revalidate: 30 } }
-    );
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.success ? data.collection : null;
-  } catch {
+    console.log('🔍 Fetching collection data for:', { collectionId, category });
+    
+    // 🎯 DETECÇÃO INTELIGENTE: Verificar se category é na verdade um collectionId direto
+    const categoryIsObjectId = /^[0-9a-fA-F]{24}$/.test(category);
+    const collectionIsObjectId = /^[0-9a-fA-F]{24}$/.test(collectionId);
+    
+    // Se category é um ObjectId, então estamos na rota antiga: /collection/[objectId]/[tokenId]
+    if (categoryIsObjectId && !collectionIsObjectId) {
+      console.log('🔄 Detected legacy route pattern, treating category as collectionId');
+      // Swap: category vira collectionId, collectionId vira tokenId
+      const actualCollectionId = category;
+      const actualTokenId = collectionId;
+      
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/custom-collections/${actualCollectionId}`,
+        { next: { revalidate: 30 } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.success ? { ...data.collection, type: 'custom', detectedTokenId: actualTokenId } : null;
+    }
+    
+    // Verificar se é um ObjectId (24 caracteres hex) = Custom Collection
+    const isObjectId = collectionIsObjectId;
+    
+    if (isObjectId) {
+      // É uma Custom Collection
+      console.log('🎨 Detected Custom Collection, using /api/custom-collections/');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/custom-collections/${collectionId}`,
+        { next: { revalidate: 30 } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.success ? { ...data.collection, type: 'custom' } : null;
+    } else {
+      // É uma Standard Collection (jerseys, stadiums, badges)
+      console.log('⚽ Detected Standard Collection, using /api/marketplace/nft-collection/stats');
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/marketplace/nft-collection/stats?collection=${category}`,
+        { next: { revalidate: 30 } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      
+      // Transformar dados de standard collection para formato compatível
+      if (data.success) {
+        return {
+          type: 'standard',
+          name: `${category.charAt(0).toUpperCase()}${category.slice(1)} Collection`,
+          description: `Official ${category} collection`,
+          image: '', // Será definido depois
+          category: category,
+          totalSupply: data.totalSupply || 0,
+          stats: {
+            totalMinted: data.mintedNFTs || 0,
+            uniqueOwners: 1, // Para standard collections
+            contractsUsed: 1
+          },
+          mintedNFTs: [], // Standard collections não mostram NFTs individuais aqui
+          activity: data.activity || { salesVolume: 0, transactions: 0 }
+        };
+      }
+      return null;
+    }
+  } catch (error) {
+    console.error('❌ Error fetching collection data:', error);
     return null;
   }
 }
@@ -34,7 +92,7 @@ export default function CollectionDetailPage({
   useEffect(() => {
     const loadCollectionData = async () => {
       try {
-        const data = await fetchCollectionData(params.collectionId);
+        const data = await fetchCollectionData(params.collectionId, params.category);
         if (data) {
           setCollectionData(data);
         }
@@ -46,7 +104,7 @@ export default function CollectionDetailPage({
     };
 
     loadCollectionData();
-  }, [params.collectionId]);
+  }, [params.collectionId, params.category]);
 
   if (loading) {
     return (
@@ -69,95 +127,93 @@ export default function CollectionDetailPage({
     return notFound();
   }
 
-  // Esta é uma custom collection
-  const isCustomCollection = true;
+  // Detectar tipo de coleção
+  const isCustomCollection = collectionData?.type === 'custom';
 
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4">
-      {/* Imagem principal */}
-      <Card className="mb-8 bg-transparent border-secondary/20">
-        <CardContent className="flex flex-col md:flex-row gap-8 items-center">
-          <div className="w-64 h-64 bg-[#14101e] rounded-lg flex items-center justify-center overflow-hidden">
-            {isCustomCollection && collectionData?.image ? (
-              <img 
-                src={collectionData.image} 
-                alt={collectionData.name}
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <Skeleton className="w-60 h-60 rounded-lg" />
-            )}
-          </div>
-          <div className="flex-1 space-y-4">
-            <CardTitle className="text-2xl text-secondary">
-              {isCustomCollection ? collectionData?.name : 'Nome da Coleção'}
-            </CardTitle>
-            <CardDescription className="text-secondary/80">
-              {isCustomCollection ? collectionData?.description : 'Descrição curta da coleção ou NFT.'}
-            </CardDescription>
-            <div className="flex gap-2">
-              <Badge variant="secondary">
-                {isCustomCollection ? collectionData?.category : params.category}
-              </Badge>
-              <Badge variant="secondary">
-                {`${collectionData.stats?.uniqueOwners || 1} Owner${(collectionData.stats?.uniqueOwners || 1) > 1 ? 's' : ''}`}
-              </Badge>
-              {isCustomCollection && collectionData?.teamName && (
-                <Badge variant="secondary">{collectionData.teamName}</Badge>
+    <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
+      <main className="container mx-auto px-3 py-6">
+        
+        {/* Header da Coleção */}
+        <div className="flex flex-col md:flex-row gap-8 w-full items-center mb-8">
+          {/* Imagem grande da coleção */}
+          <div className="w-full md:w-1/3 flex justify-center">
+            <div className="aspect-square w-48 md:w-64 bg-[#14101e] rounded-lg border border-[#FDFDFD]/10 overflow-hidden">
+              {collectionData?.image ? (
+                <img 
+                  src={collectionData.image} 
+                  alt={collectionData.name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <Skeleton className="w-full h-full" />
               )}
             </div>
-            {/* Botão de ação */}
-            <Button className="cyber-button bg-[#A20131] text-white">
-              {isCustomCollection ? 'Ver NFTs' : 'Comprar'}
-            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats principais */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <Card className="bg-transparent border-secondary/20">
-          <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">{collectionData.totalSupply ?? 0}</div>
-            <div className="text-xs text-secondary/70">Total Supply</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-transparent border-secondary/20">
-          <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">{collectionData.stats?.totalMinted ?? 0}</div>
-            <div className="text-xs text-secondary/70">Mintados</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-transparent border-secondary/20">
-          <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">0.00</div>
-            <div className="text-xs text-secondary/70">Volume</div>
-          </CardContent>
-        </Card>
-        <Card className="bg-transparent border-secondary/20">
-          <CardContent className="py-4 text-center">
-            <div className="text-2xl font-bold text-secondary">{collectionData.stats?.totalMinted ?? 0}</div>
-            <div className="text-xs text-secondary/70">Transações</div>
-          </CardContent>
-        </Card>
-      </div>
+          
+          {/* Stats + Info */}
+          <div className="flex-1 flex flex-col gap-4">
+            {/* Título e descrição */}
+            <div>
+              <h1 className="text-2xl font-bold text-[#FDFDFD] mb-2">
+                {collectionData?.name || 'Loading...'}
+              </h1>
+              <p className="text-[#FDFDFD]/70 text-sm mb-4">
+                {collectionData?.description || 'Loading description...'}
+              </p>
+              <div className="flex gap-2 mb-4">
+                <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+                  {collectionData?.category || params.category}
+                </Badge>
+                <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                  {`${collectionData?.stats?.uniqueOwners || 1} Owner${(collectionData?.stats?.uniqueOwners || 1) > 1 ? 's' : ''}`}
+                </Badge>
+                {collectionData?.teamName && (
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    {collectionData.teamName}
+                  </Badge>
+                )}
+              </div>
+            </div>
+            
+            {/* Stats Cards */}
+            <div className="flex gap-4 w-full">
+              <div className="flex-1 cyber-card p-4">
+                <div className="text-xs text-[#FDFDFD]/70">Total Supply</div>
+                <div className="text-xl font-bold mt-1 text-[#FDFDFD]">{collectionData?.totalSupply || '--'}</div>
+              </div>
+              <div className="flex-1 cyber-card p-4">
+                <div className="text-xs text-[#FDFDFD]/70">NFTs</div>
+                <div className="text-xl font-bold mt-1 text-[#FDFDFD]">{collectionData?.stats?.totalMinted || '--'}</div>
+              </div>
+              <div className="flex-1 cyber-card p-4">
+                <div className="text-xs text-[#FDFDFD]/70">Activity</div>
+                <div className="text-xl font-bold mt-1 text-[#FDFDFD]">0.00 CHZ</div>
+              </div>
+            </div>
+            
+            {/* Botão de ação */}
+            <div className="mt-2">
+              <Button className="cyber-button bg-[#A20131] text-white hover:bg-[#A20131]/80 border-[#A20131] w-full md:w-auto">
+                {isCustomCollection ? 'Ver Coleção Completa' : 'Explorar NFTs'}
+              </Button>
+            </div>
+          </div>
+        </div>
 
       <Separator className="my-8 bg-secondary/10" />
 
-      {/* NFTs da Coleção - Apenas para Custom Collections */}
-      {isCustomCollection && collectionData?.mintedNFTs && collectionData.mintedNFTs.length > 0 && (
-        <Card className="mb-8 bg-transparent border-secondary/20">
-          <CardHeader>
-            <CardTitle className="text-secondary text-lg">
+        {/* NFTs da Coleção - Apenas para Custom Collections */}
+        {isCustomCollection && collectionData?.mintedNFTs && collectionData.mintedNFTs.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-[#FDFDFD] mb-6">
               NFTs da Coleção ({collectionData.mintedNFTs.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {collectionData.mintedNFTs.map((nft: any, index: number) => (
-                <Card key={nft.tokenId} className="bg-secondary/5 border-secondary/10 hover:border-secondary/20 transition-colors">
-                  <CardContent className="p-4">
-                    <div className="aspect-square bg-secondary/10 rounded-lg mb-3 overflow-hidden">
+                <Card key={nft.tokenId} className="cyber-card hover:border-[#A20131]/50 transition-all duration-200">
+                  <CardContent className="p-3">
+                    <div className="aspect-square bg-[#14101e] rounded-lg mb-3 overflow-hidden border border-[#FDFDFD]/10">
                       <img 
                         src={collectionData.image} 
                         alt={`${collectionData.name} #${nft.tokenId}`}
@@ -165,25 +221,27 @@ export default function CollectionDetailPage({
                       />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="font-semibold text-secondary text-sm">
+                      <h3 className="font-semibold text-[#FDFDFD] text-sm truncate">
                         {collectionData.name} #{nft.tokenId}
                       </h3>
-                      <div className="flex justify-between text-xs text-secondary/70">
-                        <span>Token ID</span>
-                        <span>{nft.tokenId}</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-secondary/70">
-                        <span>Owner</span>
-                        <span>{nft.owner.slice(0, 6)}...{nft.owner.slice(-4)}</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-secondary/70">
-                        <span>Mintado</span>
-                        <span>{new Date(nft.mintedAt).toLocaleDateString()}</span>
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-[#FDFDFD]/70">Token ID</span>
+                          <span className="text-[#FDFDFD]">{nft.tokenId}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-[#FDFDFD]/70">Owner</span>
+                          <span className="text-[#FDFDFD]">{nft.owner.slice(0, 6)}...{nft.owner.slice(-4)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-[#FDFDFD]/70">Mintado</span>
+                          <span className="text-[#FDFDFD]">{new Date(nft.mintedAt).toLocaleDateString()}</span>
+                        </div>
                       </div>
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className="w-full mt-2 text-xs"
+                        className="w-full mt-3 text-xs bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20"
                         onClick={() => window.open(`https://amoy.polygonscan.com/address/${nft.contractAddress}`, '_blank')}
                       >
                         Ver no Explorer
@@ -193,65 +251,98 @@ export default function CollectionDetailPage({
                 </Card>
               ))}
             </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Traits/Atributos */}
-      <Card className="mb-8 bg-transparent border-secondary/20">
-        <CardHeader>
-          <CardTitle className="text-secondary text-lg">Traits / Atributos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3">
-            {isCustomCollection && collectionData ? (
-              <>
-                <Badge variant="secondary">Category: {collectionData.category}</Badge>
-                <Badge variant="secondary">Team: {collectionData.teamName}</Badge>
-                    <Badge variant="secondary">Unique Owners: {collectionData.stats?.uniqueOwners}</Badge>
-    <Badge variant="secondary">Contracts Used: {collectionData.stats?.contractsUsed}</Badge>
-              </>
-            ) : (
-              <>
-                <Badge variant="secondary">Trait 1</Badge>
-                <Badge variant="secondary">Trait 2</Badge>
-                <Badge variant="secondary">Trait 3</Badge>
-              </>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        )}
 
-      {/* Histórico de preço (gráfico) */}
-      <Card className="mb-8 bg-transparent border-secondary/20">
-        <CardHeader>
-          <CardTitle className="text-secondary text-lg">Histórico de Preço</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Placeholder para gráfico */}
-          <Skeleton className="w-full h-40 rounded" />
-        </CardContent>
-      </Card>
-
-      {/* Atividade recente */}
-      <Card className="bg-transparent border-secondary/20">
-        <CardHeader>
-          <CardTitle className="text-secondary text-lg">Atividade Recente</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Placeholder para lista de atividades */}
-          <div className="space-y-2">
-            <div className="flex justify-between text-secondary/80">
-              <span>Usuário X comprou NFT</span>
-              <span>há 2h</span>
-            </div>
-            <div className="flex justify-between text-secondary/80">
-              <span>Usuário Y listou NFT</span>
-              <span>há 5h</span>
+        {/* Seção para Standard Collections */}
+        {!isCustomCollection && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-[#FDFDFD] mb-6">
+              Coleção {collectionData?.name}
+            </h2>
+            <div className="cyber-card p-8 text-center">
+              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-4">
+                Esta é uma coleção oficial de {params.category}
+              </h3>
+              <p className="text-[#FDFDFD]/70 mb-6">
+                {collectionData?.description || `Explore os NFTs disponíveis da coleção ${params.category}.`}
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                    {collectionData?.totalSupply || '--'}
+                  </div>
+                  <div className="text-[#FDFDFD]/70">Total Supply</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                    {collectionData?.stats?.totalMinted || '--'}
+                  </div>
+                  <div className="text-[#FDFDFD]/70">Mintados</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                    {collectionData?.activity?.transactions || 0}
+                  </div>
+                  <div className="text-[#FDFDFD]/70">Transações</div>
+                </div>
+              </div>
+              <Button className="cyber-button bg-[#A20131] text-white hover:bg-[#A20131]/80 border-[#A20131] mt-6">
+                Ver NFTs no Marketplace
+              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        )}
+
+        {/* Traits/Atributos */}
+        {collectionData && (
+          <div className="mb-8">
+            <h2 className="text-xl font-bold text-[#FDFDFD] mb-6">Traits / Atributos</h2>
+            <div className="flex flex-wrap gap-3">
+              <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+                Category: {collectionData.category}
+              </Badge>
+              
+              {/* Traits específicos para Custom Collections */}
+              {isCustomCollection && (
+                <>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Team: {collectionData.teamName}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Unique Owners: {collectionData.stats?.uniqueOwners}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Contracts Used: {collectionData.stats?.contractsUsed}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Season: {collectionData.season}
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Type: AI Generated
+                  </Badge>
+                </>
+              )}
+              
+              {/* Traits específicos para Standard Collections */}
+              {!isCustomCollection && (
+                <>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Type: Official Collection
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Blockchain: Polygon Amoy
+                  </Badge>
+                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
+                    Standard: ERC-721
+                  </Badge>
+                </>
+              )}
+            </div>
+          </div>
+        )}
+
+      </main>
     </div>
   );
 }

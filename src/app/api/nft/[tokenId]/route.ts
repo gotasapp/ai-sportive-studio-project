@@ -5,6 +5,7 @@ import { client } from '@/lib/ThirdwebProvider'
 import { connectToDatabase } from '@/lib/mongodb'
 import { getNFT, ownerOf } from 'thirdweb/extensions/erc721'
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix'
+import { ObjectId } from 'mongodb'
 
 // Cache TTL em minutos
 const CACHE_TTL_MINUTES = 15
@@ -263,6 +264,88 @@ async function getNFTFromMongoDB(tokenId: string): Promise<CachedNFT | null> {
   }
 }
 
+// 🎨 FUNÇÃO PARA COLEÇÕES PERSONALIZADAS (ObjectId)
+async function handleCustomCollectionNFT(objectId: string): Promise<NextResponse> {
+  try {
+    console.log(`🎨 Handling Custom Collection NFT: ${objectId}`);
+    
+    const client = await connectToDatabase();
+    const db = client.db(process.env.MONGODB_DB_NAME || 'chz-app-db');
+    
+    // 🔍 BUSCA INTELIGENTE: Pode ser _id do mint OU customCollectionId
+    let mint = null;
+    
+    try {
+      // Primeiro, tentar como _id do mint específico
+      mint = await db.collection('custom_collection_mints').findOne({
+        _id: new ObjectId(objectId)
+      });
+      
+      if (!mint) {
+        // Se não encontrou, pode ser customCollectionId - buscar primeiro NFT da coleção
+        console.log(`🔄 Not found as mint _id, trying as customCollectionId: ${objectId}`);
+        mint = await db.collection('custom_collection_mints').findOne({
+          customCollectionId: new ObjectId(objectId)
+        });
+        
+        if (mint) {
+          console.log(`✅ Found as customCollectionId, using first NFT: ${mint._id}`);
+        }
+      }
+    } catch (error) {
+      console.log(`❌ Error searching for ObjectId ${objectId}:`, error);
+    }
+    
+    if (!mint) {
+      console.log(`❌ Custom Collection NFT ${objectId} not found`);
+      return NextResponse.json(
+        { success: false, error: 'Custom Collection NFT not found' },
+        { status: 404 }
+      );
+    }
+    
+    // Buscar dados da coleção
+    const collection = await db.collection('custom_collections').findOne({
+      _id: mint.customCollectionId
+    });
+    
+    const nftData = {
+      tokenId: objectId,
+      name: mint.metadata?.name || `${collection?.name || 'NFT'} #${mint.tokenId}`,
+      description: mint.metadata?.description || collection?.description || '',
+      image: mint.metadata?.image || mint.imageUrl || '',
+      imageHttp: convertIpfsToHttp(mint.metadata?.image || mint.imageUrl || ''),
+      owner: mint.minterAddress || 'Unknown',
+      metadata: mint.metadata || {},
+      attributes: mint.metadata?.attributes || [],
+      contractAddress: mint.contractAddress || '',
+      chainId: mint.chainId || 80002,
+      collection: collection?.name || 'Custom Collection',
+      category: mint.category || collection?.category || '',
+      subcategoryType: mint.subcategoryType || collection?.subcategoryType || '',
+      teamName: mint.teamName || collection?.teamName || '',
+      createdAt: mint.mintedAt || mint.createdAt || new Date(),
+      lastUpdated: new Date()
+    };
+    
+    console.log(`✅ Custom Collection NFT found: ${nftData.name}`);
+    
+    return NextResponse.json({
+      success: true,
+      data: nftData,
+      source: 'custom_collection',
+      type: 'custom'
+    });
+    
+  } catch (error) {
+    console.error(`❌ Error handling Custom Collection NFT ${objectId}:`, error);
+    return NextResponse.json(
+      { success: false, error: 'Error fetching Custom Collection NFT' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { tokenId: string } }
@@ -270,14 +353,33 @@ export async function GET(
   try {
     const tokenId = params.tokenId
     
-    if (!tokenId || isNaN(Number(tokenId))) {
+    if (!tokenId) {
       return NextResponse.json(
-        { success: false, error: 'Invalid token ID' },
+        { success: false, error: 'Token ID is required' },
         { status: 400 }
       )
     }
 
-    console.log(`🎯 API Request for NFT ${tokenId}`)
+    // 🎯 DETECÇÃO HÍBRIDA: ObjectId (nova coleção) vs tokenId numérico (NFT antigo)
+    const isObjectId = /^[0-9a-fA-F]{24}$/.test(tokenId);
+    const isNumericTokenId = !isNaN(Number(tokenId));
+
+    console.log(`🎯 API Request for ${isObjectId ? 'Custom Collection NFT' : 'Standard NFT'} ${tokenId}`)
+
+    // 🎨 Se for ObjectId, buscar de coleção personalizada
+    if (isObjectId) {
+      return await handleCustomCollectionNFT(tokenId);
+    }
+    
+    // 🏈 Se for tokenId numérico, buscar NFT antigo (lógica original)
+    if (!isNumericTokenId) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid token ID format' },
+        { status: 400 }
+      )
+    }
+
+    console.log(`🏈 Processing standard NFT ${tokenId}`)
 
     // 1. Tentar buscar do cache primeiro
     const cached = await getCachedNFT(tokenId)

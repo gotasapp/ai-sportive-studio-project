@@ -29,6 +29,9 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           currentBid={item.currentBid}
           endTime={item.endTime}
           activeOffers={item.activeOffers || 0}
+          // Props para Custom Collections
+          collectionId={item.customCollectionId || item._id}
+          isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection' || item.marketplace?.isCustomCollection}
         />
       ))}
     </div>

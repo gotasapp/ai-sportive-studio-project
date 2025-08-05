@@ -32,6 +32,9 @@ interface MarketplaceCardProps {
   listingId?: string;
   isListed?: boolean;
   owner?: string;
+  // Para Custom Collections
+  collectionId?: string;
+  isCustomCollection?: boolean;
   // Informações de leilão (se aplicável)
   isAuction?: boolean;
   auctionId?: string;
@@ -59,6 +62,8 @@ export default function MarketplaceCard({
   listingId,
   isListed = false,
   owner,
+  collectionId,
+  isCustomCollection = false,
   isAuction = false,
   auctionId,
   currentBid,
@@ -325,7 +330,11 @@ export default function MarketplaceCard({
   return (
     <>
       <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
-        <Link href={`/marketplace/collection/${category || 'jerseys'}/${tokenId}`} prefetch={false} legacyBehavior>
+        <Link href={
+          isCustomCollection && collectionId 
+            ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
+            : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
+        } prefetch={false} legacyBehavior>
           <a className="block relative aspect-square focus:outline-none">
             <CardImage 
               src={imageUrl} 

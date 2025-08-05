@@ -23,9 +23,10 @@ interface NFTOwner {
 interface APIResponse<T> {
   success: boolean
   data: T
-  source: 'cache' | 'thirdweb' | 'stale_cache'
-  cached_at: Date
+  source: 'cache' | 'thirdweb' | 'stale_cache' | 'custom_collection' | 'production' | 'mongodb' | 'database_fallback'
+  cached_at?: Date
   warning?: string
+  type?: string
 }
 
 // Hook para dados completos do NFT
