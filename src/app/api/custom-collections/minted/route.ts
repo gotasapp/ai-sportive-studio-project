@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Buscar informações das coleções para enriquecer os dados
-    const customCollectionIds = [...new Set(mintedNFTs.map(nft => nft.customCollectionId))];
+    const customCollectionIds = Array.from(new Set(mintedNFTs.map(nft => nft.customCollectionId)));
     const customCollections = await db.collection('custom_collections')
       .find({ _id: { $in: customCollectionIds } })
       .toArray();
