@@ -15,7 +15,7 @@ export async function GET(
     const db = mongoClient.db(DB_NAME);
     
     // Buscar coleção específica
-    let customCollection;
+    let customCollection: any = null;
     try {
       customCollection = await db.collection('custom_collections').findOne({
         _id: new ObjectId(params.id)
