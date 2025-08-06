@@ -84,22 +84,12 @@ export async function POST(request: NextRequest) {
       contract,
       phases: [
         {
-          startTimestamp: BigInt(Math.floor(Date.now() / 1000)), // Timestamp em segundos
+          startTime: new Date(), // Data de início
           maxClaimableSupply: BigInt(quantity), // Supply total
-          quantityLimitPerWallet: BigInt(quantity), // Usuário pode pegar todos
-          pricePerToken: BigInt(0), // Grátis 
-          currency: "0x0000000000000000000000000000000000000000", // Native token (MATIC)
-          merkleRoot: "0x0000000000000000000000000000000000000000000000000000000000000000", // Público
-          metadata: {
-            name: "Free Mint Phase",
-            description: "Mint gratuito da coleção",
-            currency: "MATIC",
-            stageType: "public",
-            allowlistRequired: false
-          }
+          maxClaimablePerWallet: BigInt(quantity), // Usuário pode pegar todos
+          price: "0", // Grátis
         },
       ],
-      resetEligibilityOnNewConditions: false
     });
 
     // Backend configura as condições
