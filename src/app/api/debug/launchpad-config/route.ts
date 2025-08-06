@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { generateMintSignature } from 'thirdweb/extensions/erc721';
+import { privateKeyToAccount } from 'thirdweb/wallets';
 
 // Define a chain Amoy com RPC dedicado
 const amoy = defineChain({
@@ -74,19 +75,28 @@ export async function GET(request: NextRequest) {
         });
 
         // Tentar gerar uma signature de teste
+        const account = privateKeyToAccount({
+          client,
+          privateKey: BACKEND_WALLET_PRIVATE_KEY,
+        });
+        
+        const mintRequest = {
+          to: BACKEND_WALLET_ADDRESS || '0x0000000000000000000000000000000000000000',
+          royaltyRecipient: account.address,
+          royaltyBps: 0,
+          primarySaleRecipient: account.address,
+          uri: "https://example.com/test.json", // Test metadata URI
+          price: BigInt(0),
+          currency: "0x0000000000000000000000000000000000000000",
+          validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
+          validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 60 * 60),
+          uid: `0x${Date.now().toString(16).padStart(64, '0')}`,
+        };
+        
         const testSignature = await generateMintSignature({
           contract,
-          to: BACKEND_WALLET_ADDRESS || '0x0000000000000000000000000000000000000000',
-          metadata: {
-            name: "Test NFT",
-            description: "Test NFT for configuration check",
-            image: "https://example.com/test.png",
-            attributes: []
-          },
-          price: "0",
-          currency: "0x0000000000000000000000000000000000000000",
-          validityStartTimestamp: new Date(),
-          validityEndTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          account,
+          mintRequest,
         });
 
         launchpadContractTest = { 
@@ -121,19 +131,28 @@ export async function GET(request: NextRequest) {
         });
 
         // Tentar gerar uma signature de teste
+        const account = privateKeyToAccount({
+          client,
+          privateKey: BACKEND_WALLET_PRIVATE_KEY,
+        });
+        
+        const mintRequest = {
+          to: BACKEND_WALLET_ADDRESS || '0x0000000000000000000000000000000000000000',
+          royaltyRecipient: account.address,
+          royaltyBps: 0,
+          primarySaleRecipient: account.address,
+          uri: "https://example.com/test.json", // Test metadata URI
+          price: BigInt(0),
+          currency: "0x0000000000000000000000000000000000000000",
+          validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
+          validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 60 * 60),
+          uid: `0x${Date.now().toString(16).padStart(64, '0')}`,
+        };
+        
         const testSignature = await generateMintSignature({
           contract,
-          to: BACKEND_WALLET_ADDRESS || '0x0000000000000000000000000000000000000000',
-          metadata: {
-            name: "Test NFT",
-            description: "Test NFT for configuration check",
-            image: "https://example.com/test.png",
-            attributes: []
-          },
-          price: "0",
-          currency: "0x0000000000000000000000000000000000000000",
-          validityStartTimestamp: new Date(),
-          validityEndTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          account,
+          mintRequest,
         });
 
         nftCollectionTest = { 
