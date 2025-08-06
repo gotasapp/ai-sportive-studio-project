@@ -88,8 +88,8 @@ export async function GET(
       // Estatísticas
       stats: {
         totalMinted: mintedNFTs.length,
-        uniqueOwners: [...new Set(mintedNFTs.map(nft => nft.minterAddress))].length,
-        contractsUsed: [...new Set(mintedNFTs.map(nft => nft.contractAddress))].length
+        uniqueOwners: Array.from(new Set(mintedNFTs.map(nft => nft.minterAddress))).length,
+        contractsUsed: Array.from(new Set(mintedNFTs.map(nft => nft.contractAddress))).length
       }
     };
     
