@@ -210,6 +210,7 @@ export interface UpdateCollectionRequest {
   image?: string;
   bannerImage?: string;
   status?: LaunchpadStatus | MarketplaceStatus;
+  type?: string;
   launchDate?: Date;
   endDate?: Date;
   price?: string;
