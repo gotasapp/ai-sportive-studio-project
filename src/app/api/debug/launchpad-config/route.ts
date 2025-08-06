@@ -97,8 +97,8 @@ export async function GET(request: NextRequest) {
           },
           price: "0",
           currency: "0x0000000000000000000000000000000000000000",
-          validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
-          validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 60 * 60),
+          validityStartTimestamp: new Date(),
+          validityEndTimestamp: new Date(Date.now() + 60 * 60 * 1000),
           uid: `0x${Date.now().toString(16).padStart(64, '0')}`,
         };
         
@@ -161,8 +161,8 @@ export async function GET(request: NextRequest) {
           },
           price: "0",
           currency: "0x0000000000000000000000000000000000000000",
-          validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
-          validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 60 * 60),
+          validityStartTimestamp: new Date(),
+          validityEndTimestamp: new Date(Date.now() + 60 * 60 * 1000),
           uid: `0x${Date.now().toString(16).padStart(64, '0')}`,
         };
         
