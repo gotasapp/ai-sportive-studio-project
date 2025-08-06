@@ -97,9 +97,9 @@ export async function GET(request: NextRequest) {
     });
 
     // Separar por categoria
-    const jerseys = enrichedNFTs.filter(nft => nft.category === 'jersey');
-    const stadiums = enrichedNFTs.filter(nft => nft.category === 'stadium');
-    const badges = enrichedNFTs.filter(nft => nft.category === 'badge');
+    const jerseys = enrichedNFTs.filter(nft => nft.metadata.category === 'jersey');
+    const stadiums = enrichedNFTs.filter(nft => nft.metadata.category === 'stadium');
+    const badges = enrichedNFTs.filter(nft => nft.metadata.category === 'badge');
 
     console.log('📋 Mints de coleções personalizadas encontrados:', {
       total: enrichedNFTs.length,
