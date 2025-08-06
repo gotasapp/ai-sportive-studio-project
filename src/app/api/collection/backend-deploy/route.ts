@@ -65,9 +65,7 @@ export async function POST(request: NextRequest) {
         symbol: "AIGC", // AI Generated Collection
         description: description,
         image: imageUri,
-        primary_sale_recipient: userWallet, // Usuário recebe vendas primárias
-        royalty_recipient: userWallet, // Usuário recebe royalties
-        royalty_bps: 500, // 5%
+        // Note: primary_sale_recipient and royalty settings may need to be configured after deployment
       },
     });
 
