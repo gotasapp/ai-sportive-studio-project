@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     console.log('📋 Environment variables check:', envCheck);
 
     // 2. Testar conexão com Thirdweb
-    let thirdwebTest = { success: false, error: null };
+    let thirdwebTest: { success: boolean; error: string | null } = { success: false, error: null };
     if (THIRDWEB_SECRET_KEY) {
       try {
         const client = createThirdwebClient({ 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Testar contrato Launchpad
-    let launchpadContractTest = { success: false, error: null, contractType: null };
+    let launchpadContractTest: { success: boolean; error: string | null; contractType: string | null } = { success: false, error: null, contractType: null };
     if (LAUNCHPAD_CONTRACT_ADDRESS && THIRDWEB_SECRET_KEY) {
       try {
         const client = createThirdwebClient({ 
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 4. Testar contrato NFT Collection (fallback)
-    let nftCollectionTest = { success: false, error: null };
+    let nftCollectionTest: { success: boolean; error: string | null } = { success: false, error: null };
     if (NFT_COLLECTION_CONTRACT_ADDRESS && THIRDWEB_SECRET_KEY) {
       try {
         const client = createThirdwebClient({ 
