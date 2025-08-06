@@ -90,7 +90,11 @@ export async function GET(request: NextRequest) {
           royaltyRecipient: account.address,
           royaltyBps: 0,
           primarySaleRecipient: account.address,
-          uri: "https://example.com/test.json", // Test metadata URI
+          metadata: {
+            name: "Test NFT",
+            description: "Test NFT for configuration check",
+            image: "https://example.com/test.png",
+          },
           price: BigInt(0),
           currency: "0x0000000000000000000000000000000000000000",
           validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
@@ -150,7 +154,11 @@ export async function GET(request: NextRequest) {
           royaltyRecipient: account.address,
           royaltyBps: 0,
           primarySaleRecipient: account.address,
-          uri: "https://example.com/test.json", // Test metadata URI
+          metadata: {
+            name: "Test NFT",
+            description: "Test NFT for configuration check",
+            image: "https://example.com/test.png",
+          },
           price: BigInt(0),
           currency: "0x0000000000000000000000000000000000000000",
           validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)),
