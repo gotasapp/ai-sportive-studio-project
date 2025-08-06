@@ -1500,7 +1500,7 @@ export default function LaunchpadPage() {
                   <div className="mt-4 p-4 bg-gray-800/50 rounded-lg border border-gray-700 max-w-md">
                     <p className="text-sm text-gray-300 mb-2">💡 Admin Tip:</p>
                     <p className="text-xs text-gray-400 mb-3">
-                      Use the "Enviar para Launchpad" button in the jersey generation page to add collections for approval.
+                      Use the &quot;Enviar para Launchpad&quot; button in the jersey generation page to add collections for approval.
                     </p>
                     <Link href="/jerseys">
                       <Button size="sm" className="bg-[#A20131] hover:bg-[#A20131]/90 text-white">
