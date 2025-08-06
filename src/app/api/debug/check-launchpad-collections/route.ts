@@ -83,8 +83,10 @@ export async function GET(request: NextRequest) {
       return {
         _id: collection._id.toString(),
         name: collection.name,
+        description: collection.description,
         status: collection.status,
         category: collection.category,
+        type: collection.type,
         image: collection.image,
         imageUrl: collection.imageUrl,
         totalSupply: collection.totalSupply,
