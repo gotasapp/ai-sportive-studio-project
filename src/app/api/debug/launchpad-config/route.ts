@@ -76,6 +76,10 @@ export async function GET(request: NextRequest) {
         });
 
         // Tentar gerar uma signature de teste
+        if (!BACKEND_WALLET_PRIVATE_KEY) {
+          throw new Error('BACKEND_WALLET_PRIVATE_KEY not configured');
+        }
+        
         const account = privateKeyToAccount({
           client,
           privateKey: BACKEND_WALLET_PRIVATE_KEY,
@@ -132,6 +136,10 @@ export async function GET(request: NextRequest) {
         });
 
         // Tentar gerar uma signature de teste
+        if (!BACKEND_WALLET_PRIVATE_KEY) {
+          throw new Error('BACKEND_WALLET_PRIVATE_KEY not configured');
+        }
+        
         const account = privateKeyToAccount({
           client,
           privateKey: BACKEND_WALLET_PRIVATE_KEY,
