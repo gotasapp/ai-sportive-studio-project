@@ -162,8 +162,8 @@ export async function POST(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Preparar documento da coleção
-    const collection: Collection = {
+    // Preparar documento da coleção (sem _id para que MongoDB gere automaticamente)
+    const collectionData = {
       ...data,
       type: data.type || 'marketplace',
       status: data.type === 'launchpad' ? 'pending_launchpad' : 'draft',
@@ -174,15 +174,15 @@ export async function POST(request: NextRequest) {
     };
     
     // Inserir no banco
-    const result = await db.collection('collections').insertOne(collection);
+    const result = await db.collection('collections').insertOne(collectionData);
     
-    console.log(`✅ Created collection: ${collection.name} (ID: ${result.insertedId})`);
+    console.log(`✅ Created collection: ${collectionData.name} (ID: ${result.insertedId})`);
     
     return NextResponse.json({
       success: true,
       collectionId: result.insertedId.toString(),
       collection: {
-        ...collection,
+        ...collectionData,
         _id: result.insertedId.toString()
       }
     });
