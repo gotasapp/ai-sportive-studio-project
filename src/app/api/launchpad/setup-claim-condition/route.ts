@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createThirdwebClient, getContract } from 'thirdweb';
+import { createThirdwebClient, getContract, Engine } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { prepareContractCall } from 'thirdweb';
-import { Engine } from 'thirdweb/engine';
 
 // Define Amoy chain
 const amoy = defineChain(80002);
@@ -41,12 +40,12 @@ export async function POST(request: NextRequest) {
        params: [
          [
            {
-             startTimestamp: "0",
-             maxClaimableSupply: "0", // 0 = unlimited
-             supplyClaimed: "0",
-             quantityLimitPerWallet: "0", // 0 = unlimited
+             startTimestamp: BigInt(0),
+             maxClaimableSupply: BigInt(0), // 0 = unlimited
+             supplyClaimed: BigInt(0),
+             quantityLimitPerWallet: BigInt(0), // 0 = unlimited
              merkleRoot: "0x0000000000000000000000000000000000000000000000000000000000000000",
-             pricePerToken: "0", // Free mint
+             pricePerToken: BigInt(0), // Free mint
              currency: "0x0000000000000000000000000000000000000000", // Native token
              metadata: ""
            }

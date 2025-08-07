@@ -5,6 +5,7 @@ import { useActiveAccount } from 'thirdweb/react';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { generateMintSignature, mintWithSignature } from 'thirdweb/extensions/erc721';
+import { sendTransaction } from 'thirdweb';
 
 // Define a chain Amoy com RPC dedicado
 const amoy = defineChain({
@@ -94,22 +95,33 @@ export function useLaunchpadContract() {
     price: string = "0"
   ) => {
     try {
+      if (!account) {
+        throw new Error('Account is required for mint signature generation');
+      }
+      
       const contract = getContract({ client, chain: amoy, address: contractAddress });
       
       // Gerar signature para mint
       const { payload, signature } = await generateMintSignature({
         contract,
-        to: address || "",
-        metadata: {
-          name: metadata.name,
-          description: metadata.description,
-          image: metadata.image,
-          attributes: metadata.attributes || []
-        },
-        price: price,
-        currency: "0x0000000000000000000000000000000000000000", // Native token
-        validityStartTimestamp: new Date(),
-        validityEndTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+        account,
+        mintRequest: {
+          to: address || "",
+          royaltyRecipient: account.address,
+          royaltyBps: 0,
+          primarySaleRecipient: account.address,
+          metadata: {
+            name: metadata.name,
+            description: metadata.description,
+            image: metadata.image,
+            attributes: metadata.attributes || []
+          },
+          price: price,
+          currency: "0x0000000000000000000000000000000000000000", // Native token
+          validityStartTimestamp: new Date(),
+          validityEndTimestamp: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 horas
+          uid: `0x${Date.now().toString(16).padStart(64, '0')}`,
+        }
       });
 
       return { payload, signature };
@@ -126,21 +138,27 @@ export function useLaunchpadContract() {
     signature: string
   ) => {
     try {
+      if (!account) {
+        throw new Error('Account is required for transaction execution');
+      }
+      
       const contract = getContract({ client, chain: amoy, address: contractAddress });
       
       const transaction = mintWithSignature({
         contract,
         payload,
-        signature,
+        signature: signature.startsWith('0x') ? signature as `0x${string}` : `0x${signature}` as `0x${string}`,
       });
 
       // Enviar transação
-      const result = await transaction.send();
+      const result = await sendTransaction({
+        transaction,
+        account,
+      });
       
       return {
         success: true,
-        transactionHash: result.transactionHash,
-        tokenId: result.tokenId
+        transactionHash: result.transactionHash
       };
     } catch (error) {
       console.error('❌ Error minting with signature:', error);

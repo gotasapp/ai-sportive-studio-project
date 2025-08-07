@@ -249,12 +249,18 @@ export function useWeb3() {
       // Calculate total cost
       const totalCost = claimCondition.pricePerToken * BigInt(quantity);
       
-      // Prepare claim transaction
-      const transaction = claimTo({
+      // Prepare claim transaction with payment value (v5 correct pattern)
+      const baseTx = claimTo({
         contract: launchpadContract,
         to: account.address,
         quantity: BigInt(quantity),
       });
+
+      // Create transaction with payment value (CRITICAL for paid claims)
+      const transaction = {
+        ...baseTx,
+        value: totalCost,
+      };
 
       console.log('✅ Transaction prepared for Launchpad claim');
       console.log('💰 Total cost:', totalCost.toString(), 'wei');
@@ -264,7 +270,6 @@ export function useWeb3() {
       const result = await sendTransaction({
         transaction,
         account,
-        value: totalCost, // Include the cost of the NFTs
       });
 
       console.log('✅ LAUNCHPAD CLAIM successful:', result);

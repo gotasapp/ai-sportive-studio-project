@@ -37,18 +37,18 @@ export async function deployOpenEditionContract({
       platform_fee_basis_points: 0,
     });
 
-    const contractAddress = await contract.getAddress();
+    const contractAddress = await (contract as any).getAddress();
     console.log('✅ Contrato deployado:', contractAddress);
 
     // 2. Update contract metadata
-    await contract.metadata.update({
+    await (contract as any).metadata.update({
       name,
       description,
       image,
     });
 
     // 3. Configure basic claim conditions
-    await contract.erc721.claimConditions.set([{
+    await (contract as any).erc721.claimConditions.set([{
       startTime: new Date(),
       price: "0.1",
       currencyAddress: NATIVE_TOKEN_ADDRESS,

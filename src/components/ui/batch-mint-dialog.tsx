@@ -185,7 +185,7 @@ export function BatchMintDialog({
         }
       }
 
-      console.log('✅ ETAPA 3 completed - NFTs claimed:', mintResult.transactionHash);
+      console.log('✅ ETAPA 3 completed - NFTs claimed:', mintResult?.transactionHash || 'No transaction hash');
       
       // ETAPA 4: Upload para IPFS + Cloudinary + Salvar no banco
       console.log('💾 Uploading and saving collection...');
@@ -253,7 +253,7 @@ export function BatchMintDialog({
               ipfsMetadataUrl: ipfsMetadataUrl
             }),
             creatorWallet: account.address,
-            transactionHash: mintResult.transactionHash,
+            transactionHash: mintResult?.transactionHash || '',
             metadataUri: ipfsMetadataUrl, // IPFS metadata URL
             attributes: [
               { trait_type: 'Type', value: 'AI Collection' },
@@ -317,7 +317,7 @@ export function BatchMintDialog({
                     tokenId: tokenId.toString(),
                     metadataUrl: ipfsMetadataUrl,
                     imageUrl: cloudinaryUrl,
-                    transactionHash: mintResult.transactionHash,
+                    transactionHash: mintResult?.transactionHash || '',
                     minterAddress: account.address,
                     price: "0"
                   })
@@ -467,7 +467,7 @@ export function BatchMintDialog({
                 <Button
                   variant="outline"
                   onClick={handleClose}
-                  disabled={deployStep !== 'idle' && deployStep !== 'completed'}
+                  disabled={deployStep !== 'idle'}
                   className="border-[#FDFDFD]/10 text-[#FDFDFD]"
                 >
                   Cancel

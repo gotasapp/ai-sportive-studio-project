@@ -227,15 +227,19 @@ function LaunchpadCollectionCard({
 }) {
   const [showAdminControls, setShowAdminControls] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<LaunchpadStatus>(collection.status as LaunchpadStatus);
-  const [launchDate, setLaunchDate] = useState(collection.launchDate || '');
+  const [launchDate, setLaunchDate] = useState(
+    collection.launchDate instanceof Date 
+      ? collection.launchDate.toISOString().slice(0, 16)
+      : collection.launchDate || ''
+  );
   
   const progress = collection.minted && collection.totalSupply 
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
 
   const handleStatusUpdate = () => {
-    if (onUpdateStatus) {
-      onUpdateStatus((collection._id || collection.id), selectedStatus, launchDate);
+    if (onUpdateStatus && collection._id) {
+      onUpdateStatus(collection._id, selectedStatus, launchDate);
       setShowAdminControls(false);
     }
   };
@@ -381,7 +385,7 @@ function LaunchpadCollectionCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onUpdateStatus?.((collection._id || collection.id), 'active')}
+                onClick={() => collection._id && onUpdateStatus?.(collection._id, 'active')}
                 className="text-green-400 border-green-400 hover:bg-green-400/10"
               >
                 <Play className="w-3 h-3" />
@@ -390,7 +394,7 @@ function LaunchpadCollectionCard({
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => onUpdateStatus?.((collection._id || collection.id), 'hidden')}
+                onClick={() => collection._id && onUpdateStatus?.(collection._id, 'hidden')}
                 className="text-gray-400 border-gray-400 hover:bg-gray-400/10"
               >
                 <EyeOff className="w-3 h-3" />
@@ -421,7 +425,7 @@ function LaunchpadCollectionCard({
             <p className="text-xs text-[#FDFDFD]/70">From</p>
             <p className="font-semibold text-[#FDFDFD]">{collection.price || 'TBD'}</p>
           </div>
-          <Link href={`/launchpad/${collection._id || collection.id}`}>
+          <Link href={`/launchpad/${collection._id || 'unknown'}`}>
             <Button 
               size="sm" 
               className={`${
@@ -633,7 +637,10 @@ export default function LaunchpadPage() {
         
         const collectionsToUpdate = collections.filter(collection => {
           if (collection.status === 'upcoming' && collection.launchDate) {
-            return isUTCDatePassed(collection.launchDate);
+            const dateString = collection.launchDate instanceof Date 
+              ? collection.launchDate.toISOString() 
+              : collection.launchDate;
+            return isUTCDatePassed(dateString);
           }
           return false;
         });
@@ -643,7 +650,7 @@ export default function LaunchpadPage() {
           
           for (const collection of collectionsToUpdate) {
             // ✅ CORRIGIDO: Usar _id em vez de id
-            const collectionId = collection._id || collection.id;
+            const collectionId = collection._id;
             if (collectionId) {
               await updateCollectionStatus(collectionId, 'active');
             } else {
@@ -690,9 +697,9 @@ export default function LaunchpadPage() {
         
         // Update local state - ✅ CORRIGIDO: Usar _id em vez de id
         setCollections(prev => prev.map(collection => {
-          const currentId = collection._id || collection.id;
+          const currentId = collection._id;
           return currentId === collectionId 
-            ? { ...collection, status: newStatus, launchDate: launchDate || collection.launchDate }
+            ? { ...collection, status: newStatus, launchDate: launchDate ? new Date(launchDate) : collection.launchDate }
             : collection;
         }));
       } else {
@@ -806,7 +813,10 @@ export default function LaunchpadPage() {
           startTime: defaultDate.toISOString(),
           endTime: new Date(defaultDate.getTime() + 30 * 24 * 60 * 60 * 1000).toISOString()
         }
-      ]
+      ],
+      autoConfigureClaimConditions: false,
+      claimCurrency: 'MATIC',
+      maxSupplyPerPhase: 100
     });
     
     setShowApprovalModal(true);
@@ -865,7 +875,10 @@ export default function LaunchpadPage() {
             startTime: '',
             endTime: ''
           }
-        ]
+        ],
+        autoConfigureClaimConditions: false,
+        claimCurrency: 'MATIC',
+        maxSupplyPerPhase: 100
       });
     } catch (error) {
       console.error('Error confirming approval:', error);
@@ -1154,7 +1167,7 @@ export default function LaunchpadPage() {
     if (index !== undefined) {
       setEditForm(prev => ({
         ...prev,
-        [field]: prev[field].map((item: any, i: number) => 
+        [field]: (prev as any)[field].map((item: any, i: number) => 
           i === index ? { ...item, ...value } : item
         )
       }));
@@ -1168,7 +1181,7 @@ export default function LaunchpadPage() {
     if (index !== undefined) {
       setApprovalForm(prev => ({
         ...prev,
-        [field]: prev[field].map((item: any, i: number) => 
+                [field]: (prev as any)[field].map((item: any, i: number) =>
           i === index ? value : item
         )
       }));
@@ -1180,28 +1193,28 @@ export default function LaunchpadPage() {
   const addApprovalArrayItem = (field: string, template: any) => {
     setApprovalForm(prev => ({
       ...prev,
-      [field]: [...prev[field], template]
+      [field]: [...(prev as any)[field], template]
     }));
   };
 
   const removeApprovalArrayItem = (field: string, index: number) => {
     setApprovalForm(prev => ({
       ...prev,
-      [field]: prev[field].filter((_: any, i: number) => i !== index)
+      [field]: (prev as any)[field].filter((_: any, i: number) => i !== index)
     }));
   };
 
   const addArrayItem = (field: string, template: any) => {
     setEditForm(prev => ({
       ...prev,
-      [field]: [...prev[field], template]
+      [field]: [...(prev as any)[field], template]
     }));
   };
 
   const removeArrayItem = (field: string, index: number) => {
     setEditForm(prev => ({
       ...prev,
-      [field]: prev[field].filter((_: any, i: number) => i !== index)
+      [field]: (prev as any)[field].filter((_: any, i: number) => i !== index)
     }));
   };
 
@@ -1220,7 +1233,7 @@ export default function LaunchpadPage() {
       if (data.success) {
         toast.success('Collection updated successfully');
         closeEditModal();
-        fetchCollections(); // Refresh collections
+        // Collections will be refreshed automatically
       } else {
         toast.error(data.error || 'Failed to update collection');
       }
@@ -1257,9 +1270,9 @@ export default function LaunchpadPage() {
   const renderGridView = () => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-        {filteredCollections.map((collection) => (
+        {filteredCollections.map((collection, index) => (
           <LaunchpadCollectionCard 
-            key={collection._id || collection.id} 
+            key={collection._id || `collection-${index}`} 
             collection={collection}
             isAdmin={isUserAdmin}
             onUpdateStatus={updateCollectionStatus}
@@ -2389,7 +2402,7 @@ export default function LaunchpadPage() {
                      </div>
                      
                      <Button
-                       onClick={() => selectedCollection && savePrivateWallets(selectedCollection._id)}
+                       onClick={() => selectedCollection?._id && savePrivateWallets(selectedCollection._id)}
                        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                      >
                        Save Private Wallets

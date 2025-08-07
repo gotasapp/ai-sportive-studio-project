@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { prepareContractCall } from 'thirdweb';
+import { privateKeyToAccount } from 'thirdweb/wallets';
 
 // Define Amoy chain
 const amoy = defineChain(80002);
@@ -9,6 +10,7 @@ const amoy = defineChain(80002);
 // Environment variables
 const THIRDWEB_CLIENT_ID = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
 const LAUNCHPAD_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS;
+const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
 
 export async function POST(request: NextRequest) {
   try {
@@ -84,10 +86,20 @@ export async function POST(request: NextRequest) {
       value: BigInt(Math.floor(parseFloat(pricePerToken) * parseFloat(quantity) * Math.pow(10, 18))) // Native token value
     });
 
-    // Send transaction
+    // Create backend account for transaction
+    if (!BACKEND_WALLET_PRIVATE_KEY) {
+      throw new Error('BACKEND_WALLET_PRIVATE_KEY not configured');
+    }
+    
+    const account = privateKeyToAccount({
+      client,
+      privateKey: BACKEND_WALLET_PRIVATE_KEY,
+    });
+
+    // Send transaction using backend account (backend pays for the claim)
     const result = await sendTransaction({
       transaction,
-      account: { address: receiver }, // User pays for the claim
+      account,
     });
 
     console.log('✅ Claim successful:', result);

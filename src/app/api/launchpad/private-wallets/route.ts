@@ -138,12 +138,12 @@ export async function POST(request: NextRequest) {
     // Insert wallets
     const result = await db.collection('private_wallets').insertMany(walletDocuments);
 
-    console.log(`✅ Adicionadas ${result.insertedIds.length} wallets privadas`);
+    console.log(`✅ Adicionadas ${Object.keys(result.insertedIds).length} wallets privadas`);
 
     return NextResponse.json({
       success: true,
-      message: `Added ${result.insertedIds.length} private wallets`,
-      addedCount: result.insertedIds.length,
+      message: `Added ${Object.keys(result.insertedIds).length} private wallets`,
+      addedCount: Object.keys(result.insertedIds).length,
       collectionId: collectionId
     });
 

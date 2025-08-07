@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     // Preparar transação para configurar shared metadata
     const transaction = setSharedMetadata({
       contract,
-      metadata: sharedMetadata
+      nft: sharedMetadata
     });
 
     console.log('🔧 Enqueueing shared metadata transaction...');

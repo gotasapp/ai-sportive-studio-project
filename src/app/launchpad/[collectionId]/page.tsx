@@ -603,7 +603,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-6">
-                      {collection.roadmap?.map((phase, index) => (
+                      {collection.roadmap?.map((phase: any, index: number) => (
                         <div key={index} className="flex items-start gap-4">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                             phase.status === 'completed' ? 'bg-green-500' :
@@ -638,7 +638,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {collection.team?.map((member, index) => (
+                      {collection.team?.map((member: any, index: number) => (
                         <div key={index} className="flex items-start gap-4">
                           <img
                             src={member.avatar || '/api/placeholder/60/60'}
@@ -667,7 +667,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {collection.utility?.map((benefit, index) => (
+                      {collection.utility?.map((benefit: any, index: number) => (
                         <div key={index} className="flex items-start gap-3">
                           <CheckCircle className="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0" />
                           <p className="text-gray-400">{benefit}</p>
@@ -692,7 +692,7 @@ export default function CollectionMintPage() {
                   <CardTitle className="text-white">Mint Stages</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {collection.mintStages?.map((stage) => (
+                  {collection.mintStages?.map((stage: any) => (
                     <div 
                       key={stage.id}
                       className={`p-4 rounded-lg border ${

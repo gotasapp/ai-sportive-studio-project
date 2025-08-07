@@ -46,8 +46,8 @@ async function getCustomCollections(db: any, limit: number = 50) {
             { trait_type: 'Season', value: collection.season },
             { trait_type: 'Total Supply', value: collection.totalSupply?.toString() },
             { trait_type: 'Minted', value: mintedNFTs.length.toString() },
-            { trait_type: 'Unique Owners', value: [...new Set(mintedNFTs.map(n => n.minterAddress))].length.toString() },
-            { trait_type: 'Contracts Used', value: [...new Set(mintedNFTs.map(n => n.contractAddress))].length.toString() }
+            { trait_type: 'Unique Owners', value: Array.from(new Set(mintedNFTs.map((n: any) => n.minterAddress))).length.toString() },
+            { trait_type: 'Contracts Used', value: Array.from(new Set(mintedNFTs.map((n: any) => n.contractAddress))).length.toString() }
           ]
         },
         
@@ -82,7 +82,7 @@ async function getCustomCollections(db: any, limit: number = 50) {
           likes: 0,
           sales: 0,
           totalMints: mintedNFTs.length,
-          uniqueOwners: [...new Set(mintedNFTs.map(n => n.minterAddress))].length
+          uniqueOwners: Array.from(new Set(mintedNFTs.map((n: any) => n.minterAddress))).length
         },
         
         // 🗂️ IDENTIFICADORES
@@ -94,7 +94,7 @@ async function getCustomCollections(db: any, limit: number = 50) {
         
         // 🎨 DADOS ESPECÍFICOS DE CUSTOM COLLECTION
         customCollection: {
-          mintedNFTs: mintedNFTs.map(nft => ({
+          mintedNFTs: mintedNFTs.map((nft: any) => ({
             tokenId: nft.tokenId,
             contractAddress: nft.contractAddress,
             owner: nft.minterAddress,
@@ -374,8 +374,8 @@ export async function GET(request: NextRequest) {
         badges: finalNFTs.filter(n => n.type === 'badge').length,
         launchpad_collections: finalNFTs.filter(n => n.type === 'launchpad_collection').length,
         custom_collections: finalNFTs.filter(n => n.type === 'custom_collection').length,
-        launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0),
-        custom_total_units: finalNFTs.filter(n => n.type === 'custom_collection').reduce((total, nft) => total + (nft.marketplace?.mintedUnits || 0), 0)
+        launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + ((nft.marketplace as any)?.mintedUnits || 0), 0),
+        custom_total_units: finalNFTs.filter(n => n.type === 'custom_collection').reduce((total, nft) => total + ((nft.marketplace as any)?.mintedUnits || 0), 0)
       },
       chainId: parseInt(chainId),
       network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain',

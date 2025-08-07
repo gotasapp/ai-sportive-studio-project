@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createThirdwebClient, getContract } from 'thirdweb';
+import { createThirdwebClient, getContract, readContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { generateMintSignature } from 'thirdweb/extensions/erc721';
 
@@ -51,8 +51,16 @@ export async function GET(request: NextRequest) {
 
         // Testar se o contrato OpenEditionERC721 responde
         try {
-          const name = await contract.read.name();
-          const symbol = await contract.read.symbol();
+          const name = await readContract({
+            contract,
+            method: "function name() view returns (string)",
+            params: []
+          });
+          const symbol = await readContract({
+            contract,
+            method: "function symbol() view returns (string)",
+            params: []
+          });
           
           results.push({
             name: contractInfo.name,

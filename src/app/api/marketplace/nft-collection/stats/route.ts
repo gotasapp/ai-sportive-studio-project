@@ -74,8 +74,8 @@ async function getCustomCollectionStats(db: any, customCollectionId: string) {
     // Calcular stats
     const totalSupply = customCollection.totalSupply || 0;
     const mintedCount = mintedNFTs.length;
-    const uniqueOwners = [...new Set(mintedNFTs.map(nft => nft.minterAddress))].length;
-    const contractsUsed = [...new Set(mintedNFTs.map(nft => nft.contractAddress))].length;
+    const uniqueOwners = Array.from(new Set(mintedNFTs.map((nft: any) => nft.minterAddress))).length;
+    const contractsUsed = Array.from(new Set(mintedNFTs.map((nft: any) => nft.contractAddress))).length;
 
     console.log('✅ Custom collection stats calculadas:', {
       name: customCollection.name,
@@ -101,7 +101,7 @@ async function getCustomCollectionStats(db: any, customCollectionId: string) {
         teamName: customCollection.teamName,
         uniqueOwners,
         contractsUsed,
-        mintedNFTs: mintedNFTs.map(nft => ({
+        mintedNFTs: mintedNFTs.map((nft: any) => ({
           tokenId: nft.tokenId,
           owner: nft.minterAddress,
           contractAddress: nft.contractAddress,
@@ -179,7 +179,7 @@ async function getStandardCollectionStats(db: any, collection: string) {
       // Buscar todas as vendas da coleção
       const sales = await salesCollection.find(salesFilter).toArray();
       transactions = sales.length;
-      salesVolume = sales.reduce((sum, sale) => sum + (Number(sale.price) || 0), 0);
+      salesVolume = sales.reduce((sum: number, sale: any) => sum + (Number(sale.price) || 0), 0);
     } catch (err) {
       console.error(`Erro ao buscar activity (sales) para ${collection}:`, err);
       salesVolume = 0;

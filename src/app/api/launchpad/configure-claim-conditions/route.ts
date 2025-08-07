@@ -127,8 +127,7 @@ export async function POST(request: NextRequest) {
     // Preparar transação para configurar claim conditions
     const transaction = setClaimConditions({
       contract,
-      phases: claimConditions,
-      resetEligibilityOnNewConditions: false // Manter elegibilidade entre fases
+      phases: claimConditions
     });
 
     console.log('🔧 Enqueueing claim conditions transaction...');

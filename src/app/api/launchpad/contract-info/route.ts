@@ -96,14 +96,14 @@ export async function GET(request: NextRequest) {
         totalSupply: totalSupply.toString(),
         totalMinted: totalMinted.toString(),
         sharedMetadata: {
-          name: sharedMetadata.name,
-          description: sharedMetadata.description,
-          imageURI: sharedMetadata.imageURI,
-          animationURI: sharedMetadata.animationURI
+          name: sharedMetadata[0],
+          description: sharedMetadata[1],
+          imageURI: sharedMetadata[2],
+          animationURI: sharedMetadata[3]
         },
         claimCondition: {
-          currentStartId: claimCondition.currentStartId.toString(),
-          count: claimCondition.count.toString()
+          currentStartId: claimCondition[0].toString(),
+          count: claimCondition[1].toString()
         }
       }
     });

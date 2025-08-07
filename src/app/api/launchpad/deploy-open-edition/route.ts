@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     
     // Configurar SDK com secret key
     const sdk = new ThirdwebSDK("amoy", {
-      secretKey: process.env.THIRDWEB_SECRET_KEY,
+      secretKey: process.env.NEXT_PUBLIC_THIRDWEB_SECRET_KEY,
     });
 
     // 1. Deploy do contrato OpenEditionERC721
@@ -35,11 +35,12 @@ export async function POST(request: NextRequest) {
       platform_fee_recipient: process.env.BACKEND_WALLET_ADDRESS,
     });
 
-    const contractAddress = await contract.getAddress();
+    // No v4, contract.getAddress() pode ser assíncrono
+    const contractAddress = await (contract as any).getAddress();
     console.log('✅ Contrato deployado:', contractAddress);
 
     // 2. Configurar metadata do contrato
-    await contract.metadata.update({
+    await (contract as any).metadata.update({
       name,
       description: `${name} NFT Collection`,
       image, // IPFS da imagem
@@ -58,17 +59,12 @@ export async function POST(request: NextRequest) {
           price: price.toString(),
           currencyAddress: NATIVE_TOKEN_ADDRESS,
           quantityLimitPerWallet: stage.walletLimit || 1,
+          maxClaimableSupply: stage.maxSupply || 100,
+          ...(stage.type === 'whitelist' && stage.allowlist && Array.isArray(stage.allowlist) 
+            ? { allowlist: stage.allowlist } 
+            : {}
+          )
         };
-
-        // Adicionar maxClaimableSupply se especificado
-        if (stage.maxSupply) {
-          condition.maxClaimableSupply = stage.maxSupply;
-        }
-
-        // Adicionar allowlist se for fase privada
-        if (stage.type === 'whitelist' && stage.allowlist && Array.isArray(stage.allowlist)) {
-          condition.allowlist = stage.allowlist;
-        }
 
         claimConditions.push(condition);
       }
@@ -89,7 +85,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Configurar claim conditions
-    await contract.erc721.claimConditions.set(claimConditions);
+    await (contract as any).erc721.claimConditions.set(claimConditions);
     console.log('✅ Claim conditions configuradas:', claimConditions);
 
     const response = {

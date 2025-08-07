@@ -108,11 +108,10 @@ export async function GET(request: NextRequest) {
           mintRequest,
         });
 
-        launchpadContractTest = { 
-          success: true, 
+                launchpadContractTest = {
+          success: true,
           error: null,
-          contractType: 'SignatureMintERC721 (or compatible)',
-          signatureGenerated: true
+          contractType: 'SignatureMintERC721 (or compatible)'
         };
         console.log('✅ Launchpad contract test successful');
       } catch (error) {
@@ -172,18 +171,15 @@ export async function GET(request: NextRequest) {
           mintRequest,
         });
 
-        nftCollectionTest = { 
-          success: true, 
-          error: null,
-          contractType: 'NFT Collection (or compatible)',
-          signatureGenerated: true
+                nftCollectionTest = {
+          success: true,
+          error: null
         };
         console.log('✅ NFT Collection contract test successful');
       } catch (error) {
         nftCollectionTest = { 
           success: false, 
-          error: error instanceof Error ? error.message : 'Unknown error',
-          contractType: 'Unknown'
+          error: error instanceof Error ? error.message : 'Unknown error'
         };
         console.error('❌ NFT Collection contract test failed:', error);
       }
@@ -195,7 +191,7 @@ export async function GET(request: NextRequest) {
       thirdweb: thirdwebTest,
       launchpadContract: launchpadContractTest,
       nftCollectionContract: nftCollectionTest,
-      recommendations: []
+      recommendations: [] as string[]
     };
 
     // Gerar recomendações

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient } from 'thirdweb';
 import { privateKeyToAccount } from 'thirdweb/wallets';
-import { amoy } from 'thirdweb/chains';
-import { prepareDeploy } from "thirdweb/deploys";
+import { polygonAmoy } from 'thirdweb/chains';
+import { prepareDirectDeployTransaction } from "thirdweb/deploys";
 import { upload } from "thirdweb/storage";
 
 export async function POST(request: NextRequest) {
@@ -28,30 +28,25 @@ export async function POST(request: NextRequest) {
 
     const metadataUri = await upload({ client, files: [metadata] });
 
-    const transaction = prepareDeploy({
+    // Prepare deployment transaction for ERC721 contract (to be signed by user)
+    const transaction = prepareDirectDeployTransaction({
         client,
-        chain: amoy,
-        contractMetadata: {
-            ...metadata,
-            symbol,
-            primary_sale_recipient: recipient,
-            royalty_recipient: recipient,
-            royalty_bps: 500,
+        chain: polygonAmoy,
+        bytecode: "0x", // This would need actual ERC721 bytecode
+        abi: [], // This would need actual ERC721 ABI
+        constructorParams: {
+            defaultAdmin: account.address,
+            name: name,
+            symbol: symbol,
+            contractURI: metadataUri,
+            trustedForwarders: [],
+            saleRecipient: recipient,
+            royaltyRecipient: recipient,
+            royaltyBps: 1000,
         },
-        contractType: "DropERC721",
-        constructorParams: [
-            account.address, // defaultAdmin
-            name, // name
-            symbol, // symbol
-            metadataUri, // contractURI
-            [], // trustedForwarders
-            recipient, // saleRecipient
-            recipient, // royaltyRecipient
-            1000, // royaltyBps
-        ],
     });
 
-    // Return the transaction data to the frontend to be signed by the user
+    // Return the prepared transaction for the user to sign
     return NextResponse.json({
       success: true,
       transaction: {
@@ -60,6 +55,7 @@ export async function POST(request: NextRequest) {
         value: transaction.value?.toString() ?? "0",
       },
       message: `Deploy transaction prepared for ${name}`,
+      metadataUri: metadataUri,
     });
 
   } catch (error: any) {

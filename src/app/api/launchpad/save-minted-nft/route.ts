@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Save to database
-    const result = await db.collection('minted_launchpad_nfts').insertOne(mintedNFT);
+    const result = await db().collection('minted_launchpad_nfts').insertOne(mintedNFT);
 
     console.log('✅ Minted NFT saved to database:', {
       collectionId,

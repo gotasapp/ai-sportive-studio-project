@@ -1,23 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
-import { amoy } from 'thirdweb/chains';
+import { polygonAmoy } from 'thirdweb/chains';
 import { generateMintSignature } from 'thirdweb/extensions/erc721';
 import { privateKeyToAccount } from 'thirdweb/wallets';
 
-const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
-const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
 const contractAddress = '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
-
-if (!THIRDWEB_SECRET_KEY) {
-  throw new Error('THIRDWEB_SECRET_KEY is required');
-}
-
-if (!BACKEND_WALLET_PRIVATE_KEY) {
-  throw new Error('BACKEND_WALLET_PRIVATE_KEY is required');
-}
 
 export async function POST(request: NextRequest) {
   try {
+    const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
+    const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
+
+    if (!THIRDWEB_SECRET_KEY) {
+      throw new Error('THIRDWEB_SECRET_KEY is required');
+    }
+
+    if (!BACKEND_WALLET_PRIVATE_KEY) {
+      throw new Error('BACKEND_WALLET_PRIVATE_KEY is required');
+    }
     const body = await request.json();
     const { to, metadataUri, price = "0", currency = "0x0000000000000000000000000000000000000000" } = body;
 
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // Get contract instance
     const contract = getContract({
       client,
-      chain: amoy,
+      chain: polygonAmoy,
       address: contractAddress,
     });
 
@@ -54,11 +54,15 @@ export async function POST(request: NextRequest) {
       royaltyRecipient: account.address, // Backend wallet as royalty recipient
       royaltyBps: 0, // 0% royalty
       primarySaleRecipient: account.address, // Backend wallet as primary sale recipient
-      uri: metadataUri,
-      price: BigInt(price),
+      metadata: {
+        name: "Generated NFT",
+        description: "NFT generated via signature",
+        image: metadataUri,
+      },
+      price: "0", // String format for Thirdweb v5
       currency,
-      validityStartTimestamp: BigInt(Math.floor(Date.now() / 1000)), // Current timestamp
-      validityEndTimestamp: BigInt(Math.floor(Date.now() / 1000) + 60 * 60), // Valid for 1 hour
+      validityStartTimestamp: new Date(), // Date object for Thirdweb v5
+      validityEndTimestamp: new Date(Date.now() + 60 * 60 * 1000), // Valid for 1 hour
       uid: `0x${Date.now().toString(16).padStart(64, '0')}`, // Unique ID based on timestamp
     };
 

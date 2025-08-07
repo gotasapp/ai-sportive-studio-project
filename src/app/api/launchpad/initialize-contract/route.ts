@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, prepareContractCall, sendTransaction } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
+import { privateKeyToAccount } from 'thirdweb/wallets';
 
 // Define Amoy chain
 const amoy = defineChain(80002);
@@ -9,10 +10,11 @@ const amoy = defineChain(80002);
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const LAUNCHPAD_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS;
 const BACKEND_WALLET_ADDRESS = process.env.NEXT_PUBLIC_BACKEND_WALLET_ADDRESS;
+const BACKEND_WALLET_PRIVATE_KEY = process.env.BACKEND_WALLET_PRIVATE_KEY;
 
 export async function POST(request: NextRequest) {
   try {
-    if (!THIRDWEB_SECRET_KEY || !LAUNCHPAD_CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
+    if (!THIRDWEB_SECRET_KEY || !LAUNCHPAD_CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS || !BACKEND_WALLET_PRIVATE_KEY) {
       return NextResponse.json({ 
         error: 'Missing environment variables' 
       }, { status: 500 });
@@ -53,10 +55,16 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Initialize transaction prepared');
 
+    // Create complete account object
+    const account = privateKeyToAccount({
+      client,
+      privateKey: BACKEND_WALLET_PRIVATE_KEY,
+    });
+
     // Send transaction
     const result = await sendTransaction({
       transaction,
-      account: { address: BACKEND_WALLET_ADDRESS },
+      account,
     });
     
     console.log(`✅ Contract initialized successfully! Transaction: ${result.transactionHash}`);
