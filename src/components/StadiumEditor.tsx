@@ -535,6 +535,11 @@ This description will be used to generate a new version of the stadium with slig
           getTransactionUrl={getTransactionUrl}
           isAnalyzing={isAnalyzing}
           hasGeneratedImage={!!generatedImage}
+          nftName={`Stadium Collection #${Date.now()}`}
+          metadataUri={''}
+          walletAddress={address}
+          collection={'stadiums'}
+          generatedImageBlob={generatedImageBlob}
         />
       }
 

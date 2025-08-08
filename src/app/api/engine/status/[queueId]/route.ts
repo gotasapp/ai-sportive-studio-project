@@ -27,17 +27,32 @@ export async function GET(
   }
 
   try {
-    // For now, return a mock response since we don't have direct Engine API access
-    // In production, this would query the Engine API directly
-    const mockResponse = {
-      status: 'pending',
-      transactionHash: null,
-      errorMessage: null,
-      onchainStatus: null
-    };
+    console.log(`🔎 Checking real status for queueId: ${queueId}`);
     
-    console.log(`🔎 Checking status for queueId: ${queueId}`);
-    return NextResponse.json({ result: mockResponse });
+    // Configurar cliente Thirdweb
+    const thirdwebClient = createThirdwebClient({ 
+      secretKey: THIRDWEB_SECRET_KEY 
+    });
+    
+    // Configurar Engine serverWallet
+    const serverWallet = Engine.serverWallet({
+      address: BACKEND_WALLET_ADDRESS,
+      client: thirdwebClient,
+      vaultAccessToken: VAULT_ACCESS_TOKEN || THIRDWEB_SECRET_KEY,
+    });
+
+    console.log(`🔧 Engine configured, checking transaction status...`);
+    
+    // Verificar status da transação
+    const transactionStatus = await serverWallet.getTransactionStatus(queueId);
+    
+    console.log(`📊 Transaction status for ${queueId}:`, transactionStatus);
+    
+    return NextResponse.json({ 
+      success: true,
+      queueId,
+      result: transactionStatus 
+    });
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     console.error(`❌ API /status/${queueId} ERROR:`, error);

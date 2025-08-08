@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
 import { cn } from '@/lib/utils'
 
 interface ProfessionalBadgeActionBarProps {
@@ -28,6 +29,11 @@ interface ProfessionalBadgeActionBarProps {
   getTransactionUrl: (hash: string) => string
   isAnalyzing?: boolean
   hasGeneratedImage?: boolean
+  nftName?: string
+  metadataUri?: string
+  walletAddress?: string
+  collection?: string
+  generatedImageBlob?: Blob
 }
 
 export default function ProfessionalBadgeActionBar({
@@ -48,7 +54,12 @@ export default function ProfessionalBadgeActionBar({
   isUserAdmin,
   getTransactionUrl,
   isAnalyzing = false,
-  hasGeneratedImage = false
+  hasGeneratedImage = false,
+  nftName,
+  metadataUri,
+  walletAddress,
+  collection,
+  generatedImageBlob
 }: ProfessionalBadgeActionBarProps) {
   
   const renderGenerateButton = () => (
@@ -104,24 +115,27 @@ export default function ProfessionalBadgeActionBar({
         </TooltipProvider>
       )}
 
-      {/* Batch Mint Button - Admin: "Batch Mint", Usuário Comum: "Mint Batch" */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      {/* Batch Mint Dialog - Admin: gasless, Usuário: pago */}
+      {walletAddress && nftName && hasGeneratedImage && (
+        <BatchMintDialog
+          trigger={
             <Button
-              onClick={() => console.log('🎯 Smart Mint clicked!')}
               disabled={!isConnected || isMinting}
               variant="outline"
               className="h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
             >
               <span>Mint</span>
             </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isUserAdmin ? 'Admin batch mint (gasless)' : 'Public batch mint'}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+          }
+          to={walletAddress}
+          metadataUri={metadataUri || ''}
+          nftName={nftName}
+          collection={collection || 'badges'}
+          disabled={!isConnected || isMinting}
+          isUserAdmin={isUserAdmin}
+          generatedImageBlob={generatedImageBlob}
+        />
+      )}
 
       {/* Gasless Mint - TEMPORARIAMENTE OCULTO (código mantido) */}
       {false && isUserAdmin && (

@@ -57,16 +57,13 @@ export function BatchMintDialog({
     console.log('🎯 SMART MINT called with:', { to, metadataUri, quantity, collection, isUserAdmin });
     
     try {
-      if (quantity === 1) {
-        console.log('🎯 Single NFT detected - using current contract');
-        await batchMintGasless({ to, metadataUri, quantity: 1, collection });
-        console.log('✅ Single NFT mint completed successfully');
-      } else {
-        console.log(`🚀 Collection detected (${quantity} units) - starting deploy + mint process`);
-        await handleDeployAndMintCollection();
-      }
+      // CORREÇÃO: SEMPRE criar novo contrato DropERC721 (gasless para admin, pago para user)
+      console.log(`🚀 Creating new DropERC721 contract for ${quantity} NFT(s) - ${isUserAdmin ? 'GASLESS ADMIN' : 'PAID USER'}`);
+      await handleDeployAndMintCollection();
+      console.log('✅ New contract deployment completed successfully');
     } catch (error) {
       console.error('❌ Smart mint failed:', error);
+      toast.error(error instanceof Error ? error.message : 'Mint failed');
     }
   };
 
@@ -134,43 +131,76 @@ export function BatchMintDialog({
       });
 
       setDeployStep('signing-mint');
-      console.log('🔄 ETAPA 2: User claiming NFTs...');
       
       // Aguardar um pouco para o backend terminar setup
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // ETAPA 2B: Claim NFTs no novo contrato
-      const { getContract, sendTransaction } = await import('thirdweb');
-      const { claimTo } = await import('thirdweb/extensions/erc721');
-      
-      const contract = getContract({
-        client,
-        chain: amoyChain,
-        address: newContractAddress,
-      });
-      
-      // Retry logic para claim
-      let claimAttempts = 0;
-      const maxAttempts = 3;
-      let mintResult;
-      
-      while (claimAttempts < maxAttempts) {
-        try {
-          console.log(`🔄 Claim attempt ${claimAttempts + 1}/${maxAttempts}...`);
-          
-          const mintTransaction = claimTo({
-            contract,
+      // ETAPA 2: Claim NFTs - GASLESS para admin, PAGO para usuário
+      if (isUserAdmin) {
+        console.log('🔄 ETAPA 2: Admin gasless claiming NFTs...');
+        
+        // Admin: Usar backend gasless claim
+        const adminClaimResponse = await fetch('/api/collection/admin-claim', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'x-user-admin': 'true'
+          },
+          body: JSON.stringify({
+            contractAddress: newContractAddress,
             to: account.address,
-            quantity: BigInt(quantity),
-          });
+            quantity: quantity,
+          }),
+        });
 
-          mintResult = await sendTransaction({
-            transaction: mintTransaction,
-            account,
-          });
-          
-          console.log('✅ Claim successful!');
-          break; // Sucesso, sair do loop
+        if (!adminClaimResponse.ok) {
+          const errorText = await adminClaimResponse.text();
+          throw new Error(`Admin gasless claim failed: ${adminClaimResponse.status} ${errorText}`);
+        }
+
+        const adminClaimResult = await adminClaimResponse.json();
+        if (!adminClaimResult.success) {
+          throw new Error(`Admin gasless claim failed: ${adminClaimResult.error}`);
+        }
+
+        console.log('✅ Admin gasless claim successful!', adminClaimResult.transactionHash);
+        var mintResult = { transactionHash: adminClaimResult.transactionHash };
+        
+      } else {
+        console.log('🔄 ETAPA 2: User claiming NFTs (paid)...');
+        
+        // Usuário comum: Claim pago normal
+        const { getContract, sendTransaction } = await import('thirdweb');
+        const { claimTo } = await import('thirdweb/extensions/erc721');
+        
+        const contract = getContract({
+          client,
+          chain: amoyChain,
+          address: newContractAddress,
+        });
+        
+        // Retry logic para claim
+        let claimAttempts = 0;
+        const maxAttempts = 3;
+        let mintResult;
+        
+        while (claimAttempts < maxAttempts) {
+          try {
+            console.log(`🔄 Claim attempt ${claimAttempts + 1}/${maxAttempts}...`);
+            
+            const mintTransaction = claimTo({
+              contract,
+              to: account.address,
+              quantity: BigInt(quantity),
+            });
+
+            mintResult = await sendTransaction({
+              transaction: mintTransaction,
+              account,
+            });
+            
+            console.log('✅ Claim successful!');
+            break; // Sucesso, sair do loop
           
         } catch (claimError: any) {
           claimAttempts++;
@@ -183,7 +213,8 @@ export function BatchMintDialog({
           console.log('⏳ Waiting before retry...');
           await new Promise(resolve => setTimeout(resolve, 2000)); // 2 segundos entre attempts
         }
-      }
+      } // End while loop for retry logic
+      } // End else block for regular user claim
 
       console.log('✅ ETAPA 3 completed - NFTs claimed:', mintResult?.transactionHash || 'No transaction hash');
       
@@ -317,7 +348,7 @@ export function BatchMintDialog({
                     tokenId: tokenId.toString(),
                     metadataUrl: ipfsMetadataUrl,
                     imageUrl: cloudinaryUrl,
-                    transactionHash: mintResult?.transactionHash || '',
+                    transactionHash: mintResult?.transactionHash || 'batch_mint_user_paid',
                     minterAddress: account.address,
                     price: "0"
                   })
@@ -483,4 +514,4 @@ export function BatchMintDialog({
       </DialogContent>
     </Dialog>
   );
-} 
+}

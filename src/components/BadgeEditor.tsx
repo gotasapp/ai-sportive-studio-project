@@ -802,6 +802,11 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           getTransactionUrl={getTransactionUrl}
           isAnalyzing={isAnalyzing}
           hasGeneratedImage={!!generatedImage}
+          nftName={`Badge Collection #${Date.now()}`}
+          metadataUri={''}
+          walletAddress={address}
+          collection={'badges'}
+          generatedImageBlob={generatedImageBlob}
         />
       }
 

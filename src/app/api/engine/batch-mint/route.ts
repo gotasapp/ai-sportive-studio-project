@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createThirdwebClient, getContract, Engine } from 'thirdweb';
+import { defineChain } from 'thirdweb/chains';
+import { mintTo } from 'thirdweb/extensions/erc721';
 
 interface BatchMintApiRequest {
   to: string;
@@ -7,34 +10,32 @@ interface BatchMintApiRequest {
   collection?: 'jerseys' | 'stadiums' | 'badges';
 }
 
-// Engine Configuration
-const ENGINE_URL = process.env.ENGINE_URL || 'http://localhost:3005';
-const ENGINE_ACCESS_TOKEN = process.env.VAULT_ACCESS_TOKEN;
+// Define a chain Amoy
+const amoy = defineChain({
+  id: 80002,
+  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
+});
+
+// Environment Variables (seguindo padrão do Launchpad)
+const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
 export async function POST(request: NextRequest) {
   console.log('🔄 Engine Batch Mint API: POST request received');
-  console.log('🔧 VAULT_ACCESS_TOKEN check:', process.env.VAULT_ACCESS_TOKEN ? 'EXISTS' : 'MISSING');
   
-  // Debug das variáveis de ambiente
-  console.log('🔧 Environment Variables Check:', {
-    ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
-    VAULT_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing',
-    CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
-    BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
-  });
-  
-  if (!ENGINE_URL || !ENGINE_ACCESS_TOKEN || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
-    console.error("❌ Server-side configuration error: Missing environment variables.");
+  // Validação das variáveis de ambiente (seguindo padrão do Launchpad)
+  if (!THIRDWEB_SECRET_KEY || !CONTRACT_ADDRESS || !BACKEND_WALLET_ADDRESS) {
+    const missing = [
+      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
+      !CONTRACT_ADDRESS && "CONTRACT_ADDRESS", 
+      !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
+    ].filter(Boolean).join(", ");
+
+    console.error(`❌ API Error: Missing variables: ${missing}`);
     return NextResponse.json({ 
-      error: 'Server configuration error.',
-      details: {
-        ENGINE_URL: !!ENGINE_URL,
-        VAULT_ACCESS_TOKEN: !!ENGINE_ACCESS_TOKEN,
-        CONTRACT_ADDRESS: !!CONTRACT_ADDRESS,
-        BACKEND_WALLET_ADDRESS: !!BACKEND_WALLET_ADDRESS
-      }
+      success: false, 
+      error: `Server configuration error. Missing: ${missing}` 
     }, { status: 500 });
   }
 
@@ -42,82 +43,103 @@ export async function POST(request: NextRequest) {
     const body: BatchMintApiRequest = await request.json();
     console.log('📦 Engine Batch Mint API: Request body:', body);
     
+    // Verificar se é admin
+    const isAdmin = request.headers.get('x-user-admin') === 'true';
+    console.log('👤 User admin status:', isAdmin);
+    
     const { to, metadataUri, quantity, collection } = body;
 
     if (!to || !quantity || quantity < 1 || quantity > 100) {
       return NextResponse.json({ 
+        success: false,
         error: 'Invalid request. "to" and "quantity" (1-100) are required.' 
       }, { status: 400 });
     }
 
-    // Se metadataUri estiver vazio, usar uma URI genérica
-    const finalMetadataUri = metadataUri || 'https://gateway.ipfscdn.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o/0';
+    console.log(`🚀 Batch minting ${quantity} NFTs to ${to}`, { isAdmin, collection });
 
-    console.log(`🚀 Batch minting ${quantity} NFTs to ${to}`);
+    // Inicializar cliente Thirdweb (seguindo padrão do Launchpad)
+    const thirdwebClient = createThirdwebClient({ 
+      secretKey: THIRDWEB_SECRET_KEY 
+    });
+    
+    const contract = getContract({ 
+      client: thirdwebClient, 
+      chain: amoy, 
+      address: CONTRACT_ADDRESS 
+    });
+
+    console.log('📄 Using contract address:', CONTRACT_ADDRESS);
 
     // Array para armazenar resultados de cada mint
     const mintResults = [];
     const errors = [];
 
-    // Fazer múltiplas chamadas para a Engine API
-    for (let i = 0; i < quantity; i++) {
-      try {
-        console.log(`🔄 Minting NFT ${i + 1}/${quantity}`);
-        
-        const engineResponse = await fetch(`${ENGINE_URL}/contract/80002/${CONTRACT_ADDRESS}/erc721/mint-to`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${ENGINE_ACCESS_TOKEN}`,
-            'x-backend-wallet-address': BACKEND_WALLET_ADDRESS,
-          },
-          body: JSON.stringify({
-            receiver: to,
-            metadata: {
+    // Se metadataUri estiver vazio, usar uma URI genérica
+    const finalMetadataUri = metadataUri || 'https://gateway.ipfscdn.io/ipfs/QmYjtig7VJQ6XsnUjqqJvj7QaMcCAwtrgNdahSiFofrE7o/0';
+
+    // NOVO: Configurar servidor wallet para admin gasless (seguindo padrão do Launchpad)
+    if (isAdmin) {
+      console.log('💰 Admin detected - using gasless batch mint with Engine.serverWallet');
+      
+      const serverWallet = Engine.serverWallet({
+        address: BACKEND_WALLET_ADDRESS,
+        client: thirdwebClient,
+        vaultAccessToken: THIRDWEB_SECRET_KEY,
+      });
+
+      // Fazer múltiplos mints gasless usando serverWallet
+      for (let i = 0; i < quantity; i++) {
+        try {
+          console.log(`🔄 Admin gasless mint ${i + 1}/${quantity}`);
+          
+          const transaction = mintTo({
+            contract,
+            to,
+            nft: {
               name: `Generated NFT #${i + 1}`,
               description: 'AI Generated Sports NFT from CHZ Fan Token Studio',
               image: finalMetadataUri,
               attributes: [
                 { trait_type: 'Generator', value: 'AI Sports NFT' },
                 { trait_type: 'Collection', value: collection || 'jerseys' },
-                { trait_type: 'Batch Mint', value: 'true' }
+                { trait_type: 'Batch Mint', value: 'true' },
+                { trait_type: 'Mint Type', value: 'gasless' }
               ]
             }
-          }),
-        });
+          });
 
-        if (!engineResponse.ok) {
-          const errorText = await engineResponse.text();
-          console.error(`❌ Engine API Error for mint ${i + 1}:`, errorText);
+          console.log(`🔧 Transaction ${i + 1} prepared for gasless mint`);
+          
+          // Enfileirar a transação
+          const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
+          
+          console.log(`✅ Admin mint ${i + 1} enqueued successfully! Queue ID: ${transactionId}`);
+          mintResults.push({ 
+            mintNumber: i + 1, 
+            queueId: transactionId,
+            status: 'enqueued'
+          });
+          
+          // Pequeno delay entre mints
+          if (i < quantity - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+          
+        } catch (error) {
+          console.error(`❌ Admin mint ${i + 1} failed:`, error);
           errors.push({
             mintNumber: i + 1,
-            error: `Engine API error: ${engineResponse.status} - ${errorText}`
+            error: error instanceof Error ? error.message : 'Unknown error'
           });
-          continue;
         }
-
-        const engineResult = await engineResponse.json();
-        mintResults.push({
-          mintNumber: i + 1,
-          queueId: engineResult.result?.queueId || engineResult.queueId,
-          transactionHash: engineResult.result?.transactionHash,
-          status: 'queued'
-        });
-
-        console.log(`✅ Mint ${i + 1}/${quantity} queued successfully`);
-
-        // Pequeno delay entre mints para evitar rate limiting
-        if (i < quantity - 1) {
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
-
-      } catch (error) {
-        console.error(`❌ Error minting NFT ${i + 1}:`, error);
-        errors.push({
-          mintNumber: i + 1,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
       }
+    } else {
+      console.log('💳 Regular user detected - batch mint not supported for this endpoint');
+      return NextResponse.json({ 
+        success: false,
+        error: 'Batch mint for regular users should use contract deployment flow' 
+      }, { status: 400 });
     }
 
     const successfulMints = mintResults.length;
@@ -137,10 +159,8 @@ export async function POST(request: NextRequest) {
           })
         });
 
-        if (updateResponse.ok) {
-          console.log(`✅ Updated ${collection} count by ${successfulMints}`);
-        } else {
-          console.error(`❌ Failed to update ${collection} count`);
+        if (!updateResponse.ok) {
+          console.warn('⚠️ Failed to update collection count, but mint succeeded');
         }
       } catch (error) {
         console.error('❌ Error updating collection count:', error);
@@ -161,30 +181,27 @@ export async function POST(request: NextRequest) {
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     console.error('❌ Batch Mint API CRITICAL ERROR:', errorMessage);
     
-    return NextResponse.json(
-      { error: 'Failed to process batch mint request.', details: errorMessage },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to process batch mint request.', 
+      details: errorMessage 
+    }, { status: 500 });
   }
-} 
+}
 
 export async function GET() {
-  console.log('🔧 GET - VAULT_ACCESS_TOKEN:', process.env.VAULT_ACCESS_TOKEN ? 'EXISTS' : 'MISSING');
-  console.log('🔧 ALL ENV VARS:', Object.keys(process.env).filter(key => key.includes('ENGINE') || key.includes('VAULT') || key.includes('ADMIN')));
+  console.log('🔧 GET - THIRDWEB_SECRET_KEY:', THIRDWEB_SECRET_KEY ? 'EXISTS' : 'MISSING');
+  console.log('🔧 GET - CONTRACT_ADDRESS:', CONTRACT_ADDRESS || 'MISSING');
+  console.log('🔧 GET - BACKEND_WALLET_ADDRESS:', BACKEND_WALLET_ADDRESS ? 'EXISTS' : 'MISSING');
   
   return NextResponse.json({
-    status: 'Batch Mint API is working - Updated',
+    status: 'Batch Mint API is working - Updated with Engine.serverWallet',
     config: {
-      ENGINE_URL: ENGINE_URL ? 'configured' : 'missing',
-      VAULT_ACCESS_TOKEN: ENGINE_ACCESS_TOKEN ? 'configured' : 'missing', 
+      THIRDWEB_SECRET_KEY: THIRDWEB_SECRET_KEY ? 'configured' : 'missing',
       CONTRACT_ADDRESS: CONTRACT_ADDRESS || 'missing',
       BACKEND_WALLET_ADDRESS: BACKEND_WALLET_ADDRESS ? 'configured' : 'missing'
     },
-    debug: {
-      ENGINE_ADMIN_KEY_RAW: process.env.ENGINE_ADMIN_KEY ? 'EXISTS' : 'MISSING',
-      VAULT_ACCESS_TOKEN_RAW: process.env.VAULT_ACCESS_TOKEN ? 'EXISTS' : 'MISSING',
-      ADMIN_WALLET_ADDRESS_RAW: process.env.ADMIN_WALLET_ADDRESS ? 'EXISTS' : 'MISSING'
-    },
+    approach: 'Using Engine.serverWallet for admin gasless mints (same as Launchpad)',
     timestamp: new Date().toISOString()
   });
-} 
+}
