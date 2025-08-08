@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { deployERC721Contract } from 'thirdweb/deploys';
 import { createThirdwebClient, defineChain } from 'thirdweb';
 import { privateKeyToAccount } from 'thirdweb/wallets';
-import { setClaimConditions, lazyMint } from 'thirdweb/extensions/erc721';
+import { setClaimConditions, lazyMint, setDefaultRoyaltyInfo } from 'thirdweb/extensions/erc721';
 import { getContract, sendTransaction } from 'thirdweb';
 
 export async function POST(request: NextRequest) {
@@ -25,6 +25,20 @@ export async function POST(request: NextRequest) {
         error: 'Quantity must be between 2 and 100' 
       }, { status: 400 });
     }
+
+    // Buscar configuração de royalty do admin
+    let royaltyPercentage = 10; // default
+    try {
+      const royaltyResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/settings/royalty`);
+      if (royaltyResponse.ok) {
+        const royaltyData = await royaltyResponse.json();
+        royaltyPercentage = royaltyData.royaltyPercentage || 10;
+      }
+    } catch (error) {
+      console.log('⚠️ Using default royalty (10%) - failed to fetch admin setting:', error);
+    }
+
+    console.log('🧾 Using royalty percentage:', royaltyPercentage + '%');
 
     // Configurar cliente Thirdweb
     const client = createThirdwebClient({
@@ -100,7 +114,24 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Claim conditions configured');
 
-    // ETAPA 3: Lazy mint tokens
+    // ETAPA 3: Configurar royalties
+    console.log('🧾 Setting up royalties...');
+    
+    const royaltyBps = Math.round(royaltyPercentage * 100); // Converter % para basis points (10% = 1000 bps)
+    const royaltyTransaction = setDefaultRoyaltyInfo({
+      contract,
+      recipient: userWallet, // Criador recebe as royalties
+      bps: royaltyBps
+    });
+
+    await sendTransaction({
+      transaction: royaltyTransaction,
+      account: backendAccount,
+    });
+
+    console.log(`✅ Royalties configured: ${royaltyPercentage}% to ${userWallet}`);
+
+    // ETAPA 4: Lazy mint tokens
     console.log('📦 Lazy minting tokens...');
     
     const lazyMintTransaction = lazyMint({
@@ -125,9 +156,12 @@ export async function POST(request: NextRequest) {
       contractAddress,
       deployedBy: backendAccount.address,
       quantity,
-      message: `DropERC721 collection deployed and prepared with ${quantity} NFT supply`,
+      royaltyPercentage,
+      royaltyRecipient: userWallet,
+      message: `DropERC721 collection deployed with ${royaltyPercentage}% royalties to creator`,
       claimConditionsSet: true,
       tokensLazyMinted: true,
+      royaltiesConfigured: true,
     });
 
   } catch (error: any) {

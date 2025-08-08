@@ -21,6 +21,7 @@ const initialSettings = {
   defaults: {
     mintPrice: '10', // in CHZ
     editionSize: 100,
+    royaltyPercentage: 10, // 10% default
   },
   contentFilters: {
     enabled: true,

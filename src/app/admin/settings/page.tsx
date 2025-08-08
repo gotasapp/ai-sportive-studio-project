@@ -30,6 +30,7 @@ interface Settings {
   defaults: {
     mintPrice: string;
     editionSize: number;
+    royaltyPercentage: number;
   };
 }
 
@@ -218,6 +219,21 @@ export default function SettingsPage() {
                     <div className="space-y-2">
                         <Label htmlFor="editionSize">Default Edition Size</Label>
                         <Input id="editionSize" type="number" value={settings.defaults.editionSize} onChange={(e) => handleInputChange('defaults', 'editionSize', Number(e.target.value))} className="cyber-input" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="royaltyPercentage">Default Royalty Percentage (%)</Label>
+                        <Input 
+                          id="royaltyPercentage" 
+                          type="number" 
+                          min="0" 
+                          max="25" 
+                          step="0.1"
+                          value={settings.defaults.royaltyPercentage} 
+                          onChange={(e) => handleInputChange('defaults', 'royaltyPercentage', Number(e.target.value))} 
+                          className="cyber-input" 
+                          placeholder="10.0"
+                        />
+                        <div className="text-sm text-gray-400">Aplicado apenas em Batch Mint (coleções). Launchpad usa configuração própria.</div>
                     </div>
                 </CardContent>
             </Card>
