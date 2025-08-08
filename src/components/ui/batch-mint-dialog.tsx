@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useBatchMint } from '@/hooks/useBatchMint';
-import { Copy, Hash, Zap, AlertCircle, CheckCircle } from 'lucide-react';
+import { Copy, Hash, Zap, AlertCircle, CheckCircle, Plus, Minus } from 'lucide-react';
 import { useActiveAccount } from 'thirdweb/react';
 import { deployERC721Contract } from 'thirdweb/deploys';
 import { createThirdwebClient } from 'thirdweb';
@@ -422,17 +422,56 @@ export function BatchMintDialog({
           </div>
 
             <div className="space-y-2">
-            <Label htmlFor="quantity" className="text-[#FDFDFD]/70">Quantity (1-100)</Label>
-              <Input
-                id="quantity"
-                type="number"
-                min="1"
-                max="100"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-              disabled={deployStep !== 'idle'}
-                className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD]"
-              />
+              <Label htmlFor="quantity" className="text-[#FDFDFD]/70">Quantity (1-100)</Label>
+              <div className="flex items-center space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  disabled={deployStep !== 'idle' || quantity <= 1}
+                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e] h-10 w-10 shrink-0"
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+                
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={quantity}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setQuantity(1);
+                    } else {
+                      const numVal = parseInt(val);
+                      if (!isNaN(numVal)) {
+                        setQuantity(Math.max(1, Math.min(100, numVal)));
+                      }
+                    }
+                  }}
+                  disabled={deployStep !== 'idle'}
+                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] text-center flex-1 min-w-0"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => setQuantity(Math.min(100, quantity + 1))}
+                  disabled={deployStep !== 'idle' || quantity >= 100}
+                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e] h-10 w-10 shrink-0"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="text-xs text-[#FDFDFD]/50 text-center">
+                Use os botões +/- ou digite diretamente
+              </div>
             </div>
 
           {deployStep !== 'idle' && (
