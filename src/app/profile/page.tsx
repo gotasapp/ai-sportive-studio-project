@@ -883,6 +883,15 @@ interface NFTGridProps {
 }
 
 function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12; // 12 NFTs por página (3x4 grid)
+  
+  // Calcular paginação
+  const totalPages = Math.ceil(nfts.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentNFTs = nfts.slice(startIndex, endIndex);
+
   const getStatusBadge = (status: string) => {
     const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
       owned: "default",
@@ -909,8 +918,42 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
     )
   }
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-      {nfts.map((nft) => (
+    <div className="space-y-6">
+      {/* Header com contagem e paginação */}
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-[#FDFDFD]/70">
+          Mostrando {startIndex + 1}-{Math.min(endIndex, nfts.length)} de {nfts.length} NFTs
+        </div>
+        {totalPages > 1 && (
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e]"
+            >
+              Anterior
+            </Button>
+            <span className="text-sm text-[#FDFDFD]/70 px-3">
+              {currentPage} de {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e]"
+            >
+              Próxima
+            </Button>
+          </div>
+        )}
+      </div>
+
+      {/* Grid de NFTs */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {currentNFTs.map((nft) => (
         <Card 
           key={nft.id} 
           className="bg-[#0b0518] border-gray-600 hover:border-[#A20131] transition-colors cursor-pointer"
@@ -920,18 +963,30 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
             {nft.metadata?.image || nft.imageUrl ? (
               <img
                 key={nft.id}
-                src={normalizeIpfsUri(nft.metadata?.image ?? nft.imageUrl)}
+                src={(() => {
+                  const imageUrl = nft.metadata?.image ?? nft.imageUrl;
+                  // Se já é URL do Cloudinary, usar diretamente
+                  if (imageUrl.includes('cloudinary.com')) {
+                    return imageUrl;
+                  }
+                  // Caso contrário, normalizar IPFS
+                  return normalizeIpfsUri(imageUrl);
+                })()}
                 alt={nft.metadata?.name ?? nft.name}
                 width={300}
                 height={300}
                 className="w-full h-full object-cover"
                 loading="lazy"
                 onError={e => {
-                  const fallbackUrl = normalizeIpfsUri(nft.metadata?.image ?? nft.imageUrl, true);
-                  if (e.currentTarget.src !== fallbackUrl) {
-                    e.currentTarget.src = fallbackUrl;
+                  const originalUrl = nft.metadata?.image ?? nft.imageUrl;
+                  const currentSrc = e.currentTarget.src;
+                  
+                  // Se falhou a primeira vez, tentar a URL original diretamente
+                  if (!currentSrc.includes('placeholder') && originalUrl && originalUrl !== currentSrc) {
+                    e.currentTarget.src = originalUrl;
                   } else {
-                    e.currentTarget.src = '/fallback.jpg';
+                    // Fallback para placeholder inline SVG
+                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTQxMDFlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5GVCBJbWFnZTwvdGV4dD48L3N2Zz4=';
                   }
                 }}
               />
@@ -955,7 +1010,37 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
             </div>
           </CardContent>
         </Card>
-      ))}
+        ))}
+      </div>
+      
+      {/* Paginação inferior para telas mobile */}
+      {totalPages > 1 && (
+        <div className="flex justify-center md:hidden">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+              className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e]"
+            >
+              ←
+            </Button>
+            <span className="text-sm text-[#FDFDFD]/70 px-3">
+              {currentPage}/{totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+              className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e]"
+            >
+              →
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

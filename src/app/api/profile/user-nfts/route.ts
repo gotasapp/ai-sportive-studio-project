@@ -222,6 +222,158 @@ async function fetchUserNFTsProductionReady(userAddress: string) {
   }
 }
 
+// NOVA FUNÇÃO: Buscar NFTs Legacy do MongoDB (contrato antigo)
+async function fetchUserLegacyNFTs(userAddress: string) {
+  console.log('🔄 Fetching legacy NFTs from MongoDB for:', userAddress);
+  
+  try {
+    const client = await connectToDatabase();
+    const db = client.db(DB_NAME);
+    
+    const collections = ['jerseys', 'stadiums', 'badges'];
+    const userNFTs = [];
+    
+    for (const collectionName of collections) {
+      const collection = db.collection(collectionName);
+      
+      // Buscar NFTs criadas pelo usuário que foram mintadas
+      const nfts = await collection
+        .find({
+          'creator.wallet': userAddress,
+          status: 'Approved',
+          $or: [
+            { transactionHash: { $exists: true, $nin: [null, ''] } },
+            { isMinted: true },
+            { mintStatus: 'minted' },
+            { mintStatus: 'success' }
+          ],
+          // Excluir NFTs de custom collections para evitar duplicatas
+          $nor: [
+            { 'metadata.image': { $regex: 'collection_' } },
+            { name: { $regex: 'Collection #' } }
+          ]
+        })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .toArray();
+      
+      for (const nft of nfts) {
+        userNFTs.push({
+          id: nft._id.toString(),
+          name: nft.name,
+          imageUrl: nft.metadata?.image || nft.imageUrl || '',
+          price: '0',
+          contractAddress: NFT_CONTRACT_ADDRESS,
+          tokenId: nft.tokenId || '0',
+          category: determineCategory({ name: nft.name }),
+          status: 'owned',
+          transactionHash: nft.transactionHash,
+          mintedAt: nft.createdAt || new Date().toISOString(),
+          collectionName: collectionName,
+          owner: userAddress,
+          isLegacy: true
+        });
+      }
+    }
+    
+    console.log(`✅ Found ${userNFTs.length} legacy NFTs from MongoDB`);
+    
+    return {
+      userAddress,
+      nfts: userNFTs,
+      totalNFTs: userNFTs.length,
+      owned: userNFTs.length,
+      listed: 0,
+      created: userNFTs.length,
+      source: 'mongodb_legacy'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error fetching legacy NFTs from MongoDB:', error);
+    return {
+      userAddress,
+      nfts: [],
+      totalNFTs: 0,
+      owned: 0,
+      listed: 0,
+      created: 0,
+      source: 'mongodb_legacy_error'
+    };
+  }
+}
+
+// NOVA FUNÇÃO: Buscar NFTs das Custom Collections (batch mints)
+async function fetchUserCustomCollectionNFTs(userAddress: string) {
+  console.log('🔄 Fetching custom collection NFTs for:', userAddress);
+  
+  try {
+    const client = await connectToDatabase();
+    const db = client.db(DB_NAME);
+    
+    // Buscar NFTs das custom collections que o usuário mintou
+    const customCollectionMints = await db.collection('custom_collection_mints')
+      .find({ minterAddress: userAddress })
+      .toArray();
+    
+    console.log(`📦 Found ${customCollectionMints.length} custom collection NFTs for user`);
+    
+    const userNFTs = [];
+    
+    for (const mint of customCollectionMints) {
+      try {
+        // Buscar dados da collection
+        const collection = await db.collection('custom_collections')
+          .findOne({ _id: mint.customCollectionId });
+        
+        if (collection) {
+          userNFTs.push({
+            id: `custom_${mint.customCollectionId}_${mint.tokenId}`,
+            name: `${collection.name} #${mint.tokenId}`,
+            imageUrl: collection.imageUrl,
+            price: mint.price || '0',
+            contractAddress: mint.contractAddress,
+            tokenId: mint.tokenId,
+            category: determineCategory({ name: collection.name }),
+            status: 'owned',
+            transactionHash: mint.transactionHash,
+            mintedAt: mint.mintedAt || new Date().toISOString(),
+            collectionName: collection.name,
+            collectionId: mint.customCollectionId.toString(),
+            owner: userAddress,
+            isCustomCollection: true
+          });
+        }
+      } catch (error) {
+        console.warn(`⚠️ Error processing custom NFT:`, error);
+      }
+    }
+    
+    console.log(`✅ Processed ${userNFTs.length} custom collection NFTs`);
+    
+    return {
+      userAddress,
+      nfts: userNFTs,
+      totalNFTs: userNFTs.length,
+      owned: userNFTs.length,
+      listed: 0,
+      created: userNFTs.length,
+      source: 'custom_collections'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error fetching custom collection NFTs:', error);
+    return {
+      userAddress,
+      nfts: [],
+      totalNFTs: 0,
+      owned: 0,
+      listed: 0,
+      created: 0,
+      source: 'custom_collections_error'
+    };
+  }
+}
+
 // Original Thirdweb-only function (kept as fallback)
 async function fetchUserNFTsFromThirdweb(userAddress: string) {
   console.log('🔄 Fetching fresh NFT data from Thirdweb for:', userAddress);
@@ -410,8 +562,69 @@ export async function GET(request: Request) {
     console.log('⚠️ Cache miss - fetching fresh data');
     
     try {
-      // Use production-ready approach (same as marketplace)
-      const freshData = await fetchUserNFTsProductionReady(userAddress);
+      // COMBINAR: NFTs Legacy (MongoDB) + Custom Collections + Blockchain Verification
+      console.log('🔄 Fetching from multiple sources: MongoDB legacy + custom collections + blockchain verification');
+      
+      const [legacyData, customData, blockchainData] = await Promise.all([
+        fetchUserLegacyNFTs(userAddress),
+        fetchUserCustomCollectionNFTs(userAddress),
+        // Verificar blockchain para NFTs que podem não estar no MongoDB
+        fetchUserNFTsFromThirdweb(userAddress).catch(err => {
+          console.warn('⚠️ Blockchain verification failed:', err);
+          return { userAddress, nfts: [], totalNFTs: 0, owned: 0, listed: 0, created: 0, source: 'blockchain_failed' };
+        })
+      ]);
+      
+      // Combinar e deduplificar NFTs de todas as fontes
+      const existingIds = new Set();
+      const allNFTs = [];
+      
+      // Adicionar NFTs legacy (MongoDB) primeiro
+      for (const nft of legacyData.nfts) {
+        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
+        if (!existingIds.has(id)) {
+          existingIds.add(id);
+          allNFTs.push(nft);
+        }
+      }
+      
+      // Adicionar custom collections
+      for (const nft of customData.nfts) {
+        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
+        if (!existingIds.has(id)) {
+          existingIds.add(id);
+          allNFTs.push(nft);
+        }
+      }
+      
+      // Adicionar NFTs do blockchain que não estão no MongoDB
+      for (const nft of blockchainData.nfts) {
+        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
+        if (!existingIds.has(id)) {
+          existingIds.add(id);
+          nft.source = 'blockchain_only'; // Marcar como encontrada só na blockchain
+          allNFTs.push(nft);
+        }
+      }
+      
+      const freshData = {
+        userAddress,
+        nfts: allNFTs,
+        totalNFTs: allNFTs.length,
+        owned: allNFTs.filter(nft => nft.status === 'owned').length,
+        listed: allNFTs.filter(nft => nft.status === 'listed').length,
+        created: allNFTs.filter(nft => nft.status === 'created' || nft.status === 'owned').length,
+        source: 'combined_all_sources',
+        breakdown: {
+          legacy: { count: legacyData.nfts.length, source: legacyData.source },
+          custom: { count: customData.nfts.length, source: customData.source },
+          blockchain: { count: blockchainData.nfts.length, source: blockchainData.source },
+          blockchainOnly: { count: allNFTs.filter(nft => nft.source === 'blockchain_only').length }
+        }
+      };
+      
+      console.log(`✅ Combined ALL sources: ${freshData.totalNFTs} total`);
+      console.log(`📊 Breakdown: ${legacyData.nfts.length} legacy + ${customData.nfts.length} custom + ${blockchainData.nfts.length} blockchain (${allNFTs.filter(nft => nft.source === 'blockchain_only').length} blockchain-only)`);
       
       // Salvar no cache
       const cacheDoc = {

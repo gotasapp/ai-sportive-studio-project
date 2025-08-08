@@ -289,12 +289,23 @@ export function NFTDetailsModal({
                 {(displayData?.imageUrl || nftData?.imageUrl) ? (
                   <img
                     key={displayData?.imageUrl || nftData?.imageUrl || ''}
-                    src={normalizeIpfsUri(displayData?.imageUrl || nftData?.imageUrl || '')}
+                    src={(() => {
+                      const imageUrl = displayData?.imageUrl || nftData?.imageUrl || '';
+                      // Se já é URL do Cloudinary, usar diretamente
+                      if (imageUrl.includes('cloudinary.com')) {
+                        return imageUrl;
+                      }
+                      // Caso contrário, normalizar IPFS
+                      return normalizeIpfsUri(imageUrl);
+                    })()}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
                     height={400}
                     className="w-full h-full object-cover"
-                    onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                    onError={e => { 
+                      // Fallback para placeholder inline SVG (não causa loop)
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTQxMDFlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5GVCBJbWFnZTwvdGV4dD48L3N2Zz4='; 
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>
