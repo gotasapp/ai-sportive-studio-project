@@ -806,7 +806,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           metadataUri={''}
           walletAddress={address}
           collection={'badges'}
-          generatedImageBlob={generatedImageBlob}
+          generatedImageBlob={generatedImageBlob || undefined}
         />
       }
 

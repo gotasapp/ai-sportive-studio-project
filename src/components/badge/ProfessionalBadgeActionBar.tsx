@@ -130,7 +130,7 @@ export default function ProfessionalBadgeActionBar({
           to={walletAddress}
           metadataUri={metadataUri || ''}
           nftName={nftName}
-          collection={collection || 'badges'}
+          collection={(collection as "jerseys" | "badges" | "stadiums") || 'badges'}
           disabled={!isConnected || isMinting}
           isUserAdmin={isUserAdmin}
           generatedImageBlob={generatedImageBlob}

@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
     // Se tem NFTs, vamos tentar pegar alguns detalhes dos últimos
     const nftDetails = [];
-    if (balance > 0n) {
+    if (balance > BigInt(0)) {
       // Tentar verificar os últimos 3 NFTs (assumindo IDs sequenciais)
       const balanceNumber = Number(balance);
       const startId = Math.max(0, balanceNumber - 3);

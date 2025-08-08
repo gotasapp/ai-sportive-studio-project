@@ -9,6 +9,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { useBatchMint } from '@/hooks/useBatchMint';
 import { Copy, Hash, Zap, AlertCircle, CheckCircle, Plus, Minus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useActiveAccount } from 'thirdweb/react';
 import { deployERC721Contract } from 'thirdweb/deploys';
 import { createThirdwebClient } from 'thirdweb';
@@ -136,6 +137,8 @@ export function BatchMintDialog({
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       // ETAPA 2: Claim NFTs - GASLESS para admin, PAGO para usuário
+      let mintResult: any;
+      
       if (isUserAdmin) {
         console.log('🔄 ETAPA 2: Admin gasless claiming NFTs...');
         
@@ -164,7 +167,7 @@ export function BatchMintDialog({
         }
 
         console.log('✅ Admin gasless claim successful!', adminClaimResult.transactionHash);
-        var mintResult = { transactionHash: adminClaimResult.transactionHash };
+        mintResult = { transactionHash: adminClaimResult.transactionHash };
         
       } else {
         console.log('🔄 ETAPA 2: User claiming NFTs (paid)...');
@@ -182,7 +185,7 @@ export function BatchMintDialog({
         // Retry logic para claim
         let claimAttempts = 0;
         const maxAttempts = 3;
-        let mintResult;
+
         
         while (claimAttempts < maxAttempts) {
           try {

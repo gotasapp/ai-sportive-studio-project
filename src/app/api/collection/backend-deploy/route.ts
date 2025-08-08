@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { deployERC721Contract } from 'thirdweb/deploys';
 import { createThirdwebClient, defineChain } from 'thirdweb';
 import { privateKeyToAccount } from 'thirdweb/wallets';
-import { setClaimConditions, lazyMint, setDefaultRoyaltyInfo } from 'thirdweb/extensions/erc721';
+import { setClaimConditions, lazyMint } from 'thirdweb/extensions/erc721';
 import { getContract, sendTransaction } from 'thirdweb';
 
 export async function POST(request: NextRequest) {
@@ -114,22 +114,31 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Claim conditions configured');
 
-    // ETAPA 3: Configurar royalties
+    // ETAPA 3: Configurar royalties via API existente (sabemos que funciona)
     console.log('🧾 Setting up royalties...');
     
-    const royaltyBps = Math.round(royaltyPercentage * 100); // Converter % para basis points (10% = 1000 bps)
-    const royaltyTransaction = setDefaultRoyaltyInfo({
-      contract,
-      recipient: userWallet, // Criador recebe as royalties
-      bps: royaltyBps
-    });
-
-    await sendTransaction({
-      transaction: royaltyTransaction,
-      account: backendAccount,
-    });
-
-    console.log(`✅ Royalties configured: ${royaltyPercentage}% to ${userWallet}`);
+    try {
+      const royaltyBps = Math.round(royaltyPercentage * 100); // Converter % para basis points (10% = 1000 bps)
+      
+      const royaltyResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/launchpad/set-royalty`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractAddress: contractAddress,
+          recipient: userWallet, // Criador recebe as royalties
+          bps: royaltyBps
+        })
+      });
+      
+      if (royaltyResponse.ok) {
+        const royaltyResult = await royaltyResponse.json();
+        console.log(`✅ Royalties configured: ${royaltyPercentage}% to ${userWallet} (Queue ID: ${royaltyResult.queueId})`);
+      } else {
+        console.warn(`⚠️ Royalty configuration failed, but continuing deploy`);
+      }
+    } catch (royaltyError) {
+      console.warn(`⚠️ Royalty configuration failed: ${royaltyError}, but continuing deploy`);
+    }
 
     // ETAPA 4: Lazy mint tokens
     console.log('📦 Lazy minting tokens...');

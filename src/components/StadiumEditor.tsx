@@ -539,7 +539,7 @@ This description will be used to generate a new version of the stadium with slig
           metadataUri={''}
           walletAddress={address}
           collection={'stadiums'}
-          generatedImageBlob={generatedImageBlob}
+          generatedImageBlob={generatedImageBlob || undefined}
         />
       }
 

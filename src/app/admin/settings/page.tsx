@@ -88,6 +88,7 @@ export default function SettingsPage() {
           defaults: {
             mintPrice: '10',
             editionSize: 100,
+            royaltyPercentage: 10, // Default 10% royalty
           },
         };
         

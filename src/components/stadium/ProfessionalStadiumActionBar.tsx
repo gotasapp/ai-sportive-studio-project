@@ -138,7 +138,7 @@ export default function ProfessionalStadiumActionBar({
           to={walletAddress}
           metadataUri={metadataUri || ''}
           nftName={nftName}
-          collection={collection || 'stadiums'}
+          collection={(collection as "jerseys" | "badges" | "stadiums") || 'stadiums'}
           disabled={!isConnected || isMinting}
           isUserAdmin={isUserAdmin}
           generatedImageBlob={generatedImageBlob}

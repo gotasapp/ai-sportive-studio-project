@@ -599,11 +599,12 @@ export async function GET(request: Request) {
       
       // Adicionar NFTs do blockchain que não estão no MongoDB
       for (const nft of blockchainData.nfts) {
-        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
+        const id = nft.id || `blockchain_${nft.tokenId}`;
         if (!existingIds.has(id)) {
           existingIds.add(id);
-          nft.source = 'blockchain_only'; // Marcar como encontrada só na blockchain
-          allNFTs.push(nft);
+          // Criar novo objeto com propriedade source
+          const nftWithSource = { ...nft, source: 'blockchain_only' };
+          allNFTs.push(nftWithSource);
         }
       }
       
@@ -618,13 +619,13 @@ export async function GET(request: Request) {
         breakdown: {
           legacy: { count: legacyData.nfts.length, source: legacyData.source },
           custom: { count: customData.nfts.length, source: customData.source },
-          blockchain: { count: blockchainData.nfts.length, source: blockchainData.source },
-          blockchainOnly: { count: allNFTs.filter(nft => nft.source === 'blockchain_only').length }
+          blockchain: { count: blockchainData.nfts.length, source: 'thirdweb_blockchain' },
+          blockchainOnly: { count: allNFTs.filter(nft => (nft as any).source === 'blockchain_only').length }
         }
       };
       
       console.log(`✅ Combined ALL sources: ${freshData.totalNFTs} total`);
-      console.log(`📊 Breakdown: ${legacyData.nfts.length} legacy + ${customData.nfts.length} custom + ${blockchainData.nfts.length} blockchain (${allNFTs.filter(nft => nft.source === 'blockchain_only').length} blockchain-only)`);
+      console.log(`📊 Breakdown: ${legacyData.nfts.length} legacy + ${customData.nfts.length} custom + ${blockchainData.nfts.length} blockchain (${allNFTs.filter(nft => (nft as any).source === 'blockchain_only').length} blockchain-only)`);
       
       // Salvar no cache
       const cacheDoc = {

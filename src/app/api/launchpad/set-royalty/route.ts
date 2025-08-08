@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
-import { setDefaultRoyaltyInfo } from 'thirdweb/extensions/erc721';
+import { setDefaultRoyaltyInfo } from 'thirdweb/extensions/common';
 import { Engine } from 'thirdweb';
 
 // Define a chain Amoy
@@ -61,6 +61,13 @@ export async function POST(request: NextRequest) {
 
     // Criar cliente Thirdweb
     const token = VAULT_ACCESS_TOKEN || THIRDWEB_SECRET_KEY;
+    if (!token) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Server configuration error. Missing authentication token.' 
+      }, { status: 500 });
+    }
+    
     const thirdwebClient = createThirdwebClient({ 
       secretKey: token
     });
@@ -81,8 +88,8 @@ export async function POST(request: NextRequest) {
     // Preparar transação para configurar royalties
     const transaction = setDefaultRoyaltyInfo({
       contract,
-      recipient,
-      bps
+      royaltyRecipient: recipient,
+      royaltyBps: BigInt(bps)
     });
 
     console.log('🧾 Enqueueing royalty transaction...');
