@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract, readContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { MongoClient } from 'mongodb';
+import { getSupportedContractAddressesWithDynamic } from '@/lib/marketplace-config';
 
 /**
  * API para sincronizar dados REAIS da blockchain com MongoDB
@@ -88,10 +89,8 @@ export async function GET(request: Request) {
           params: [BigInt(startId), BigInt(endId)]
         });
 
-        // Filtrar apenas listings do nosso contrato NFT
-        realListings = listings.filter(listing => 
-          listing.assetContract.toLowerCase() === '0xff973a4afc5a96dec81366461a461824c4f80254'
-        );
+        // Vamos filtrar por contratos suportados mais tarde após conectar ao MongoDB
+        realListings = listings;
 
         console.log(`✅ Real listings from our contract: ${realListings.length}`);
       }
@@ -112,6 +111,18 @@ export async function GET(request: Request) {
     const badges = await db.collection('badges').find({}).toArray();
 
     console.log(`📊 MongoDB data: ${jerseys.length} jerseys, ${stadiums.length} stadiums, ${badges.length} badges`);
+    
+    // Obter todos os contratos suportados (incluindo dinâmicos)
+    const supportedContracts = await getSupportedContractAddressesWithDynamic(polygonAmoy.id, db);
+    console.log('📋 Contratos suportados (incluindo dinâmicos):', supportedContracts);
+    
+    // Filtrar apenas listings de contratos suportados
+    realListings = realListings.filter(listing => 
+      supportedContracts.some(contract => 
+        listing.assetContract.toLowerCase() === contract.toLowerCase()
+      )
+    );
+    console.log(`✅ Listings filtradas de contratos suportados: ${realListings.length}`);
 
     // 3. CRUZAR DADOS E IDENTIFICAR DISCREPÂNCIAS
     console.log('🔍 Step 3: Cross-referencing data...');

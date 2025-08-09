@@ -6,6 +6,7 @@ import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketp
 import { ownerOf } from 'thirdweb/extensions/erc721';
 import { MarketplaceNFT } from '@/types';
 import { convertIpfsToHttp } from '@/lib/utils';
+import { getSupportedContractAddresses } from '@/lib/marketplace-config';
 
 // CONSTANTES CRÍTICAS
 const client = createThirdwebClient({

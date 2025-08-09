@@ -73,7 +73,7 @@ export function NFTDetailsModal({
   isOpen, 
   onClose, 
   tokenId, 
-  contractAddress = '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+        contractAddress,
   nft 
 }: NFTDetailsModalProps) {
   const chain = useActiveWalletChain()
@@ -129,7 +129,7 @@ export function NFTDetailsModal({
         imageUrl: nft?.imageUrl || '',
         attributes: [],
         owner: 'Unknown',
-        contractAddress: '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+        contractAddress: nftData.contractAddress || contractAddress,
         chainId: 80002,
         createdAt: nft?.createdAt || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
@@ -151,7 +151,7 @@ export function NFTDetailsModal({
         imageUrl: nft?.imageUrl || '',
         attributes: [],
         owner: 'Unknown',
-        contractAddress: '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+        contractAddress: nftData.contractAddress || contractAddress,
         chainId: 80002,
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),

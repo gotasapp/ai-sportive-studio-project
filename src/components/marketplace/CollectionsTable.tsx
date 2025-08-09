@@ -506,7 +506,12 @@ export default function CollectionsTable({
                           width={48}
                           height={48}
                           className="w-12 h-12 object-cover rounded"
-                          onError={e => { e.currentTarget.src = '/fallback.jpg'; }}
+                          onError={e => { 
+                            const target = e.currentTarget as HTMLImageElement;
+                            if (!target.src.includes('fallback')) {
+                              target.src = '/fallback.svg';
+                            }
+                          }}
                         />
                       ) : (
                         <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">Loading NFT...</div>

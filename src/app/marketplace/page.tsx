@@ -26,6 +26,7 @@ import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMo
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 
+
 export default function MarketplacePage() {
   const isMobile = useIsMobile();
 
@@ -426,16 +427,23 @@ export default function MarketplacePage() {
               />
             </div>
             
-            {/* Botão de Refresh */}
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing || marketplaceLoading}
-              className="ml-4 px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
-              title="Refresh marketplace data"
-            >
-              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {isRefreshing ? 'Refreshing...' : 'Refresh'}
-            </button>
+            {/* Botões de Ação */}
+            <div className="flex gap-2">
+              {/* Botão de Sync */}
+
+
+              
+              {/* Botão de Refresh */}
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing || marketplaceLoading}
+                className="px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+                title="Refresh marketplace data"
+              >
+                <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                {isRefreshing ? 'Refreshing...' : 'Refresh'}
+              </button>
+            </div>
           </div>
         </div>
 

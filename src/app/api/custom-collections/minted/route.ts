@@ -177,25 +177,57 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Criar documento para coleção de mintados
+    // Criar documento para coleção de mintados - COPIANDO ESTRUTURA LEGACY
     const mintedCustomNFT = {
-      customCollectionId,
+      // Dados básicos (igual legacy)
+      name: `${customCollection.name} #${tokenId}`,
+      tokenId,
       contractAddress: customCollection.contractAddress,
+      transactionHash,
+      owner: minterAddress,
+      creatorWallet: minterAddress,
+      status: 'Approved',
+      isMinted: true,
+      mintStatus: 'confirmed',
+      
+      // Metadados (igual legacy)
+      metadata: {
+        name: `${customCollection.name} #${tokenId}`,
+        description: customCollection.description,
+        image: imageUrl || ''
+      },
+      imageUrl: imageUrl || '',
+      metadataUrl: metadataUrl || '',
+      
+      // Marketplace (COPIANDO ESTRUTURA LEGACY)
+      marketplace: {
+        isListed: false,
+        isListable: true,
+        canTrade: true,
+        verified: true,
+        collection: customCollection.name,
+        category: customCollection.category
+      },
+      
+      // Creator (igual legacy)
+      creator: {
+        wallet: minterAddress
+      },
+      
+      // Custom collection específicos
+      customCollectionId,
+      minterAddress,
       category: customCollection.category,
       teamName: customCollection.teamName,
       season: customCollection.season,
       subcategoryType: customCollection.subcategoryType,
-      tokenId,
-      metadataUrl: metadataUrl || '',
-      imageUrl: imageUrl || '',
-      transactionHash,
-      minterAddress,
       price: price || "0",
       mintedAt: new Date(),
-      mintStatus: 'confirmed',
-      isMinted: true,
-      status: 'Approved',
-      type: 'custom_collection'
+      type: 'custom_collection',
+      
+      // Timestamps (igual legacy)
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     // Inserir na coleção de mintados

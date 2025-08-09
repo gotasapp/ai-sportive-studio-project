@@ -72,7 +72,7 @@ export function useMarketplaceData() {
         description: nft.metadata?.description || nft.description || '',
         image: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
         imageUrl: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
-        price: nft.marketplace?.isListed ? 'Listed' : 'Not for sale',
+        price: nft.marketplace?.isListed ? (nft.marketplace?.price || 'Listed') : 'Not for sale',
         currency: 'MATIC',
         owner: nft.owner || 'Unknown',
         creator: nft.creator || nft.owner || 'Unknown',
@@ -88,12 +88,12 @@ export function useMarketplaceData() {
           contractType: nft.type || 'ERC721',
         },
         contractAddress: nft.contractAddress,
-        isAuction: false,
+        isAuction: nft.marketplace?.isAuction || false,
         activeOffers: 0,
-        listingId: undefined,
-        auctionId: undefined,
-        currentBid: undefined,
-        endTime: undefined,
+        listingId: nft.marketplace?.thirdwebData?.listingId || nft.marketplace?.listingId,
+        auctionId: nft.marketplace?.thirdwebAuctionData?.auctionId,
+        currentBid: nft.marketplace?.thirdwebAuctionData?.minimumBidAmount,
+        endTime: nft.marketplace?.thirdwebAuctionData?.endTime ? new Date(Number(nft.marketplace.thirdwebAuctionData.endTime) * 1000) : undefined,
         source: 'api'
       })) : [];
 

@@ -3,6 +3,7 @@ import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getAllValidListings } from 'thirdweb/extensions/marketplace';
 import clientPromise from '@/lib/mongodb';
+import { getSupportedContractAddressesWithDynamic } from '@/lib/marketplace-config';
 
 const DB_NAME = 'chz-app-db';
 
@@ -47,6 +48,12 @@ export async function POST(request: Request) {
     const db = dbClient.db(DB_NAME);
     const syncResults = [];
 
+    // NOVA ABORDAGEM: Aceitar TODOS os contratos válidos
+    console.log('🚀 Sincronizando listagens de TODOS os contratos válidos');
+    
+    // Rastrear contratos únicos
+    const uniqueContracts = new Set<string>();
+
     // Processar cada listing válido
     for (const listing of validListings) {
       console.log('🎯 Processing listing:', {
@@ -59,11 +66,10 @@ export async function POST(request: Request) {
         status: listing.status
       });
 
-      // Filtrar apenas NFTs do nosso contrato
-      if (listing.assetContractAddress.toLowerCase() !== '0xff973a4afc5a96dec81366461a461824c4f80254') {
-        console.log('⏩ Skipping listing from different contract');
-        continue;
-      }
+      // Registrar contrato
+      uniqueContracts.add(listing.assetContractAddress.toLowerCase());
+
+      // Não filtrar por contrato - aceitar todos
 
       // Filtrar por usuário se especificado
       if (userWallet && listing.creatorAddress.toLowerCase() !== userWallet.toLowerCase()) {
@@ -219,7 +225,11 @@ export async function POST(request: Request) {
         alreadySynced: syncResults.filter(r => r.action === 'already_synced').length,
         noMatchFound: syncResults.filter(r => r.action === 'no_match_found').length
       },
-      message: `Processed ${validListings.length} listings using official Thirdweb getAllValidListings`
+      contracts: {
+        unique: Array.from(uniqueContracts),
+        total: uniqueContracts.size
+      },
+      message: `Processed ${validListings.length} listings from ${uniqueContracts.size} contratos diferentes`
     });
 
   } catch (error) {

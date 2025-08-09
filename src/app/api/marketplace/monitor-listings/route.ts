@@ -3,6 +3,7 @@ import { createThirdwebClient, getContract, getContractEvents } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { newListingEvent } from 'thirdweb/extensions/marketplace';
 import clientPromise from '@/lib/mongodb';
+import { isSupportedContract } from '@/lib/marketplace-config';
 
 const DB_NAME = 'chz-app-db';
 
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { 
       userWallet, 
-      contractAddress = '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
+      contractAddress,
       marketplaceAddress = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
       fromBlock = 'latest' 
     } = body;
@@ -35,14 +36,18 @@ export async function POST(request: Request) {
     console.log('🔍 Searching for NewListing events...');
 
     // Buscar eventos NewListing recentes
+    const eventConfig: any = {
+      listingCreator: userWallet ? userWallet : undefined
+    };
+    
+    // Apenas adicionar filtro de contractAddress se foi especificado
+    if (contractAddress) {
+      eventConfig.assetContract = contractAddress;
+    }
+    
     const events = await getContractEvents({
       contract: marketplaceContract,
-      events: [
-        newListingEvent({
-          listingCreator: userWallet ? userWallet : undefined,
-          assetContract: contractAddress,
-        })
-      ],
+      events: [newListingEvent(eventConfig)],
       fromBlock: fromBlock === 'latest' ? undefined : BigInt(fromBlock),
     });
 

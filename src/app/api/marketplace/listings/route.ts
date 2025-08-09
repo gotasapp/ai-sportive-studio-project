@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getAllValidListings } from 'thirdweb/extensions/marketplace';
+import { getSupportedContractAddressesWithDynamic } from '@/lib/marketplace-config';
+import clientPromise from '@/lib/mongodb';
 
 /**
  * API para buscar NFTs listados no marketplace da Thirdweb
@@ -36,16 +38,16 @@ export async function GET(request: Request) {
 
     console.log(`✅ Found ${validListings.length} valid listings`);
 
-    // Filtrar apenas NFTs do nosso contrato
-    const ourContractAddress = process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET?.toLowerCase();
-    const filteredListings = validListings.filter(listing => 
-      listing.assetContractAddress.toLowerCase() === ourContractAddress
-    );
-
-    console.log(`🎯 Found ${filteredListings.length} listings from our NFT contract`);
+    // NOVA ABORDAGEM: Aceitar TODAS as listagens de contratos válidos
+    // Não precisa filtrar por contratos específicos
+    console.log('🚀 Aceitando listagens de TODOS os contratos válidos');
+    
+    // Opcional: Registrar contratos únicos encontrados
+    const uniqueContracts = new Set(validListings.map(l => l.assetContractAddress.toLowerCase()));
+    console.log(`📋 Contratos únicos encontrados: ${uniqueContracts.size}`, Array.from(uniqueContracts));
 
     // Processar listagens para formato padronizado
-    const processedListings = filteredListings.map(listing => ({
+    const processedListings = validListings.map(listing => ({
       // IDs - converter BigInt para string
       id: listing.id.toString(),
       listingId: listing.id.toString(),

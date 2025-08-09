@@ -2,6 +2,7 @@ import { getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { client } from './ThirdwebProvider';
+import { getAllSupportedContractsUnified, isAnyContractValid } from './dynamic-contract-registry';
 
 // Define CHZ Chain
 export const chzMainnet = defineChain({
@@ -58,6 +59,70 @@ export const ALL_SUPPORTED_CONTRACTS = {
   ...NFT_CONTRACTS,
   ...LAUNCHPAD_CONTRACTS
 } as const;
+
+// Helper para obter todos os endereços de contratos suportados para uma chain
+export function getSupportedContractAddresses(chainId: number): string[] {
+  const contracts: string[] = [];
+  
+  // Adicionar contrato NFT legacy se existir
+  if (NFT_CONTRACTS[chainId]) {
+    contracts.push(NFT_CONTRACTS[chainId]);
+  }
+  
+  // Adicionar contrato launchpad genérico se existir
+  if (LAUNCHPAD_CONTRACTS[chainId]) {
+    contracts.push(LAUNCHPAD_CONTRACTS[chainId]);
+  }
+  
+  // NOTA: Contratos específicos de coleções do launchpad devem ser buscados dinamicamente
+  // do MongoDB pois cada coleção tem seu próprio contrato deployado
+  
+  return contracts;
+}
+
+// Helper assíncrono para obter contratos incluindo os dinâmicos do launchpad
+export async function getSupportedContractAddressesWithDynamic(
+  chainId: number, 
+  mongoDb?: any
+): Promise<string[]> {
+  const staticContracts = getSupportedContractAddresses(chainId);
+  
+  if (!mongoDb) {
+    return staticContracts;
+  }
+  
+  try {
+    // Buscar contratos específicos das coleções do launchpad
+    const launchpadCollections = await mongoDb.collection('collections').find({
+      type: 'launchpad',
+      contractAddress: { $exists: true, $ne: null }
+    }).toArray();
+    
+    const dynamicContracts = launchpadCollections
+      .map((col: any) => col.contractAddress)
+      .filter((addr: string) => addr && addr !== '');
+    
+    // Combinar contratos estáticos e dinâmicos (sem duplicatas)
+    const allContracts = [...new Set([...staticContracts, ...dynamicContracts])];
+    
+    console.log(`📋 Total de contratos suportados: ${allContracts.length}`, allContracts);
+    
+    return allContracts;
+  } catch (error) {
+    console.error('❌ Erro ao buscar contratos dinâmicos:', error);
+    return staticContracts;
+  }
+}
+
+// Helper para verificar se um contrato é suportado
+export function isSupportedContract(contractAddress: string, chainId: number): boolean {
+  // NOVA LÓGICA: Aceita QUALQUER contrato válido
+  // Não precisa estar pré-registrado
+  return isAnyContractValid(contractAddress);
+}
+
+// Export da função unificada para uso em APIs
+export { getAllSupportedContractsUnified };
 
 // Helper para obter contrato de marketplace por rede
 export function getMarketplaceContract(chainId: number) {

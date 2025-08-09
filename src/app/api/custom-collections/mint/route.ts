@@ -45,22 +45,57 @@ export async function POST(request: NextRequest) {
       }, { status: 404 });
     }
 
-    // Criar documento do mint
+    // Criar documento do mint - COPIANDO ESTRUTURA LEGACY
     const mintData = {
-      customCollectionId: objectId,
+      // Dados básicos (igual legacy)
+      name: `${customCollection.name} #${tokenId}`,
+      tokenId,
       contractAddress: customCollection.contractAddress,
+      transactionHash,
+      owner: minterAddress,
+      creatorWallet: minterAddress,
+      status: 'Approved',
+      isMinted: true,
+      mintStatus: 'confirmed',
+      
+      // Metadados (igual legacy)
+      metadata: {
+        name: `${customCollection.name} #${tokenId}`,
+        description: customCollection.description,
+        image: imageUrl
+      },
+      imageUrl,
+      metadataUrl,
+      
+      // Marketplace (COPIANDO ESTRUTURA LEGACY)
+      marketplace: {
+        isListed: false,
+        isListable: true,
+        canTrade: true,
+        verified: true,
+        collection: customCollection.name,
+        category: customCollection.category
+      },
+      
+      // Creator (igual legacy)
+      creator: {
+        wallet: minterAddress
+      },
+      
+      // Custom collection específicos
+      customCollectionId: objectId,
+      minterAddress,
       category: customCollection.category,
       teamName: customCollection.teamName,
       season: customCollection.season,
       subcategoryType: customCollection.subcategoryType,
-      tokenId,
-      metadataUrl,
-      imageUrl,
-      transactionHash,
-      minterAddress,
       price: price || "0",
       mintedAt: new Date(),
-      type: 'custom_collection_mint'
+      type: 'custom_collection_mint',
+      
+      // Timestamps (igual legacy)
+      createdAt: new Date(),
+      updatedAt: new Date()
     };
 
     // Salvar mint no MongoDB

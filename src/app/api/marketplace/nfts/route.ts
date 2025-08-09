@@ -1,12 +1,77 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
+import { createThirdwebClient, getContract } from 'thirdweb';
+import { polygonAmoy } from 'thirdweb/chains';
+import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 
 const DB_NAME = 'chz-app-db';
+
+// Cliente Thirdweb para verificar listagens
+const client = createThirdwebClient({
+  secretKey: process.env.THIRDWEB_SECRET_KEY!,
+});
+
+const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+
+/**
+ * 🔍 FUNÇÃO CRÍTICA: Verificar se NFTs estão listadas OU em auction no Thirdweb
+ * Esta é a MESMA lógica que funciona para NFTs legacy!
+ */
+async function getThirdwebMarketplaceData() {
+  try {
+    console.log('🔍 Buscando listagens E auctions no Thirdweb marketplace...');
+    
+    const marketplaceContract = getContract({
+      client,
+      chain: polygonAmoy,
+      address: MARKETPLACE_CONTRACT_ADDRESS,
+    });
+
+    // Buscar TANTO listagens quanto auctions em paralelo
+    const [validListings, validAuctions] = await Promise.all([
+      getAllValidListings({
+        contract: marketplaceContract,
+        start: 0,
+        count: BigInt(200),
+      }),
+      getAllAuctions({
+        contract: marketplaceContract,
+        start: 0,
+        count: BigInt(200),
+      })
+    ]);
+
+    console.log(`✅ Thirdweb marketplace data:`, {
+      listings: validListings.length,
+      auctions: validAuctions.length,
+      total: validListings.length + validAuctions.length
+    });
+    
+    // Criar mapas separados para consulta rápida
+    const listingsByKey = new Map();
+    const auctionsByKey = new Map();
+    
+    validListings.forEach(listing => {
+      const key = `${listing.tokenId.toString()}_${listing.assetContractAddress.toLowerCase()}`;
+      listingsByKey.set(key, { ...listing, type: 'listing' });
+    });
+
+    validAuctions.forEach(auction => {
+      const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
+      auctionsByKey.set(key, { ...auction, type: 'auction' });
+    });
+
+    return { listingsByKey, auctionsByKey };
+  } catch (error) {
+    console.error('❌ Erro ao buscar dados do Thirdweb marketplace:', error);
+    return { listingsByKey: new Map(), auctionsByKey: new Map() };
+  }
+}
 
 /**
  * Função para buscar Custom Collections mintadas
  */
-async function getCustomCollections(db: any, limit: number = 50) {
+async function getCustomCollections(db: any, marketplaceData: { listingsByKey: Map<string, any>, auctionsByKey: Map<string, any> }, limit: number = 50) {
   try {
     console.log('🎨 Fetching custom collections...');
     
@@ -51,20 +116,100 @@ async function getCustomCollections(db: any, limit: number = 50) {
           ]
         },
         
-        // 🏪 DADOS PARA MARKETPLACE
-        marketplace: {
-          isListed: false,
-          isListable: false,
-          canTrade: false,
-          verified: true,
-          collection: collection.name,
-          category: collection.category,
-          isCollection: true,
-          isCustomCollection: true, // ✨ MARCADOR IMPORTANTE
-          mintedUnits: mintedNFTs.length,
-          totalUnits: collection.totalSupply || mintedNFTs.length,
-          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length
-        },
+        // 🏪 DADOS PARA MARKETPLACE - VERIFICAR SE ESTÁ LISTADA
+        marketplace: (() => {
+          // 🔍 VERIFICAÇÃO DUPLA: MongoDB + Thirdweb (MESMA LÓGICA DAS NFTs LEGACY!)
+          
+          // 1. Verificar no MongoDB (dados locais)
+          const mongoListedNFTs = mintedNFTs.filter((nft: any) => nft.marketplace?.isListed === true);
+          
+          // 2. Verificar no Thirdweb (dados reais da blockchain) - LISTINGS E AUCTIONS
+          const thirdwebListedNFTs = mintedNFTs.filter((nft: any) => {
+            if (!nft.tokenId || !nft.contractAddress) return false;
+            const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
+            return marketplaceData.listingsByKey.has(key);
+          });
+
+          const thirdwebAuctionNFTs = mintedNFTs.filter((nft: any) => {
+            if (!nft.tokenId || !nft.contractAddress) return false;
+            const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
+            return marketplaceData.auctionsByKey.has(key);
+          });
+          
+          // 3. Combinar resultados (se QUALQUER um indica listagem/auction, está ativa)
+          const isListedMongo = mongoListedNFTs.length > 0;
+          const isListedThirdweb = thirdwebListedNFTs.length > 0;
+          const isAuctionThirdweb = thirdwebAuctionNFTs.length > 0;
+          const isListedFinal = isListedMongo || isListedThirdweb;
+          const isAuctionFinal = isAuctionThirdweb;
+          
+          console.log(`🔍 Verificação de marketplace para ${collection.name}:`, {
+            mongoListed: mongoListedNFTs.length,
+            thirdwebListed: thirdwebListedNFTs.length,
+            thirdwebAuctions: thirdwebAuctionNFTs.length,
+            finalListed: isListedFinal,
+            finalAuction: isAuctionFinal
+          });
+          
+          // 4. Dados do marketplace baseados na verificação real
+          const allListedNFTs = [...mongoListedNFTs, ...thirdwebListedNFTs];
+          const allAuctionNFTs = [...thirdwebAuctionNFTs];
+          const firstListedNFT = allListedNFTs[0];
+          const firstAuctionNFT = allAuctionNFTs[0];
+          
+          const thirdwebListing = thirdwebListedNFTs.length > 0 ? 
+            marketplaceData.listingsByKey.get(`${thirdwebListedNFTs[0].tokenId}_${thirdwebListedNFTs[0].contractAddress.toLowerCase()}`) : null;
+          
+          const thirdwebAuction = thirdwebAuctionNFTs.length > 0 ? 
+            marketplaceData.auctionsByKey.get(`${thirdwebAuctionNFTs[0].tokenId}_${thirdwebAuctionNFTs[0].contractAddress.toLowerCase()}`) : null;
+          
+          return {
+            isListed: isListedFinal, // ✅ RESULTADO FINAL DA VERIFICAÇÃO
+            isAuction: isAuctionFinal, // ✅ NOVO: RESULTADO FINAL DE AUCTION
+            isListable: true,
+            canTrade: true,
+            verified: true,
+            collection: collection.name,
+            category: collection.category,
+            isCollection: true,
+            isCustomCollection: true,
+            mintedUnits: mintedNFTs.length,
+            totalUnits: collection.totalSupply || mintedNFTs.length,
+            availableUnits: (collection.totalSupply || 0) - mintedNFTs.length,
+            
+            // Dados das NFTs listadas E auction (combinando fontes)
+            listedNFTs: allListedNFTs,
+            auctionNFTs: allAuctionNFTs,
+            mongoListedCount: mongoListedNFTs.length,
+            thirdwebListedCount: thirdwebListedNFTs.length,
+            thirdwebAuctionCount: thirdwebAuctionNFTs.length,
+            
+            // Preço da listagem ou auction (priorizar auction depois Thirdweb)
+            price: thirdwebAuction ? 
+              `${thirdwebAuction.minimumBidAmount?.toString()} (Bid)` :
+              (thirdwebListing ? 
+                thirdwebListing.currencyValuePerToken?.displayValue || thirdwebListing.pricePerToken?.toString() :
+                (firstListedNFT?.marketplace?.priceFormatted || 'Not listed')),
+            
+            // Dados adicionais do Thirdweb (listing)
+            thirdwebData: thirdwebListing ? {
+              listingId: thirdwebListing.id.toString(),
+              price: thirdwebListing.pricePerToken?.toString(),
+              currency: thirdwebListing.currencyValuePerToken?.symbol || 'MATIC',
+              endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
+            } : null,
+
+            // Dados adicionais do Thirdweb (auction)
+            thirdwebAuctionData: thirdwebAuction ? {
+              auctionId: thirdwebAuction.auctionId?.toString(),
+              minimumBidAmount: thirdwebAuction.minimumBidAmount?.toString(),
+              buyoutBidAmount: thirdwebAuction.buyoutBidAmount?.toString(),
+              currency: thirdwebAuction.currencyContractAddress || 'MATIC',
+              endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
+              startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
+            } : null
+          };
+        })(),
         
         // ⛓️ DADOS DA BLOCKCHAIN
         blockchain: {
@@ -232,6 +377,15 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
+    // 🔍 BUSCAR LISTAGENS E AUCTIONS DO THIRDWEB (MESMA LÓGICA DAS NFTs LEGACY!)
+    console.log('🚀 Iniciando verificação do marketplace Thirdweb...');
+    const marketplaceData = await getThirdwebMarketplaceData();
+    console.log(`✅ Thirdweb marketplace carregado:`, {
+      listings: marketplaceData.listingsByKey.size,
+      auctions: marketplaceData.auctionsByKey.size,
+      total: marketplaceData.listingsByKey.size + marketplaceData.auctionsByKey.size
+    });
+    
     // Buscar NFTs de todas as coleções (incluindo launchpad)
     const collections = ['jerseys', 'stadiums', 'badges'];
     const allNFTs = [];
@@ -343,8 +497,8 @@ export async function GET(request: NextRequest) {
     // Adicionar NFTs do launchpad aos resultados
     allNFTs.push(...launchpadNFTs);
 
-    // Buscar e adicionar custom collections
-    const customCollections = await getCustomCollections(db, limit);
+    // Buscar e adicionar custom collections (COM VERIFICAÇÃO DO THIRDWEB!)
+    const customCollections = await getCustomCollections(db, marketplaceData, limit);
     allNFTs.push(...customCollections);
 
     // Ordenar por data de criação (mais recentes primeiro)
