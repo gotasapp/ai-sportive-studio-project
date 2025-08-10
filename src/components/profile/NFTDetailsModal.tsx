@@ -129,7 +129,7 @@ export function NFTDetailsModal({
         imageUrl: nft?.imageUrl || '',
         attributes: [],
         owner: 'Unknown',
-        contractAddress: nftData.contractAddress || contractAddress,
+        contractAddress: nftData?.contractAddress || contractAddress || '',
         chainId: 80002,
         createdAt: nft?.createdAt || new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
@@ -151,7 +151,7 @@ export function NFTDetailsModal({
         imageUrl: nft?.imageUrl || '',
         attributes: [],
         owner: 'Unknown',
-        contractAddress: nftData.contractAddress || contractAddress,
+        contractAddress: nftData?.contractAddress || contractAddress || '',
         chainId: 80002,
         createdAt: new Date().toISOString(),
         lastUpdated: new Date().toISOString(),
@@ -480,7 +480,7 @@ export function NFTDetailsModal({
                           Contract
                         </span>
                         <span className="text-[#FDFDFD] font-mono text-sm">
-                          {nftData.contractAddress.slice(0, 6)}...{nftData.contractAddress.slice(-4)}
+                          {nftData?.contractAddress ? `${nftData.contractAddress.slice(0, 6)}...${nftData.contractAddress.slice(-4)}` : 'Unknown'}
                         </span>
                       </div>
 

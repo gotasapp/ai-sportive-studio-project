@@ -59,7 +59,7 @@ async function getThirdwebMarketplaceData() {
     // ✅ FILTRAR APENAS AUCTIONS ATIVOS (não cancelados)
     validAuctions.forEach(auction => {
       // Verificar se o auction não foi cancelado (status !== 3)
-      if (auction.status !== 3) {
+      if (auction.status?.toString() !== '3') {
         const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
         auctionsByKey.set(key, { ...auction, type: 'auction' });
       } else {

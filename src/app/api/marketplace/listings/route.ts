@@ -105,7 +105,7 @@ export async function GET(request: Request) {
         limit,
         totalFound: validListings.length,
         fromOurContract: processedListings.length,
-        ourContractAddress,
+        ourContractAddress: 'all-contracts',
         marketplaceContract: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET,
         timestamp: new Date().toISOString()
       }
@@ -114,7 +114,7 @@ export async function GET(request: Request) {
     console.log('✅ Marketplace listings processed:', {
       total: processedListings.length,
       active: processedListings.filter(l => l.isActive).length,
-      ourContract: ourContractAddress?.slice(0, 8) + '...'
+      ourContract: 'all-contracts'
     });
 
     return NextResponse.json(response);

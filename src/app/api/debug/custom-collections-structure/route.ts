@@ -17,7 +17,7 @@ export async function GET() {
     console.log('📋 Coleções no banco:', collectionNames);
 
     // 2. Contar documentos em cada coleção relevante
-    const counts = {};
+    const counts: any = {};
     for (const name of ['custom_collections', 'custom_collection_mints', 'jerseys', 'stadiums', 'badges']) {
       if (collectionNames.includes(name)) {
         counts[name] = await db.collection(name).countDocuments();

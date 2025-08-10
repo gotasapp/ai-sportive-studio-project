@@ -33,7 +33,7 @@ export async function GET() {
       ...mintsWithContracts.map(mint => mint.contractAddress?.toLowerCase())
     ].filter(Boolean);
     
-    const uniqueContracts = [...new Set(allContracts)];
+    const uniqueContracts = Array.from(new Set(allContracts));
     console.log(`🔗 Contratos únicos das custom collections:`, uniqueContracts);
 
     // 6. Contratos encontrados no marketplace (do log anterior)

@@ -124,6 +124,7 @@ export async function POST(request: Request) {
 
     // Aplicar AUCTIONS reais
     for (const auction of validAuctions) {
+      const auctionData = auction as any; // Cast para any para flexibilidade de tipos
       const tokenId = auction.tokenId.toString();
       const contractAddress = auction.assetContractAddress.toLowerCase();
       
@@ -139,18 +140,18 @@ export async function POST(request: Request) {
           {
             $set: {
               'marketplace.isAuction': true,
-              'marketplace.auctionId': auction.auctionId?.toString(),
+              'marketplace.auctionId': auction.id?.toString(),
               'marketplace.currentBid': auction.minimumBidAmount?.toString(),
               'marketplace.price': `${auction.minimumBidAmount?.toString()} (Bid)`,
               'marketplace.priceFormatted': `${auction.minimumBidAmount?.toString()} MATIC (Bid)`,
-              'marketplace.endTime': auction.endTimestamp ? new Date(Number(auction.endTimestamp) * 1000) : null,
+              'marketplace.endTime': auctionData.endTimestamp ? new Date(Number(auctionData.endTimestamp) * 1000) : null,
               'marketplace.thirdwebAuctionData': {
-                auctionId: auction.auctionId?.toString(),
+                auctionId: auction.id?.toString(),
                 minimumBidAmount: auction.minimumBidAmount?.toString(),
                 buyoutBidAmount: auction.buyoutBidAmount?.toString(),
                 currency: auction.currencyContractAddress || 'MATIC',
-                endTime: auction.endTimestamp ? auction.endTimestamp.toString() : null,
-                startTime: auction.startTimestamp ? auction.startTimestamp.toString() : null
+                endTime: auctionData.endTimestamp ? auctionData.endTimestamp.toString() : null,
+                startTime: auctionData.startTimestamp ? auctionData.startTimestamp.toString() : null
               },
               'marketplace.updatedAt': new Date()
             }

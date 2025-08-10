@@ -90,7 +90,7 @@ export async function GET(request: Request) {
         });
 
         // Vamos filtrar por contratos suportados mais tarde após conectar ao MongoDB
-        realListings = listings;
+        realListings = [...listings];
 
         console.log(`✅ Real listings from our contract: ${realListings.length}`);
       }

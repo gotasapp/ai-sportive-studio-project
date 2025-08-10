@@ -3,6 +3,7 @@ import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getAllValidListings } from 'thirdweb/extensions/marketplace';
 import clientPromise from '@/lib/mongodb';
+import { ObjectId } from 'mongodb';
 
 const DB_NAME = 'chz-app-db';
 
@@ -93,8 +94,8 @@ export async function POST(request: Request) {
           // 2. Buscar só por tokenId (para NFTs antigas e custom collections)
           { tokenId: listing.tokenId.toString() },
           { blockchainTokenId: listing.tokenId.toString() },
-          // 3. Buscar por _id se tokenId for um ObjectId
-          { _id: listing.tokenId.toString() },
+                  // 3. Buscar por _id se tokenId for um ObjectId válido
+        ...(ObjectId.isValid(listing.tokenId.toString()) ? [{ _id: new ObjectId(listing.tokenId.toString()) }] : []),
           // 4. Para custom collections - buscar por minterAddress (que é o owner)
           { 
             minterAddress: listing.creatorAddress.toLowerCase(),

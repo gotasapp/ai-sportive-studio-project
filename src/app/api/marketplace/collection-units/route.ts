@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
     
     validAuctions.forEach(auction => {
       // Verificar se o auction não foi cancelado (status !== 3)
-      if (auction.status !== 3 && auction.status !== 'CANCELLED') {
+      if (auction.status?.toString() !== '3' && auction.status !== 'CANCELLED') {
         const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
         auctionsByKey.set(key, auction);
         console.log(`✅ Auction ativo detectado: ${auction.id} (tokenId: ${auction.tokenId}, contract: ${auction.assetContractAddress})`);

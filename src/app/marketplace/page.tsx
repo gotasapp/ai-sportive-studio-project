@@ -49,6 +49,7 @@ export default function MarketplacePage() {
   const [ownedCollections, setOwnedCollections] = useState<string[]>(['Badge Collection']);
   const [showGlobalLoader, setShowGlobalLoader] = useState(true);
   const [blacklist, setBlacklist] = useState<string[]>([]);
+  const [listCurrentPage, setListCurrentPage] = useState(1);
 
   // Todos os hooks devem estar no topo, fora de qualquer if/return
   useEffect(() => {
@@ -90,6 +91,11 @@ export default function MarketplacePage() {
       owned: ownedCollections.length
     });
   }, [marketplaceItems, watchlist.length, ownedCollections.length]);
+
+  // Reset list pagination when filters change
+  useEffect(() => {
+    setListCurrentPage(1);
+  }, [filteredNfts.length, tokenType, searchTerm]);
 
   // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
   const getContractByCategory = (category: string): string => {
@@ -171,17 +177,16 @@ export default function MarketplacePage() {
   );
 
   const renderListView = () => {
-    const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
     
     // Calcular paginação
     const totalPages = Math.ceil(filteredNfts.length / itemsPerPage);
-    const startIndex = (currentPage - 1) * itemsPerPage;
+    const startIndex = (listCurrentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentItems = filteredNfts.slice(startIndex, endIndex);
 
     const goToPage = (page: number) => {
-      setCurrentPage(page);
+      setListCurrentPage(page);
       // Scroll para o topo
       window.scrollTo({ top: 0, behavior: 'smooth' });
     };
@@ -210,7 +215,7 @@ export default function MarketplacePage() {
                       // Se a imagem falhar, mostrar primeira letra
                       const target = e.currentTarget;
                       target.style.display = 'none';
-                      target.nextElementSibling!.style.display = 'flex';
+                      (target.nextElementSibling as HTMLElement)!.style.display = 'flex';
                     }}
                   />
                 ) : null}
@@ -242,8 +247,8 @@ export default function MarketplacePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
+                onClick={() => goToPage(listCurrentPage - 1)}
+                disabled={listCurrentPage === 1}
                 className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -254,12 +259,12 @@ export default function MarketplacePage() {
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                   // Mostrar apenas páginas próximas da atual
                   const showPage = page === 1 || page === totalPages || 
-                                 (page >= currentPage - 1 && page <= currentPage + 1);
+                                 (page >= listCurrentPage - 1 && page <= listCurrentPage + 1);
                   
-                  if (!showPage && page === currentPage - 2) {
+                  if (!showPage && page === listCurrentPage - 2) {
                     return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
                   }
-                  if (!showPage && page === currentPage + 2) {
+                  if (!showPage && page === listCurrentPage + 2) {
                     return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
                   }
                   if (!showPage) return null;
@@ -267,11 +272,11 @@ export default function MarketplacePage() {
                   return (
                     <Button
                       key={page}
-                      variant={currentPage === page ? "default" : "outline"}
+                      variant={listCurrentPage === page ? "default" : "outline"}
                       size="sm"
                       onClick={() => goToPage(page)}
                       className={`h-8 w-8 p-0 text-xs ${
-                        currentPage === page 
+                        listCurrentPage === page 
                           ? 'bg-[#A20131] text-[#FDFDFD] border-[#A20131]' 
                           : 'bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
                       }`}
@@ -286,8 +291,8 @@ export default function MarketplacePage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
+                onClick={() => goToPage(listCurrentPage + 1)}
+                disabled={listCurrentPage === totalPages}
                 className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
               >
                 <ChevronRight className="w-4 h-4" />

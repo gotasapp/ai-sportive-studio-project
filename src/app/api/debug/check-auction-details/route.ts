@@ -42,7 +42,7 @@ export async function GET() {
     const customMints = await db.collection('custom_collection_mints').find({}).toArray();
 
     // Analisar cada auction
-    const auctionDetails = allAuctions.map(auction => {
+    const auctionDetails = allAuctions.map((auction: any) => {
       const tokenId = auction.tokenId.toString();
       const contractAddress = auction.assetContractAddress.toLowerCase();
       
@@ -59,11 +59,11 @@ export async function GET() {
       );
 
       return {
-        auctionId: auction.auctionId?.toString(),
+        auctionId: auction.id?.toString(),
         tokenId,
         contractAddress,
         minimumBid: auction.minimumBidAmount?.toString(),
-        creator: auction.auctionCreator,
+        creator: auction.auctionCreator || auction.creatorAddress || 'Unknown',
         endTime: auction.endTimestamp ? new Date(Number(auction.endTimestamp) * 1000).toISOString() : null,
         
         // Análise do que representa
@@ -98,7 +98,7 @@ export async function GET() {
         totalCustomCollections: customCollections.length,
         totalCustomMints: customMints.length,
         customCollectionContracts: customCollections.map(c => c.contractAddress).filter(Boolean),
-        customMintContracts: [...new Set(customMints.map(m => m.contractAddress).filter(Boolean))]
+        customMintContracts: Array.from(new Set(customMints.map(m => m.contractAddress).filter(Boolean)))
       }
     });
 

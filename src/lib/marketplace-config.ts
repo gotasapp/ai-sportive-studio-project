@@ -112,7 +112,7 @@ export async function getSupportedContractAddressesWithDynamic(
       .filter((addr: string) => addr && addr !== '');
     
     // Combinar TODOS os contratos (estáticos + launchpad + custom)
-    const allContracts = [...new Set([...staticContracts, ...launchpadContracts, ...customContracts])];
+    const allContracts = Array.from(new Set([...staticContracts, ...launchpadContracts, ...customContracts]));
     
     console.log(`📋 Total de contratos suportados: ${allContracts.length}`, allContracts);
     console.log('📋 Custom Collections encontradas:', customContracts);

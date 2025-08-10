@@ -27,7 +27,7 @@ export async function GET() {
     const validListings = await getAllValidListings({
       contract: marketplaceContract,
       start: 0,
-      count: 20,
+      count: BigInt(20),
     });
 
     console.log(`📋 Encontradas ${validListings.length} listagens para análise`);
@@ -44,7 +44,7 @@ export async function GET() {
       console.log(`- Contract: ${listing.assetContractAddress}`);
       console.log(`- TokenId: ${listing.tokenId}`);
 
-      const analysis = {
+      const analysis: any = {
         listingId: listing.id.toString(),
         contractAddress: listing.assetContractAddress,
         tokenId: listing.tokenId.toString(),
@@ -74,10 +74,10 @@ export async function GET() {
           analysis.owner = nftData.owner;
 
           console.log(`✅ NFT individual encontrada: ${nftData.metadata.name}`);
-        } catch (nftError) {
+        } catch (nftError: any) {
           analysis.nftExists = false;
-          analysis.nftError = nftError.message;
-          console.log(`❌ NFT individual não encontrada:`, nftError.message);
+          analysis.nftError = nftError?.message || 'Erro desconhecido';
+          console.log(`❌ NFT individual não encontrada:`, nftError?.message || nftError);
         }
 
         // 7. Verificar no MongoDB se é custom collection
@@ -127,9 +127,9 @@ export async function GET() {
           }
         }
 
-      } catch (contractError) {
-        analysis.contractError = contractError.message;
-        console.log(`❌ Erro ao acessar contrato:`, contractError.message);
+      } catch (contractError: any) {
+        analysis.contractError = contractError?.message || 'Erro desconhecido';
+        console.log(`❌ Erro ao acessar contrato:`, contractError?.message || contractError);
       }
 
       listingAnalysis.push(analysis);

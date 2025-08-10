@@ -42,7 +42,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { isAdmin } from '@/lib/admin-config';
 import { toast } from 'sonner';
-import { Collection, LaunchpadStatus } from '@/types';
+import { Collection, LaunchpadCollection, LaunchpadStatus } from '@/types';
 import { LAUNCHPAD_STATUSES, VISIBLE_LAUNCHPAD_STATUSES } from '@/lib/collection-config';
 import { getCurrentUTC, getCurrentLocalFormatted, addDaysToUTC, isUTCDatePassed } from '@/lib/collection-utils';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -1297,7 +1297,25 @@ export default function LaunchpadPage() {
 
     return (
       <LaunchpadMobileLayout
-        collections={filteredCollections}
+        collections={filteredCollections
+          .filter(c => c._id && ['upcoming', 'active', 'hidden'].includes(c.status))
+          .map(c => ({
+            _id: c._id!,
+            name: c.name,
+            description: c.description,
+            image: c.image,
+            price: c.price || '0',
+            totalSupply: c.totalSupply || 0,
+            minted: c.minted || 0,
+            status: c.status as 'upcoming' | 'active' | 'hidden',
+            launchDate: c.launchDate ? c.launchDate.toISOString() : undefined,
+            endDate: c.endDate ? c.endDate.toISOString() : undefined,
+            creator: {
+              name: c.creator?.name || 'Unknown',
+              wallet: c.creator?.wallet || ''
+            },
+            contractAddress: c.contractAddress
+          }))}
         stats={mobileStats}
         onSearch={setSearchTerm}
         onFilterChange={setStatusFilter}

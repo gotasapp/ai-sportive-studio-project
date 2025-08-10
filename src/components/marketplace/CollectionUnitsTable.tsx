@@ -231,7 +231,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex gap-2">
             <Button
-              size="sm"
+
               onClick={() => setShowUpdateListing(unit.id)}
               className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
             >
@@ -244,7 +244,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               nftName={unit.name}
               tokenId={unit.tokenId}
               variant="outline"
-              size="sm"
+
             />
           </div>
         );
@@ -256,8 +256,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               <BuyNowButton
                 listingId={listingId}
                 price={unit.marketplace.price}
-                size="sm"
-                onSuccess={refreshUnits}
+  
               />
             ) : (
               <Button disabled size="sm" className="bg-red-500/20 text-red-400">
@@ -269,7 +268,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              size="sm"
+
             />
           </div>
         );
@@ -286,7 +285,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                 auctionId={auctionId}
                 nftName={unit.name}
                 variant="outline"
-                size="sm"
+  
                 onSuccess={refreshUnits}
               />
             ) : (
@@ -306,7 +305,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                 minimumBid="0"
                 endTime={auctionEndTime || new Date()}
                 currency="MATIC"
-                size="sm"
+  
                 onBidSuccess={refreshUnits}
               />
             ) : (
@@ -318,7 +317,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              size="sm"
+
             />
           </div>
         );
@@ -329,7 +328,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex gap-2">
             <Button
-              size="sm"
+
               onClick={() => setShowCreateListing(unit.id)}
               className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
             >
@@ -337,7 +336,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               List for Sale
             </Button>
             <Button
-              size="sm"
+
               variant="outline"
               onClick={() => setShowCreateAuction(unit.id)}
               className="border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
@@ -353,7 +352,6 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
             assetContract={unit.contractAddress}
             tokenId={unit.tokenId}
             nftName={unit.name}
-            size="sm"
           />
         );
       }
@@ -526,12 +524,21 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           onOpenChange={(open) => !open && setShowCreateListing(null)}
           nft={(() => {
             const unit = getUnitForModal(showCreateListing);
-            return unit ? {
+            if (!unit) {
+              // Fallback NFT para evitar null
+              return {
+                assetContractAddress: '',
+                tokenId: '',
+                name: 'Unknown NFT',
+                imageUrl: ''
+              };
+            }
+            return {
               assetContractAddress: unit.contractAddress,
               tokenId: unit.tokenId,
               name: unit.name,
               imageUrl: unit.imageUrl
-            } : null;
+            };
           })()}
         />
       )}
@@ -558,12 +565,21 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           onOpenChange={(open) => !open && setShowCreateAuction(null)}
           nft={(() => {
             const unit = getUnitForModal(showCreateAuction);
-            return unit ? {
+            if (!unit) {
+              // Fallback NFT para evitar null
+              return {
+                assetContractAddress: '',
+                tokenId: '',
+                name: 'Unknown NFT',
+                imageUrl: ''
+              };
+            }
+            return {
               assetContractAddress: unit.contractAddress,
               tokenId: unit.tokenId,
               name: unit.name,
               imageUrl: unit.imageUrl
-            } : null;
+            };
           })()}
           onSuccess={() => {
             setShowCreateAuction(null);
