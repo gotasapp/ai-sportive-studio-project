@@ -19,7 +19,7 @@ import { AlertCircle, Loader2, Grid3X3, List, RefreshCw } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
-import { ClearAndSyncButton } from '@/components/marketplace/ClearAndSyncButton';
+
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -138,10 +138,7 @@ export default function MarketplacePage() {
     });
   };
 
-  const handleShowInsights = () => {
-    console.log('Showing insights...');
-    // Here you would open an insights modal or navigate to insights page
-  };
+
 
   // Função para forçar refresh dos dados
   const handleRefresh = async () => {
@@ -406,7 +403,7 @@ export default function MarketplacePage() {
         </div>
 
         {/* Filters */}
-        <div className="container mx-auto px-6 md:px-8 lg:px-12">
+        <div className="w-[87%] mx-auto">
           <div className="flex items-center justify-between mb-4">
             <div className="flex-1">
               <MarketplaceFilters
@@ -425,41 +422,17 @@ export default function MarketplacePage() {
                 totalCollections={counters.total}
                 watchlistCount={counters.watchlist}
                 ownedCount={counters.owned}
-                onShowInsights={handleShowInsights}
+
               />
             </div>
             
             {/* Botões de Ação */}
             <div className="flex gap-2">
-              {/* Botão de Limpeza e Sync */}
-              <ClearAndSyncButton className="h-10" />
-              
-              {/* Debug: Auction Details */}
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/debug/check-auction-details');
-                    const result = await response.json();
-                    console.log('🔍 Auction Details:', result);
-                    alert(`Encontrados ${result.stats?.totalAuctions || 0} auctions. Veja console para detalhes.`);
-                  } catch (error) {
-                    console.error('Error:', error);
-                  }
-                }}
-                className="h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
-              >
-                🔍 Auction Debug
-              </button>
-              
-              {/* Botão de Sync */}
-
-
-              
-              {/* Botão de Refresh */}
+              {/* Botão de Refresh - Hidden */}
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing || marketplaceLoading}
-                className="px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+                className="hidden px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
                 title="Refresh marketplace data"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
@@ -470,8 +443,8 @@ export default function MarketplacePage() {
         </div>
 
         {/* Content */}
-        <div className="container mx-auto px-6 md:px-8 lg:px-12 pb-8">
-          <div className="max-w-7xl mx-auto">
+        <div className="w-[87%] mx-auto pb-8">
+          <div className="w-full">
             {renderContent()}
           </div>
         </div>

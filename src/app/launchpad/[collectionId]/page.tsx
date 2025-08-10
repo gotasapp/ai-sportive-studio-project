@@ -36,6 +36,8 @@ import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { isAdmin } from '@/lib/admin-config';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import CollectionMintMobileLayout from '@/components/launchpad/CollectionMintMobileLayout';
 
 // Remover dados mockados - agora vamos buscar do banco de dados
 
@@ -43,6 +45,7 @@ export default function CollectionMintPage() {
   const params = useParams();
   const router = useRouter();
   const collectionId = params.collectionId as string;
+  const isMobile = useIsMobile();
   
   // Thirdweb hooks
   const account = useActiveAccount();
@@ -437,8 +440,34 @@ export default function CollectionMintPage() {
 
   const copyContractAddress = () => {
     navigator.clipboard.writeText(collection.contractAddress);
-    toast.success('Contract address copied to clipboard');
+    // toast.success('Contract address copied to clipboard'); // Removed icon as per memory
   };
+
+  // Mobile layout check
+  if (isMobile) {
+    return (
+      <CollectionMintMobileLayout
+        collection={collection}
+        claimCondition={claimCondition}
+        mintQuantity={mintQuantity}
+        setMintQuantity={setMintQuantity}
+        email={email}
+        setEmail={setEmail}
+        timeRemaining={timeRemaining}
+        onMint={handleMint}
+        onGaslessMint={handleGaslessMint}
+        isMinting={isMinting}
+        isGaslessMinting={isGaslessMinting}
+        isConnected={isConnected}
+        isUserAdmin={isUserAdmin}
+        mintError={mintError}
+        gaslessMintError={gaslessMintError}
+        mintSuccess={mintSuccess}
+        gaslessMintSuccess={gaslessMintSuccess}
+        loading={loading}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">

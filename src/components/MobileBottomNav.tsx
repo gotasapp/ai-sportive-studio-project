@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { Home, Building2, Trophy, Shield } from 'lucide-react';
+import { Shirt, Building2, Trophy, Shield, User, ShoppingBag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -54,8 +54,8 @@ export default function MobileBottomNav() {
   const navItems = [
     {
       href: '/',
-      icon: Home,
-      label: 'Home',
+      icon: Shirt,
+      label: 'Jersey',
       isActive: pathname === '/'
     },
     {
@@ -64,12 +64,23 @@ export default function MobileBottomNav() {
       label: 'Stadium',
       isActive: pathname === '/stadiums'
     },
-
     {
       href: '#',
       icon: Trophy,
       label: 'Badge',
       isActive: false
+    },
+    {
+      href: '/marketplace',
+      icon: ShoppingBag,
+      label: 'Market',
+      isActive: pathname === '/marketplace' || pathname.startsWith('/marketplace/')
+    },
+    {
+      href: '/profile',
+      icon: User,
+      label: 'Profile',
+      isActive: pathname === '/profile' || pathname.startsWith('/profile/')
     }
   ];
 
@@ -85,12 +96,12 @@ export default function MobileBottomNav() {
 
   return (
     <div className={`
-      lg:hidden fixed bottom-0 left-0 right-0 z-50 mobile-nav-autohide
+      lg:hidden fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50 mobile-nav-autohide
       ${shouldShow ? 'visible' : 'hidden'}
     `}>
-      {/* Glassmorphism Background */}
-      <div className="mobile-nav-glass px-4 py-3">
-        <div className="flex justify-around items-center max-w-md mx-auto">
+      {/* Modern Pill-shaped Navigation */}
+      <div className="bg-[#181828] backdrop-blur-lg rounded-full px-4 py-3 border border-[#FDFDFD]/10 shadow-2xl">
+        <div className="flex items-center justify-center space-x-4">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = item.isActive;
@@ -100,25 +111,43 @@ export default function MobileBottomNav() {
                 key={item.label}
                 href={item.href}
                 className={`
-                  flex flex-col items-center space-y-1 px-3 py-2 rounded-lg transition-all duration-200
+                  relative flex flex-col items-center space-y-1 px-2 py-2 rounded-xl transition-all duration-300 ease-out
                   ${isActive 
-                    ? 'text-cyan-400 bg-cyan-500/20 border border-cyan-500/30' 
+                    ? 'text-white' 
                     : item.label === 'Admin' 
-                      ? 'text-orange-400 hover:text-orange-300 hover:bg-orange-500/10'
-                      : 'text-gray-400 hover:text-cyan-300 hover:bg-cyan-500/10'
+                      ? 'text-[#FDFDFD]/60 hover:text-[#A20131] hover:scale-110'
+                      : 'text-[#FDFDFD]/60 hover:text-white hover:scale-110'
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'animate-pulse' : ''}`} />
-                <span className="text-xs font-medium">{item.label}</span>
+                {/* Active Background Circle */}
+                {isActive && (
+                  <div className="absolute inset-0 bg-[#A20131] rounded-xl opacity-90 animate-pulse" />
+                )}
+                
+                {/* Icon */}
+                <Icon className={`
+                  relative z-10 w-5 h-5 transition-all duration-300
+                  ${isActive ? 'scale-110' : ''}
+                `} />
+                
+                {/* Label */}
+                <span className={`
+                  relative z-10 text-xs font-medium transition-all duration-300
+                  ${isActive ? 'font-bold' : ''}
+                `}>
+                  {item.label}
+                </span>
+                
+                {/* Active Indicator Dot */}
+                {isActive && (
+                  <div className="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 bg-white rounded-full animate-ping" />
+                )}
               </Link>
             );
           })}
         </div>
       </div>
-      
-      {/* Bottom safe area for devices with home indicator */}
-      <div className="mobile-nav-glass h-2" />
     </div>
   );
 } 

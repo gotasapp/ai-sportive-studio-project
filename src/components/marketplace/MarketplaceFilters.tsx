@@ -7,7 +7,7 @@ import {
   Grid3X3, 
   List, 
   Table, 
-  BarChart3,
+
   ChevronDown,
   Star,
   Wallet,
@@ -67,8 +67,7 @@ interface MarketplaceFiltersProps {
   watchlistCount: number
   ownedCount: number
   
-  // Additional actions
-  onShowInsights?: () => void
+
 }
 
 export default function MarketplaceFilters({
@@ -86,8 +85,7 @@ export default function MarketplaceFilters({
   onSearchChange,
   totalCollections,
   watchlistCount,
-  ownedCount,
-  onShowInsights
+  ownedCount
 }: MarketplaceFiltersProps) {
   
   const timeFilterOptions = [
@@ -98,46 +96,21 @@ export default function MarketplaceFilters({
   ]
   
   const viewOptions = [
-    { value: 'grid', icon: Grid3X3, label: 'Grid' },
+    { value: 'table', icon: Table, label: 'Table' },
     { value: 'list', icon: List, label: 'List' },
-    { value: 'table', icon: Table, label: 'Table' }
+    { value: 'grid', icon: Grid3X3, label: 'Grid' }
   ]
 
   return (
     <div className="bg-transparent border-b border-[#FDFDFD]/10">
-      <div className="container mx-auto px-6 md:px-8 lg:px-12 py-4 space-y-4">
+      <div className="w-full py-4 space-y-4">
               {/* Header */}
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center justify-between w-full">
         <h1 className="text-2xl font-bold text-[#FDFDFD]">Collections</h1>
-        <div className="flex items-center gap-2">
-          {/* Search */}
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FDFDFD]/50" />
-            <Input
-              placeholder="Search by item or trait"
-              value={searchTerm}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10 text-sm bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] placeholder:text-[#FDFDFD]/50"
-            />
-          </div>
-          
-          {/* Insights Button */}
-          {onShowInsights && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={onShowInsights}
-              className="text-sm font-semibold bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
-            >
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Insights
-            </Button>
-          )}
-        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="max-w-7xl mx-auto">
+      {/* Tabs moved to replace Last Updated Info */}
+      <div className="flex items-center justify-between w-full">
         <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as CollectionTab)}>
           <TabsList className="bg-[#000000] border-[#FDFDFD]/10">
           <TabsTrigger 
@@ -162,13 +135,6 @@ export default function MarketplaceFilters({
           </TabsTrigger>
         </TabsList>
       </Tabs>
-      </div>
-
-      {/* Last Updated Info */}
-      <div className="flex items-center justify-between max-w-7xl mx-auto">
-        <p className="text-sm text-[#FDFDFD]/70">
-          Last updated 3 hours ago.
-        </p>
         
         <div className="flex items-center gap-2">
           {/* Time Filter Buttons */}
@@ -235,16 +201,29 @@ export default function MarketplaceFilters({
               </Button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Results Count */}
-      <div className="flex items-center gap-4 text-sm text-[#FDFDFD]/70 max-w-7xl mx-auto">
-        <span>
-          {activeTab === 'all' ? totalCollections : 
-           activeTab === 'watchlist' ? watchlistCount : 
-           ownedCount} collections
-        </span>
+          {/* Search Bar - Moved to end of filters line */}
+          <div className="relative w-64">
+            {!searchTerm && (
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#FDFDFD]/50 pointer-events-none" />
+            )}
+            <Input
+              placeholder=""
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              style={{
+                border: '1px solid rgba(253, 253, 253, 0.2)',
+                borderRadius: '8px',
+                color: '#FDFDFD',
+                backgroundColor: 'transparent'
+              }}
+              className={`text-sm placeholder:text-[#FDFDFD]/50 transition-all duration-200 focus:border-[#A20131] hover:border-[#FDFDFD]/30 ${
+                searchTerm ? 'pl-3' : 'pl-10'
+              }`}
+            />
+          </div>
+        </div>
+        {/* Search Badge mantido caso exista busca */}
         {searchTerm && (
           <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] text-xs">
             Search: &quot;{searchTerm}&quot;

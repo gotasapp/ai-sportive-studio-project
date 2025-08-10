@@ -45,6 +45,8 @@ import { toast } from 'sonner';
 import { Collection, LaunchpadStatus } from '@/types';
 import { LAUNCHPAD_STATUSES, VISIBLE_LAUNCHPAD_STATUSES } from '@/lib/collection-config';
 import { getCurrentUTC, getCurrentLocalFormatted, addDaysToUTC, isUTCDatePassed } from '@/lib/collection-utils';
+import { useIsMobile } from '@/hooks/useIsMobile';
+import LaunchpadMobileLayout from '@/components/launchpad/LaunchpadMobileLayout';
 
 // Componente do Carrossel Featured (igual ao marketplace)
 function FeaturedLaunchpadCarousel() {
@@ -446,6 +448,7 @@ function LaunchpadCollectionCard({
 export default function LaunchpadPage() {
   // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount();
+  const isMobile = useIsMobile();
   
   // Use account data directly
   const address = account?.address;
@@ -1282,6 +1285,28 @@ export default function LaunchpadPage() {
       </div>
     );
   };
+
+  // Mobile layout check
+  if (isMobile) {
+    const mobileStats = {
+      totalCollections: filteredCollections.length,
+      activeDrops: filteredCollections.filter(c => c.status === 'active').length,
+      totalVolume: stats.totalVolume,
+      topCreator: 'CHZ Studio'
+    };
+
+    return (
+      <LaunchpadMobileLayout
+        collections={filteredCollections}
+        stats={mobileStats}
+        onSearch={setSearchTerm}
+        onFilterChange={setStatusFilter}
+        searchTerm={searchTerm}
+        activeFilter={statusFilter}
+        loading={loading}
+      />
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col text-[#FDFDFD] bg-gradient-to-b from-[#030303] to-[#0b0518]">
