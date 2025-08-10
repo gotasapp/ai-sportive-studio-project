@@ -1298,7 +1298,7 @@ export default function LaunchpadPage() {
     return (
       <LaunchpadMobileLayout
         collections={filteredCollections
-          .filter(c => c._id && ['upcoming', 'active', 'hidden'].includes(c.status))
+          .filter(c => c._id)
           .map(c => ({
             _id: c._id!,
             name: c.name,
@@ -1307,7 +1307,7 @@ export default function LaunchpadPage() {
             price: c.price || '0',
             totalSupply: c.totalSupply || 0,
             minted: c.minted || 0,
-            status: c.status as 'upcoming' | 'active' | 'hidden',
+            status: (['upcoming', 'active', 'hidden'].includes(c.status) ? c.status : 'upcoming') as 'upcoming' | 'active' | 'hidden',
             launchDate: c.launchDate ? c.launchDate.toISOString() : undefined,
             endDate: c.endDate ? c.endDate.toISOString() : undefined,
             creator: {

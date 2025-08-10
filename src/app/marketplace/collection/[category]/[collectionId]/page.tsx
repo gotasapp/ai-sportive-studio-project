@@ -26,7 +26,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       const actualTokenId = collectionId;
       
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/custom-collections/${actualCollectionId}`,
+        `/api/custom-collections/${actualCollectionId}`,
         { next: { revalidate: 30 } }
       );
       if (!res.ok) return null;
@@ -41,7 +41,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       // É uma Custom Collection
       console.log('🎨 Detected Custom Collection, using /api/custom-collections/');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/custom-collections/${collectionId}`,
+        `/api/custom-collections/${collectionId}`,
         { next: { revalidate: 30 } }
       );
       if (!res.ok) return null;
@@ -51,7 +51,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       // É uma Standard Collection (jerseys, stadiums, badges)
       console.log('⚽ Detected Standard Collection, using /api/marketplace/nft-collection/stats');
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/marketplace/nft-collection/stats?collection=${category}`,
+        `/api/marketplace/nft-collection/stats?collection=${category}`,
         { next: { revalidate: 30 } }
       );
       if (!res.ok) return null;

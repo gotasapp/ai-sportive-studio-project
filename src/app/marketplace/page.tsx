@@ -62,6 +62,8 @@ export default function MarketplacePage() {
   useEffect(() => {}, []);
   useEffect(() => {
     let filtered = marketplaceItems || [];
+    
+    // Filtro por tipo de token
     if (tokenType !== 'all') {
       filtered = filtered.filter(item => {
         if (tokenType === 'jerseys') return item.category === 'jersey';
@@ -70,18 +72,47 @@ export default function MarketplacePage() {
         return true;
       });
     }
+    
+    // Filtro por tempo (24h, 7d, 30d)
+    if (timeFilter !== 'all') {
+      const now = new Date();
+      let cutoffDate: Date;
+      
+      switch (timeFilter) {
+        case '24h':
+          cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          cutoffDate = new Date(0);
+      }
+
+      filtered = filtered.filter(item => {
+        const itemDate = new Date(item.createdAt || item.updatedAt || Date.now());
+        return itemDate >= cutoffDate;
+      });
+    }
+    
+    // Filtro por busca
     if (searchTerm.trim()) {
       filtered = filtered.filter(item => 
         item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.category?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
+    
     // Filtro temporário de blacklist
     if (blacklist.length > 0) {
       filtered = filtered.filter(item => !blacklist.includes(String(item.tokenId)));
     }
+    
     setFilteredNfts(filtered);
-  }, [marketplaceItems, tokenType, searchTerm, blacklist]);
+  }, [marketplaceItems, tokenType, searchTerm, blacklist, timeFilter]);
   useEffect(() => {
     const items = marketplaceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
@@ -195,8 +226,25 @@ export default function MarketplacePage() {
       <div className="space-y-6">
         <div className="p-6 space-y-4">
           {currentItems.map((item) => {
-          // Para NFTs individuais, SEMPRE usar imagem original
-          const imageUrl = normalizeIpfsUri(item.metadata?.image || item.imageUrl || '');
+          // Para NFTs individuais, usar estratégia inteligente de imagem
+          let imageUrl = '';
+          
+          // Se é uma coleção custom com imagem própria
+          if (item.image && !item.image.includes('undefined')) {
+            imageUrl = normalizeIpfsUri(item.image);
+          }
+          // Se é NFT individual, usar metadata
+          else if (item.metadata?.image) {
+            imageUrl = normalizeIpfsUri(item.metadata.image);
+          }
+          // Se tem imageUrl
+          else if (item.imageUrl && !item.imageUrl.includes('undefined')) {
+            imageUrl = normalizeIpfsUri(item.imageUrl);
+          }
+          // Fallback para primeira imagem Cloudinary
+          else {
+            imageUrl = 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png';
+          }
           
           return (
             <div 
