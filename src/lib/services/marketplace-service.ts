@@ -749,20 +749,6 @@ export class MarketplaceService {
     auctionId: string
   ) {
     try {
-      console.log('🚫 Cancelando leilão:', auctionId);
-      
-      // Verificar se o leilão existe e se o usuário é o criador
-      const auction = await MarketplaceService.getAuction(chainId, auctionId);
-      
-      if (auction.auctionCreator.toLowerCase() !== account.address.toLowerCase()) {
-        throw new Error('Apenas o criador do leilão pode cancelá-lo');
-      }
-      
-      // Verificar se o leilão não foi finalizado
-      if (auction.status === 'COMPLETED' || auction.status === 'CANCELLED') {
-        throw new Error('Este leilão já foi finalizado ou cancelado');
-      }
-      
       const contract = getMarketplaceContract(chainId);
       
       const transaction = prepareContractCall({
@@ -770,19 +756,15 @@ export class MarketplaceService {
         method: "function cancelAuction(uint256 auctionId) external",
         params: [BigInt(auctionId)]
       });
-      
-      console.log('📋 Transação preparada para cancelAuction');
-      
-      const result = await sendTransaction({ transaction, account });
-      
-      console.log('✅ Leilão cancelado:', result.transactionHash);
-      
-      toast.success('Leilão cancelado com sucesso! O NFT foi retornado para sua carteira.');
+
+      const result = await sendTransaction({
+        transaction,
+        account,
+      });
+
       return { success: true, transactionHash: result.transactionHash };
-      
     } catch (error: any) {
-      console.error('❌ Erro ao cancelar leilão:', error);
-      toast.error(`Falha ao cancelar leilão: ${error.message}`);
+      console.error('❌ Erro ao cancelar auction:', error);
       throw new Error(error?.reason || error?.message || 'Falha ao cancelar leilão');
     }
   }

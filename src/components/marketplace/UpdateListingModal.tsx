@@ -119,7 +119,9 @@ export function UpdateListingModal({
     }
   };
 
-  const priceChanged = newPrice && parseFloat(newPrice) !== parseFloat(currentPrice.replace(/[^0-9.]/g, ''));
+  // Extrair apenas números do currentPrice (remover "MATIC", etc)
+  const currentPriceNumeric = currentPrice ? parseFloat(currentPrice.replace(/[^0-9.]/g, '')) : 0;
+  const priceChanged = newPrice && parseFloat(newPrice) !== currentPriceNumeric;
   
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

@@ -123,9 +123,10 @@ export async function getAllSupportedContractsUnified(
   
   staticContracts.forEach(addr => contracts.add(addr.toLowerCase()));
   
-  // 2. Contratos do MongoDB (coleções launchpad)
+  // 2. Contratos do MongoDB (coleções launchpad + custom collections)
   if (mongoDb) {
     try {
+      // Buscar coleções launchpad
       const launchpadCollections = await mongoDb.collection('collections').find({
         type: 'launchpad',
         contractAddress: { $exists: true, $ne: null }
@@ -136,6 +137,19 @@ export async function getAllSupportedContractsUnified(
           contracts.add(col.contractAddress.toLowerCase());
         }
       });
+
+      // ✅ BUSCAR CUSTOM COLLECTIONS TAMBÉM
+      const customCollections = await mongoDb.collection('custom_collections').find({
+        contractAddress: { $exists: true, $ne: null }
+      }).toArray();
+      
+      customCollections.forEach((col: any) => {
+        if (col.contractAddress) {
+          contracts.add(col.contractAddress.toLowerCase());
+        }
+      });
+
+      console.log(`📊 Contratos do MongoDB: ${launchpadCollections.length} launchpad + ${customCollections.length} custom = ${launchpadCollections.length + customCollections.length} total`);
     } catch (error) {
       console.error('⚠️ Erro ao buscar contratos do MongoDB:', error);
     }

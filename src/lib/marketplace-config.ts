@@ -98,14 +98,24 @@ export async function getSupportedContractAddressesWithDynamic(
       contractAddress: { $exists: true, $ne: null }
     }).toArray();
     
-    const dynamicContracts = launchpadCollections
+    // ✅ BUSCAR CONTRATOS DAS CUSTOM COLLECTIONS TAMBÉM
+    const customCollections = await mongoDb.collection('custom_collections').find({
+      contractAddress: { $exists: true, $ne: null }
+    }).toArray();
+    
+    const launchpadContracts = launchpadCollections
       .map((col: any) => col.contractAddress)
       .filter((addr: string) => addr && addr !== '');
     
-    // Combinar contratos estáticos e dinâmicos (sem duplicatas)
-    const allContracts = [...new Set([...staticContracts, ...dynamicContracts])];
+    const customContracts = customCollections
+      .map((col: any) => col.contractAddress)
+      .filter((addr: string) => addr && addr !== '');
+    
+    // Combinar TODOS os contratos (estáticos + launchpad + custom)
+    const allContracts = [...new Set([...staticContracts, ...launchpadContracts, ...customContracts])];
     
     console.log(`📋 Total de contratos suportados: ${allContracts.length}`, allContracts);
+    console.log('📋 Custom Collections encontradas:', customContracts);
     
     return allContracts;
   } catch (error) {

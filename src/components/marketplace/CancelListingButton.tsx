@@ -25,6 +25,7 @@ interface CancelListingButtonProps {
   className?: string;
   variant?: 'default' | 'outline' | 'destructive';
   size?: 'default' | 'sm' | 'lg' | 'icon';
+  onSuccess?: () => void;
 }
 
 export function CancelListingButton({ 
@@ -34,7 +35,8 @@ export function CancelListingButton({
   tokenId,
   className = '',
   variant = 'outline',
-  size = 'default'
+  size = 'default',
+  onSuccess
 }: CancelListingButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -74,10 +76,11 @@ export function CancelListingButton({
       console.log('✅ Listing canceled:', result.transactionHash);
       setIsOpen(false);
       
-      // Reload page to see changes
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // ✅ CHAMAR CALLBACK DE SUCESSO EM VEZ DE RELOAD
+      if (onSuccess) {
+        console.log('🔄 Chamando onSuccess callback...');
+        onSuccess();
+      }
 
     } catch (error: any) {
       console.error('❌ Error canceling listing:', error);

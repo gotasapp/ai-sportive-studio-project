@@ -27,9 +27,21 @@ export async function GET() {
     
     console.log(`📊 Encontradas ${launchpadCollections.length} coleções launchpad com contratos`);
     
-    // Contratos dinâmicos (incluindo launchpad)
+    // ✅ BUSCAR CUSTOM COLLECTIONS TAMBÉM
+    const customCollections = await db.collection('custom_collections').find({
+      contractAddress: { $exists: true, $ne: null }
+    }).toArray();
+    
+    console.log(`📊 Encontradas ${customCollections.length} custom collections com contratos`);
+    console.log('🎨 Custom Collections:', customCollections.map(c => ({
+      name: c.name,
+      contractAddress: c.contractAddress,
+      createdAt: c.createdAt
+    })));
+    
+    // Contratos dinâmicos (incluindo launchpad + custom collections)
     const allContractsOld = await getSupportedContractAddressesWithDynamic(polygonAmoy.id, db);
-    console.log('📋 Todos os contratos (método antigo):', allContractsOld);
+    console.log('📋 Todos os contratos (método corrigido):', allContractsOld);
     
     // Detectar contratos do marketplace
     const marketplaceContracts = await DynamicContractRegistry.detectContractsFromMarketplace();
@@ -49,15 +61,25 @@ export async function GET() {
       createdAt: col.createdAt
     }));
     
+    // Detalhes das custom collections
+    const customCollectionDetails = customCollections.map(col => ({
+      name: col.name,
+      contractAddress: col.contractAddress,
+      category: col.category,
+      createdAt: col.createdAt
+    }));
+
     return NextResponse.json({
       success: true,
       data: {
         staticContracts,
         dynamicContractsFromDB: launchpadCollections.map(col => col.contractAddress),
+        customContractsFromDB: customCollections.map(col => col.contractAddress),
         contractsFromMarketplace: marketplaceContracts,
         allSupportedContracts: allContractsUnified,
         totalContracts: allContractsUnified.length,
         launchpadCollections: collectionDetails,
+        customCollections: customCollectionDetails,
         message: 'NOVA ABORDAGEM: O marketplace agora aceita QUALQUER contrato válido!'
       }
     });

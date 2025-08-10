@@ -56,9 +56,15 @@ async function getThirdwebMarketplaceData() {
       listingsByKey.set(key, { ...listing, type: 'listing' });
     });
 
+    // ✅ FILTRAR APENAS AUCTIONS ATIVOS (não cancelados)
     validAuctions.forEach(auction => {
-      const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
-      auctionsByKey.set(key, { ...auction, type: 'auction' });
+      // Verificar se o auction não foi cancelado (status !== 3)
+      if (auction.status !== 3) {
+        const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
+        auctionsByKey.set(key, { ...auction, type: 'auction' });
+      } else {
+        console.log(`⚠️ Auction cancelado filtrado: ${auction.id} (tokenId: ${auction.tokenId})`);
+      }
     });
 
     return { listingsByKey, auctionsByKey };

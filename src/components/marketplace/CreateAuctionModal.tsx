@@ -23,6 +23,7 @@ interface CreateAuctionModalProps {
     name: string;
     imageUrl: string;
   };
+  onSuccess?: () => void;
 }
 
 const CURRENCY_OPTIONS = [
@@ -40,7 +41,7 @@ const DURATION_PRESETS = [
   { value: '604800', label: '7 Days' },
 ];
 
-export function CreateAuctionModal({ isOpen, onOpenChange, nft }: CreateAuctionModalProps) {
+export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: CreateAuctionModalProps) {
   const [minimumBidAmount, setMinimumBidAmount] = useState('');
   const [buyoutBidAmount, setBuyoutBidAmount] = useState('');
   const [auctionDuration, setAuctionDuration] = useState('86400'); // 1 day default
@@ -162,10 +163,12 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft }: CreateAuctionM
       
       onOpenChange(false);
       
-      // Recarregar página para mostrar o leilão
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // Chamar callback de sucesso
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1000); // Aguardar 1 segundo para garantir que a transação foi confirmada
+      }
 
     } catch (error: any) {
       console.error('❌ Error creating auction:', error);

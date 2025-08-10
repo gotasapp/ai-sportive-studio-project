@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
+import CollectionUnitsTable from '@/components/marketplace/CollectionUnitsTable';
 
 async function fetchCollectionData(collectionId: string, category: string) {
   try {
@@ -228,56 +229,13 @@ export default function CollectionDetailPage({
 
       <Separator className="my-8 bg-secondary/10" />
 
-        {/* NFTs da Coleção - Apenas para Custom Collections */}
-        {isCustomCollection && collectionData?.mintedNFTs && collectionData.mintedNFTs.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-[#FDFDFD] mb-6">
-              NFTs da Coleção ({collectionData.mintedNFTs.length})
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {collectionData.mintedNFTs.map((nft: any, index: number) => (
-                <Card key={nft.tokenId} className="cyber-card hover:border-[#A20131]/50 transition-all duration-200">
-                  <CardContent className="p-3">
-                    <div className="aspect-square bg-[#14101e] rounded-lg mb-3 overflow-hidden border border-[#FDFDFD]/10">
-                      <img 
-                        src={collectionData.image} 
-                        alt={`${collectionData.name} #${nft.tokenId}`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-[#FDFDFD] text-sm truncate">
-                        {collectionData.name} #{nft.tokenId}
-                      </h3>
-                      <div className="space-y-1">
-                        <div className="flex justify-between text-xs">
-                          <span className="text-[#FDFDFD]/70">Token ID</span>
-                          <span className="text-[#FDFDFD]">{nft.tokenId}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-[#FDFDFD]/70">Owner</span>
-                          <span className="text-[#FDFDFD]">{nft.owner.slice(0, 6)}...{nft.owner.slice(-4)}</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                          <span className="text-[#FDFDFD]/70">Mintado</span>
-                          <span className="text-[#FDFDFD]">{new Date(nft.mintedAt).toLocaleDateString()}</span>
-                        </div>
-                      </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="w-full mt-3 text-xs bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20"
-                        onClick={() => window.open(`https://amoy.polygonscan.com/address/${nft.contractAddress}`, '_blank')}
-                      >
-                        Ver no Explorer
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )}
+        {/* 🎯 SEÇÃO DE TRADING - UNIDADES INDIVIDUAIS (SUBSTITUINDO A SEÇÃO ANTIGA) */}
+        <div className="mb-8">
+          <CollectionUnitsTable 
+            collectionId={params.collectionId}
+            category={params.category}
+          />
+        </div>
 
         {/* Seção para Standard Collections */}
         {!isCustomCollection && (
@@ -366,6 +324,8 @@ export default function CollectionDetailPage({
             </div>
           </div>
         )}
+
+
 
       </main>
     </div>

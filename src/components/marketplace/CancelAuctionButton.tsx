@@ -1,11 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
 import { Trash2 } from 'lucide-react';
-import { MarketplaceService } from '@/lib/services/marketplace-service';
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { toast } from 'sonner';
+import { MarketplaceService } from '@/lib/services/marketplace-service';
 
 interface CancelAuctionButtonProps {
   auctionId: string;
@@ -27,54 +27,59 @@ export function CancelAuctionButton({
   const chain = useActiveWalletChain();
 
   const handleCancelAuction = async () => {
-    if (!account) {
-      toast.error('Conecte sua carteira primeiro');
+    if (!account || !chain) {
+      toast.error('Please connect your wallet first.');
       return;
     }
 
-    if (!chain?.id) {
-      toast.error('Selecione uma rede válida');
+    // Verificar se está na rede correta
+    if (chain.id !== 80002) {
+      toast.error('Please switch to Polygon Amoy Testnet to cancel auctions.');
       return;
     }
-
-    const confirmed = window.confirm(
-      `Tem certeza que deseja cancelar o leilão do NFT "${nftName}"?\n\n` +
-      'O NFT será retornado para sua carteira e todos os lances serão invalidados.'
-    );
-
-    if (!confirmed) return;
 
     setIsLoading(true);
-
+    toast.info('Canceling auction... Approve the transaction in your wallet.');
+    
     try {
-      console.log('🚫 Iniciando cancelamento do leilão:', {
-        auctionId,
-        nftName,
-        account: account.address,
-        chainId: chain.id
-      });
-
-      await MarketplaceService.cancelAuction(
+      console.log('❌ CANCELING AUCTION:');
+      console.log('📋 Auction ID:', auctionId);
+      console.log('📋 Account:', account.address);
+      console.log('📋 Chain:', chain.id);
+      
+      const result = await MarketplaceService.cancelAuction(
         account,
         chain.id,
         auctionId
       );
 
-      // Chamar callback de sucesso se fornecido
+      toast.success('Auction canceled successfully! 🎉');
+      console.log('✅ Auction canceled:', result.transactionHash);
+      
+      // ✅ CHAMAR CALLBACK DE SUCESSO EM VEZ DE RELOAD
       if (onSuccess) {
+        console.log('🔄 Chamando onSuccess callback...');
         onSuccess();
       }
 
-      // Recarregar a página após sucesso para atualizar dados
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-
     } catch (error: any) {
-      console.error('❌ Erro no cancelamento:', error);
+      console.error('❌ Error canceling auction:', error);
       
-      // O toast de erro já é mostrado no MarketplaceService
-      // Apenas log adicional aqui
+      // Extract meaningful error message
+      let errorMessage = 'Failed to cancel auction';
+      if (error?.reason) {
+        errorMessage = error.reason;
+      } else if (error?.message) {
+        if (error.message.includes('rejected')) {
+          errorMessage = 'Transaction was rejected by user';
+        } else if (error.message.includes('insufficient funds')) {
+          errorMessage = 'Insufficient funds for gas fee';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -92,4 +97,4 @@ export function CancelAuctionButton({
       {isLoading ? 'Cancelando...' : 'Cancel Auction'}
     </Button>
   );
-} 
+}
