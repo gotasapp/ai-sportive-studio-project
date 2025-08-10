@@ -96,20 +96,7 @@ export function useMarketplaceData() {
         auctionId: nft.marketplace?.thirdwebAuctionData?.auctionId,
         currentBid: nft.marketplace?.thirdwebAuctionData?.minimumBidAmount,
         endTime: nft.marketplace?.thirdwebAuctionData?.endTime ? new Date(Number(nft.marketplace.thirdwebAuctionData.endTime) * 1000) : undefined,
-        source: 'api',
-        
-        // 🎯 Collection identification
-        isCollection: nft.marketplace?.isCollection || false,
-        isCustomCollection: nft.marketplace?.isCustomCollection || false,
-        collectionId: nft.mongoId || nft._id,
-        
-        // 🎯 Collection stats for overview
-        mintedUnits: nft.marketplace?.mintedUnits || 0,
-        totalUnits: nft.marketplace?.totalUnits || 0,
-        availableUnits: nft.marketplace?.availableUnits || 0,
-        uniqueOwners: nft.stats?.uniqueOwners || 0,
-        listedCount: nft.marketplace?.thirdwebListedCount || 0,
-        auctionCount: nft.marketplace?.thirdwebAuctionCount || 0
+        source: 'api'
       })) : [];
 
       // 3. Processar dados do Thirdweb (NFTs normais)

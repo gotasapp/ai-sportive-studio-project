@@ -13,11 +13,13 @@ import MarketplaceFilters, {
 } from '@/components/marketplace/MarketplaceFilters';
 import CollectionsTable from '@/components/marketplace/CollectionsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
+import CollectionOverviewCard from '@/components/marketplace/CollectionOverviewCard';
 
 import { AlertCircle, Loader2, Grid3X3, List, RefreshCw } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
+import { ClearAndSyncButton } from '@/components/marketplace/ClearAndSyncButton';
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -429,6 +431,26 @@ export default function MarketplacePage() {
             
             {/* Botões de Ação */}
             <div className="flex gap-2">
+              {/* Botão de Limpeza e Sync */}
+              <ClearAndSyncButton className="h-10" />
+              
+              {/* Debug: Auction Details */}
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/debug/check-auction-details');
+                    const result = await response.json();
+                    console.log('🔍 Auction Details:', result);
+                    alert(`Encontrados ${result.stats?.totalAuctions || 0} auctions. Veja console para detalhes.`);
+                  } catch (error) {
+                    console.error('Error:', error);
+                  }
+                }}
+                className="h-10 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm"
+              >
+                🔍 Auction Debug
+              </button>
+              
               {/* Botão de Sync */}
 
 

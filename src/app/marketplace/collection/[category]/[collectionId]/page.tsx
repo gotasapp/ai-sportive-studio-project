@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import Header from '@/components/Header';
 
 async function fetchCollectionData(collectionId: string, category: string) {
   try {
@@ -123,7 +124,9 @@ export default function CollectionDetailPage({
 
   if (loading) {
     return (
-      <div className="max-w-5xl mx-auto py-10 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
+        <Header />
+        <div className="max-w-5xl mx-auto py-10 px-4">
         <Card className="mb-8 bg-transparent border-secondary/20">
           <CardContent className="flex flex-col md:flex-row gap-8 items-center p-8">
             <Skeleton className="w-64 h-64 rounded-lg" />
@@ -134,6 +137,7 @@ export default function CollectionDetailPage({
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     );
   }
@@ -147,6 +151,7 @@ export default function CollectionDetailPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
+      <Header />
       <main className="container mx-auto px-3 py-6">
         
         {/* Header da Coleção */}
