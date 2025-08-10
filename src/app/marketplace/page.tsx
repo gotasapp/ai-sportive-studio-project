@@ -14,8 +14,9 @@ import MarketplaceFilters, {
 import CollectionsTable from '@/components/marketplace/CollectionsTable';
 import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
 import CollectionOverviewCard from '@/components/marketplace/CollectionOverviewCard';
+import { Button } from '@/components/ui/button';
 
-import { AlertCircle, Loader2, Grid3X3, List, RefreshCw } from 'lucide-react';
+import { AlertCircle, Loader2, Grid3X3, List, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
@@ -169,48 +170,139 @@ export default function MarketplacePage() {
     <NFTGrid items={filteredNfts} getContractByCategory={getContractByCategory} />
   );
 
-  const renderListView = () => (
-    <div className="p-6 space-y-4">
-      {filteredNfts.map((item) => (
-        <div 
-          key={item.id}
-          className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
-        >
-          <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-            {item.metadata?.image || item.imageUrl ? (
-              <img
-                key={item.id}
-                src={normalizeIpfsUri(item.metadata?.image ?? item.imageUrl)}
-                alt={item.metadata?.name ?? item.name}
-                className="w-full h-full object-cover"
-                width={64}
-                height={64}
-                loading="lazy"
-                onError={e => {
-                  const fallbackUrl = normalizeIpfsUri(item.metadata?.image ?? item.imageUrl, true);
-                  if (e.currentTarget.src !== fallbackUrl) {
-                    e.currentTarget.src = fallbackUrl;
-                  } else {
-                    e.currentTarget.src = '/fallback.jpg';
-                  }
-                }}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>
-            )}
-          </div>
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[#FDFDFD]">{item.name}</h3>
-            <p className="text-sm text-[#FDFDFD]/70">{item.category}</p>
-          </div>
-          <div className="text-right">
-            <div className="text-sm font-medium text-[#FDFDFD]">{item.price}</div>
-            <div className="text-xs text-[#FDFDFD]/70 capitalize">{item.category}</div>
-          </div>
+  const renderListView = () => {
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
+    
+    // Calcular paginação
+    const totalPages = Math.ceil(filteredNfts.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentItems = filteredNfts.slice(startIndex, endIndex);
+
+    const goToPage = (page: number) => {
+      setCurrentPage(page);
+      // Scroll para o topo
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    return (
+      <div className="space-y-6">
+        <div className="p-6 space-y-4">
+          {currentItems.map((item) => {
+          // Para NFTs individuais, SEMPRE usar imagem original
+          const imageUrl = normalizeIpfsUri(item.metadata?.image || item.imageUrl || '');
+          
+          return (
+            <div 
+              key={item.id}
+              className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
+            >
+              <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
+                {imageUrl ? (
+                  <img
+                    src={imageUrl}
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                    width={64}
+                    height={64}
+                    onError={(e) => {
+                      // Se a imagem falhar, mostrar primeira letra
+                      const target = e.currentTarget;
+                      target.style.display = 'none';
+                      target.nextElementSibling!.style.display = 'flex';
+                    }}
+                  />
+                ) : null}
+                <div 
+                  className="w-full h-full flex items-center justify-center text-gray-400 text-lg bg-gray-900 rounded font-bold"
+                  style={{ display: imageUrl ? 'none' : 'flex' }}
+                >
+                  {item.name?.charAt(0)?.toUpperCase() || '?'}
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-[#FDFDFD]">{item.name}</h3>
+                <p className="text-sm text-[#FDFDFD]/70">{item.category}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-sm font-medium text-[#FDFDFD]">{item.price}</div>
+                <div className="text-xs text-[#FDFDFD]/70 capitalize">{item.category}</div>
+              </div>
+            </div>
+          );
+        })}
         </div>
-      ))}
-    </div>
-  );
+
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-4 py-6">
+            <div className="flex items-center gap-2">
+              {/* Botão Anterior */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+
+              {/* Números das páginas */}
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                  // Mostrar apenas páginas próximas da atual
+                  const showPage = page === 1 || page === totalPages || 
+                                 (page >= currentPage - 1 && page <= currentPage + 1);
+                  
+                  if (!showPage && page === currentPage - 2) {
+                    return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
+                  }
+                  if (!showPage && page === currentPage + 2) {
+                    return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
+                  }
+                  if (!showPage) return null;
+
+                  return (
+                    <Button
+                      key={page}
+                      variant={currentPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(page)}
+                      className={`h-8 w-8 p-0 text-xs ${
+                        currentPage === page 
+                          ? 'bg-[#A20131] text-[#FDFDFD] border-[#A20131]' 
+                          : 'bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                  );
+                })}
+              </div>
+
+              {/* Botão Próximo */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Info da paginação */}
+        <div className="text-center text-sm text-[#FDFDFD]/70 pb-4">
+          Showing {startIndex + 1}-{Math.min(endIndex, filteredNfts.length)} of {filteredNfts.length} items
+        </div>
+      </div>
+    );
+  };
 
   const renderContent = () => {
     // Usar loading do marketplace se disponível

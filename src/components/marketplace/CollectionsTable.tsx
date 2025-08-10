@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { getCollectionImage } from './FixedCollectionImages'
 import { 
   Star, 
   TrendingUp, 
@@ -144,6 +145,10 @@ export default function CollectionsTable({
         const collectionsData: CollectionStat[] = []
         console.log('✅ Collections array created:', collectionsData);
 
+        // ESTRATÉGIA SIMPLIFICADA: 
+        // - Jersey, Stadium, Badge = IMAGENS FIXAS
+        // - Launchpad Collections = IMAGENS ORIGINAIS
+
         // Função para calcular estatísticas reais
         const calculateRealStats = (categoryItems: any[], categoryName: string) => {
           const listedItems = categoryItems.filter(item => item.isListed || item.isAuction);
@@ -165,78 +170,90 @@ export default function CollectionsTable({
           };
         };
 
-        // Jersey Collection
-        console.log('👕 Checking jersey collection, count:', jerseys.length);
-        if (jerseys.length > 0) {
-          console.log('👕 Creating jersey collection with image:', jerseys[0].imageUrl);
-          const stats = calculateRealStats(jerseys, 'jersey');
-          collectionsData.push({
-            rank: 1,
-            name: 'Jersey Collection',
-            imageUrl: jerseys[0].imageUrl || jerseys[0].image,
-            floorPrice: stats.floorPrice,
+        // Jersey Collection - IMAGEM FIXA GARANTIDA
+        console.log('👕 Creating Jersey Collection with FIXED IMAGE...');
+        const jerseyImage = getCollectionImage('Jersey Collection');
+        
+        const jerseyStats = jerseys.length > 0 ? calculateRealStats(jerseys, 'jersey') : {
+          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
+        };
+        
+        collectionsData.push({
+          rank: 1,
+          name: 'Jersey Collection',
+          imageUrl: jerseyImage,
+          floorPrice: jerseyStats.floorPrice,
             floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: stats.volume24h,
+            volume24h: jerseyStats.volume24h,
             volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: stats.sales24h,
+            sales24h: jerseyStats.sales24h,
             salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: stats.supply,
-            owners: stats.owners,
+            supply: jerseyStats.supply,
+            owners: jerseyStats.owners,
             category: 'jersey',
             trendData: generateTrendData(),
             isWatchlisted: false,
             isOwned: false
-          })
-        }
+          });
 
-        // Stadium Collection
-        if (stadiums.length > 0) {
-          const stats = calculateRealStats(stadiums, 'stadium');
-          collectionsData.push({
-            rank: 2,
-            name: 'Stadium Collection',
-            imageUrl: stadiums[0].imageUrl || stadiums[0].image,
-            floorPrice: stats.floorPrice,
+        // Stadium Collection - IMAGEM FIXA GARANTIDA
+        console.log('🏟️ Creating Stadium Collection with FIXED IMAGE...');
+        const stadiumImage = getCollectionImage('Stadium Collection');
+        
+        const stadiumStats = stadiums.length > 0 ? calculateRealStats(stadiums, 'stadium') : {
+          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
+        };
+        
+        collectionsData.push({
+          rank: 2,
+          name: 'Stadium Collection',
+          imageUrl: stadiumImage,
+          floorPrice: stadiumStats.floorPrice,
             floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: stats.volume24h,
+            volume24h: stadiumStats.volume24h,
             volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: stats.sales24h,
+            sales24h: stadiumStats.sales24h,
             salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: stats.supply,
-            owners: stats.owners,
+            supply: stadiumStats.supply,
+            owners: stadiumStats.owners,
             category: 'stadium',
             trendData: generateTrendData(),
             isWatchlisted: true,
             isOwned: false
-          })
-        }
+          });
 
-        // Badge Collection
-        if (badges.length > 0) {
-          const stats = calculateRealStats(badges, 'badge');
-          collectionsData.push({
-            rank: 3,
-            name: 'Badge Collection',
-            imageUrl: badges[0].imageUrl || badges[0].image,
-            floorPrice: stats.floorPrice,
+        // Badge Collection - IMAGEM FIXA GARANTIDA
+        console.log('🏆 Creating Badge Collection with FIXED IMAGE...');
+        const badgeImage = getCollectionImage('Badge Collection');
+        
+        const badgeStats = badges.length > 0 ? calculateRealStats(badges, 'badge') : {
+          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
+        };
+        
+        collectionsData.push({
+          rank: 3,
+          name: 'Badge Collection',
+          imageUrl: badgeImage,
+          floorPrice: badgeStats.floorPrice,
             floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: stats.volume24h,
+            volume24h: badgeStats.volume24h,
             volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: stats.sales24h,
+            sales24h: badgeStats.sales24h,
             salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: stats.supply,
-            owners: stats.owners,
+            supply: badgeStats.supply,
+            owners: badgeStats.owners,
             category: 'badge',
             trendData: generateTrendData(),
             isWatchlisted: false,
             isOwned: true
-          })
-        }
+          });
 
-        // Launchpad Collections
+        // Launchpad Collections - MANTER IMAGENS ORIGINAIS
         console.log('🚀 Checking launchpad collections, count:', launchpadCollections.length);
         launchpadCollections.forEach((collection, index) => {
-          console.log('🚀 Processing launchpad collection:', collection.name, 'with image:', collection.metadata?.image);
+          // Para Launchpad collections, usar a imagem original da collection
+          const originalImage = collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
+          console.log('🚀 Processing launchpad collection:', collection.name, 'with ORIGINAL image:', originalImage);
           
           // Calcular estatísticas específicas para launchpad
           const calculateLaunchpadStats = (collection: any) => {
@@ -258,7 +275,7 @@ export default function CollectionsTable({
           collectionsData.push({
             rank: collectionsData.length + 1,
             name: collection.metadata?.name || collection.name || 'Launchpad Collection',
-            imageUrl: collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl,
+            imageUrl: getCollectionImage(collection.name, originalImage),
             floorPrice: stats.floorPrice,
             floorPriceChange: 0,
             volume24h: stats.volume24h,
@@ -499,22 +516,17 @@ export default function CollectionsTable({
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
                       {collection.imageUrl ? (
-                        <img
-                          key={collection.imageUrl}
-                          src={normalizeIpfsUri(collection.imageUrl)}
-                          alt={collection.name}
-                          width={48}
-                          height={48}
-                          className="w-12 h-12 object-cover rounded"
-                          onError={e => { 
-                            const target = e.currentTarget as HTMLImageElement;
-                            if (!target.src.includes('fallback')) {
-                              target.src = '/fallback.svg';
-                            }
-                          }}
-                        />
+                                        <img
+                  src={collection.imageUrl}
+                  alt={collection.name}
+                  width={48}
+                  height={48}
+                  className="w-12 h-12 object-cover rounded"
+                />
                       ) : (
-                        <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">Loading NFT...</div>
+                        <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">
+                          {collection.name.charAt(0)}
+                        </div>
                       )}
                     </div>
                     <div>

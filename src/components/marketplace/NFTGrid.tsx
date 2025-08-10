@@ -1,8 +1,11 @@
 // src/components/marketplace/NFTGrid.tsx
 'use client';
 
+import { useState } from 'react';
 import MarketplaceCard from './MarketplaceCard';
 import CollectionOverviewCard from './CollectionOverviewCard';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface NFTGridProps {
   items: any[];
@@ -10,9 +13,26 @@ interface NFTGridProps {
 }
 
 export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+  
+  // Calcular paginação
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = items.slice(startIndex, endIndex);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
+    // Scroll para o topo do grid
+    document.querySelector('.grid')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
-      {items.map((item) => {
+    <div className="space-y-6">
+      {/* Grid com 5 colunas */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-6">
+        {currentItems.map((item) => {
         // 🎯 DECISÃO CRÍTICA: Usar CollectionOverviewCard para collections
         const isCollection = item.isCollection || item.marketplace?.isCollection || false;
         
@@ -64,7 +84,80 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
             isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection' || item.marketplace?.isCustomCollection}
           />
         );
-      })}
+        })}
+      </div>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 py-6">
+          <div className="flex items-center gap-2">
+            {/* Botão Anterior */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            {/* Números das páginas */}
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                // Mostrar apenas páginas próximas da atual
+                if (
+                  page === 1 ||
+                  page === totalPages ||
+                  (page >= currentPage - 2 && page <= currentPage + 2)
+                ) {
+                  return (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => goToPage(page)}
+                      className={`h-8 w-8 p-0 ${
+                        page === currentPage
+                          ? 'bg-[#A20131] text-[#FDFDFD] hover:bg-[#A20131]/80'
+                          : 'bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
+                      }`}
+                    >
+                      {page}
+                    </Button>
+                  );
+                } else if (
+                  page === currentPage - 3 ||
+                  page === currentPage + 3
+                ) {
+                  return (
+                    <span key={page} className="text-[#FDFDFD]/50 px-2">
+                      ...
+                    </span>
+                  );
+                }
+                return null;
+              })}
+            </div>
+
+            {/* Botão Próximo */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Info da paginação */}
+      <div className="text-center text-sm text-[#FDFDFD]/70 pb-4">
+        Showing {startIndex + 1}-{Math.min(endIndex, items.length)} of {items.length} items
+      </div>
     </div>
   );
 } 

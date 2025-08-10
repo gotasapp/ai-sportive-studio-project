@@ -158,28 +158,32 @@ export default function MarketplaceFilters({
 
           {/* Token Type Dropdown */}
           <Select value={tokenType} onValueChange={(value) => onTokenTypeChange(value as TokenType)}>
-            <SelectTrigger className="w-40 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD]">
-              <SelectValue placeholder="Token type" />
+            <SelectTrigger className="w-40 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] justify-between">
+              <div className="flex-1 text-center">
+                <SelectValue placeholder="Token type" />
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-[#000000] border-[#FDFDFD]/20">
-              <SelectItem value="all">All</SelectItem>
-              <SelectItem value="jerseys">Jerseys</SelectItem>
-              <SelectItem value="stadiums">Stadiums</SelectItem>
-              <SelectItem value="badges">Badges</SelectItem>
-              <SelectItem value="launchpad">Launchpad</SelectItem>
+              <SelectItem value="all" className="text-center">All</SelectItem>
+              <SelectItem value="jerseys" className="text-center">Jerseys</SelectItem>
+              <SelectItem value="stadiums" className="text-center">Stadiums</SelectItem>
+              <SelectItem value="badges" className="text-center">Badges</SelectItem>
+              <SelectItem value="launchpad" className="text-center">Launchpad</SelectItem>
             </SelectContent>
           </Select>
 
           {/* Price Sort Dropdown */}
           <Select value={priceSort} onValueChange={(value) => onPriceSortChange(value as PriceSort)}>
-            <SelectTrigger className="w-48 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD]">
-              <SelectValue placeholder="Sort by" />
+            <SelectTrigger className="w-48 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] justify-between">
+              <div className="flex-1 text-center">
+                <SelectValue placeholder="Sort by" />
+              </div>
             </SelectTrigger>
             <SelectContent className="bg-[#000000] border-[#FDFDFD]/20">
-              <SelectItem value="low-to-high">Price low to high</SelectItem>
-              <SelectItem value="high-to-low">Price high to low</SelectItem>
-              <SelectItem value="volume-desc">Volume high to low</SelectItem>
-              <SelectItem value="volume-asc">Volume low to high</SelectItem>
+              <SelectItem value="low-to-high" className="text-center">Price low to high</SelectItem>
+              <SelectItem value="high-to-low" className="text-center">Price high to low</SelectItem>
+              <SelectItem value="volume-desc" className="text-center">Volume high to low</SelectItem>
+              <SelectItem value="volume-asc" className="text-center">Volume low to high</SelectItem>
             </SelectContent>
           </Select>
 
