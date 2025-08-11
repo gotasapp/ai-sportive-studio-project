@@ -24,8 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ViewType, TimeFilter, PriceSort, TokenType, CollectionTab } from './MarketplaceFilters'
-import { normalizeIpfsUri, convertIpfsToHttp } from '@/lib/utils';
-import { ThumbnailImage } from './OptimizedImage';
+import { NFTThumbnail } from '@/components/utils/ImageWithFallback';
 
 interface NFTData {
   _id: string
@@ -517,11 +516,12 @@ export default function CollectionsTable({
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
                       {collection.imageUrl ? (
-                        <ThumbnailImage
-                          src={convertIpfsToHttp(collection.imageUrl)}
+                        <NFTThumbnail
+                          src={collection.imageUrl}
                           alt={collection.name}
                           size={48}
                           className="w-12 h-12 object-cover rounded"
+                          onError={() => console.warn(`Failed to load collection image: ${collection.name}`)}
                         />
                       ) : (
                         <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">

@@ -3,7 +3,7 @@
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { CardImage } from '@/components/marketplace/OptimizedImage'
+import { NFTGridImage } from '@/components/utils/ImageWithFallback'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -988,11 +988,13 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
           onClick={() => onNFTClick?.(nft)}
         >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
-            {nft.metadata?.image || nft.imageUrl ? (
-              <CardImage
+            {(nft.metadata?.image || nft.imageUrl) ? (
+              <NFTGridImage
                 key={nft.id}
-                src={(nft.metadata?.image ?? nft.imageUrl) || ''}
-                alt={nft.metadata?.name ?? nft.name}
+                src={nft.metadata?.image || nft.imageUrl || ''}
+                alt={nft.metadata?.name || nft.name}
+                priority={currentPage === 1 && currentNFTs.indexOf(nft) < 4}
+                onError={() => console.warn(`Failed to load NFT image: ${nft.name}`)}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>
