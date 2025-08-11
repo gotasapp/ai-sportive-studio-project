@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { getCollectionImage } from './FixedCollectionImages'
 import { normalizeIpfsUri } from '@/lib/utils'
 import { 
@@ -260,17 +261,9 @@ export default function CollectionsTable({
           });
 
         // Launchpad Collections - USAR IMAGEM DIRETA DO BANCO
-        console.log('🚀 Checking launchpad collections, count:', launchpadCollections.length);
         launchpadCollections.forEach((collection, index) => {
           // SOLUÇÃO DIRETA: usar imageUrl diretamente do banco, com validação e normalização
           let dbImageUrl = collection.image || collection.imageUrl || collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
-          
-          console.log('🚀 Processing launchpad collection:', collection.name, {
-            originalImageUrl: dbImageUrl,
-            hasImage: !!collection.image,
-            hasImageUrl: !!collection.imageUrl,
-            hasMetadataImage: !!collection.metadata?.image
-          });
           
           // Validar e normalizar imagem
           if (dbImageUrl && !dbImageUrl.includes('undefined') && !dbImageUrl.includes('null') && dbImageUrl.trim() !== '') {
@@ -278,11 +271,9 @@ export default function CollectionsTable({
             if (dbImageUrl.startsWith('ipfs://') || dbImageUrl.startsWith('Qm') || dbImageUrl.startsWith('bafy')) {
               dbImageUrl = normalizeIpfsUri(dbImageUrl);
             }
-            console.log('✅ Using normalized image URL:', dbImageUrl);
           } else {
             // Fallback para imagem padrão se não houver imagem válida
             dbImageUrl = getCollectionImage('default');
-            console.log('🔄 Using fallback image for collection:', collection.name);
           }
           
           // Calcular estatísticas específicas para launchpad
@@ -326,17 +317,9 @@ export default function CollectionsTable({
           return item.type === 'custom_collection' || item.category === 'custom_collection';
         });
         
-        console.log('🎨 Checking custom collections, count:', customCollections.length);
         customCollections.forEach((collection, index) => {
           // SOLUÇÃO DIRETA: usar imageUrl diretamente do banco, com validação e normalização
           let dbImageUrl = collection.image || collection.imageUrl || collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
-          
-          console.log('🎨 Processing custom collection:', collection.name, {
-            originalImageUrl: dbImageUrl,
-            hasImage: !!collection.image,
-            hasImageUrl: !!collection.imageUrl,
-            hasMetadataImage: !!collection.metadata?.image
-          });
           
           // Validar e normalizar imagem
           if (dbImageUrl && !dbImageUrl.includes('undefined') && !dbImageUrl.includes('null') && dbImageUrl.trim() !== '') {
@@ -344,11 +327,9 @@ export default function CollectionsTable({
             if (dbImageUrl.startsWith('ipfs://') || dbImageUrl.startsWith('Qm') || dbImageUrl.startsWith('bafy')) {
               dbImageUrl = normalizeIpfsUri(dbImageUrl);
             }
-            console.log('✅ Using normalized custom collection image URL:', dbImageUrl);
           } else {
             // Fallback para imagem padrão se não houver imagem válida
             dbImageUrl = getCollectionImage('default');
-            console.log('🔄 Using fallback image for custom collection:', collection.name);
           }
           
           // Calcular estatísticas específicas para custom collections
@@ -611,7 +592,11 @@ export default function CollectionsTable({
                 
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
+                    {/* Collection Image with Navigation */}
+                    <Link 
+                      href={`/marketplace/collection/${collection.category}/${collection.name.replace(/\s+/g, '-').toLowerCase()}`}
+                      className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#A20131]/50 transition-all cursor-pointer"
+                    >
                       {collection.imageUrl && 
                        collection.imageUrl !== '' && 
                        !collection.imageUrl.includes('undefined') && 
@@ -623,15 +608,8 @@ export default function CollectionsTable({
                           height={48}
                           className="w-12 h-12 object-cover rounded"
                           onError={(e) => {
-                            console.warn(`❌ Failed to load collection image: ${collection.name}`, {
-                              attempted_url: collection.imageUrl,
-                              error: e
-                            });
                             const target = e.target as HTMLImageElement;
                             target.src = '/api/placeholder/400/400';
-                          }}
-                          onLoad={() => {
-                            console.log(`✅ Successfully loaded collection image: ${collection.name}`);
                           }}
                         />
                       ) : (
@@ -639,7 +617,7 @@ export default function CollectionsTable({
                           {collection.name.charAt(0)}
                         </div>
                       )}
-                    </div>
+                    </Link>
                     <div>
                       <div className="font-semibold text-[#FDFDFD] flex items-center gap-2">
                         {collection.name}

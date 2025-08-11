@@ -14,17 +14,14 @@ import {
   Calendar, 
   Hash,
   Tag,
-  Wallet,
+  Globe,
+  Loader2,
+  CheckCircle,
+  XCircle,
   Image as ImageIcon,
   Trophy,
   Shield,
-  Globe,
-  Loader2,
-  Clock,
-  DollarSign,
-  CheckCircle,
-  XCircle,
-  ArrowRight
+  DollarSign
 } from 'lucide-react'
 import { useActiveWalletChain } from 'thirdweb/react'
 import { normalizeIpfsUri, convertIpfsToHttp } from '@/lib/utils';
@@ -108,6 +105,13 @@ export function NFTDetailsModal({
         console.log(`- API image: ${result.data.image}`)
         console.log(`- API imageUrl: ${result.data.imageUrl}`)
         console.log(`- Final imageUrl: ${imageUrl}`)
+        
+        console.log('🎯 Attributes debug:', {
+          hasAttributes: !!mappedData.attributes,
+          attributesLength: mappedData.attributes?.length || 0,
+          attributes: mappedData.attributes,
+          fullData: mappedData
+        });
         
         setNftData(mappedData)
         return
@@ -250,7 +254,7 @@ export function NFTDetailsModal({
             )}
           </DialogTitle>
           <DialogDescription className="text-[#FDFDFD]/70">
-            View detailed information about this NFT including attributes, ownership, and technical details.
+            View detailed information about this NFT including basic details and attributes.
           </DialogDescription>
         </DialogHeader>
 
@@ -311,21 +315,7 @@ export function NFTDetailsModal({
                 )}
               </div>
 
-              {/* Quick Actions - SWIPE/SCROLL HORIZONTAL */}
-              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
-                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                  <Tag className="w-4 h-4" /> List
-                </Button>
-                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                  <ArrowRight className="w-4 h-4" /> Transfer
-                </Button>
-                <Button className="flex-shrink-0 bg-[#A20131] text-white px-4 py-2 rounded-lg flex items-center gap-2">
-                  <DollarSign className="w-4 h-4" /> Sell
-                </Button>
-                {/* Adicione mais ações conforme necessário */}
-              </div>
-
-              {/* Quick Actions originais (Copy, Explorer) */}
+              {/* Copy ID e Explorer */}
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -424,20 +414,6 @@ export function NFTDetailsModal({
                   </CardContent>
                 </Card>
 
-                {/* Description */}
-                {nftData?.description && (
-                  <Card className="bg-transparent border-[#FDFDFD]/10">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-[#FDFDFD] text-lg">Description</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-[#FDFDFD]/80 text-sm leading-relaxed">
-                        {nftData.description}
-                      </p>
-                    </CardContent>
-                  </Card>
-                )}
-
                 {/* Attributes */}
                 {nftData?.attributes && nftData.attributes.length > 0 && (
                   <Card className="bg-transparent border-[#FDFDFD]/10">
@@ -456,52 +432,6 @@ export function NFTDetailsModal({
                             </div>
                           </div>
                         ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
-                {/* Technical Info */}
-                {nftData && (
-                  <Card className="bg-transparent border-[#FDFDFD]/10">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-[#FDFDFD] text-lg">Technical</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#FDFDFD]/70 flex items-center gap-2">
-                          <Wallet className="h-4 w-4" />
-                          Contract
-                        </span>
-                        <span className="text-[#FDFDFD] font-mono text-sm">
-                          {nftData?.contractAddress ? `${nftData.contractAddress.slice(0, 6)}...${nftData.contractAddress.slice(-4)}` : 'Unknown'}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#FDFDFD]/70 flex items-center gap-2">
-                          <Clock className="h-4 w-4" />
-                          Last Updated
-                        </span>
-                        <span className="text-[#FDFDFD] text-sm">
-                          {formatDate(nftData.lastUpdated)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[#FDFDFD]/70">Data Source</span>
-                        <Badge 
-                          variant="outline" 
-                          className={
-                            nftData.source === 'cache' 
-                              ? 'bg-green-500/10 text-green-400 border-green-500/30'
-                              : nftData.source === 'thirdweb'
-                              ? 'bg-blue-500/10 text-blue-400 border-blue-500/30'
-                              : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
-                          }
-                        >
-                          {nftData.source}
-                        </Badge>
                       </div>
                     </CardContent>
                   </Card>

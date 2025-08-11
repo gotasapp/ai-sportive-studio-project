@@ -16,7 +16,7 @@ import MarketplaceCard from '@/components/marketplace/MarketplaceCard';
 import CollectionOverviewCard from '@/components/marketplace/CollectionOverviewCard';
 import { Button } from '@/components/ui/button';
 
-import { AlertCircle, Loader2, Grid3X3, List, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Loader2, Grid3X3, RefreshCw, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
@@ -50,7 +50,7 @@ export default function MarketplacePage() {
   const [ownedCollections, setOwnedCollections] = useState<string[]>(['Badge Collection']);
   const [showGlobalLoader, setShowGlobalLoader] = useState(true);
   const [blacklist, setBlacklist] = useState<string[]>([]);
-  const [listCurrentPage, setListCurrentPage] = useState(1);
+
 
   // Todos os hooks devem estar no topo, fora de qualquer if/return
   useEffect(() => {
@@ -134,11 +134,6 @@ export default function MarketplacePage() {
     });
   }, [marketplaceItems, watchlist.length, ownedCollections.length]);
 
-  // Reset list pagination when filters change
-  useEffect(() => {
-    setListCurrentPage(1);
-  }, [filteredNfts.length, tokenType, searchTerm]);
-
   // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
   const getContractByCategory = (category: string): string => {
     const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
@@ -218,159 +213,7 @@ export default function MarketplacePage() {
     <NFTGrid items={filteredNfts} getContractByCategory={getContractByCategory} />
   );
 
-  const renderListView = () => {
-    const itemsPerPage = 20;
-    
-    // Calcular paginação
-    const totalPages = Math.ceil(filteredNfts.length / itemsPerPage);
-    const startIndex = (listCurrentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const currentItems = filteredNfts.slice(startIndex, endIndex);
 
-    const goToPage = (page: number) => {
-      setListCurrentPage(page);
-      // Scroll para o topo
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-
-    return (
-      <div className="space-y-6">
-        <div className="p-6 space-y-4">
-          {currentItems.map((item) => {
-          // Para NFTs e coleções, usar estratégia inteligente de imagem
-          let imageUrl = '';
-          
-          // 1. Priorizar image diretamente (para coleções custom/launchpad)
-          if (item.image && !item.image.includes('undefined') && !item.image.includes('null') && item.image.trim() !== '') {
-            imageUrl = normalizeIpfsUri(item.image);
-          }
-          // 2. Usar imageUrl (para coleções custom/launchpad)
-          else if (item.imageUrl && !item.imageUrl.includes('undefined') && !item.imageUrl.includes('null') && item.imageUrl.trim() !== '') {
-            imageUrl = normalizeIpfsUri(item.imageUrl);
-          }
-          // 3. Usar metadata.image (para NFTs individuais)
-          else if (item.metadata?.image && !item.metadata.image.includes('undefined') && !item.metadata.image.includes('null') && item.metadata.image.trim() !== '') {
-            imageUrl = normalizeIpfsUri(item.metadata.image);
-          }
-          // 4. Fallback para imagem fixa baseada na categoria (para standard collections)
-          else if (item.category && ['jersey', 'stadium', 'badge'].includes(item.category)) {
-            imageUrl = getCollectionImage(item.category);
-          }
-          // 5. Fallback final
-          else {
-            imageUrl = 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png';
-          }
-          
-          return (
-            <div 
-              key={item.id}
-              className="cyber-card flex items-center gap-4 p-4 rounded-lg hover:bg-[#FDFDFD]/5 transition-colors"
-            >
-              <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
-                {imageUrl ? (
-                  <img
-                    src={imageUrl}
-                    alt={item.name}
-                    className="w-full h-full object-cover"
-                    width={64}
-                    height={64}
-                    onError={(e) => {
-                      // Se a imagem falhar, mostrar primeira letra
-                      const target = e.currentTarget;
-                      target.style.display = 'none';
-                      (target.nextElementSibling as HTMLElement)!.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div 
-                  className="w-full h-full flex items-center justify-center text-gray-400 text-lg bg-gray-900 rounded font-bold"
-                  style={{ display: imageUrl ? 'none' : 'flex' }}
-                >
-                  {item.name?.charAt(0)?.toUpperCase() || '?'}
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-[#FDFDFD]">{item.name}</h3>
-                <p className="text-sm text-[#FDFDFD]/70">{item.category}</p>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-[#FDFDFD]">{item.price}</div>
-                <div className="text-xs text-[#FDFDFD]/70 capitalize">{item.category}</div>
-              </div>
-            </div>
-          );
-        })}
-        </div>
-
-        {/* Paginação */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-center gap-4 py-6">
-            <div className="flex items-center gap-2">
-              {/* Botão Anterior */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(listCurrentPage - 1)}
-                disabled={listCurrentPage === 1}
-                className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-
-              {/* Números das páginas */}
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Mostrar apenas páginas próximas da atual
-                  const showPage = page === 1 || page === totalPages || 
-                                 (page >= listCurrentPage - 1 && page <= listCurrentPage + 1);
-                  
-                  if (!showPage && page === listCurrentPage - 2) {
-                    return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
-                  }
-                  if (!showPage && page === listCurrentPage + 2) {
-                    return <span key={page} className="text-[#FDFDFD]/50 px-2">...</span>;
-                  }
-                  if (!showPage) return null;
-
-                  return (
-                    <Button
-                      key={page}
-                      variant={listCurrentPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => goToPage(page)}
-                      className={`h-8 w-8 p-0 text-xs ${
-                        listCurrentPage === page 
-                          ? 'bg-[#A20131] text-[#FDFDFD] border-[#A20131]' 
-                          : 'bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
-                      }`}
-                    >
-                      {page}
-                    </Button>
-                  );
-                })}
-              </div>
-
-              {/* Botão Próximo */}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(listCurrentPage + 1)}
-                disabled={listCurrentPage === totalPages}
-                className="h-8 px-3 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10 disabled:opacity-50"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* Info da paginação */}
-        <div className="text-center text-sm text-[#FDFDFD]/70 pb-4">
-          Showing {startIndex + 1}-{Math.min(endIndex, filteredNfts.length)} of {filteredNfts.length} items
-        </div>
-      </div>
-    );
-  };
 
   const renderContent = () => {
     // Usar loading do marketplace se disponível
@@ -421,7 +264,7 @@ export default function MarketplacePage() {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mb-4">
-            {viewType === 'grid' ? <Grid3X3 className="w-8 h-8 text-gray-600" /> : <List className="w-8 h-8 text-gray-600" />}
+            <Grid3X3 className="w-8 h-8 text-gray-600" />
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">No NFTs Found</h2>
           <p className="text-gray-400 mb-4">
@@ -437,7 +280,7 @@ export default function MarketplacePage() {
       );
     }
 
-    return viewType === 'grid' ? renderGridView() : renderListView();
+    return renderGridView();
   };
 
   // Filtros para o mobile layout
