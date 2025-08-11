@@ -215,7 +215,7 @@ export default function MarketplaceCardMobile({
                 listingId={listingId}
                 price={price}
                 className="w-full"
-                size="sm"
+
               />
             ) : (
               <Button
@@ -233,7 +233,7 @@ export default function MarketplaceCardMobile({
                 tokenId={tokenId}
                 nftName={name}
                 className="w-full"
-                size="sm"
+
               />
             )}
           </div>
@@ -253,7 +253,7 @@ export default function MarketplaceCardMobile({
                 nftName={name}
                 className="w-full"
                 variant="outline"
-                size="sm"
+
               />
             ) : (
               <div className="space-y-2">
@@ -262,7 +262,7 @@ export default function MarketplaceCardMobile({
                   nftName={name}
                   className="w-full"
                   variant="default"
-                  size="sm"
+  
                 />
               </div>
             )}
@@ -280,7 +280,7 @@ export default function MarketplaceCardMobile({
                 endTime={endTime || new Date()}
                 currency="MATIC"
                 className="w-full"
-                size="sm"
+
                 onBidSuccess={() => {
                   console.log('🎯 Bid successful! Refreshing auction data...');
                   auctionData.refetch();
@@ -293,7 +293,7 @@ export default function MarketplaceCardMobile({
                     nftName={name}
                     className="w-full"
                     variant="default"
-                    size="sm"
+    
                   />
                 </div>
               )}
@@ -303,7 +303,7 @@ export default function MarketplaceCardMobile({
                 tokenId={tokenId}
                 nftName={name}
                 className="w-full"
-                size="sm"
+
               />
             )}
           </div>
@@ -336,7 +336,6 @@ export default function MarketplaceCardMobile({
               tokenId={tokenId}
               nftName={name}
               className="w-full"
-              size="sm"
             />
           )}
         </div>

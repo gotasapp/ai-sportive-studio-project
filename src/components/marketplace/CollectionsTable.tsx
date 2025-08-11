@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { getCollectionImage } from './FixedCollectionImages'
+import { normalizeIpfsUri } from '@/lib/utils'
 import { 
   Star, 
   TrendingUp, 
