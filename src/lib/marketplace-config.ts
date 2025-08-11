@@ -323,7 +323,27 @@ export function validateAndFixPrice(priceWei: bigint | string, fallbackPrice: st
   correctedEther: number;
 } {
   try {
-    const wei = typeof priceWei === 'string' ? BigInt(priceWei) : priceWei;
+    // Se for string, limpar e validar antes de converter
+    let wei: bigint;
+    if (typeof priceWei === 'string') {
+      // Remover texto como "MATIC", "ETH", etc. e espaços
+      const cleanPrice = priceWei.replace(/[^0-9.]/g, '');
+      
+      // Se ficar vazio ou só zeros, usar fallback
+      if (!cleanPrice || cleanPrice === '0' || cleanPrice === '0.' || cleanPrice === '.') {
+        throw new Error(`Invalid price string: "${priceWei}" cleaned to "${cleanPrice}"`);
+      }
+      
+      // Se parece ser em ether (tem ponto decimal), converter para wei
+      if (cleanPrice.includes('.')) {
+        wei = priceToWei(cleanPrice);
+      } else {
+        // Assumir que já está em wei
+        wei = BigInt(cleanPrice);
+      }
+    } else {
+      wei = priceWei;
+    }
     const ether = Number(wei) / 1e18;
     
     const isValid = isValidPrice(wei);
@@ -369,15 +389,56 @@ export function validateAndFixPrice(priceWei: bigint | string, fallbackPrice: st
 }
 
 /**
+ * Pre-validate price input before processing
+ */
+function preValidatePrice(input: bigint | string): { isValid: boolean; cleanValue: bigint | string } {
+  if (typeof input === 'bigint') {
+    return { isValid: true, cleanValue: input };
+  }
+  
+  if (typeof input === 'string') {
+    // Check for common invalid patterns
+    if (input.includes('undefined') || input.includes('null') || input.includes('NaN')) {
+      return { isValid: false, cleanValue: '1000000000000000' }; // 0.001 MATIC in wei
+    }
+    
+    // Check for currency suffixes that would break BigInt conversion
+    if (/\s*(MATIC|ETH|POL|CHZ)\s*$/i.test(input) && !/^\d+(\.\d+)?\s*(MATIC|ETH|POL|CHZ)\s*$/i.test(input)) {
+      return { isValid: false, cleanValue: '1000000000000000' }; // fallback
+    }
+    
+    // Check for "0 MATIC" specifically
+    if (/^0+\s*(MATIC|ETH|POL|CHZ)\s*$/i.test(input)) {
+      return { isValid: false, cleanValue: '1000000000000000' }; // fallback
+    }
+  }
+  
+  return { isValid: true, cleanValue: input };
+}
+
+/**
  * Format price for safe display
  */
 export function formatPriceSafe(priceWei: bigint | string, currency: string = 'MATIC'): string {
-  const validation = validateAndFixPrice(priceWei);
-  
-  if (validation.isValid) {
-    return `${validation.originalEther.toFixed(6)} ${currency}`;
-  } else {
-    return `${validation.correctedEther.toFixed(6)} ${currency} (fixed)`;
+  try {
+    // Pre-validate input
+    const preCheck = preValidatePrice(priceWei);
+    
+    if (!preCheck.isValid) {
+      console.warn('⚠️ Invalid price input detected, using fallback:', priceWei);
+      return `0.001 ${currency} (fallback)`;
+    }
+    
+    const validation = validateAndFixPrice(preCheck.cleanValue);
+    
+    if (validation.isValid) {
+      return `${validation.originalEther.toFixed(6)} ${currency}`;
+    } else {
+      return `${validation.correctedEther.toFixed(6)} ${currency} (fixed)`;
+    }
+  } catch (error) {
+    console.error('❌ Error in formatPriceSafe, using emergency fallback:', error);
+    return `0.001 ${currency} (emergency fallback)`;
   }
 }
 

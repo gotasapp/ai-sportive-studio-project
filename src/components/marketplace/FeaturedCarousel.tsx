@@ -40,36 +40,68 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
 
   useEffect(() => {
-    const processFeaturedData = () => {
+    const processFeaturedData = async () => {
       setLoading(true);
       setError(null);
       
       try {
         console.log('🎠 Processing featured carousel data:', marketplaceData.length, 'items');
         
-        if (marketplaceData.length === 0) {
-          setFeaturedNFTs([]);
-          setLoading(false);
-          return;
+        // Sempre tentar buscar o NFT mais votado primeiro
+        let mostVotedNFT = null;
+        try {
+          const mostVotedResponse = await fetch('/api/nft/most-voted');
+          if (mostVotedResponse.ok) {
+            const mostVotedData = await mostVotedResponse.json();
+            if (mostVotedData.success && mostVotedData.nft) {
+              mostVotedNFT = mostVotedData.nft;
+              console.log('🏆 Most voted NFT found:', mostVotedNFT.name, 'with', mostVotedNFT.votes, 'votes');
+            }
+          }
+        } catch (error) {
+          console.log('⚠️ Could not fetch most voted NFT, continuing with regular carousel');
         }
 
-        // Pegar uma seleção de NFTs para o carousel (priorizando variedade)
-        const featuredCount = Math.min(marketplaceData.length, 5);
-        
-        // Misturar um pouco os NFTs para variedade e pegar os primeiros
-        const shuffledNFTs = [...marketplaceData].sort(() => Math.random() - 0.5);
-        const selectedNFTs = shuffledNFTs.slice(0, featuredCount);
+        // Array final que será usado no carrossel
+        const featured: FeaturedNFT[] = [];
 
-        // Mapear para o formato do carousel
-        const featured: FeaturedNFT[] = selectedNFTs.map(nft => ({
-          name: nft.name,
-          collection: nft.collection || `${(nft.category || 'NFT').charAt(0).toUpperCase() + (nft.category || 'NFT').slice(1)} Collection`,
-          imageUrl: nft.imageUrl || nft.image, // Fallback para 'image' se 'imageUrl' não existir
-          category: nft.category || 'nft',
-          createdAt: nft.createdAt || new Date().toISOString()
-        }));
+        // Se encontramos um NFT mais votado, adicionar no início
+        if (mostVotedNFT) {
+          featured.push({
+            name: `🏆 ${mostVotedNFT.name}`, // Adicionar emoji de troféu
+            collection: `Most Voted • ${mostVotedNFT.votes} votes`,
+            imageUrl: mostVotedNFT.imageUrl,
+            category: mostVotedNFT.category || 'featured',
+            createdAt: mostVotedNFT.createdAt || new Date().toISOString()
+          });
+        }
 
-        console.log('🎠 Featured NFTs selected:', featured.length);
+        // Agora adicionar outros NFTs do marketplace (excluindo o mais votado se já foi incluído)
+        if (marketplaceData.length > 0) {
+          const featuredCount = Math.min(marketplaceData.length, mostVotedNFT ? 4 : 5); // 4 se já temos o mais votado, senão 5
+          
+          // Filtrar o NFT mais votado para não duplicar
+          const otherNFTs = mostVotedNFT 
+            ? marketplaceData.filter(nft => nft._id !== mostVotedNFT._id)
+            : marketplaceData;
+
+          // Misturar e selecionar
+          const shuffledNFTs = [...otherNFTs].sort(() => Math.random() - 0.5);
+          const selectedNFTs = shuffledNFTs.slice(0, featuredCount);
+
+          // Adicionar aos featured
+          const otherFeatured = selectedNFTs.map(nft => ({
+            name: nft.name,
+            collection: nft.collection || `${(nft.category || 'NFT').charAt(0).toUpperCase() + (nft.category || 'NFT').slice(1)} Collection`,
+            imageUrl: nft.imageUrl || nft.image,
+            category: nft.category || 'nft',
+            createdAt: nft.createdAt || new Date().toISOString()
+          }));
+
+          featured.push(...otherFeatured);
+        }
+
+        console.log('🎠 Featured NFTs selected:', featured.length, mostVotedNFT ? '(including most voted)' : '');
         setFeaturedNFTs(featured);
 
       } catch (error: any) {
@@ -181,9 +213,19 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
             
             {/* Featured Badge */}
             <div className="absolute top-6 left-8 md:left-16 lg:left-24 z-10">
-              <div className="bg-accent/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
-                <Star className="w-4 h-4 text-white" />
-                <span className="text-white text-sm font-medium">Featured</span>
+              <div className={`backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2 ${
+                nft.collection.includes('Most Voted') 
+                  ? 'bg-gradient-to-r from-yellow-500/90 to-orange-500/90 border border-yellow-400/50' 
+                  : 'bg-accent/90'
+              }`}>
+                {nft.collection.includes('Most Voted') ? (
+                  <span className="text-white text-lg">🏆</span>
+                ) : (
+                  <Star className="w-4 h-4 text-white" />
+                )}
+                <span className="text-white text-sm font-medium">
+                  {nft.collection.includes('Most Voted') ? 'Most Voted' : 'Featured'}
+                </span>
               </div>
             </div>
 

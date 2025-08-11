@@ -18,6 +18,7 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
+import HeartButton from './HeartButton';
 import Link from 'next/link';
 
 interface MarketplaceCardMobileProps {
@@ -45,6 +46,10 @@ interface MarketplaceCardMobileProps {
   // Props específicas para mobile
   viewType?: 'large' | 'medium' | 'compact';
   onBuy?: (nft: any) => void;
+  // Sistema de voting
+  nftId?: string;
+  votes?: number;
+  userVoted?: boolean;
 }
 
 const categoryColors = {
@@ -73,7 +78,10 @@ export default function MarketplaceCardMobile({
   endTime,
   activeOffers = 0,
   viewType = 'large',
-  onBuy
+  onBuy,
+  nftId,
+  votes = 0,
+  userVoted = false
 }: MarketplaceCardMobileProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [showCreateListing, setShowCreateListing] = useState(false);
@@ -502,6 +510,17 @@ export default function MarketplaceCardMobile({
                 {category?.toUpperCase()}
               </div>
             </div>
+
+            {/* Heart button for voting */}
+            {nftId && (
+              <div className="absolute top-1 right-1">
+                <HeartButton 
+                  nftId={nftId}
+                  initialVotes={votes || 0}
+                  className=""
+                />
+              </div>
+            )}
           </div>
         </Link>
         

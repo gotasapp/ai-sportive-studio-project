@@ -56,6 +56,19 @@ export default function MarketplaceMobileLayout({
 
   // Renderização dos cards conforme o tipo de grid
   const renderNFTGrid = () => {
+    // Debug: log dos dados dos NFTs
+    console.log('🔧 MarketplaceMobileLayout - NFTs data:', {
+      totalNFTs: nfts.length,
+      firstNFT: nfts[0],
+      firstNFTKeys: nfts[0] ? Object.keys(nfts[0]) : [],
+      hasVotingData: nfts[0] ? {
+        hasId: !!(nfts[0]._id || nfts[0].id),
+        hasVotes: typeof nfts[0].votes !== 'undefined',
+        id: nfts[0]._id || nfts[0].id,
+        votes: nfts[0].votes
+      } : null
+    });
+
     if (nfts.length === 0) {
       return <div className="text-center text-white/60 py-12">No NFTs found.</div>;
     }
@@ -64,7 +77,18 @@ export default function MarketplaceMobileLayout({
       // Grid 2 colunas, cards grandes
       return (
         <div className="grid grid-cols-2 gap-3">
-          {paginatedNFTs.map(nft => (
+          {paginatedNFTs.map(nft => {
+            // Debug específico para cada NFT
+            const nftId = nft._id || nft.id;
+            console.log('🔧 Rendering NFT:', {
+              name: nft.name,
+              nftId,
+              votes: nft.votes,
+              hasNftId: !!nftId,
+              nftKeys: Object.keys(nft)
+            });
+            
+            return (
             <MarketplaceCardMobile
               key={nft.id}
               name={nft.name}
@@ -86,8 +110,13 @@ export default function MarketplaceMobileLayout({
               activeOffers={nft.activeOffers || 0}
               viewType="large"
               onBuy={onBuy}
+              // Sistema de voting
+              nftId={nft._id || nft.id}
+              votes={nft.votes || 0}
+              userVoted={false} // TODO: implementar verificação de usuário
             />
-          ))}
+            );
+          })}
         </div>
       );
     }
@@ -118,6 +147,10 @@ export default function MarketplaceMobileLayout({
               activeOffers={nft.activeOffers || 0}
               viewType="medium"
               onBuy={onBuy}
+              // Sistema de voting
+              nftId={nft._id || nft.id}
+              votes={nft.votes || 0}
+              userVoted={false} // TODO: implementar verificação de usuário
             />
           ))}
         </div>
@@ -149,6 +182,10 @@ export default function MarketplaceMobileLayout({
             activeOffers={nft.activeOffers || 0}
             viewType="compact"
             onBuy={onBuy}
+            // Sistema de voting
+            nftId={nft._id || nft.id}
+            votes={nft.votes || 0}
+            userVoted={false} // TODO: implementar verificação de usuário
           />
         ))}
       </div>

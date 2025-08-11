@@ -18,6 +18,7 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
+import HeartButton from './HeartButton';
 import Link from 'next/link';
 
 interface MarketplaceCardProps {
@@ -42,6 +43,10 @@ interface MarketplaceCardProps {
   endTime?: Date;
   // Informações de ofertas
   activeOffers?: number;
+  // Sistema de voting
+  nftId?: string;
+  votes?: number;
+  userVoted?: boolean;
 }
 
 const categoryColors = {
@@ -68,7 +73,10 @@ export default function MarketplaceCard({
   auctionId,
   currentBid,
   endTime,
-  activeOffers = 0
+  activeOffers = 0,
+  nftId,
+  votes = 0,
+  userVoted = false
 }: MarketplaceCardProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [showCreateListing, setShowCreateListing] = useState(false);
@@ -341,8 +349,17 @@ export default function MarketplaceCard({
               alt={name}
             />
             {/* Header com categoria e ações */}
-            <div className="absolute top-3 left-3 right-3 flex justify-between items-start pointer-events-none">
-              <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color}`}>{category?.toUpperCase()}</div>
+            <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+              <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color} pointer-events-none`}>{category?.toUpperCase()}</div>
+              {nftId && (
+                <div className="pointer-events-auto">
+                  <HeartButton 
+                    nftId={nftId}
+                    initialVotes={votes || 0}
+                    className="bg-black/50 backdrop-blur-sm hover:bg-black/70 border-0"
+                  />
+                </div>
+              )}
             </div>
             {/* Status badges */}
             <div className="absolute bottom-3 left-3 pointer-events-none">
