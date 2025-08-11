@@ -26,6 +26,18 @@ export function getAddressUrl(address: string): string {
  * @param src - The IPFS URL or hash
  * @returns HTTP gateway URL
  */
+export const IPFS_GATEWAYS = [
+  'https://ipfs.io/ipfs',
+  'https://cloudflare-ipfs.com/ipfs',
+  'https://gateway.ipfs.io/ipfs',
+  'https://dweb.link/ipfs',
+  'https://nftstorage.link/ipfs'
+] as const;
+
+export function buildIpfsGatewayUrl(hash: string, gatewayBase: string): string {
+  return `${gatewayBase}/${hash}`;
+}
+
 export function convertIpfsToHttp(src: string): string {
   // Verificar se src é válido
   if (!src || typeof src !== 'string') {
@@ -37,13 +49,8 @@ export function convertIpfsToHttp(src: string): string {
     return src;
   }
   
-  // Lista de gateways IPFS (ordenados por confiabilidade)
-  const gateways = [
-    'https://ipfs.io/ipfs',
-    'https://gateway.ipfs.io/ipfs',
-    'https://cloudflare-ipfs.com/ipfs',
-    'https://dweb.link/ipfs'
-  ];
+  // Lista de gateways IPFS
+  const gateways = IPFS_GATEWAYS as unknown as string[];
   
   // Usar gateway rotativo baseado em hash para distribuir carga
   const getRandomGateway = (hash: string) => {
@@ -68,7 +75,7 @@ export function convertIpfsToHttp(src: string): string {
   
   // Retornar URL com gateway selecionado
   const selectedGateway = getRandomGateway(ipfsHash);
-  return `${selectedGateway}/${ipfsHash}`;
+  return buildIpfsGatewayUrl(ipfsHash, selectedGateway);
 }
 
 /**
@@ -81,6 +88,6 @@ export function normalizeIpfsUri(uri: string, fallback = false): string {
   if (!uri) return '';
   const hash = uri.replace('ipfs://', '').replace(/^https?:\/\/[^/]+\/ipfs\//, '');
   return fallback
-    ? `https://cloudflare-ipfs.com/ipfs/${hash}`
-    : `https://gateway.pinata.cloud/ipfs/${hash}`;
+    ? `https://dweb.link/ipfs/${hash}`
+    : `https://ipfs.io/ipfs/${hash}`;
 }

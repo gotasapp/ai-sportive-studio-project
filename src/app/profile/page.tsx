@@ -3,6 +3,7 @@
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import { CardImage } from '@/components/marketplace/OptimizedImage'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
@@ -961,34 +962,10 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
         >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
             {nft.metadata?.image || nft.imageUrl ? (
-              <img
+              <CardImage
                 key={nft.id}
-                src={(() => {
-                  const imageUrl = nft.metadata?.image ?? nft.imageUrl;
-                  // Se já é URL do Cloudinary, usar diretamente
-                  if (imageUrl.includes('cloudinary.com')) {
-                    return imageUrl;
-                  }
-                  // Caso contrário, normalizar IPFS
-                  return normalizeIpfsUri(imageUrl);
-                })()}
+                src={(nft.metadata?.image ?? nft.imageUrl) || ''}
                 alt={nft.metadata?.name ?? nft.name}
-                width={300}
-                height={300}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                onError={e => {
-                  const originalUrl = nft.metadata?.image ?? nft.imageUrl;
-                  const currentSrc = e.currentTarget.src;
-                  
-                  // Se falhou a primeira vez, tentar a URL original diretamente
-                  if (!currentSrc.includes('placeholder') && originalUrl && originalUrl !== currentSrc) {
-                    e.currentTarget.src = originalUrl;
-                  } else {
-                    // Fallback para placeholder inline SVG
-                    e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTQxMDFlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5GVCBJbWFnZTwvdGV4dD48L3N2Zz4=';
-                  }
-                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">Loading NFT...</div>

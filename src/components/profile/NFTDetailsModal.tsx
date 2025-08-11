@@ -27,7 +27,7 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { useActiveWalletChain } from 'thirdweb/react'
-import { normalizeIpfsUri } from '@/lib/utils';
+import { normalizeIpfsUri, convertIpfsToHttp } from '@/lib/utils';
 
 interface NFTDetailsModalProps {
   isOpen: boolean
@@ -61,13 +61,7 @@ interface NFTData {
   source: 'cache' | 'thirdweb' | 'fallback'
 }
 
-function convertIpfsToHttp(ipfsUrl: string): string {
-  if (!ipfsUrl) return ''
-  if (ipfsUrl.startsWith('ipfs://')) {
-    return ipfsUrl.replace('ipfs://', 'https://ipfs.io/ipfs/')
-  }
-  return ipfsUrl
-}
+// Use global convertIpfsToHttp from utils
 
 export function NFTDetailsModal({ 
   isOpen, 
@@ -295,8 +289,8 @@ export function NFTDetailsModal({
                       if (imageUrl.includes('cloudinary.com')) {
                         return imageUrl;
                       }
-                      // Caso contrário, normalizar IPFS
-                      return normalizeIpfsUri(imageUrl);
+                      // Caso contrário, normalizar IPFS com gateways múltiplos
+                      return convertIpfsToHttp(imageUrl);
                     })()}
                     alt={displayData?.name || `NFT #${tokenId}`}
                     width={400}
