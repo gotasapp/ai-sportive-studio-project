@@ -115,31 +115,40 @@ export function useMarketplaceData() {
       // 3. Processar dados do Thirdweb (NFTs normais)
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
       
+      // Toggle global para desabilitar blacklist
+      const DISABLE_HIDDEN = process.env.NEXT_PUBLIC_DISABLE_HIDDEN_NFTS === 'true';
       // === BUSCAR BLACKLIST DO BACKEND + APLICAR BLACKLIST LOCAL ===
       let hiddenIds: string[] = [];
-      const HARDCODED_BLACKLIST = new Set([
-        '6870f6b15bdc094f3de4c18b',
-        'Vasco DINAMITE #24',
-        'Vasco DINAMITE #23',
-        'Vasco DINAMITE #29',
-        'Vasco DINAMITE #36',
-        'Vasco DINAMITE #35',
-        'Vasco DINAMITE #33',
-      ]);
-      try {
-        const res = await fetch('/api/marketplace/hidden-nfts');
-        if (res.ok) {
-          const data = await res.json();
-          hiddenIds = data.hiddenIds || [];
+      const HARDCODED_BLACKLIST = new Set(
+        DISABLE_HIDDEN
+          ? []
+          : [
+              '6870f6b15bdc094f3de4c18b',
+              'Vasco DINAMITE #24',
+              'Vasco DINAMITE #23',
+              'Vasco DINAMITE #29',
+              'Vasco DINAMITE #36',
+              'Vasco DINAMITE #35',
+              'Vasco DINAMITE #33',
+            ]
+      );
+      if (!DISABLE_HIDDEN) {
+        try {
+          const res = await fetch('/api/marketplace/hidden-nfts');
+          if (res.ok) {
+            const data = await res.json();
+            hiddenIds = data.hiddenIds || [];
+          }
+        } catch (err) {
+          console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
         }
-      } catch (err) {
-        console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
       }
       
       const filteredThirdwebNFTs = thirdwebNFTs.filter((nft: any) => {
+        if (DISABLE_HIDDEN) return true;
         const idStr = nft.id?.toString?.() || '';
         const tokenStr = nft.tokenId?.toString?.() || '';
-        const nameStr = nft.name || nft.metadata?.name || '';
+        const nameStr = (nft.name || nft.metadata?.name || '').trim();
         if (hiddenIds.includes(idStr) || (tokenStr && hiddenIds.includes(tokenStr))) return false;
         if (HARDCODED_BLACKLIST.has(idStr) || HARDCODED_BLACKLIST.has(tokenStr) || HARDCODED_BLACKLIST.has(nameStr)) return false;
         return true;

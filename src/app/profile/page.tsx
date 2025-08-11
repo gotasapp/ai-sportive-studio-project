@@ -231,37 +231,42 @@ export default function ProfilePage() {
         setDataSource(source || 'api')
         console.log(`✅ NFTs loaded: ${data.totalNFTs} total (Source: ${source})`)
         console.log(`📊 Breakdown: ${data.owned} owned, ${data.listed} listed, ${data.created} created`)
-        // === BUSCAR BLACKLIST DO BACKEND ===
+        const DISABLE_HIDDEN = process.env.NEXT_PUBLIC_DISABLE_HIDDEN_NFTS === 'true';
+        // === BUSCAR BLACKLIST DO BACKEND (somente se habilitado) ===
         let hiddenIds: string[] = [];
-        // Blacklist local de segurança (assegura remoção mesmo se backend falhar)
-        const HARDCODED_BLACKLIST = new Set([
-          // IDs/nomes informados
-          '6870f6b15bdc094f3de4c18b',
-          'Vasco DINAMITE #24',
-          'Vasco DINAMITE #23',
-          'Vasco DINAMITE #29',
-          'Vasco DINAMITE #36',
-          'Vasco DINAMITE #35',
-          'Vasco DINAMITE #33',
-        ]);
-        try {
-          const res = await fetch('/api/marketplace/hidden-nfts');
-          if (res.ok) {
-            const data = await res.json();
-            hiddenIds = data.hiddenIds || [];
+        // Blacklist local de segurança (aplicada somente se habilitado)
+        const HARDCODED_BLACKLIST = new Set(
+          DISABLE_HIDDEN
+            ? []
+            : [
+                '6870f6b15bdc094f3de4c18b',
+                'Vasco DINAMITE #24',
+                'Vasco DINAMITE #23',
+                'Vasco DINAMITE #29',
+                'Vasco DINAMITE #36',
+                'Vasco DINAMITE #35',
+                'Vasco DINAMITE #33',
+              ]
+        );
+        if (!DISABLE_HIDDEN) {
+          try {
+            const res = await fetch('/api/marketplace/hidden-nfts');
+            if (res.ok) {
+              const data = await res.json();
+              hiddenIds = data.hiddenIds || [];
+            }
+          } catch (err) {
+            console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
           }
-        } catch (err) {
-          console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
         }
         // Converter API response para NFTItem format
         const userNFTs: NFTItem[] = data.nfts
           .filter((nft: any) => {
+            if (DISABLE_HIDDEN) return true;
             const idStr = nft.id?.toString?.() || '';
             const tokenStr = nft.tokenId?.toString?.() || '';
-            const nameStr = nft.name || nft.metadata?.name || '';
-            // Remover se estiver no backend (hiddenIds) por id OU tokenId
+            const nameStr = (nft.name || nft.metadata?.name || '').trim();
             if (hiddenIds.includes(idStr) || (tokenStr && hiddenIds.includes(tokenStr))) return false;
-            // Remover se estiver na blacklist local por id, tokenId ou nome exato
             if (HARDCODED_BLACKLIST.has(idStr) || HARDCODED_BLACKLIST.has(tokenStr) || HARDCODED_BLACKLIST.has(nameStr)) return false;
             return true;
           })
