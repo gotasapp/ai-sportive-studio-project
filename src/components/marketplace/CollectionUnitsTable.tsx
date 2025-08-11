@@ -237,7 +237,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               price={unit.marketplace.price}
               nftName={unit.name}
               tokenId={unit.tokenId}
-              variant="ghost"
+              variant="outline"
               className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
             />
           </div>
@@ -279,12 +279,12 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               <CancelAuctionButton
                 auctionId={auctionId}
                 nftName={unit.name}
-                variant="ghost"
+                variant="outline"
                 className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
                 onSuccess={refreshUnits}
               />
             ) : (
-              <Button disabled variant="ghost" className="rounded-full px-4 py-1.5 text-gray-400 text-xs font-medium">
+              <Button disabled variant="outline" className="rounded-full px-4 py-1.5 text-gray-400 text-xs font-medium">
                 Ended
               </Button>
             )}
@@ -336,7 +336,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               List for Sale
             </Button>
             <Button
-              variant="ghost"
+              variant="outline"
               onClick={() => setShowCreateAuction(unit.id)}
               className="rounded-full px-4 py-1.5 text-[#A20131] hover:bg-[#A20131]/10 text-xs font-medium"
             >
