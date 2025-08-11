@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import clientPromise from '@/lib/mongodb';
 
 export async function GET(request: NextRequest) {
   try {
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('chz-app-db');
     const collection = db.collection('jerseys');
 
     // Buscar o NFT mais votado (que tenha pelo menos 1 voto)
