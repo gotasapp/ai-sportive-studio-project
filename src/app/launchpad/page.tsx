@@ -1308,8 +1308,8 @@ export default function LaunchpadPage() {
             totalSupply: c.totalSupply || 0,
             minted: c.minted || 0,
             status: (['upcoming', 'active', 'hidden'].includes(c.status) ? c.status : 'upcoming') as 'upcoming' | 'active' | 'hidden',
-            launchDate: c.launchDate ? c.launchDate.toISOString() : undefined,
-            endDate: c.endDate ? c.endDate.toISOString() : undefined,
+            launchDate: c.launchDate ? (typeof c.launchDate === 'string' ? c.launchDate : c.launchDate.toISOString()) : undefined,
+            endDate: c.endDate ? (typeof c.endDate === 'string' ? c.endDate : c.endDate.toISOString()) : undefined,
             creator: {
               name: c.creator?.name || 'Unknown',
               wallet: c.creator?.wallet || ''

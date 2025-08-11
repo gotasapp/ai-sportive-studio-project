@@ -93,7 +93,17 @@ export default function MarketplacePage() {
       }
 
       filtered = filtered.filter(item => {
-        const itemDate = new Date(item.createdAt || item.updatedAt || Date.now());
+        // Tentar múltiplas fontes de data
+        const dateString = item.createdAt || item.updatedAt;
+        
+        // Se não tem data, INCLUIR no resultado (assumir que é recente)
+        if (!dateString) return true;
+        
+        const itemDate = new Date(dateString);
+        // Se data inválida, INCLUIR no resultado (assumir que é recente)
+        if (isNaN(itemDate.getTime())) return true;
+        
+        // Só filtrar se temos uma data válida
         return itemDate >= cutoffDate;
       });
     }

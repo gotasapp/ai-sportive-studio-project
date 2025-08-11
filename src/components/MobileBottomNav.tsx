@@ -65,10 +65,10 @@ export default function MobileBottomNav() {
       isActive: pathname === '/stadiums'
     },
     {
-      href: '#',
+      href: '/badges',
       icon: Trophy,
       label: 'Badge',
-      isActive: false
+      isActive: pathname === '/badges'
     },
     {
       href: '/marketplace',
