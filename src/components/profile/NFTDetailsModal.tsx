@@ -424,25 +424,45 @@ export function NFTDetailsModal({
                   </Card>
                 )}
 
-                {/* Attributes */}
+                {/* Traits - Estilo similar ao CollectionTraits */}
                 {nftData?.attributes && nftData.attributes.length > 0 && (
                   <Card className="bg-transparent border-[#FDFDFD]/10">
                     <CardHeader className="pb-3">
-                      <CardTitle className="text-[#FDFDFD] text-lg">Attributes</CardTitle>
+                      <CardTitle className="text-[#FDFDFD] text-lg flex items-center gap-2">
+                        <span>Traits</span>
+                        <Badge variant="outline" className="rounded-full px-2 py-0.5 text-xs bg-[#FDFDFD]/5 border-[#FDFDFD]/20 text-[#FDFDFD]/70">
+                          {nftData.attributes.length}
+                        </Badge>
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-3">
-                        {nftData.attributes.map((attr, index) => (
-                          <div key={index} className="bg-[#FDFDFD]/5 rounded-lg p-3">
-                            <div className="text-[#FDFDFD]/60 text-xs uppercase tracking-wide">
-                              {attr.trait_type}
+                    <CardContent className="space-y-2">
+                      {nftData.attributes.map((attr, index) => (
+                        <div key={index} className="bg-[#14101e] rounded-lg p-3 border border-[#FDFDFD]/10">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <div className="text-xs text-[#FDFDFD]/70 mb-1">
+                                {attr.trait_type}
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-[#FDFDFD]">
+                                  {attr.value}
+                                </span>
+                                {/* Adicionar porcentagem se disponível */}
+                                <Badge 
+                                  variant="outline" 
+                                  className="rounded-full px-2 py-0.5 text-xs bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131]"
+                                >
+                                  100%
+                                </Badge>
+                              </div>
                             </div>
-                            <div className="text-[#FDFDFD] font-medium mt-1">
-                              {attr.value}
+                            <div className="text-right">
+                              <span className="text-xs text-[#FDFDFD]/50">1</span>
+                              <span className="text-xs text-[#FDFDFD]/30 ml-1">of 1</span>
                             </div>
                           </div>
-                        ))}
-                      </div>
+                        </div>
+                      ))}
                     </CardContent>
                   </Card>
                 )}
