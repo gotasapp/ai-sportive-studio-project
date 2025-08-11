@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ViewType, TimeFilter, PriceSort, TokenType, CollectionTab } from './MarketplaceFilters'
-import { NFTThumbnail } from '@/components/utils/ImageWithFallback';
+
 
 interface NFTData {
   _id: string
@@ -248,12 +248,12 @@ export default function CollectionsTable({
             isOwned: true
           });
 
-        // Launchpad Collections - MANTER IMAGENS ORIGINAIS
+        // Launchpad Collections - USAR IMAGEM DIRETA DO BANCO
         console.log('🚀 Checking launchpad collections, count:', launchpadCollections.length);
         launchpadCollections.forEach((collection, index) => {
-          // Para Launchpad collections, usar a imagem original da collection
-          const originalImage = collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
-          console.log('🚀 Processing launchpad collection:', collection.name, 'with ORIGINAL image:', originalImage);
+          // SOLUÇÃO DIRETA: usar imageUrl diretamente do banco, sem getCollectionImage
+          const dbImageUrl = collection.metadata?.image || collection.imageUrl || collection.collectionData?.image || collection.collectionData?.imageUrl;
+          console.log('🚀 Processing launchpad collection:', collection.name, 'DB imageUrl:', dbImageUrl);
           
           // Calcular estatísticas específicas para launchpad
           const calculateLaunchpadStats = (collection: any) => {
@@ -275,7 +275,7 @@ export default function CollectionsTable({
           collectionsData.push({
             rank: collectionsData.length + 1,
             name: collection.metadata?.name || collection.name || 'Launchpad Collection',
-            imageUrl: getCollectionImage(collection.name, originalImage),
+            imageUrl: dbImageUrl, // USAR DIRETAMENTE DO BANCO SEM FILTROS
             floorPrice: stats.floorPrice,
             floorPriceChange: 0,
             volume24h: stats.volume24h,
@@ -516,12 +516,17 @@ export default function CollectionsTable({
                   <div className="flex items-center gap-3">
                     <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10">
                       {collection.imageUrl ? (
-                        <NFTThumbnail
+                        <img
                           src={collection.imageUrl}
                           alt={collection.name}
-                          size={48}
+                          width={48}
+                          height={48}
                           className="w-12 h-12 object-cover rounded"
-                          onError={() => console.warn(`Failed to load collection image: ${collection.name}`)}
+                          onError={(e) => {
+                            console.warn(`Failed to load collection image: ${collection.name}`, collection.imageUrl);
+                            const target = e.target as HTMLImageElement;
+                            target.src = '/api/placeholder/400/400';
+                          }}
                         />
                       ) : (
                         <div className="w-12 h-12 flex items-center justify-center text-gray-400 text-xs bg-gray-900 rounded">
