@@ -634,7 +634,12 @@ export default function CollectionsTable({
                   <div className="flex items-center gap-3">
                     {/* Collection Image with Navigation */}
                     <Link 
-                      href={`/marketplace/collection/${collection.category}/${collection.name.replace(/\s+/g, '-').toLowerCase()}`}
+                      href={
+                        // Replicar a lógica do grid: se for custom collection, usar collectionId; senão usar category/name
+                        collection.category === 'custom' && (collection as any).collectionId
+                          ? `/marketplace/collection/jersey/${(collection as any).collectionId}`
+                          : `/marketplace/collection/${collection.category}/${collection.name.replace(/\s+/g, '-').toLowerCase()}`
+                      }
                       className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#A20131]/50 transition-all cursor-pointer"
                     >
                       {collection.imageUrl && 
