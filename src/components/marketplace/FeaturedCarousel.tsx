@@ -48,7 +48,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
         console.log('🎠 Processing featured carousel data:', marketplaceData.length, 'items');
         
         // Sempre tentar buscar o NFT mais votado primeiro
-        let mostVotedNFT = null;
+        let mostVotedNFT: any = null;
         try {
           const mostVotedResponse = await fetch('/api/nft/most-voted');
           if (mostVotedResponse.ok) {
