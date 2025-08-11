@@ -337,7 +337,7 @@ export default function MarketplaceCard({
 
   return (
     <>
-      <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
+      <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10 relative">
         <Link href={
           isCustomCollection && collectionId 
             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
