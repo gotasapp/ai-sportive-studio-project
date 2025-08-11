@@ -482,16 +482,30 @@ export default function CollectionsTable({
     )
   }
 
-  const handleWatchlistToggle = (collectionName: string) => {
-    if (onToggleWatchlist) {
-      onToggleWatchlist(collectionName)
+  const handleWatchlistToggle = async (collectionName: string) => {
+    try {
+      const target = collections.find(c => c.name === collectionName);
+      const nextFeatured = !target?.isWatchlisted;
+
+      // Persistir "featured" no backend
+      await fetch('/api/collections/feature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ collectionName, featured: nextFeatured })
+      });
+
+      if (onToggleWatchlist) {
+        onToggleWatchlist(collectionName)
+      }
+      // Update local state
+      setCollections(prev => prev.map(c => 
+        c.name === collectionName 
+          ? { ...c, isWatchlisted: nextFeatured }
+          : c
+      ))
+    } catch (e) {
+      console.error('Failed to feature collection:', e);
     }
-    // Update local state
-    setCollections(prev => prev.map(c => 
-      c.name === collectionName 
-        ? { ...c, isWatchlisted: !c.isWatchlisted }
-        : c
-    ))
   }
 
   if (loading) {

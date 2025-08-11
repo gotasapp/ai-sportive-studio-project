@@ -18,7 +18,6 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
-import SimpleLikeButton from './SimpleLikeButton';
 import Link from 'next/link';
 
 interface MarketplaceCardProps {
@@ -372,17 +371,7 @@ export default function MarketplaceCard({
             </div>
           </a>
         </Link>
-        {/* Botão fora do Link para isolar eventos */}
-        {nftId && (
-          <div
-            className="absolute top-3 right-3 z-50 pointer-events-auto"
-            onClickCapture={(e) => e.stopPropagation()}
-            onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          >
-            <SimpleLikeButton nftId={nftId} contractAddress={assetContract} tokenId={tokenId} />
-          </div>
-        )}
+        
         <div className="p-4">
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate my-1">{name}</h3>
           

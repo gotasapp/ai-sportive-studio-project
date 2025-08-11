@@ -18,7 +18,6 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
-import SimpleLikeButton from './SimpleLikeButton';
 import Link from 'next/link';
 
 interface MarketplaceCardMobileProps {
@@ -511,21 +510,11 @@ export default function MarketplaceCardMobile({
               </div>
             </div>
 
-            {/* espaço reservado; botão fora do Link abaixo */}
+            {/* botão de like removido */}
           </div>
         </Link>
         
-        {/* Botão fora do Link para isolar eventos */}
-        {nftId && (
-          <div
-            className="absolute top-1 right-1 z-40 pointer-events-auto"
-            onClickCapture={(e) => e.stopPropagation()}
-            onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
-            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
-          >
-            <SimpleLikeButton nftId={nftId} />
-          </div>
-        )}
+        {/* botão de like removido */}
 
         <Link href={
           isCustomCollection && collectionId 
