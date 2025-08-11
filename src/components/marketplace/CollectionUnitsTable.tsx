@@ -226,7 +226,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             <Button
-              size="sm"
+
               onClick={() => setShowUpdateListing(unit.id)}
               className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm text-xs"
             >
@@ -239,7 +239,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               nftName={unit.name}
               tokenId={unit.tokenId}
               variant="outline"
-              size="sm"
+
               className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
             />
           </div>
@@ -252,7 +252,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               <BuyNowButton
                 listingId={listingId}
                 price={unit.marketplace.price}
-                size="sm"
+  
                 className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
               />
             ) : (
@@ -265,7 +265,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              size="sm"
+
               className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
             />
           </div>
@@ -286,7 +286,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   auctionId={auctionId}
                   nftName={unit.name}
                   variant="outline"
-                  size="sm"
+    
                   className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
                   onSuccess={refreshUnits}
                 />
@@ -313,7 +313,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   minimumBid="0"
                   endTime={auctionEndTime || new Date()}
                   currency="MATIC"
-                  size="sm"
+    
                   className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-sm text-xs"
                   onBidSuccess={refreshUnits}
                 />
@@ -321,7 +321,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   assetContract={unit.contractAddress}
                   tokenId={unit.tokenId}
                   nftName={unit.name}
-                  size="sm"
+    
                   className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
                 />
               </>
@@ -332,7 +332,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   assetContract={unit.contractAddress}
                   tokenId={unit.tokenId}
                   nftName={unit.name}
-                  size="sm"
+    
                   className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
                 />
               </>
@@ -347,7 +347,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             <Button
-              size="sm"
+
               onClick={() => setShowCreateListing(unit.id)}
               className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
             >
@@ -355,7 +355,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               List
             </Button>
             <Button
-              size="sm"
+
               variant="outline"
               onClick={() => setShowCreateAuction(unit.id)}
               className="border-amber-300 text-amber-600 hover:bg-amber-50 text-xs"
@@ -374,7 +374,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              size="sm"
+
               className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
             />
           </div>
