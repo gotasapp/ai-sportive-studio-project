@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react'
+import { useActiveAccount } from 'thirdweb/react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -83,6 +84,7 @@ export default function CollectionsTable({
   const [collections, setCollections] = useState<CollectionStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const account = useActiveAccount()
 
   useEffect(() => {
     const processCollectionData = () => {
@@ -492,7 +494,7 @@ export default function CollectionsTable({
       const resp = await fetch('/api/collections/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ collectionName, action })
+        body: JSON.stringify({ collectionName, action, walletAddress: account?.address || 'guest' })
       });
       // Não bloqueia UI se API falhar, mas loga para debug
       if (!resp.ok) {
@@ -512,6 +514,25 @@ export default function CollectionsTable({
       console.error('Failed to toggle collection vote:', e);
     }
   }
+
+  // Sincroniza estado da estrela por usuário (wallet) ao carregar/alterar carteira
+  useEffect(() => {
+    const syncUserVotes = async () => {
+      if (!account?.address || collections.length === 0) return;
+      try {
+        const updated = await Promise.all(collections.map(async (c) => {
+          const res = await fetch(`/api/collections/vote/status?collectionName=${encodeURIComponent(c.name)}&walletAddress=${account.address}`);
+          if (!res.ok) return c;
+          const data = await res.json();
+          return { ...c, isWatchlisted: !!data.userVoted };
+        }));
+        setCollections(updated);
+      } catch (e) {
+        console.warn('Failed to sync user vote status', e);
+      }
+    };
+    syncUserVotes();
+  }, [account?.address]);
 
   if (loading) {
     return (
