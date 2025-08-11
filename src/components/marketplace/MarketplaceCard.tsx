@@ -374,8 +374,13 @@ export default function MarketplaceCard({
         </Link>
         {/* Botão fora do Link para isolar eventos */}
         {nftId && (
-          <div className="absolute top-3 right-3 z-30" onClickCapture={(e) => e.stopPropagation()}>
-            <SimpleLikeButton nftId={nftId} />
+          <div
+            className="absolute top-3 right-3 z-50 pointer-events-auto"
+            onClickCapture={(e) => e.stopPropagation()}
+            onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
+            <SimpleLikeButton nftId={nftId} contractAddress={assetContract} tokenId={tokenId} />
           </div>
         )}
         <div className="p-4">

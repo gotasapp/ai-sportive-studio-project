@@ -477,7 +477,7 @@ export default function MarketplaceCardMobile({
 
   return (
     <>
-      <div className={`rounded-xl ${padding} flex flex-col items-center shadow-md`} style={{ background: 'rgba(20,16,30,0.4)' }}>
+      <div className={`relative rounded-xl ${padding} flex flex-col items-center shadow-md`} style={{ background: 'rgba(20,16,30,0.4)' }}>
         <Link href={
           isCustomCollection && collectionId 
             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
@@ -517,7 +517,12 @@ export default function MarketplaceCardMobile({
         
         {/* Botão fora do Link para isolar eventos */}
         {nftId && (
-          <div className="absolute top-1 right-1 z-30" onClickCapture={(e) => e.stopPropagation()}>
+          <div
+            className="absolute top-1 right-1 z-40 pointer-events-auto"
+            onClickCapture={(e) => e.stopPropagation()}
+            onPointerDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
+            onTouchStart={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
             <SimpleLikeButton nftId={nftId} />
           </div>
         )}
