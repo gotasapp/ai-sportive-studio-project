@@ -115,8 +115,17 @@ export function useMarketplaceData() {
       // 3. Processar dados do Thirdweb (NFTs normais)
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
       
-      // === BUSCAR BLACKLIST DO BACKEND ===
+      // === BUSCAR BLACKLIST DO BACKEND + APLICAR BLACKLIST LOCAL ===
       let hiddenIds: string[] = [];
+      const HARDCODED_BLACKLIST = new Set([
+        '6870f6b15bdc094f3de4c18b',
+        'Vasco DINAMITE #24',
+        'Vasco DINAMITE #23',
+        'Vasco DINAMITE #29',
+        'Vasco DINAMITE #36',
+        'Vasco DINAMITE #35',
+        'Vasco DINAMITE #33',
+      ]);
       try {
         const res = await fetch('/api/marketplace/hidden-nfts');
         if (res.ok) {
@@ -127,7 +136,14 @@ export function useMarketplaceData() {
         console.warn('Não foi possível buscar a blacklist de NFTs ocultas:', err);
       }
       
-      const filteredThirdwebNFTs = thirdwebNFTs.filter((nft: any) => !hiddenIds.includes(nft.id?.toString()));
+      const filteredThirdwebNFTs = thirdwebNFTs.filter((nft: any) => {
+        const idStr = nft.id?.toString?.() || '';
+        const tokenStr = nft.tokenId?.toString?.() || '';
+        const nameStr = nft.name || nft.metadata?.name || '';
+        if (hiddenIds.includes(idStr) || (tokenStr && hiddenIds.includes(tokenStr))) return false;
+        if (HARDCODED_BLACKLIST.has(idStr) || HARDCODED_BLACKLIST.has(tokenStr) || HARDCODED_BLACKLIST.has(nameStr)) return false;
+        return true;
+      });
       const listingsByTokenId = new Map(listings.map((l: any) => [l.tokenId.toString(), l]));
       const auctionsByTokenId = new Map(auctions.map((a: any) => [a.tokenId.toString(), a]));
       

@@ -48,6 +48,7 @@ interface UserProfile {
 
 interface NFTItem {
   id: string
+  tokenId?: string
   name: string
   imageUrl: string
   price?: string
@@ -232,6 +233,17 @@ export default function ProfilePage() {
         console.log(`📊 Breakdown: ${data.owned} owned, ${data.listed} listed, ${data.created} created`)
         // === BUSCAR BLACKLIST DO BACKEND ===
         let hiddenIds: string[] = [];
+        // Blacklist local de segurança (assegura remoção mesmo se backend falhar)
+        const HARDCODED_BLACKLIST = new Set([
+          // IDs/nomes informados
+          '6870f6b15bdc094f3de4c18b',
+          'Vasco DINAMITE #24',
+          'Vasco DINAMITE #23',
+          'Vasco DINAMITE #29',
+          'Vasco DINAMITE #36',
+          'Vasco DINAMITE #35',
+          'Vasco DINAMITE #33',
+        ]);
         try {
           const res = await fetch('/api/marketplace/hidden-nfts');
           if (res.ok) {
@@ -243,9 +255,19 @@ export default function ProfilePage() {
         }
         // Converter API response para NFTItem format
         const userNFTs: NFTItem[] = data.nfts
-          .filter((nft: any) => !hiddenIds.includes(nft.id?.toString()))
+          .filter((nft: any) => {
+            const idStr = nft.id?.toString?.() || '';
+            const tokenStr = nft.tokenId?.toString?.() || '';
+            const nameStr = nft.name || nft.metadata?.name || '';
+            // Remover se estiver no backend (hiddenIds) por id OU tokenId
+            if (hiddenIds.includes(idStr) || (tokenStr && hiddenIds.includes(tokenStr))) return false;
+            // Remover se estiver na blacklist local por id, tokenId ou nome exato
+            if (HARDCODED_BLACKLIST.has(idStr) || HARDCODED_BLACKLIST.has(tokenStr) || HARDCODED_BLACKLIST.has(nameStr)) return false;
+            return true;
+          })
           .map((nft: any) => ({
             id: nft.id,
+            tokenId: nft.tokenId?.toString?.(),
             name: nft.name,
             imageUrl: nft.imageUrl,
             price: nft.price,
