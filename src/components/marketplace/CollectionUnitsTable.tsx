@@ -215,28 +215,23 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     const isUserOwner = isOwner(unit);
     const { isListed, isAuction, listingId, auctionId, auctionEndTime } = unit.marketplace;
     
-    // 🔍 DEBUG: Log dos dados marketplace
-    console.log(`🎯 BUTTONS DEBUG - ${unit.name}:`, {
-      isListed,
-      isAuction,
-      listingId,
-      auctionId,
-      isUserOwner,
-      marketplace: unit.marketplace
-    });
+    // Determinar estado e ações disponíveis
     
     if (isListed && listingId) {
-      // NFT está listado para venda direta
+      // 🛒 NFT LISTADO - DESIGN PROFISSIONAL
+      const isPriceValid = isValidPrice(unit.marketplace.price);
+      
       if (isUserOwner) {
+        // Proprietário: Gerenciar listagem
         return (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             <Button
-
+              size="sm"
               onClick={() => setShowUpdateListing(unit.id)}
-              className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm text-xs"
             >
               <Tag className="mr-1 h-3 w-3" />
-              Update Price
+              Update
             </Button>
             <CancelListingButton
               listingId={listingId}
@@ -244,115 +239,145 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               nftName={unit.name}
               tokenId={unit.tokenId}
               variant="outline"
-
+              size="sm"
+              className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
             />
           </div>
         );
       } else {
-        const isPriceValid = isValidPrice(unit.marketplace.price);
+        // Comprador: Comprar ou fazer oferta
         return (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             {isPriceValid ? (
               <BuyNowButton
                 listingId={listingId}
                 price={unit.marketplace.price}
-  
+                size="sm"
+                className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
               />
             ) : (
-              <Button disabled size="sm" className="bg-red-500/20 text-red-400">
+              <Button disabled size="sm" variant="destructive" className="opacity-50 text-xs">
                 <AlertTriangle className="mr-1 h-3 w-3" />
-                Invalid Price
+                Invalid
               </Button>
             )}
             <MakeOfferButton
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-
+              size="sm"
+              className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
             />
           </div>
         );
       }
     } else if (isAuction && auctionId) {
-      // NFT está em leilão - REPLICANDO EXATAMENTE O MARKETPLACE PRINCIPAL
+      // 🔨 NFT EM LEILÃO - DESIGN PROFISSIONAL
       const isAuctionEnded = auctionEndTime ? new Date() > auctionEndTime : false;
       
-      if (isUserOwner) { // ✅ USANDO NFT OWNERSHIP COMO NO ORIGINAL
+      if (isUserOwner) {
+        // Criador do leilão
         return (
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 min-w-[140px]">
             {!isAuctionEnded ? (
-              <CancelAuctionButton
-                auctionId={auctionId}
-                nftName={unit.name}
-                variant="outline"
-  
-                onSuccess={refreshUnits}
-              />
+              <>
+                <div className="text-xs text-amber-600 font-medium">Your Auction</div>
+                <CancelAuctionButton
+                  auctionId={auctionId}
+                  nftName={unit.name}
+                  variant="outline"
+                  size="sm"
+                  className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
+                  onSuccess={refreshUnits}
+                />
+              </>
             ) : (
-              <Button disabled size="sm">
-                Auction Ended
-              </Button>
+              <>
+                <div className="text-xs text-gray-500">Auction Ended</div>
+                <Button disabled size="sm" variant="ghost" className="text-gray-400 text-xs">
+                  Collect Results
+                </Button>
+              </>
             )}
           </div>
         );
       } else {
+        // Participante do leilão
         return (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             {!isAuctionEnded ? (
-              <AuctionBidButton
-                auctionId={auctionId}
-                currentBid="0 MATIC"
-                minimumBid="0"
-                endTime={auctionEndTime || new Date()}
-                currency="MATIC"
-  
-                onBidSuccess={refreshUnits}
-              />
+              <>
+                <AuctionBidButton
+                  auctionId={auctionId}
+                  currentBid="0 MATIC"
+                  minimumBid="0"
+                  endTime={auctionEndTime || new Date()}
+                  currency="MATIC"
+                  size="sm"
+                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-sm text-xs"
+                  onBidSuccess={refreshUnits}
+                />
+                <MakeOfferButton
+                  assetContract={unit.contractAddress}
+                  tokenId={unit.tokenId}
+                  nftName={unit.name}
+                  size="sm"
+                  className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+                />
+              </>
             ) : (
-              <Button disabled size="sm">
-                Auction Ended
-              </Button>
+              <>
+                <div className="text-xs text-gray-500 mb-1">Auction Ended</div>
+                <MakeOfferButton
+                  assetContract={unit.contractAddress}
+                  tokenId={unit.tokenId}
+                  nftName={unit.name}
+                  size="sm"
+                  className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+                />
+              </>
             )}
-            <MakeOfferButton
-              assetContract={unit.contractAddress}
-              tokenId={unit.tokenId}
-              nftName={unit.name}
-
-            />
           </div>
         );
       }
     } else {
-      // NFT não está listado nem em leilão
+      // 💎 NFT DISPONÍVEL - DESIGN PROFISSIONAL
       if (isUserOwner) {
+        // Proprietário: Listar ou leiloar
         return (
-          <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
             <Button
-
+              size="sm"
               onClick={() => setShowCreateListing(unit.id)}
-              className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+              className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
             >
               <Tag className="mr-1 h-3 w-3" />
-              List for Sale
+              List
             </Button>
             <Button
-
+              size="sm"
               variant="outline"
               onClick={() => setShowCreateAuction(unit.id)}
-              className="border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
+              className="border-amber-300 text-amber-600 hover:bg-amber-50 text-xs"
             >
               <Gavel className="mr-1 h-3 w-3" />
-              Create Auction
+              Auction
             </Button>
           </div>
         );
       } else {
+        // Visitante: Fazer oferta
         return (
-          <MakeOfferButton
-            assetContract={unit.contractAddress}
-            tokenId={unit.tokenId}
-            nftName={unit.name}
-          />
+          <div className="flex flex-col gap-2 min-w-[140px]">
+            <div className="text-xs text-gray-500">Not Listed</div>
+            <MakeOfferButton
+              assetContract={unit.contractAddress}
+              tokenId={unit.tokenId}
+              nftName={unit.name}
+              size="sm"
+              className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+            />
+          </div>
         );
       }
     }
@@ -506,8 +531,8 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                     )}
                   </div>
                   
-                  {/* Actions */}
-                  <div className="flex-shrink-0">
+                  {/* Actions - Layout Profissional */}
+                  <div className="flex-shrink-0 min-w-[160px] max-w-[200px]">
                     {renderActionButtons(unit)}
                   </div>
                 </div>

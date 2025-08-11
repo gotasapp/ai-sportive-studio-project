@@ -414,13 +414,13 @@ export function NFTDetailsModal({
                   </CardContent>
                 </Card>
 
-                {/* Attributes */}
-                {nftData?.attributes && nftData.attributes.length > 0 && (
-                  <Card className="bg-transparent border-[#FDFDFD]/10">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-[#FDFDFD] text-lg">Attributes</CardTitle>
-                    </CardHeader>
-                    <CardContent>
+                {/* Attributes - Debug Version */}
+                <Card className="bg-transparent border-[#FDFDFD]/10">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-[#FDFDFD] text-lg">Attributes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {nftData?.attributes && nftData.attributes.length > 0 ? (
                       <div className="grid grid-cols-2 gap-3">
                         {nftData.attributes.map((attr, index) => (
                           <div key={index} className="bg-[#FDFDFD]/5 rounded-lg p-3">
@@ -433,9 +433,23 @@ export function NFTDetailsModal({
                           </div>
                         ))}
                       </div>
-                    </CardContent>
-                  </Card>
-                )}
+                    ) : (
+                      <div className="text-center py-8 text-[#FDFDFD]/50">
+                        <div className="text-sm">
+                          {!nftData ? 'Loading attributes...' : 
+                           !nftData.attributes ? 'No attributes property found' :
+                           nftData.attributes.length === 0 ? 'No attributes available' :
+                           'Unknown attributes state'}
+                        </div>
+                        {nftData && (
+                          <div className="text-xs mt-2 text-gray-400">
+                            Debug: hasAttributes={!!nftData.attributes}, length={nftData.attributes?.length || 0}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             </ScrollArea>
           </div>
