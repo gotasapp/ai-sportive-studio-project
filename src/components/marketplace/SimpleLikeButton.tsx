@@ -14,7 +14,9 @@ export default function SimpleLikeButton({ nftId, contractAddress, tokenId }: Si
   const [isLiked, setIsLiked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLike = async () => {
+  const handleLike = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log('💖 LIKE BUTTON CLICKED!', { nftId, contractAddress, tokenId, isLiked, currentLikes: likes });
     
     if (isLoading) {
@@ -69,9 +71,11 @@ export default function SimpleLikeButton({ nftId, contractAddress, tokenId }: Si
 
   return (
     <button
+      type="button"
       onClick={handleLike}
+      onMouseDown={(e) => { e.preventDefault(); e.stopPropagation(); }}
       disabled={isLoading}
-      className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition-all text-white font-bold"
+      className="p-2 bg-red-600 rounded-full hover:bg-red-700 transition-all text-white font-bold relative z-20 pointer-events-auto"
       style={{ pointerEvents: 'auto' }}
     >
       ❤️ LIKE ({likes})

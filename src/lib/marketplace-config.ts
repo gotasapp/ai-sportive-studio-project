@@ -425,8 +425,10 @@ export function formatPriceSafe(priceWei: bigint | string, currency: string = 'M
     const preCheck = preValidatePrice(priceWei);
     
     if (!preCheck.isValid) {
-      console.warn('⚠️ Invalid price input detected, using fallback:', priceWei);
-      return `0.001 ${currency} (fallback)`;
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn('⚠️ Invalid price input detected, using fallback:', priceWei);
+      }
+      return `0.001 ${currency}`;
     }
     
     const validation = validateAndFixPrice(preCheck.cleanValue);
@@ -437,8 +439,10 @@ export function formatPriceSafe(priceWei: bigint | string, currency: string = 'M
       return `${validation.correctedEther.toFixed(6)} ${currency} (fixed)`;
     }
   } catch (error) {
-    console.error('❌ Error in formatPriceSafe, using emergency fallback:', error);
-    return `0.001 ${currency} (emergency fallback)`;
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('❌ Error in formatPriceSafe, using emergency fallback:', error);
+    }
+    return `0.001 ${currency}`;
   }
 }
 

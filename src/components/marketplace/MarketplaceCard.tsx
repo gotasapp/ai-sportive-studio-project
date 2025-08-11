@@ -351,9 +351,7 @@ export default function MarketplaceCard({
             {/* Header com categoria e ações */}
             <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
               <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color} pointer-events-none`}>{category?.toUpperCase()}</div>
-              {nftId && (
-                <SimpleLikeButton nftId={nftId} />
-              )}
+              {/* espaço reservado, botão fora do Link */}
             </div>
             {/* Status badges */}
             <div className="absolute bottom-3 left-3 pointer-events-none">
@@ -374,6 +372,12 @@ export default function MarketplaceCard({
             </div>
           </a>
         </Link>
+        {/* Botão fora do Link para isolar eventos */}
+        {nftId && (
+          <div className="absolute top-3 right-3 z-30" onClickCapture={(e) => e.stopPropagation()}>
+            <SimpleLikeButton nftId={nftId} />
+          </div>
+        )}
         <div className="p-4">
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate my-1">{name}</h3>
           

@@ -511,13 +511,17 @@ export default function MarketplaceCardMobile({
               </div>
             </div>
 
-            {/* Simple like button */}
-            {nftId && (
-              <SimpleLikeButton nftId={nftId} />
-            )}
+            {/* espaço reservado; botão fora do Link abaixo */}
           </div>
         </Link>
         
+        {/* Botão fora do Link para isolar eventos */}
+        {nftId && (
+          <div className="absolute top-1 right-1 z-30" onClickCapture={(e) => e.stopPropagation()}>
+            <SimpleLikeButton nftId={nftId} />
+          </div>
+        )}
+
         <Link href={
           isCustomCollection && collectionId 
             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
