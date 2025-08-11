@@ -5,7 +5,6 @@ import {
   Search, 
   Filter, 
   Grid3X3, 
-  List, 
   Table, 
 
   ChevronDown,
@@ -33,7 +32,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-export type ViewType = 'grid' | 'list' | 'table'
+export type ViewType = 'grid' | 'table'
 export type TimeFilter = '24h' | '7d' | '30d' | 'all'
 export type PriceSort = 'low-to-high' | 'high-to-low' | 'volume-desc' | 'volume-asc'
 export type TokenType = 'all' | 'jerseys' | 'stadiums' | 'badges' | 'launchpad'
@@ -97,7 +96,6 @@ export default function MarketplaceFilters({
   
   const viewOptions = [
     { value: 'table', icon: Table, label: 'Table' },
-    { value: 'list', icon: List, label: 'List' },
     { value: 'grid', icon: Grid3X3, label: 'Grid' }
   ]
 

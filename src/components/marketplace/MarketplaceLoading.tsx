@@ -33,29 +33,7 @@ export default function MarketplaceLoading({
     );
   }
 
-  if (view === 'list') {
-    return (
-      <div className="p-6 space-y-4">
-        {Array.from({ length: itemCount }).map((_, index) => (
-          <Card key={index} className="cyber-card">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <Skeleton className="w-16 h-16 rounded-lg bg-[#FDFDFD]/10" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-3/4 bg-[#FDFDFD]/10" />
-                  <Skeleton className="h-3 w-1/2 bg-[#FDFDFD]/10" />
-                </div>
-                <div className="text-right space-y-1">
-                  <Skeleton className="h-4 w-16 bg-[#FDFDFD]/10" />
-                  <Skeleton className="h-3 w-12 bg-[#FDFDFD]/10" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
+
 
   // Table view
   return (
