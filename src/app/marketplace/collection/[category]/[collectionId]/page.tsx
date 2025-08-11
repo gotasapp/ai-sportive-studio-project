@@ -9,6 +9,7 @@ import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Header from '@/components/Header';
 import CollectionUnitsTable from '@/components/marketplace/CollectionUnitsTable';
+import CollectionTraits from '@/components/marketplace/CollectionTraits';
 
 async function fetchCollectionData(collectionId: string, category: string) {
   try {
@@ -229,12 +230,24 @@ export default function CollectionDetailPage({
 
       <Separator className="my-8 bg-secondary/10" />
 
-        {/* 🎯 SEÇÃO DE TRADING - UNIDADES INDIVIDUAIS (SUBSTITUINDO A SEÇÃO ANTIGA) */}
-        <div className="mb-8">
-          <CollectionUnitsTable 
-            collectionId={params.collectionId}
-            category={params.category}
-          />
+        {/* 🎯 LAYOUT MODERNO: Individual Units + Traits Side by Side */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+          {/* Individual Units - 2/3 da largura */}
+          <div className="lg:col-span-2">
+            <CollectionUnitsTable 
+              collectionId={params.collectionId}
+              category={params.category}
+            />
+          </div>
+          
+          {/* Traits Panel - 1/3 da largura */}
+          <div className="lg:col-span-1">
+            <CollectionTraits 
+              traits={collectionData?.attributes || []}
+              totalSupply={collectionData?.totalSupply || 0}
+              collectionData={collectionData}
+            />
+          </div>
         </div>
 
         {/* Seção para Standard Collections */}
@@ -277,51 +290,41 @@ export default function CollectionDetailPage({
           </div>
         )}
 
-        {/* Traits/Atributos */}
+        {/* Collection Metadata - Movido para baixo no mobile */}
         {collectionData && (
-          <div className="mb-8">
-            <h2 className="text-xl font-bold text-[#FDFDFD] mb-6">Traits / Atributos</h2>
-            <div className="flex flex-wrap gap-3">
-              <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
-                Category: {collectionData.category}
-              </Badge>
-              
-              {/* Traits específicos para Custom Collections */}
-              {isCustomCollection && (
-                <>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Team: {collectionData.teamName}
+          <div className="mb-8 lg:hidden">
+            <Card className="bg-transparent border-[#FDFDFD]/10">
+              <CardHeader className="p-4">
+                <CardTitle className="text-[#FDFDFD] text-lg">Collection Info</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30 rounded-full px-2 py-0.5 text-xs">
+                    {collectionData.category}
                   </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Unique Owners: {collectionData.stats?.uniqueOwners}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Contracts Used: {collectionData.stats?.contractsUsed}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Season: {collectionData.season}
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Type: AI Generated
-                  </Badge>
-                </>
-              )}
-              
-              {/* Traits específicos para Standard Collections */}
-              {!isCustomCollection && (
-                <>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Type: Official Collection
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Blockchain: Polygon Amoy
-                  </Badge>
-                  <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
-                    Standard: ERC-721
-                  </Badge>
-                </>
-              )}
-            </div>
+                  {isCustomCollection && (
+                    <>
+                      <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20 rounded-full px-2 py-0.5 text-xs">
+                        {collectionData.teamName}
+                      </Badge>
+                      <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20 rounded-full px-2 py-0.5 text-xs">
+                        AI Generated
+                      </Badge>
+                    </>
+                  )}
+                  {!isCustomCollection && (
+                    <>
+                      <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20 rounded-full px-2 py-0.5 text-xs">
+                        Official
+                      </Badge>
+                      <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20 rounded-full px-2 py-0.5 text-xs">
+                        ERC-721
+                      </Badge>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         )}
 

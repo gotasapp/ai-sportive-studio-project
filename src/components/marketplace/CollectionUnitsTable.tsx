@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Eye, Tag, Gavel, Clock, User, AlertTriangle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuctionData } from '@/hooks/useAuctionData';
 
 // Importar TODOS os componentes de trading do backup
@@ -224,13 +225,11 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       if (isUserOwner) {
         // Proprietário: Gerenciar listagem
         return (
-          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2">
             <Button
-
               onClick={() => setShowUpdateListing(unit.id)}
-              className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-sm text-xs"
+              className="rounded-full px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
             >
-              <Tag className="mr-1 h-3 w-3" />
               Update
             </Button>
             <CancelListingButton
@@ -238,26 +237,24 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               price={unit.marketplace.price}
               nftName={unit.name}
               tokenId={unit.tokenId}
-              variant="outline"
-
-              className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
+              variant="ghost"
+              className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
             />
           </div>
         );
       } else {
         // Comprador: Comprar ou fazer oferta
         return (
-          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2">
             {isPriceValid ? (
               <BuyNowButton
                 listingId={listingId}
                 price={unit.marketplace.price}
-  
-                className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
+                className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
               />
             ) : (
-              <Button disabled size="sm" variant="destructive" className="opacity-50 text-xs">
-                <AlertTriangle className="mr-1 h-3 w-3" />
+              <Button disabled className="rounded-full px-4 py-1.5 bg-red-500/20 text-red-400 text-xs font-medium cursor-not-allowed">
+                <AlertTriangle className="mr-1.5 h-3 w-3" />
                 Invalid
               </Button>
             )}
@@ -265,8 +262,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-
-              className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+              className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
             />
           </div>
         );
@@ -278,33 +274,26 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       if (isUserOwner) {
         // Criador do leilão
         return (
-          <div className="flex flex-col gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2">
             {!isAuctionEnded ? (
-              <>
-                <div className="text-xs text-amber-600 font-medium">Your Auction</div>
-                <CancelAuctionButton
-                  auctionId={auctionId}
-                  nftName={unit.name}
-                  variant="outline"
-    
-                  className="border-red-300 text-red-600 hover:bg-red-50 text-xs"
-                  onSuccess={refreshUnits}
-                />
-              </>
+              <CancelAuctionButton
+                auctionId={auctionId}
+                nftName={unit.name}
+                variant="ghost"
+                className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
+                onSuccess={refreshUnits}
+              />
             ) : (
-              <>
-                <div className="text-xs text-gray-500">Auction Ended</div>
-                <Button disabled size="sm" variant="ghost" className="text-gray-400 text-xs">
-                  Collect Results
-                </Button>
-              </>
+              <Button disabled variant="ghost" className="rounded-full px-4 py-1.5 text-gray-400 text-xs font-medium">
+                Ended
+              </Button>
             )}
           </div>
         );
       } else {
         // Participante do leilão
         return (
-          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2">
             {!isAuctionEnded ? (
               <>
                 <AuctionBidButton
@@ -313,29 +302,23 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   minimumBid="0"
                   endTime={auctionEndTime || new Date()}
                   currency="MATIC"
-    
-                  className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 text-white shadow-sm text-xs"
+                  className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
                   onBidSuccess={refreshUnits}
                 />
                 <MakeOfferButton
                   assetContract={unit.contractAddress}
                   tokenId={unit.tokenId}
                   nftName={unit.name}
-    
-                  className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+                  className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
                 />
               </>
             ) : (
-              <>
-                <div className="text-xs text-gray-500 mb-1">Auction Ended</div>
-                <MakeOfferButton
-                  assetContract={unit.contractAddress}
-                  tokenId={unit.tokenId}
-                  nftName={unit.name}
-    
-                  className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
-                />
-              </>
+              <MakeOfferButton
+                assetContract={unit.contractAddress}
+                tokenId={unit.tokenId}
+                nftName={unit.name}
+                className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
+              />
             )}
           </div>
         );
@@ -345,37 +328,31 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       if (isUserOwner) {
         // Proprietário: Listar ou leiloar
         return (
-          <div className="flex flex-col sm:flex-row gap-2 min-w-[140px]">
+          <div className="flex items-center gap-2">
             <Button
-
               onClick={() => setShowCreateListing(unit.id)}
-              className="bg-gradient-to-r from-[#A20131] to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-sm text-xs"
+              className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
             >
-              <Tag className="mr-1 h-3 w-3" />
-              List
+              List for Sale
             </Button>
             <Button
-
-              variant="outline"
+              variant="ghost"
               onClick={() => setShowCreateAuction(unit.id)}
-              className="border-amber-300 text-amber-600 hover:bg-amber-50 text-xs"
+              className="rounded-full px-4 py-1.5 text-[#A20131] hover:bg-[#A20131]/10 text-xs font-medium"
             >
-              <Gavel className="mr-1 h-3 w-3" />
-              Auction
+              Create Auction
             </Button>
           </div>
         );
       } else {
         // Visitante: Fazer oferta
         return (
-          <div className="flex flex-col gap-2 min-w-[140px]">
-            <div className="text-xs text-gray-500">Not Listed</div>
+          <div className="flex items-center gap-2">
             <MakeOfferButton
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-
-              className="border-orange-300 text-orange-600 hover:bg-orange-50 text-xs"
+              className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
             />
           </div>
         );
@@ -476,64 +453,46 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   key={unit.id}
                   className="flex items-center gap-4 p-4 border border-[#FDFDFD]/10 rounded-lg hover:border-[#FDFDFD]/20 transition-colors"
                 >
-                  {/* Image */}
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-[#FDFDFD]/5">
-                    {unit.imageUrl ? (
-                      <img
-                        src={unit.imageUrl}
-                        alt={unit.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[#FDFDFD]/50">
-                        <Eye className="h-6 w-6" />
-                      </div>
-                    )}
-                  </div>
+                  {/* Image (shadcn Avatar para tamanho consistente) */}
+                  <Avatar className="h-16 w-16 rounded-lg border border-[#FDFDFD]/10">
+                    <AvatarImage src={unit.imageUrl} alt={unit.name} />
+                    <AvatarFallback className="bg-[#FDFDFD]/5 text-[#FDFDFD]/50">
+                      <Eye className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
                   
                   {/* Info */}
                   <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-xs text-[#FDFDFD]/70">
+                      <span className="truncate">Rank: {unit.tokenId || '-'}</span>
+                    </div>
                     <h4 className="font-medium text-[#FDFDFD] truncate">{unit.name}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm text-[#FDFDFD]/70">#{unit.tokenId}</span>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-[#FDFDFD]/60">
+                      <span>#{unit.tokenId}</span>
                       {isOwner(unit) && (
-                        <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131]">
+                        <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] rounded-full px-2 py-0.5">
                           <User className="h-3 w-3 mr-1" />
                           Owned
                         </Badge>
                       )}
                     </div>
                   </div>
-                  
-                  {/* Status */}
-                  <div className="text-right min-w-0">
-                    {unit.marketplace.isAuction ? (
-                      <AuctionDisplay unit={unit} />
-                    ) : unit.marketplace.isListed ? (
-                      <div>
-                        <Badge className="bg-green-600 text-white mb-1">
-                          <Tag className="h-3 w-3 mr-1" />
-                          For Sale
-                        </Badge>
-                        <div className="text-sm font-medium text-[#FDFDFD]">
+
+                  {/* Price + Actions Compact */}
+                  <div className="ml-auto flex items-center gap-3 flex-wrap justify-end">
+                    {/* Preço sempre visível quando listado ou em leilão */}
+                    {(unit.marketplace.isListed || unit.marketplace.isAuction) && (
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-[#FDFDFD]">
                           {unit.marketplace.price}
                         </div>
                       </div>
-                    ) : (
-                      <div>
-                        <Badge variant="outline" className="border-[#FDFDFD]/20 text-[#FDFDFD]/70 mb-1">
-                          Not Listed
-                        </Badge>
-                        <div className="text-sm text-[#FDFDFD]/50">
-                          Available
-                        </div>
-                      </div>
                     )}
-                  </div>
-                  
-                  {/* Actions - Layout Profissional */}
-                  <div className="flex-shrink-0 min-w-[160px] max-w-[200px]">
-                    {renderActionButtons(unit)}
+                    
+                    {/* Botões de ação */}
+                    <div className="flex items-center gap-2">
+                      {renderActionButtons(unit)}
+                    </div>
                   </div>
                 </div>
               ))}

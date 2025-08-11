@@ -35,6 +35,8 @@ import {
   Sparkles
 } from 'lucide-react';
 import Header from '@/components/Header';
+import MarketplaceActionButtons from '@/components/marketplace/MarketplaceActionButtons';
+import OptimizedImage from '@/components/marketplace/OptimizedImage';
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 import { useNFTData } from '@/hooks/useNFTData';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
@@ -555,17 +557,13 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           <div className="space-y-4">
             <Card className="cyber-card w-full">
               <CardContent className="p-2 lg:p-3">
-                <div className="h-[480px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-[90%] mx-auto">
+                <div className="h-[480px] relative rounded-lg overflow-hidden bg-[#14101e] border border-[#FDFDFD]/10 w-full">
                   {displayData.imageUrl ? (
-                    <img
+                    <OptimizedImage
                       src={displayData.imageUrl.startsWith('http') ? displayData.imageUrl : normalizeIpfsUri(displayData.imageUrl)}
                       alt={displayData.name}
-                      className="object-cover w-full h-full"
-                      style={{ aspectRatio: '1/1', objectFit: 'cover' }}
-                      onError={e => { 
-                        console.log('🖼️ Image failed to load:', e.currentTarget.src);
-                        e.currentTarget.style.display = 'none';
-                      }}
+                      fill
+                      className="object-cover"
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
@@ -742,46 +740,23 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 </div>
               </CardHeader>
               <CardContent className="p-2 lg:p-3 pt-0">
-                {account ? (
-                  displayData.isListed || displayData.isAuction ? (
-                    <Button 
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-1.5"
-                      size="sm"
-                    >
-                      <ShoppingBag className="h-3 w-3 mr-2" />
-                      {displayData.isAuction ? 'Place Bid' : 'Buy Now'}
-                    </Button>
-                  ) : (
-                    <Button 
-                      className="w-full bg-[#FDFDFD]/10 text-[#FDFDFD] font-medium py-1.5 cursor-not-allowed border-[#FDFDFD]/20"
-                      size="sm"
-                      disabled
-                    >
-                      Not for Sale
-                    </Button>
-                  )
-                ) : (
-                  <Button 
-                    className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white font-medium py-1.5"
-                    size="sm"
-                  >
-                    <Wallet className="h-3 w-3 mr-2" />
-                    Connect Wallet
-                  </Button>
-                )}
-                
-                {account && (displayData.isListed || displayData.isAuction) && (
-                  <div className="mt-2 grid grid-cols-2 gap-1">
-                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-1">
-                      <Gavel className="h-3 w-3 mr-1" />
-                      Offer
-                    </Button>
-                    <Button variant="outline" className="cyber-border text-[#FDFDFD] text-xs py-1">
-                      <Activity className="h-3 w-3 mr-1" />
-                      Bids
-                    </Button>
-                  </div>
-                )}
+                <div className="space-y-2">
+                  <MarketplaceActionButtons
+                    name={displayData.name}
+                    price={`${displayData.price} ${displayData.currency}`}
+                    tokenId={String(displayData.tokenId)}
+                    assetContract={currentMarketplaceNFT?.contractAddress || ''}
+                    listingId={currentMarketplaceNFT?.listingId}
+                    isListed={displayData.isListed}
+                    owner={displayData.owner}
+                    isAuction={displayData.isAuction}
+                    auctionId={currentMarketplaceNFT?.auctionId}
+                    currentBid={currentMarketplaceNFT?.currentBid}
+                    endTime={currentMarketplaceNFT?.endTime}
+                    imageUrl={displayData.imageUrl}
+                    category={displayData.collection}
+                  />
+                </div>
               </CardContent>
             </Card>
 
