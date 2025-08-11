@@ -47,7 +47,19 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
       try {
         console.log('🎠 Processing featured carousel data:', marketplaceData.length, 'items');
         
-        // Sempre tentar buscar o NFT mais votado primeiro
+        // 1) Renderizar imediatamente um conjunto base (sem bloqueio)
+        const base: FeaturedNFT[] = (marketplaceData.slice(0, 5) || []).map((nft) => ({
+          name: nft.name,
+          collection: nft.collection || `${(nft.category || 'NFT').charAt(0).toUpperCase() + (nft.category || 'NFT').slice(1)} Collection` ,
+          imageUrl: nft.imageUrl || nft.image,
+          category: nft.category || 'nft',
+          createdAt: nft.createdAt || new Date().toISOString(),
+        }));
+        if (base.length > 0) {
+          setFeaturedNFTs(base);
+        }
+
+        // 2) Buscar em paralelo o NFT mais votado (mantém comportamento atual)
         let mostVotedNFT: any = null;
         try {
           const mostVotedResponse = await fetch('/api/nft/most-voted');
@@ -62,7 +74,22 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           console.log('⚠️ Could not fetch most voted NFT, continuing with regular carousel');
         }
 
-        // Array final que será usado no carrossel
+        // 3) Buscar em paralelo a coleção mais votada (nova lógica) sem bloquear render
+        let mostVotedCollection: any = null;
+        try {
+          const r = await fetch('/api/collections/most-voted');
+          if (r.ok) {
+            const d = await r.json();
+            if (d.success && d.collection) {
+              mostVotedCollection = d.collection;
+              console.log('🏆 Most voted Collection found:', mostVotedCollection.name, 'with', mostVotedCollection.votes, 'votes');
+            }
+          }
+        } catch (err) {
+          console.log('⚠️ Could not fetch most voted Collection');
+        }
+
+        // 4) Compôr a lista final incrementalmente
         const featured: FeaturedNFT[] = [];
 
         // Se encontramos um NFT mais votado, adicionar no início
@@ -76,9 +103,21 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           });
         }
 
+        // Se encontramos coleção mais votada, adicionar também como destaque extra
+        if (mostVotedCollection) {
+          featured.push({
+            name: `🏆 ${mostVotedCollection.name}`,
+            collection: `Most Voted Collection • ${mostVotedCollection.votes} votes`,
+            imageUrl: mostVotedCollection.imageUrl || base[0]?.imageUrl || '',
+            category: mostVotedCollection.category || 'collection',
+            createdAt: new Date().toISOString()
+          });
+        }
+
         // Agora adicionar outros NFTs do marketplace (excluindo o mais votado se já foi incluído)
         if (marketplaceData.length > 0) {
-          const featuredCount = Math.min(marketplaceData.length, mostVotedNFT ? 4 : 5); // 4 se já temos o mais votado, senão 5
+          const already = featured.length;
+          const featuredCount = Math.min(marketplaceData.length, already > 0 ? 5 - already : 5);
           
           // Filtrar o NFT mais votado para não duplicar
           const otherNFTs = mostVotedNFT 
@@ -101,8 +140,20 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           featured.push(...otherFeatured);
         }
 
-        console.log('🎠 Featured NFTs selected:', featured.length, mostVotedNFT ? '(including most voted)' : '');
-        setFeaturedNFTs(featured);
+        console.log('🎠 Featured NFTs selected:', featured.length, (mostVotedNFT||mostVotedCollection) ? '(including most voted)' : '');
+        if (featured.length > 0) {
+          // Atualiza incrementando sem telas vazias
+          setFeaturedNFTs((prev) => {
+            const merged = [...prev];
+            featured.forEach(f => {
+              if (!merged.find(m => m.name === f.name && m.imageUrl === f.imageUrl)) {
+                merged.unshift(f);
+              }
+            });
+            // manter exatamente 5 itens
+            return merged.slice(0, 5);
+          });
+        }
 
       } catch (error: any) {
         console.error('❌ Error processing featured NFTs:', error);
