@@ -18,7 +18,7 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
-import HeartButton from './HeartButton';
+import SimpleLikeButton from './SimpleLikeButton';
 import Link from 'next/link';
 
 interface MarketplaceCardMobileProps {
@@ -511,15 +511,9 @@ export default function MarketplaceCardMobile({
               </div>
             </div>
 
-            {/* Heart button for voting */}
+            {/* Simple like button */}
             {nftId && (
-              <div className="absolute top-1 right-1">
-                <HeartButton 
-                  nftId={nftId}
-                  initialVotes={votes || 0}
-                  className=""
-                />
-              </div>
+              <SimpleLikeButton nftId={nftId} />
             )}
           </div>
         </Link>

@@ -405,6 +405,8 @@ export default function MarketplacePage() {
           )}
         </div>
 
+        
+
         {/* Filters */}
         <div className="w-[87%] mx-auto">
           <div className="flex items-center justify-between mb-4">

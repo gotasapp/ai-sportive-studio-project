@@ -18,7 +18,7 @@ import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { formatPriceSafe, isValidPrice, debugPrice } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
-import HeartButton from './HeartButton';
+import SimpleLikeButton from './SimpleLikeButton';
 import Link from 'next/link';
 
 interface MarketplaceCardProps {
@@ -352,13 +352,7 @@ export default function MarketplaceCard({
             <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
               <div className={`text-xs font-bold px-2 py-1 rounded-full border ${color} pointer-events-none`}>{category?.toUpperCase()}</div>
               {nftId && (
-                <div className="pointer-events-auto">
-                  <HeartButton 
-                    nftId={nftId}
-                    initialVotes={votes || 0}
-                    className="bg-black/50 backdrop-blur-sm hover:bg-black/70 border-0"
-                  />
-                </div>
+                <SimpleLikeButton nftId={nftId} />
               )}
             </div>
             {/* Status badges */}
