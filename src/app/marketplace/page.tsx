@@ -27,6 +27,7 @@ import { useIsMobile } from '@/hooks/useIsMobile';
 import MarketplaceMobileLayout from '@/components/marketplace/MarketplaceMobileLayout';
 import type { LaunchpadItem } from '@/components/marketplace/LaunchpadCarouselMobile';
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
+import { getCollectionImage } from '@/components/marketplace/FixedCollectionImages';
 import dynamic from 'next/dynamic';
 
 
@@ -236,22 +237,26 @@ export default function MarketplacePage() {
       <div className="space-y-6">
         <div className="p-6 space-y-4">
           {currentItems.map((item) => {
-          // Para NFTs individuais, usar estratégia inteligente de imagem
+          // Para NFTs e coleções, usar estratégia inteligente de imagem
           let imageUrl = '';
           
-          // Se é uma coleção custom com imagem própria
-          if (item.image && !item.image.includes('undefined')) {
+          // 1. Priorizar image diretamente (para coleções custom/launchpad)
+          if (item.image && !item.image.includes('undefined') && !item.image.includes('null') && item.image.trim() !== '') {
             imageUrl = normalizeIpfsUri(item.image);
           }
-          // Se é NFT individual, usar metadata
-          else if (item.metadata?.image) {
-            imageUrl = normalizeIpfsUri(item.metadata.image);
-          }
-          // Se tem imageUrl
-          else if (item.imageUrl && !item.imageUrl.includes('undefined')) {
+          // 2. Usar imageUrl (para coleções custom/launchpad)
+          else if (item.imageUrl && !item.imageUrl.includes('undefined') && !item.imageUrl.includes('null') && item.imageUrl.trim() !== '') {
             imageUrl = normalizeIpfsUri(item.imageUrl);
           }
-          // Fallback para primeira imagem Cloudinary
+          // 3. Usar metadata.image (para NFTs individuais)
+          else if (item.metadata?.image && !item.metadata.image.includes('undefined') && !item.metadata.image.includes('null') && item.metadata.image.trim() !== '') {
+            imageUrl = normalizeIpfsUri(item.metadata.image);
+          }
+          // 4. Fallback para imagem fixa baseada na categoria (para standard collections)
+          else if (item.category && ['jersey', 'stadium', 'badge'].includes(item.category)) {
+            imageUrl = getCollectionImage(item.category);
+          }
+          // 5. Fallback final
           else {
             imageUrl = 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png';
           }
