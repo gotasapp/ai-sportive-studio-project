@@ -485,26 +485,31 @@ export default function CollectionsTable({
   const handleWatchlistToggle = async (collectionName: string) => {
     try {
       const target = collections.find(c => c.name === collectionName);
-      const nextFeatured = !target?.isWatchlisted;
+      const nextStarred = !target?.isWatchlisted;
+      const action = nextStarred ? 'upvote' : 'remove';
 
-      // Persistir "featured" no backend
-      await fetch('/api/collections/feature', {
+      // Persistir voto no backend (mesma lógica do like, aplicada à coleção)
+      const resp = await fetch('/api/collections/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ collectionName, featured: nextFeatured })
+        body: JSON.stringify({ collectionName, action })
       });
+      // Não bloqueia UI se API falhar, mas loga para debug
+      if (!resp.ok) {
+        console.warn('Collections vote API failed', resp.status, await resp.text());
+      }
 
       if (onToggleWatchlist) {
         onToggleWatchlist(collectionName)
       }
-      // Update local state
+      // Update local state visual (estrela ligada/desligada)
       setCollections(prev => prev.map(c => 
         c.name === collectionName 
-          ? { ...c, isWatchlisted: nextFeatured }
+          ? { ...c, isWatchlisted: nextStarred }
           : c
       ))
     } catch (e) {
-      console.error('Failed to feature collection:', e);
+      console.error('Failed to toggle collection vote:', e);
     }
   }
 
