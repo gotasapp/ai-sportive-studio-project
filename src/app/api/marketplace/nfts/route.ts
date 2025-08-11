@@ -105,6 +105,10 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
         contractAddress: collection.contractAddress || firstNFT.contractAddress,
         owner: collection.creatorWallet || firstNFT.minterAddress,
         
+        // 🖼️ IMAGEM DIRETAMENTE NO NÍVEL SUPERIOR (para compatibilidade)
+        image: collection.imageUrl,
+        imageUrl: collection.imageUrl,
+        
         // 📋 METADADOS DA COLEÇÃO
         metadata: {
           name: collection.name,
@@ -295,6 +299,10 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
         tokenId: "collection", // Identificador especial para coleções
         contractAddress: collection.contractAddress || "0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639",
         owner: collection.creator?.wallet || "0x0000000000000000000000000000000000000000",
+        
+        // 🖼️ IMAGEM DIRETAMENTE NO NÍVEL SUPERIOR (para compatibilidade)
+        image: collection.image || collection.imageUrl,
+        imageUrl: collection.image || collection.imageUrl,
         
         // 📋 METADADOS DA COLEÇÃO (uma imagem representa toda a coleção)
         metadata: {
