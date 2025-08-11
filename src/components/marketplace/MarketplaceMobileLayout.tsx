@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, LayoutGrid, List, Grid3X3, Search } from "lucide-react";
+import { Sparkles, LayoutGrid, List, Grid3X3, Search, Eye, Tag, Heart, MoreVertical } from "lucide-react";
 import MarketplaceStatsBarMobile from "@/components/marketplace/MarketplaceStatsBarMobile";
 import LaunchpadCarouselMobile, { LaunchpadItem } from "@/components/marketplace/LaunchpadCarouselMobile";
 import Header from "@/components/Header";
+import MarketplaceCardMobile from "./MarketplaceCardMobile";
+import Link from "next/link";
 
 export type MarketplaceMobileLayoutProps = {
   nfts: any[];
@@ -57,54 +59,97 @@ export default function MarketplaceMobileLayout({
     if (nfts.length === 0) {
       return <div className="text-center text-white/60 py-12">No NFTs found.</div>;
     }
+    
     if (viewTypeMobile === 'large') {
       // Grid 2 colunas, cards grandes
       return (
         <div className="grid grid-cols-2 gap-3">
           {paginatedNFTs.map(nft => (
-            <div key={nft.id} className="rounded-xl p-3 flex flex-col items-center shadow-md" style={{ background: 'rgba(20,16,30,0.4)' }}>
-              <img src={nft.imageUrl || nft.image_url} alt={nft.name} className="w-full h-28 rounded-lg object-cover bg-[#222] mb-2" />
-              <div className="font-semibold text-white text-base text-center w-full truncate">{nft.name}</div>
-              <div className="text-xs text-white/60 text-center w-full">{nft.collection || nft.category}</div>
-              <div className="text-sm text-[#A20131] font-bold mt-1 w-full text-center">{nft.price}</div>
-              <Button size="sm" className="bg-[#A20131] text-white px-4 py-2 rounded-lg font-semibold mt-2 w-full" onClick={() => onBuy(nft)}>
-                Buy
-              </Button>
-            </div>
+            <MarketplaceCardMobile
+              key={nft.id}
+              name={nft.name}
+              imageUrl={nft.imageUrl || nft.image_url}
+              price={nft.price || 'Not for sale'}
+              collection={nft.collection || nft.category}
+              category={nft.category}
+              tokenId={nft.tokenId || nft.id}
+              assetContract={nft.contractAddress || nft.assetContract}
+              listingId={nft.listingId}
+              isListed={nft.isListed || false}
+              owner={nft.owner || nft.creator}
+              collectionId={nft.customCollectionId || nft._id}
+              isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
+              isAuction={nft.isAuction || false}
+              auctionId={nft.auctionId}
+              currentBid={nft.currentBid}
+              endTime={nft.endTime}
+              activeOffers={nft.activeOffers || 0}
+              viewType="large"
+              onBuy={onBuy}
+            />
           ))}
         </div>
       );
     }
+    
     if (viewTypeMobile === 'medium') {
       // Grid 3 colunas, cards médios
       return (
         <div className="grid grid-cols-3 gap-2">
           {paginatedNFTs.map(nft => (
-            <div key={nft.id} className="rounded-lg p-2 flex flex-col items-center shadow-sm" style={{ background: 'rgba(20,16,30,0.4)' }}>
-              <img src={nft.imageUrl || nft.image_url} alt={nft.name} className="w-full h-16 rounded-md object-cover bg-[#222] mb-1" />
-              <div className="font-semibold text-white text-xs text-center w-full truncate">{nft.name}</div>
-              <div className="text-[10px] text-white/60 text-center w-full">{nft.collection || nft.category}</div>
-              <div className="text-xs text-[#A20131] font-bold mt-0.5 w-full text-center">{nft.price}</div>
-            </div>
+            <MarketplaceCardMobile
+              key={nft.id}
+              name={nft.name}
+              imageUrl={nft.imageUrl || nft.image_url}
+              price={nft.price || 'Not for sale'}
+              collection={nft.collection || nft.category}
+              category={nft.category}
+              tokenId={nft.tokenId || nft.id}
+              assetContract={nft.contractAddress || nft.assetContract}
+              listingId={nft.listingId}
+              isListed={nft.isListed || false}
+              owner={nft.owner || nft.creator}
+              collectionId={nft.customCollectionId || nft._id}
+              isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
+              isAuction={nft.isAuction || false}
+              auctionId={nft.auctionId}
+              currentBid={nft.currentBid}
+              endTime={nft.endTime}
+              activeOffers={nft.activeOffers || 0}
+              viewType="medium"
+              onBuy={onBuy}
+            />
           ))}
         </div>
       );
     }
-    // Compact: lista vertical original, um card grande por linha, mas mais compacto (~15% menor)
+    
+    // Compact: lista vertical
     return (
       <div className="flex flex-col gap-2">
         {paginatedNFTs.map(nft => (
-          <div key={nft.id} className="rounded-xl p-2 flex items-center gap-2 shadow-md min-h-[60px]" style={{ background: 'rgba(20,16,30,0.4)' }}>
-            <img src={nft.imageUrl || nft.image_url} alt={nft.name} className="w-12 h-12 rounded-lg object-cover bg-[#222]" />
-            <div className="flex-1">
-              <div className="font-semibold text-white text-sm leading-tight">{nft.name}</div>
-              <div className="text-[11px] text-white/60 leading-tight">{nft.collection || nft.category}</div>
-              <div className="text-xs text-[#A20131] font-bold mt-0.5">{nft.price}</div>
-            </div>
-            <Button size="sm" className="bg-[#A20131] text-white px-3 py-1.5 rounded-lg font-semibold text-xs h-8 min-w-[56px]" onClick={() => onBuy(nft)}>
-              Buy
-            </Button>
-          </div>
+          <MarketplaceCardMobile
+            key={nft.id}
+            name={nft.name}
+            imageUrl={nft.imageUrl || nft.image_url}
+            price={nft.price || 'Not for sale'}
+            collection={nft.collection || nft.category}
+            category={nft.category}
+            tokenId={nft.tokenId || nft.id}
+            assetContract={nft.contractAddress || nft.assetContract}
+            listingId={nft.listingId}
+            isListed={nft.isListed || false}
+            owner={nft.owner || nft.creator}
+            collectionId={nft.customCollectionId || nft._id}
+            isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
+            isAuction={nft.isAuction || false}
+            auctionId={nft.auctionId}
+            currentBid={nft.currentBid}
+            endTime={nft.endTime}
+            activeOffers={nft.activeOffers || 0}
+            viewType="compact"
+            onBuy={onBuy}
+          />
         ))}
       </div>
     );
