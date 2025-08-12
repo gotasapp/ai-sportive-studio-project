@@ -34,9 +34,17 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-6">
         {currentItems.map((item) => {
         // 🎯 DECISÃO CRÍTICA: Usar CollectionOverviewCard para collections
-        const isCollection = item.isCollection || item.marketplace?.isCollection || false;
+        // Tratar Launchpad como Custom Collection para navegação por collectionId
+        const isLaunchpadCollection =
+          item.type === 'launchpad_collection' ||
+          item.collectionType === 'launchpad' ||
+          item.marketplace?.isLaunchpadCollection;
+        const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
         
         if (isCollection) {
+          const computedCollectionId =
+            item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
+          const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
           return (
             <CollectionOverviewCard
               key={item.id}
@@ -44,8 +52,8 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
               imageUrl={item.imageUrl}
               collection={item.category || `By ${item.creator || 'Anonymous'}`}
               category={item.category}
-              collectionId={item.collectionId || item._id}
-              isCustomCollection={item.isCustomCollection || item.marketplace?.isCustomCollection || false}
+              collectionId={computedCollectionId}
+              isCustomCollection={computedIsCustom}
               
               // Collection stats from marketplace data
               mintedUnits={item.mintedUnits || 0}

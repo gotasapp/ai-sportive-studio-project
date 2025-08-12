@@ -1351,7 +1351,7 @@ export default function LaunchpadPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder=""
-                  className="pl-10 bg-[#0b0518] border-[#FDFDFD]/20 text-[#FDFDFD] placeholder-transparent focus-visible:ring-0 focus:border-[#FDFDFD]/30"
+                  className="pl-10 bg-transparent border border-[#FDFDFD]/20 text-[#FDFDFD] placeholder-transparent focus-visible:ring-0 focus:border-[#FDFDFD]/30 rounded-md"
                 />
               </div>
               

@@ -688,7 +688,10 @@ export default function CollectionsTable({
                       )}
                     </div>
                     <div>
-                      <div className="font-semibold text-[#FDFDFD] flex items-center gap-2">
+                      <div
+                        className="font-semibold text-[#FDFDFD] flex items-center gap-2 cursor-pointer hover:underline"
+                        onClick={() => navigateToCollection(collection)}
+                      >
                         {collection.name}
                         {collection.category === 'jersey' && (
                           <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] text-xs">
