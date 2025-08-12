@@ -133,7 +133,7 @@ export default function Header() {
         : "flex items-center space-x-6"
     )}>
       <NavLink 
-        href="/" 
+        href="/jerseys" 
         className={cn("uppercase", mobile && "w-full text-center py-2")}
         onClick={onItemClick}
       >
