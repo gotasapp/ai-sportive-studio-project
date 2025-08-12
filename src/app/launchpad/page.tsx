@@ -1383,67 +1383,16 @@ export default function LaunchpadPage() {
         </div>
 
         {/* Pending Images Section - Admin Only */}
-        {false && isUserAdmin && pendingImages.length > 0 && (
+        {isUserAdmin && pendingImages.length > 0 && (
           <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
             <div className="max-w-7xl mx-auto">
-                             <div className="mb-6 flex items-center justify-between">
-                 <div>
-                   <h2 className="text-2xl font-bold text-white mb-2">Pending Images for Approval</h2>
-                   <p className="text-gray-400">Review and approve images for Launchpad collections</p>
-                 </div>
-                 
-                 <Button
-                   onClick={triggerAutoUpdate}
-                   size="sm"
-                   variant="outline"
-                   className="bg-blue-500/10 border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
-                 >
-                   <Zap className="w-4 h-4 mr-2" />
-                   Auto-Update Status
-                 </Button>
-                 
-                 <Button
-                   onClick={cleanMockCollections}
-                   size="sm"
-                   variant="outline"
-                   className="bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
-                 >
-                   <XCircle className="w-4 h-4 mr-2" />
-                   Clean Mock Collections
-                 </Button>
-                 
-                 
-                 
-                 <Button
-                   onClick={investigateCollections}
-                   size="sm"
-                   variant="outline"
-                   className="bg-yellow-500/10 border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/20"
-                 >
-                   <Search className="w-4 h-4 mr-2" />
-                   Investigate Collections
-                 </Button>
-                 
-                 <Button
-                   onClick={cleanProblematicCollections}
-                   size="sm"
-                   variant="outline"
-                   className="bg-orange-500/10 border-orange-500/30 text-orange-400 hover:bg-orange-500/20"
-                 >
-                   <Trash2 className="w-4 h-4 mr-2" />
-                   Clean Problematic
-                 </Button>
-                 
-                 <Button
-                   onClick={checkLaunchpadCollections}
-                   size="sm"
-                   variant="outline"
-                   className="bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
-                 >
-                   <Search className="w-4 h-4 mr-2" />
-                   Check Launchpad
-                 </Button>
-               </div>
+              <div className="mb-6 flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-white mb-2">Pending Images for Approval</h2>
+                  <p className="text-gray-400">Review and approve images for Launchpad collections</p>
+                </div>
+                {/* Debug admin buttons removed intentionally */}
+              </div>
               
               {pendingLoading ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
