@@ -125,8 +125,18 @@ export default function CollectionsTable({
       setError(null)
       
       try {
-        // Fast-path: espelha exatamente os itens recebidos (como o grid)
-        const generateTrendData = () => Array.from({ length: 7 }, () => Math.random() * 100)
+        // Gerar dados de trend mais realistas baseados no floor price
+        const generateTrendData = (floorPrice: number) => {
+          const baseValue = Math.max(floorPrice * 100, 50); // Base para o trend
+          const variation = baseValue * 0.2; // Variação de ±20%
+          
+          return Array.from({ length: 7 }, (_, index) => {
+            // Criar uma tendência suave com alguma volatilidade
+            const trendFactor = 1 + (index - 3) * 0.02; // Leve tendência
+            const randomFactor = 0.9 + Math.random() * 0.2; // ±10% de volatilidade
+            return Math.max(10, baseValue * trendFactor * randomFactor);
+          });
+        }
         if (Array.isArray(marketplaceData) && marketplaceData.length > 0) {
           const getImage = (item: any) => item.imageUrl || item.image || getCollectionImage('default')
           const getCollectionId = (item: any) => item.collectionId || item.customCollectionId || item.collectionData?._id || item._id
@@ -147,7 +157,7 @@ export default function CollectionsTable({
               supply: 0,
               owners: 0,
               category,
-              trendData: generateTrendData(),
+              trendData: generateTrendData(0),
               isWatchlisted: false,
               isOwned: false,
               collectionId: getCollectionId(item),
@@ -229,25 +239,73 @@ export default function CollectionsTable({
         // - Jersey, Stadium, Badge = IMAGENS FIXAS
         // - Launchpad Collections = IMAGENS ORIGINAIS
 
-        // Função para calcular estatísticas reais
+        // Função para calcular estatísticas reais dos nossos dados
         const calculateRealStats = (categoryItems: any[], categoryName: string) => {
-          const listedItems = categoryItems.filter(item => item.isListed || item.isAuction);
+          console.log(`📊 Calculando stats para ${categoryName}:`, categoryItems.length, 'items');
+          
+          // Filtrar NFTs listados (que têm marketplace.isListed ou isListed)
+          const listedItems = categoryItems.filter(item => 
+            item.marketplace?.isListed || 
+            item.isListed || 
+            item.isAuction || 
+            item.marketplace?.isAuction
+          );
+          
+          console.log(`📊 ${categoryName} - Items listados:`, listedItems.length);
+          
+          // Extrair preços dos items listados
           const prices = listedItems.map(item => {
-            const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
+            let priceStr = '';
+            
+            // Tentar diferentes campos de preço
+            if (item.marketplace?.priceFormatted) {
+              priceStr = item.marketplace.priceFormatted;
+            } else if (item.marketplace?.price) {
+              priceStr = item.marketplace.price;
+            } else if (item.price) {
+              priceStr = item.price;
+            }
+            
+            // Remover " MATIC", "(Bid)", etc e converter para número
+            const cleanPrice = priceStr.toString()
+              .replace(/\s*(MATIC|CHZ|ETH)\s*/gi, '')
+              .replace(/\s*\(.*?\)\s*/g, '')
+              .replace(/,/g, '')
+              .trim();
+            
+            const price = parseFloat(cleanPrice);
+            console.log(`💰 ${item.name}: "${priceStr}" → "${cleanPrice}" → ${price}`);
+            
             return isNaN(price) ? 0 : price;
           }).filter(price => price > 0);
+          
+          console.log(`📊 ${categoryName} - Preços válidos:`, prices);
           
           const floorPrice = prices.length > 0 ? Math.min(...prices) : 0;
           const totalVolume = prices.reduce((sum, price) => sum + price, 0);
           const avgPrice = prices.length > 0 ? totalVolume / prices.length : 0;
           
-          return {
+          // Calcular unique owners
+          const owners = Array.from(new Set(
+            categoryItems.map(item => 
+              item.owner || 
+              item.creator?.wallet || 
+              item.minterAddress ||
+              item.stats?.uniqueOwners ||
+              'unknown'
+            ).filter(owner => owner !== 'unknown')
+          )).length || 1;
+          
+          const stats = {
             floorPrice,
-            volume24h: totalVolume,
-            sales24h: listedItems.length,
+            volume24h: totalVolume, // Total volume dos listados
+            sales24h: listedItems.length, // Quantidade de items listados
             supply: categoryItems.length,
-            owners: Array.from(new Set(categoryItems.map(item => item.owner || item.creator?.wallet || 'unknown').filter(owner => owner !== 'unknown'))).length || 1
+            owners
           };
+          
+          console.log(`✅ ${categoryName} stats:`, stats);
+          return stats;
         };
 
         // Jersey Collection - IMAGEM FIXA GARANTIDA
@@ -271,7 +329,7 @@ export default function CollectionsTable({
             supply: jerseyStats.supply,
             owners: jerseyStats.owners,
             category: 'jersey',
-            trendData: generateTrendData(),
+            trendData: generateTrendData(jerseyStats.floorPrice),
             isWatchlisted: false,
             isOwned: false
           });
@@ -297,7 +355,7 @@ export default function CollectionsTable({
             supply: stadiumStats.supply,
             owners: stadiumStats.owners,
             category: 'stadium',
-            trendData: generateTrendData(),
+            trendData: generateTrendData(stadiumStats.floorPrice),
             isWatchlisted: true,
             isOwned: false
           });
@@ -323,7 +381,7 @@ export default function CollectionsTable({
             supply: badgeStats.supply,
             owners: badgeStats.owners,
             category: 'badge',
-            trendData: generateTrendData(),
+            trendData: generateTrendData(badgeStats.floorPrice),
             isWatchlisted: false,
             isOwned: true
           });
@@ -344,19 +402,41 @@ export default function CollectionsTable({
             dbImageUrl = getCollectionImage('default');
           }
           
-          // Calcular estatísticas específicas para launchpad
+          // Calcular estatísticas específicas para launchpad usando dados reais
           const calculateLaunchpadStats = (collection: any) => {
             const totalSupply = collection.marketplace?.totalUnits || collection.collectionData?.totalSupply || 100;
             const mintedUnits = collection.marketplace?.mintedUnits || collection.collectionData?.minted || 0;
             const availableUnits = collection.marketplace?.availableUnits || (totalSupply - mintedUnits);
-            const price = parseFloat(collection.collectionData?.price || '0');
             
+            // Buscar NFTs listados desta coleção nos dados do marketplace
+            const collectionNFTs = marketplaceData.filter(item => 
+              item.collectionId === collection.collectionId ||
+              item.customCollectionId === collection.collectionId ||
+              item._id === collection.collectionId
+            );
+            
+            console.log(`📊 Launchpad ${collection.name}: ${collectionNFTs.length} NFTs encontrados`);
+            
+            // Se temos NFTs da coleção, calcular stats reais
+            if (collectionNFTs.length > 0) {
+              const realStats = calculateRealStats(collectionNFTs, `Launchpad-${collection.name}`);
+              return {
+                floorPrice: realStats.floorPrice,
+                volume24h: realStats.volume24h,
+                sales24h: realStats.sales24h,
+                supply: totalSupply, // Total supply da coleção
+                owners: realStats.owners
+              };
+            }
+            
+            // Fallback para coleções sem NFTs específicos
+            const price = parseFloat(collection.collectionData?.price || collection.price || '0');
             return {
-              floorPrice: price,
+              floorPrice: price, // Preço base da coleção
               volume24h: mintedUnits * price, // Volume baseado no mintado
-              sales24h: mintedUnits,
+              sales24h: mintedUnits, // NFTs mintados como "vendas"
               supply: totalSupply,
-              owners: collection.stats?.uniqueOwners || 1
+              owners: collection.stats?.uniqueOwners || Math.max(1, Math.floor(mintedUnits * 0.7)) // Estimativa: 70% dos mintados = unique owners
             };
           };
 
@@ -374,7 +454,7 @@ export default function CollectionsTable({
             supply: stats.supply,
             owners: stats.owners,
             category: 'launchpad',
-            trendData: generateTrendData(),
+            trendData: generateTrendData(stats.floorPrice),
             isWatchlisted: false,
             isOwned: false,
             collectionId: collection.collectionData?._id || collection.customCollectionId || collection._id,
@@ -402,19 +482,41 @@ export default function CollectionsTable({
             dbImageUrl = getCollectionImage('default');
           }
           
-          // Calcular estatísticas específicas para custom collections
+          // Calcular estatísticas específicas para custom collections usando dados reais
           const calculateCustomStats = (collection: any) => {
             const totalSupply = collection.marketplace?.totalUnits || collection.collectionData?.totalSupply || 100;
             const mintedUnits = collection.marketplace?.mintedUnits || collection.collectionData?.minted || 0;
             const availableUnits = collection.marketplace?.availableUnits || (totalSupply - mintedUnits);
-            const price = parseFloat(collection.collectionData?.price || '0');
             
+            // Buscar NFTs listados desta coleção nos dados do marketplace
+            const collectionNFTs = marketplaceData.filter(item => 
+              item.collectionId === collection.collectionId ||
+              item.customCollectionId === collection.collectionId ||
+              item._id === collection.collectionId
+            );
+            
+            console.log(`📊 Custom ${collection.name}: ${collectionNFTs.length} NFTs encontrados`);
+            
+            // Se temos NFTs da coleção, calcular stats reais
+            if (collectionNFTs.length > 0) {
+              const realStats = calculateRealStats(collectionNFTs, `Custom-${collection.name}`);
+              return {
+                floorPrice: realStats.floorPrice,
+                volume24h: realStats.volume24h,
+                sales24h: realStats.sales24h,
+                supply: totalSupply, // Total supply da coleção
+                owners: realStats.owners
+              };
+            }
+            
+            // Fallback para coleções sem NFTs específicos
+            const price = parseFloat(collection.collectionData?.price || collection.price || '0');
             return {
-              floorPrice: price,
+              floorPrice: price, // Preço base da coleção
               volume24h: mintedUnits * price, // Volume baseado no mintado
-              sales24h: mintedUnits,
+              sales24h: mintedUnits, // NFTs mintados como "vendas"
               supply: totalSupply,
-              owners: collection.stats?.uniqueOwners || 1
+              owners: collection.stats?.uniqueOwners || Math.max(1, Math.floor(mintedUnits * 0.7)) // Estimativa: 70% dos mintados = unique owners
             };
           };
 
@@ -432,7 +534,7 @@ export default function CollectionsTable({
             supply: stats.supply,
             owners: stats.owners,
             category: 'custom',
-            trendData: generateTrendData(),
+            trendData: generateTrendData(stats.floorPrice),
             isWatchlisted: false,
             isOwned: false,
             collectionId: collection.customCollectionId || collection._id,
