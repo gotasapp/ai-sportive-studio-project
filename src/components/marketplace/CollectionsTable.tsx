@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { getCollectionImage } from './FixedCollectionImages'
 import { normalizeIpfsUri } from '@/lib/utils'
 import { 
@@ -58,6 +59,11 @@ interface CollectionStat {
   trendData: number[] // 7-day trend data for sparkline
   isWatchlisted?: boolean
   isOwned?: boolean
+  // Navegação correta
+  collectionId?: string
+  isCustomCollection?: boolean
+  tokenId?: string | number
+  contractAddress?: string
 }
 
 interface CollectionsTableProps {
@@ -85,6 +91,25 @@ export default function CollectionsTable({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const account = useActiveAccount()
+  const router = useRouter()
+
+  const navigateToCollection = (c: CollectionStat) => {
+    try {
+      // Regras:
+      // - Launchpad e Custom (coleções novas) 
+      //   → página de coleção com id: /marketplace/collection/jersey/{collectionId}
+      // - Contrato antigo (coleções base por tipo)
+      //   → página agregada por tipo: /marketplace/collection/{category}
+      if ((c.isCustomCollection || c.category === 'launchpad') && c.collectionId) {
+        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
+        return
+      }
+      const cat = (c.category === 'custom') ? 'jersey' : c.category
+      router.push(`/marketplace/collection/${cat}`)
+    } catch (e) {
+      console.warn('Failed to navigate to collection', e)
+    }
+  }
 
   useEffect(() => {
     const processCollectionData = () => {
@@ -310,7 +335,9 @@ export default function CollectionsTable({
             category: 'launchpad',
             trendData: generateTrendData(),
             isWatchlisted: false,
-            isOwned: false
+            isOwned: false,
+            collectionId: collection.collectionData?._id || collection.customCollectionId || collection._id,
+            isCustomCollection: true
           });
         });
 
@@ -366,7 +393,9 @@ export default function CollectionsTable({
             category: 'custom',
             trendData: generateTrendData(),
             isWatchlisted: false,
-            isOwned: false
+            isOwned: false,
+            collectionId: collection.customCollectionId || collection._id,
+            isCustomCollection: true
           });
         });
 
@@ -633,13 +662,8 @@ export default function CollectionsTable({
                 <td className="p-4">
                   <div className="flex items-center gap-3">
                     {/* Collection Image with Navigation */}
-                    <Link 
-                      href={
-                        // Replicar a lógica do grid: se for custom collection, usar collectionId; senão usar category/name
-                        collection.category === 'custom' && (collection as any).collectionId
-                          ? `/marketplace/collection/jersey/${(collection as any).collectionId}`
-                          : `/marketplace/collection/${collection.category}/${collection.name.replace(/\s+/g, '-').toLowerCase()}`
-                      }
+                    <div 
+                      onClick={() => navigateToCollection(collection)}
                       className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#A20131]/50 transition-all cursor-pointer"
                     >
                       {collection.imageUrl && 
@@ -662,7 +686,7 @@ export default function CollectionsTable({
                           {collection.name.charAt(0)}
                         </div>
                       )}
-                    </Link>
+                    </div>
                     <div>
                       <div className="font-semibold text-[#FDFDFD] flex items-center gap-2">
                         {collection.name}
@@ -734,32 +758,8 @@ export default function CollectionsTable({
                   </span>
                 </td>
                 
-                <td className="p-4 text-center">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="w-4 h-4 text-[#FDFDFD]/70" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent 
-                      align="end" 
-                      className="border-[#FDFDFD]/20"
-                      style={{ backgroundColor: '#14101e' }}
-                    >
-                      <DropdownMenuItem className="text-[#FDFDFD] hover:bg-[#FDFDFD]/10">
-                        <ExternalLink className="w-4 h-4 mr-2" />
-                        View Collection
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        className="text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
-                        onClick={() => handleWatchlistToggle(collection.name)}
-                      >
-                        <Star className="w-4 h-4 mr-2" />
-                        {collection.isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </td>
+                {/* Ações removidas (toggle não utilizado) */}
+                <td className="p-4 text-center"></td>
               </tr>
             ))}
           </tbody>
