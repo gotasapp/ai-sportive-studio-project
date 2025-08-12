@@ -4,8 +4,32 @@ const PYTHON_API_URL = process.env.PYTHON_API_URL || 'http://127.0.0.1:8000';
 
 // Adicione o objeto de estilos genéricos no topo do arquivo
 const GENERIC_STYLE_PROMPTS: Record<string, string> = {
-  "retro-jersey": "A retro-style soccer jersey inspired by the aesthetics of the 80s and 90s. Features thick horizontal or vertical stripes, a soft fabric texture, and a wide ribbed collar (often polo-style) in a contrasting color. Includes vintage stitching details, bold sleeve cuffs, and a looser athletic fit. Displayed floating flat on a clean white background, no mannequin, soft studio lighting, 4K photorealistic quality, with worn color accents and old-school charm.",
-  // Adicione outros estilos se quiser
+  modern: "Ultra-clean lines, sleek fabric, minimal patterns, pro lighting.",
+  retro: "Vintage cut, classic stripes, muted palette, 80’s/90’s sports aesthetic.",
+  national: "Strong national colorways, emblem prominence, heritage motifs.",
+  urban: "Streetwear crossover, bold typography, high-contrast graphics.",
+  classic: "Traditional kit layout, simple striping, timeless serif lettering.",
+  futuristic: "Tech fabrics, iridescent accents, geometric paneling, neon edge.",
+};
+
+// Estilos específicos para stadiums (pode ajustar os textos conforme necessidade)
+const STADIUM_STYLE_PROMPTS: Record<string, string> = {
+  modern: "Contemporary arena lines, LED rim lighting, matte seats, clean pitch textures.",
+  retro: "Old-school terraces, weathered concrete, sepia ambiance, classic floodlights.",
+  night: "Night scene, dramatic stadium lights, high contrast shadows, moody sky.",
+  day: "Clear daylight, crisp colors, soft ambient shadows, realistic sky.",
+  urban: "City backdrop, skyline silhouettes, street-inspired banners and textures.",
+  futuristic: "Parametric architecture, dynamic panels, holographic signage, neon accents.",
+};
+
+// Estilos específicos para badges (pode ajustar os textos conforme necessidade)
+const BADGE_STYLE_PROMPTS: Record<string, string> = {
+  modern: "Flat design, minimal geometry, crisp edges, high contrast, vector-like.",
+  retro: "Vintage crest, textured shading, serif lettering, classic heraldic shapes.",
+  metallic: "Embossed metallic finish, gold/silver highlights, subtle reflections.",
+  neon: "Glow edges, vibrant palette, dark background, bold inner shadows.",
+  engraved: "Engraved effect, depth, subtle noise grain, monochrome elegance.",
+  shield: "Shield silhouette, layered ribbons, central emblem prominence.",
 };
 
 export async function POST(req: Request) {
@@ -18,12 +42,14 @@ export async function POST(req: Request) {
 
     if (sport === 'jersey') {
       endpoint = '/generate-jersey-from-reference';
-      // Se style for um dos genéricos, use o prompt genérico
-      let prompt = body.prompt;
-      if (body.style && GENERIC_STYLE_PROMPTS[body.style as string]) {
-        prompt = GENERIC_STYLE_PROMPTS[body.style as string];
-        console.log('[DEBUG] Usando prompt de estilo genérico:', body.style);
-      }
+      // Concatenação: base + estilo + custom
+      const base = body.prompt || '';
+      const styleAddon = body.style && GENERIC_STYLE_PROMPTS[body.style]
+        ? GENERIC_STYLE_PROMPTS[body.style]
+        : '';
+      const custom = body.customPrompt || '';
+      const finalPrompt = [base, styleAddon, custom].filter(Boolean).join('\n\n');
+
       payload = {
         teamName: body.teamName,
         player_name: body.player_name,
@@ -32,11 +58,19 @@ export async function POST(req: Request) {
         view: body.view,
         quality: body.quality,
         style: body.style,
-        prompt: prompt,
+        prompt: finalPrompt,
         customPrompt: body.customPrompt,
       };
     } else if (sport === 'stadium') {
       endpoint = '/generate-stadium-from-reference';
+      // Concatenação: base + estilo + custom
+      const sBase = body.prompt || '';
+      const sStyle = body.style && STADIUM_STYLE_PROMPTS[body.style]
+        ? STADIUM_STYLE_PROMPTS[body.style]
+        : '';
+      const sCustom = body.customPrompt || '';
+      const stadiumPrompt = [sBase, sStyle, sCustom].filter(Boolean).join('\n\n');
+
       payload = {
         teamName: body.teamName,
         sport: body.sport,
@@ -47,18 +81,26 @@ export async function POST(req: Request) {
         timeOfDay: body.timeOfDay,
         weather: body.weather,
         view: body.view,
-        prompt: body.prompt,
+        prompt: stadiumPrompt,
         customPrompt: body.customPrompt,
         analysis: body.analysis, // resultado vision, se houver
       };
     } else if (sport === 'badge') {
       endpoint = '/generate-badge-from-reference';
+      // Concatenação: base + estilo + custom
+      const bBase = body.prompt || '';
+      const bStyle = body.style && BADGE_STYLE_PROMPTS[body.style]
+        ? BADGE_STYLE_PROMPTS[body.style]
+        : '';
+      const bCustom = body.customPrompt || '';
+      const badgePrompt = [bBase, bStyle, bCustom].filter(Boolean).join('\n\n');
+
       payload = {
         teamName: body.teamName,
         sport: body.sport,
         quality: body.quality,
         style: body.style,
-        prompt: body.prompt,
+        prompt: badgePrompt,
         customPrompt: body.customPrompt,
         view: body.view,
         analysis: body.analysis,
