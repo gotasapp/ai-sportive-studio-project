@@ -6,7 +6,6 @@ import Header from '@/components/Header';
 import FeaturedCarousel from '@/components/marketplace/FeaturedCarousel';
 import MarketplaceFilters, { 
   ViewType, 
-  TimeFilter, 
   PriceSort, 
   TokenType, 
   CollectionTab 
@@ -39,7 +38,6 @@ export default function MarketplacePage() {
   const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
-  const [timeFilter, setTimeFilter] = useState<TimeFilter>('all');
   const [priceSort, setPriceSort] = useState<PriceSort>('volume-desc');
   const [tokenType, setTokenType] = useState<TokenType>('all');
   const [viewType, setViewType] = useState<ViewType>('table');
@@ -74,40 +72,7 @@ export default function MarketplacePage() {
       });
     }
     
-    // Filtro por tempo (24h, 7d, 30d)
-    if (timeFilter !== 'all') {
-      const now = new Date();
-      let cutoffDate: Date;
-      
-      switch (timeFilter) {
-        case '24h':
-          cutoffDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-          break;
-        case '7d':
-          cutoffDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          break;
-        case '30d':
-          cutoffDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          cutoffDate = new Date(0);
-      }
 
-      filtered = filtered.filter(item => {
-        // Tentar múltiplas fontes de data
-        const dateString = item.createdAt || item.updatedAt;
-        
-        // Se não tem data, INCLUIR no resultado (assumir que é recente)
-        if (!dateString) return true;
-        
-        const itemDate = new Date(dateString);
-        // Se data inválida, INCLUIR no resultado (assumir que é recente)
-        if (isNaN(itemDate.getTime())) return true;
-        
-        // Só filtrar se temos uma data válida
-        return itemDate >= cutoffDate;
-      });
-    }
     
     // Filtro por busca
     if (searchTerm.trim()) {
@@ -123,7 +88,7 @@ export default function MarketplacePage() {
     }
     
     setFilteredNfts(filtered);
-  }, [marketplaceItems, tokenType, searchTerm, blacklist, timeFilter]);
+  }, [marketplaceItems, tokenType, searchTerm, blacklist]);
   useEffect(() => {
     const items = marketplaceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
@@ -247,7 +212,6 @@ export default function MarketplacePage() {
       return (
         <CollectionsTable
           viewType={viewType}
-          timeFilter={timeFilter}
           priceSort={priceSort}
           tokenType={tokenType}
           activeTab={activeTab}
@@ -414,8 +378,6 @@ export default function MarketplacePage() {
               <MarketplaceFilters
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
-                timeFilter={timeFilter}
-                onTimeFilterChange={setTimeFilter}
                 priceSort={priceSort}
                 onPriceSortChange={setPriceSort}
                 tokenType={tokenType}

@@ -27,7 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ViewType, TimeFilter, PriceSort, TokenType, CollectionTab } from './MarketplaceFilters'
+import { ViewType, PriceSort, TokenType, CollectionTab } from './MarketplaceFilters'
 
 
 interface NFTData {
@@ -68,7 +68,6 @@ interface CollectionStat {
 
 interface CollectionsTableProps {
   viewType: ViewType
-  timeFilter: TimeFilter
   priceSort: PriceSort
   tokenType: TokenType
   activeTab: CollectionTab
@@ -79,7 +78,6 @@ interface CollectionsTableProps {
 
 export default function CollectionsTable({
   viewType,
-  timeFilter,
   priceSort,
   tokenType,
   activeTab,
@@ -508,7 +506,7 @@ export default function CollectionsTable({
     }
 
     processCollectionData()
-  }, [timeFilter, priceSort, tokenType, activeTab, searchTerm, marketplaceData])
+  }, [priceSort, tokenType, activeTab, searchTerm, marketplaceData])
 
   const renderChange = (change: number, showIcon = true) => {
     const isPositive = change > 0

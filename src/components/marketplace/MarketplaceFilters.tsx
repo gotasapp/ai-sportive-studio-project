@@ -11,7 +11,6 @@ import {
   Star,
   Wallet,
   TrendingUp,
-  Calendar,
   Eye
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -33,7 +32,6 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export type ViewType = 'grid' | 'table'
-export type TimeFilter = '24h' | '7d' | '30d' | 'all'
 export type PriceSort = 'low-to-high' | 'high-to-low' | 'volume-desc' | 'volume-asc'
 export type TokenType = 'all' | 'jerseys' | 'stadiums' | 'badges' | 'launchpad'
 export type CollectionTab = 'all' | 'watchlist' | 'owned'
@@ -42,10 +40,6 @@ interface MarketplaceFiltersProps {
   // Tab States
   activeTab: CollectionTab
   onTabChange: (tab: CollectionTab) => void
-  
-  // Time Filter
-  timeFilter: TimeFilter
-  onTimeFilterChange: (time: TimeFilter) => void
   
   // Sort & Type
   priceSort: PriceSort
@@ -72,8 +66,6 @@ interface MarketplaceFiltersProps {
 export default function MarketplaceFilters({
   activeTab,
   onTabChange,
-  timeFilter,
-  onTimeFilterChange,
   priceSort,
   onPriceSortChange,
   tokenType,
@@ -87,12 +79,7 @@ export default function MarketplaceFilters({
   ownedCount
 }: MarketplaceFiltersProps) {
   
-  const timeFilterOptions = [
-    { value: '24h', label: '24H', icon: Calendar },
-    { value: '7d', label: '7D', icon: Calendar },
-    { value: '30d', label: '30D', icon: Calendar },
-    { value: 'all', label: 'All', icon: Calendar }
-  ]
+
   
   const viewOptions = [
     { value: 'table', icon: Table, label: 'Table' },
@@ -135,25 +122,6 @@ export default function MarketplaceFilters({
       </Tabs>
         
         <div className="flex items-center gap-2">
-          {/* Time Filter Buttons */}
-          <div className="flex items-center gap-1 bg-[#000000] border border-[#FDFDFD]/20 rounded-lg p-1">
-            {timeFilterOptions.map((option) => (
-              <Button
-                key={option.value}
-                variant={timeFilter === option.value ? "default" : "ghost"}
-                size="sm"
-                onClick={() => onTimeFilterChange(option.value as TimeFilter)}
-                className={`h-8 px-3 text-xs ${
-                  timeFilter === option.value 
-                    ? 'bg-[#A20131] text-[#FDFDFD]' 
-                    : 'text-[#FDFDFD]/70 hover:text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
-                }`}
-              >
-                {option.label}
-              </Button>
-            ))}
-          </div>
-
           {/* Token Type Dropdown */}
           <Select value={tokenType} onValueChange={(value) => onTokenTypeChange(value as TokenType)}>
             <SelectTrigger className="w-40 bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] justify-between">
