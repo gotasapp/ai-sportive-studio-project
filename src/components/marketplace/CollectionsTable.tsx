@@ -88,6 +88,8 @@ export default function CollectionsTable({
   const [collections, setCollections] = useState<CollectionStat[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 20
   const account = useActiveAccount()
   const router = useRouter()
 
@@ -137,44 +139,9 @@ export default function CollectionsTable({
             return Math.max(10, baseValue * trendFactor * randomFactor);
           });
         }
-        if (Array.isArray(marketplaceData) && marketplaceData.length > 0) {
-          const getImage = (item: any) => item.imageUrl || item.image || getCollectionImage('default')
-          const getCollectionId = (item: any) => item.collectionId || item.customCollectionId || item.collectionData?._id || item._id
-          const mapped: CollectionStat[] = (marketplaceData || []).map((item: any, index: number) => {
-            const isLaunchpad = item.type === 'launchpad_collection' || item.collectionType === 'launchpad' || item.marketplace?.isLaunchpadCollection
-            const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpad
-            const category = isCollection ? (isLaunchpad ? 'launchpad' : 'custom') : (item.category || 'jersey')
-            return {
-              rank: index + 1,
-              name: item.name,
-              imageUrl: getImage(item),
-              floorPrice: 0,
-              floorPriceChange: 0,
-              volume24h: 0,
-              volumeChange: 0,
-              sales24h: 0,
-              salesChange: 0,
-              supply: 0,
-              owners: 0,
-              category,
-              trendData: generateTrendData(0),
-              isWatchlisted: false,
-              isOwned: false,
-              collectionId: getCollectionId(item),
-              isCustomCollection: !!(isLaunchpad || item.isCustomCollection || item.marketplace?.isCustomCollection),
-              tokenId: item.tokenId,
-              contractAddress: item.contractAddress,
-            } as CollectionStat
-          })
-
-          let filtered = mapped
-          if (searchTerm.trim()) {
-            filtered = filtered.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
-          }
-          setCollections(filtered)
-          setLoading(false)
-          return
-        }
+        // DESABILITADO: Fast-path que impedia cálculo de dados reais
+        // Agora sempre usa a lógica completa para calcular dados reais
+        console.log('🚫 Fast-path desabilitado - usando cálculo de dados reais');
 
         // Usar dados do marketplace que já funcionam
         console.log('🎯 Processing collection data from marketplace:', marketplaceData.length, 'items');
@@ -221,7 +188,20 @@ export default function CollectionsTable({
           launchpadCollections: launchpadCollections.length
         });
         
-        // 🔍 DEBUG: Verificar imagens das coleções
+        // 🔍 DEBUG: Verificar estrutura dos dados para cálculo de floor price
+        console.log('🔍 DEBUG: Estrutura dos dados do marketplace:', {
+          totalItems: marketplaceData.length,
+          sampleItem: marketplaceData[0],
+          jerseysSample: jerseys.slice(0, 2).map(item => ({
+            name: item.name,
+            price: item.price,
+            isListed: item.isListed,
+            marketplace: item.marketplace,
+            hasMarketplace: !!item.marketplace,
+            isListedMarketplace: item.marketplace?.isListed
+          }))
+        });
+        
         console.log('🖼️ Launchpad Collections Image Debug:', launchpadCollections.map(item => ({
           name: item.name,
           hasImage: !!item.image,
@@ -610,6 +590,21 @@ export default function CollectionsTable({
     processCollectionData()
   }, [priceSort, tokenType, activeTab, searchTerm, marketplaceData])
 
+  // Reset página quando filtros mudam
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [priceSort, tokenType, activeTab, searchTerm])
+
+  // Calcular paginação
+  const totalPages = Math.ceil(collections.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentCollections = collections.slice(startIndex, endIndex)
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+  }
+
   const renderChange = (change: number, showIcon = true) => {
     const isPositive = change > 0
     const isNeutral = change === 0
@@ -777,7 +772,7 @@ export default function CollectionsTable({
             </tr>
           </thead>
           <tbody>
-            {collections.map((collection) => (
+            {currentCollections.map((collection) => (
               <tr 
                 key={collection.name} 
                 className="border-b border-[#FDFDFD]/5 hover:bg-[#FDFDFD]/5 transition-colors"
@@ -911,6 +906,55 @@ export default function CollectionsTable({
           </tbody>
         </table>
       </div>
+
+      {/* Paginação */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-6 py-4 border-t border-[#FDFDFD]/10">
+          <div className="text-sm text-[#FDFDFD]/70">
+            Showing {startIndex + 1} to {Math.min(endIndex, collections.length)} of {collections.length} collections
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="bg-transparent border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
+            >
+              Previous
+            </Button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className={`w-8 h-8 p-0 ${
+                    currentPage === page
+                      ? 'bg-[#A20131] text-[#FDFDFD]'
+                      : 'bg-transparent border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
+                  }`}
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="bg-transparent border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10"
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
