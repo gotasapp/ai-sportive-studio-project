@@ -22,6 +22,29 @@ const STADIUM_STYLE_PROMPTS: Record<string, string> = {
   futuristic: "Parametric architecture, dynamic panels, holographic signage, neon accents.",
 };
 
+// Enforcers para evitar ambiguidade no prompt do estádio
+const TIME_OF_DAY_ENFORCERS: Record<string, string> = {
+  night: "RENDER STRICTLY AT NIGHT: dark sky, stadium floodlights ON, strong contrast, NO sunset, NO golden hour, NO daylight.",
+  day: "RENDER IN DAYLIGHT: clear sky, natural sunlight shadows, NO stadium floodlights.",
+};
+
+const ATMOSPHERE_PROMPTS: Record<string, string> = {
+  packed: "Atmosphere: stands FULL of fans, energetic crowd, flags and banners visible.",
+  empty: "Atmosphere: EMPTY STANDS, NO fans.",
+};
+
+const PERSPECTIVE_PROMPTS: Record<string, string> = {
+  external: "Perspective: EXTERNAL wide shot showing facade/structure. Field can be partially visible.",
+  internal: "Perspective: INTERNAL on-pitch view, field and stands composition.",
+};
+
+const WEATHER_PROMPTS: Record<string, string> = {
+  clear: "Weather: CLEAR sky.",
+  cloudy: "Weather: CLOUDY sky with soft light.",
+  rain: "Weather: RAINY conditions, wet surfaces and reflections.",
+  fog: "Weather: LIGHT FOG, soft diffusion of lights.",
+};
+
 // Estilos específicos para badges (pode ajustar os textos conforme necessidade)
 const BADGE_STYLE_PROMPTS: Record<string, string> = {
   modern: "Flat design, minimal geometry, crisp edges, high contrast, vector-like.",
@@ -63,13 +86,24 @@ export async function POST(req: Request) {
       };
     } else if (sport === 'stadium') {
       endpoint = '/generate-stadium-from-reference';
-      // Concatenação: base + estilo + custom
-      const sBase = body.prompt || '';
-      const sStyle = body.style && STADIUM_STYLE_PROMPTS[body.style]
-        ? STADIUM_STYLE_PROMPTS[body.style]
-        : '';
+      // Concatenação com limpeza de conflitos e enforcers fortes
+      const sBaseRaw = body.prompt || '';
+      // remover diretivas conflitantes e termos como golden hour/afternoon/daylight
+      const sBase = sBaseRaw
+        .replace(/(Time of day|Atmosphere|Weather|Perspective)\s*:\s*[^\n]+/gi, '')
+        .replace(/\b(golden hour|sunset|afternoon|daylight|morning|evening)\b/gi, '')
+        .trim();
+
+      const styleKey = body.style || 'modern';
+      const sStyle = STADIUM_STYLE_PROMPTS[styleKey] || '';
+      const sPersp = PERSPECTIVE_PROMPTS[body.perspective] || '';
+      const sAtm   = ATMOSPHERE_PROMPTS[body.atmosphere] || '';
+      const sTod   = TIME_OF_DAY_ENFORCERS[body.timeOfDay] || '';
+      const sWea   = WEATHER_PROMPTS[body.weather] || '';
       const sCustom = body.customPrompt || '';
-      const stadiumPrompt = [sBase, sStyle, sCustom].filter(Boolean).join('\n\n');
+      const stadiumPrompt = [sBase, sStyle, sPersp, sAtm, sTod, sWea, sCustom]
+        .filter(Boolean)
+        .join('\n\n');
 
       payload = {
         teamName: body.teamName,
