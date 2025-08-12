@@ -121,6 +121,45 @@ export default function CollectionsTable({
       setError(null)
       
       try {
+        // Fast-path: espelha exatamente os itens recebidos (como o grid)
+        const generateTrendData = () => Array.from({ length: 7 }, () => Math.random() * 100)
+        if (Array.isArray(marketplaceData) && marketplaceData.length > 0) {
+          const getImage = (item: any) => item.imageUrl || item.image || getCollectionImage('default')
+          const getCollectionId = (item: any) => item.collectionId || item.customCollectionId || item.collectionData?._id || item._id
+          const mapped: CollectionStat[] = (marketplaceData || []).map((item: any, index: number) => {
+            const isLaunchpad = item.type === 'launchpad_collection' || item.collectionType === 'launchpad' || item.marketplace?.isLaunchpadCollection
+            const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpad
+            const category = isCollection ? (isLaunchpad ? 'launchpad' : 'custom') : (item.category || 'jersey')
+            return {
+              rank: index + 1,
+              name: item.name,
+              imageUrl: getImage(item),
+              floorPrice: 0,
+              floorPriceChange: 0,
+              volume24h: 0,
+              volumeChange: 0,
+              sales24h: 0,
+              salesChange: 0,
+              supply: 0,
+              owners: 0,
+              category,
+              trendData: generateTrendData(),
+              isWatchlisted: false,
+              isOwned: false,
+              collectionId: getCollectionId(item),
+              isCustomCollection: !!(isLaunchpad || item.isCustomCollection || item.marketplace?.isCustomCollection),
+            } as CollectionStat
+          })
+
+          let filtered = mapped
+          if (searchTerm.trim()) {
+            filtered = filtered.filter(c => c.name?.toLowerCase().includes(searchTerm.toLowerCase()))
+          }
+          setCollections(filtered)
+          setLoading(false)
+          return
+        }
+
         // Usar dados do marketplace que já funcionam
         console.log('🎯 Processing collection data from marketplace:', marketplaceData.length, 'items');
         console.log('🔍 Marketplace data sample:', marketplaceData[0]);

@@ -253,7 +253,7 @@ export default function MarketplacePage() {
           activeTab={activeTab}
           searchTerm={searchTerm}
           onToggleWatchlist={handleToggleWatchlist}
-          marketplaceData={marketplaceItems || []}
+          marketplaceData={filteredNfts || []}
         />
       );
     }
