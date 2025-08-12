@@ -96,15 +96,21 @@ export default function CollectionsTable({
   const navigateToCollection = (c: CollectionStat) => {
     try {
       // Regras:
-      // - Launchpad e Custom (coleções novas) 
-      //   → página de coleção com id: /marketplace/collection/jersey/{collectionId}
-      // - Contrato antigo (coleções base por tipo)
-      //   → página agregada por tipo: /marketplace/collection/{category}
+      // - Launchpad/Custom → página da coleção por id
       if ((c.isCustomCollection || c.category === 'launchpad') && c.collectionId) {
         router.push(`/marketplace/collection/jersey/${c.collectionId}`)
         return
       }
-      const cat = (c.category === 'custom') ? 'jersey' : c.category
+
+      // - Contrato antigo (NFT individual) → mesmo padrão do grid
+      //   /marketplace/collection/{category}/{category}/{tokenId}
+      const cat = (c.category === 'custom' ? 'jersey' : (c.category || 'jersey'))
+      if (c.tokenId) {
+        router.push(`/marketplace/collection/${cat}/${cat}/${c.tokenId}`)
+        return
+      }
+
+      // - Fallback: página agregada por tipo
       router.push(`/marketplace/collection/${cat}`)
     } catch (e) {
       console.warn('Failed to navigate to collection', e)
@@ -148,6 +154,8 @@ export default function CollectionsTable({
               isOwned: false,
               collectionId: getCollectionId(item),
               isCustomCollection: !!(isLaunchpad || item.isCustomCollection || item.marketplace?.isCustomCollection),
+              tokenId: item.tokenId,
+              contractAddress: item.contractAddress,
             } as CollectionStat
           })
 
@@ -713,7 +721,7 @@ export default function CollectionsTable({
                           className="w-12 h-12 object-cover rounded"
                           onError={(e) => {
                             const target = e.target as HTMLImageElement;
-                            target.src = '/api/placeholder/400/400';
+                            target.src = '/fallback.svg';
                           }}
                         />
                       ) : (
