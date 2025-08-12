@@ -1344,12 +1344,14 @@ export default function LaunchpadPage() {
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row gap-4 mb-6">
               <div className="relative flex-1">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                {/* Search like marketplace: only icon, placeholder hidden; icon hides on typing */}
+                <Search className={`absolute left-3 top-3 w-4 h-4 text-gray-400 transition-opacity ${searchTerm ? 'opacity-0' : 'opacity-100'}`} />
                 <Input
-                  placeholder="Search collections..."
+                  aria-label="Search collections"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 cyber-input"
+                  placeholder=""
+                  className="pl-10 bg-[#0b0518] border-[#FDFDFD]/20 text-[#FDFDFD] placeholder-transparent focus-visible:ring-0 focus:border-[#FDFDFD]/30"
                 />
               </div>
               
@@ -1381,7 +1383,7 @@ export default function LaunchpadPage() {
         </div>
 
         {/* Pending Images Section - Admin Only */}
-        {isUserAdmin && pendingImages.length > 0 && (
+        {false && isUserAdmin && pendingImages.length > 0 && (
           <div className="container mx-auto px-6 md:px-8 lg:px-12 py-6">
             <div className="max-w-7xl mx-auto">
                              <div className="mb-6 flex items-center justify-between">
