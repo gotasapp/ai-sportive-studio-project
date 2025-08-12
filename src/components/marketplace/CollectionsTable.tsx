@@ -215,10 +215,6 @@ export default function CollectionsTable({
           imageType: typeof (item.image || item.imageUrl || item.metadata?.image)
         })));
 
-        // Gerar estatísticas realísticas baseadas nos dados reais
-        const generateTrendData = () => 
-          Array.from({ length: 7 }, () => Math.random() * 100)
-
         console.log('🎲 About to create collections array');
         const collectionsData: CollectionStat[] = []
         console.log('✅ Collections array created:', collectionsData);
