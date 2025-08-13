@@ -64,8 +64,14 @@ export default function CollectionOverviewCard({
   // Calculate progress percentage for minting
   const mintProgress = totalUnits > 0 ? Math.round((mintedUnits / totalUnits) * 100) : 0;
   
-  // Normalização de categoria
-  const normalizedCategory = category === 'jerseys' ? 'jersey' : category;
+  // Normalização de categoria (cobre plurais e aliases de launchpad)
+  const normalizedCategory = (() => {
+    const c = (category || '').toLowerCase();
+    if (c === 'jersey' || c === 'jerseys' || c === 'launchpad' || c === 'launchpad_collection') return 'jersey';
+    if (c === 'stadium' || c === 'stadiums') return 'stadium';
+    if (c === 'badge' || c === 'badges') return 'badge';
+    return c || 'jersey';
+  })();
   // Se for custom (ou launchpad tratado como custom no grid) e possuir collectionId → rota por collection
   const collectionUrl = isCustomCollection && collectionId 
     ? `/marketplace/collection/${normalizedCategory}/${collectionId}`
