@@ -127,7 +127,7 @@ export default function MarketplacePage() {
       <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
         <div className="flex flex-col items-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto"></div>
-          <p className="text-white mt-4">Carregando marketplace...</p>
+          <p className="text-white mt-4">Loading marketplace...</p>
         </div>
       </div>
     );

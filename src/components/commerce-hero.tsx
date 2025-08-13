@@ -41,32 +41,32 @@ export function CommerceHero() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
-            <motion.h1
+              <motion.h1
               className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6 leading-tight"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-            >
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              >
               <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent block mb-4">
                 CREATE
               </span>
               <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent block mb-4">
                 FAN SPORTS
-              </span>
+                </span>
               <span className="bg-gradient-to-r from-[#A20131] via-[#A20131]/90 to-[#A20131]/70 bg-clip-text text-transparent block">
                 NFTs
-              </span>
-            </motion.h1>
+                </span>
+              </motion.h1>
             
-            <motion.p
+              <motion.p
               className="text-base md:text-lg lg:text-xl text-gray-400 max-w-xl mb-6 leading-relaxed"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-            >
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              >
               Generate jerseys, stadiums, and badges with technology.
               Trade and collect unique sports NFTs on the CHZ blockchain.
-            </motion.p>
+              </motion.p>
 
             <motion.div
               className="flex gap-3 mb-6"
@@ -154,7 +154,7 @@ export function CommerceHero() {
                   <h2 className="text-center text-xl sm:text-2xl md:text-3xl lg:text-[clamp(1.2rem,3vw,2rem)] font-bold text-white drop-shadow-lg group-hover:scale-105 transition-all duration-300">
                     {category.title}
                   </h2>
-                </div>
+                  </div>
                 
                 {/* Ícone de seta no canto */}
                 <div className="absolute bottom-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center z-10 group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
