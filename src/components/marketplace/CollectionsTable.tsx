@@ -98,15 +98,16 @@ export default function CollectionsTable({
     try {
       const LEGACY_CONTRACT = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
 
+      // Launchpad collections devem ir para a página de mint dedicada
+      if ((c.contractType === 'launchpad' || c.category === 'launchpad') && c.collectionId) {
+        router.push(`/launchpad/${c.collectionId}`)
+        return
+      }
+
       // 0) Se veio com contractAddress e bate com contratos conhecidos, priorizar por tipo
       if (c.contractAddress && LEGACY_CONTRACT && c.contractAddress?.toLowerCase() === LEGACY_CONTRACT.toLowerCase() && c.tokenId != null) {
         // Contrato antigo (legacy): endpoint de token individual
         router.push(`/marketplace/collection/jersey/jersey/${c.tokenId}`)
-        return
-      }
-      // Launchpad: não depende de env; usar tipo/flag e collectionId
-      if ((c.contractType === 'launchpad' || c.category === 'launchpad') && c.collectionId) {
-        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
         return
       }
 
