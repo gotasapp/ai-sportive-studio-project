@@ -96,18 +96,18 @@ export default function CollectionsTable({
   const navigateToCollection = (c: CollectionStat) => {
     try {
       // Regras:
-      // 1) Launchpad/Custom → página da coleção por id (ex.: /marketplace/collection/jersey/6896...)
+      // 1) Launchpad/Custom → página da coleção por id (como no grid)
       if ((c.isCustomCollection || c.category === 'launchpad' || c.category === 'custom') && c.collectionId) {
-        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
+        const catForUrl = 'jersey'
+        router.push(`/marketplace/collection/${catForUrl}/${c.collectionId}`)
         return
       }
 
       // 2) Contrato antigo (NFT individual) → mesmo padrão do grid
-      //    Apenas para category 'jersey'
-      //    /marketplace/collection/jersey/jersey/{tokenId}
+      //    /marketplace/collection/{category}/{category}/{tokenId}
       const cat = (c.category === 'custom' ? 'jersey' : (c.category || 'jersey'))
-      if (c.category === 'jersey' && c.tokenId !== undefined && c.tokenId !== null) {
-        router.push(`/marketplace/collection/jersey/jersey/${c.tokenId}`)
+      if (c.tokenId !== undefined && c.tokenId !== null) {
+        router.push(`/marketplace/collection/${cat}/${cat}/${c.tokenId}`)
         return
       }
 

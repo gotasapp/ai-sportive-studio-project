@@ -64,11 +64,10 @@ export default function CollectionOverviewCard({
   // Calculate progress percentage for minting
   const mintProgress = totalUnits > 0 ? Math.round((mintedUnits / totalUnits) * 100) : 0;
   
-  // Collection page URL (force 'jersey' base for custom/launchpad collections)
-  const baseCategory = isCustomCollection ? 'jersey' : (category === 'jerseys' ? 'jersey' : category);
+  // Collection page URL (comportamento do commit citado)
   const collectionUrl = isCustomCollection && collectionId 
-    ? `/marketplace/collection/${baseCategory}/${collectionId}`
-    : `/marketplace/collection/${baseCategory}/${collection}`;
+    ? `/marketplace/collection/${category === 'jerseys' ? 'jersey' : category}/${collectionId}`
+    : `/marketplace/collection/${category}/${collection}`;
 
   return (
     <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
