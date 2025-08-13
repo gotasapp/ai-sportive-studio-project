@@ -32,7 +32,7 @@ export function CommerceHero() {
     <div className="w-full relative px-6 md:px-12 lg:px-16 xl:px-20 min-h-screen">
 
         {/* Hero Section with Text Left and Video Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 items-center min-h-[60vh] py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 items-center min-h-[50vh] py-6">
           
           {/* Left Column - Text Content (4/7 of space with left margin) */}
           <motion.div
@@ -42,11 +42,7 @@ export function CommerceHero() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <motion.h1
-              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 leading-tight Initial state check: {timestamp: '2025-08-13T10:14:45.505Z', hasReferenceImage: false, hasReferenceImageBlob: false, hasAnalysisResult: false, analysisResultType: 'object', …}
-page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues
-page-6ed4df8f86b65a0c.js:1 🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =
-page-6ed4df8f86b65a0c.js:1 🔍 [GENERATION DEBUG] Initial state check: {timestamp: '2025-08-13T10:14:46.345Z', hasReferenceImage: false, hasReferenceImageBlob: false, hasAnalysisResult: false, analysisResultType: 'object', …}
-page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues"
+              className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6 leading-tight"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
@@ -63,7 +59,7 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
             </motion.h1>
             
             <motion.p
-              className="text-lg md:text-xl lg:text-2xl text-gray-400 max-w-2xl mb-10 leading-relaxed"
+              className="text-base md:text-lg lg:text-xl text-gray-400 max-w-xl mb-6 leading-relaxed"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
@@ -73,18 +69,18 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
             </motion.p>
 
             <motion.div
-              className="flex gap-4 mb-8"
+              className="flex gap-3 mb-6"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             >
               <a href="/marketplace" className="inline-block">
-                <button className="px-8 py-3 bg-[#A20131] hover:bg-[#8B0128] text-white rounded-full font-medium transition-all transform hover:scale-105">
+                <button className="px-6 py-2.5 bg-[#A20131] hover:bg-[#8B0128] text-white rounded-full font-medium transition-all transform hover:scale-105 text-sm">
                   MARKETPLACE
                 </button>
               </a>
               <a href="/jerseys" className="inline-block">
-                <button className="px-8 py-3 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white rounded-full font-medium transition-all">
+                <button className="px-6 py-2.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white rounded-full font-medium transition-all text-sm">
                   CREATE
                 </button>
               </a>
@@ -97,15 +93,15 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
             >
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#8B0128] to-[#A20131] border-2 border-[#14101e]"></div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#A20131] to-[#FF1744] border-2 border-[#14101e]"></div>
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FF1744] to-white border-2 border-[#14101e]"></div>
-                <div className="w-10 h-10 rounded-full bg-white border-2 border-[#14101e] flex items-center justify-center text-xs text-[#A20131] font-semibold">
+              <div className="flex -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B0128] to-[#A20131] border-2 border-[#14101e]"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A20131] to-[#FF1744] border-2 border-[#14101e]"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF1744] to-white border-2 border-[#14101e]"></div>
+                <div className="w-8 h-8 rounded-full bg-white border-2 border-[#14101e] flex items-center justify-center text-xs text-[#A20131] font-semibold">
                   +50
                 </div>
               </div>
-              <div className="text-gray-400">
+              <div className="text-gray-400 text-sm">
                 <span className="text-white font-bold">100+</span> NFTs Created
               </div>
             </motion.div>
@@ -119,7 +115,7 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
           >
-            <div className="relative w-full h-[450px] bg-transparent">
+            <div className="relative w-full h-[350px] bg-transparent">
               <video
                 className="w-full h-full object-contain pl-{0}"
                 autoPlay
@@ -136,7 +132,7 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative rounded-3xl min-h-[190px] sm:min-h-[230px] w-full overflow-hidden transition-all duration-500"
+              className="group relative rounded-3xl min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full overflow-hidden transition-all duration-500"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
@@ -155,7 +151,7 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
                 
                 {/* Título sobreposto */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <h2 className="text-center text-2xl sm:text-3xl md:text-4xl lg:text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-white drop-shadow-lg group-hover:scale-105 transition-all duration-300">
+                  <h2 className="text-center text-xl sm:text-2xl md:text-3xl lg:text-[clamp(1.2rem,3vw,2rem)] font-bold text-white drop-shadow-lg group-hover:scale-105 transition-all duration-300">
                     {category.title}
                   </h2>
                 </div>
