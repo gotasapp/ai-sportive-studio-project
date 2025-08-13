@@ -12,7 +12,7 @@ const categories = [
   },
   {
     title: "Stadiums",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1753267994/stadiums_generated/Santiago%20Bernabeu_1753267993.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755113292/Stadium_2_techax.png ",
     href: "/stadiums",
   },
   {
