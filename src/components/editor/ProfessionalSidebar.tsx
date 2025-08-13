@@ -202,6 +202,7 @@ export default function ProfessionalSidebar({
                 pointerEvents: 'auto'
               }}
             >
+              <option value="" disabled hidden></option>
               {availableTeams.map((team) => (
                 <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
                   {team}
@@ -240,6 +241,7 @@ export default function ProfessionalSidebar({
                 selectedStyle ? "text-[#FDFDFD]" : "text-transparent"
               )}
             >
+              <option value="" disabled hidden></option>
               {STYLE_FILTERS.map((style) => (
                 <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                   {style.label}

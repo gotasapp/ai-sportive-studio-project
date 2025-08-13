@@ -222,6 +222,7 @@ export default function ProfessionalStadiumSidebar({
                 selectedStadium && selectedStadium !== 'custom_only' ? "text-[#FDFDFD]" : "text-transparent"
               )}
             >
+              <option value="" disabled hidden></option>
               {availableStadiums.length > 0 ? (
                 availableStadiums.map((stadium) => (
                   <option key={stadium.id} value={stadium.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
@@ -259,6 +260,7 @@ export default function ProfessionalStadiumSidebar({
                 generationStyle ? "text-[#FDFDFD]" : "text-transparent"
               )}
             >
+              <option value="" disabled hidden></option>
               {GENERATION_STYLES.map((style) => (
                 <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                   {style.label}
@@ -288,6 +290,7 @@ export default function ProfessionalStadiumSidebar({
                   perspective ? "text-[#FDFDFD]" : "text-transparent"
                 )}
               >
+              <option value="" disabled hidden></option>
                 {PERSPECTIVES.map((persp) => (
                   <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {persp.label}
@@ -314,9 +317,10 @@ export default function ProfessionalStadiumSidebar({
                 onChange={(e) => setAtmosphere(e.target.value)}
                 className={cn(
                   "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
-                  atmosphere ? "text-[#FDFDFDF]" : "text-transparent"
+                atmosphere ? "text-[#FDFDFD]" : "text-transparent"
                 )}
               >
+              <option value="" disabled hidden></option>
                 {ATMOSPHERES.map((atm) => (
                   <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {atm.label}
@@ -346,6 +350,7 @@ export default function ProfessionalStadiumSidebar({
                   timeOfDay ? "text-[#FDFDFD]" : "text-transparent"
                 )}
               >
+              <option value="" disabled hidden></option>
                 {TIME_OPTIONS.map((time) => (
                   <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {time.label}
@@ -375,6 +380,7 @@ export default function ProfessionalStadiumSidebar({
                   weather ? "text-[#FDFDFD]" : "text-transparent"
                 )}
               >
+              <option value="" disabled hidden></option>
                 {WEATHER_OPTIONS.map((w) => (
                   <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                     {w.label}

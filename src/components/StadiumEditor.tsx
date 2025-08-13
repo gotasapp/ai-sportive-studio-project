@@ -68,14 +68,14 @@ export default function StadiumEditor() {
 
   // Stadium reference state
   const [availableStadiums, setAvailableStadiums] = useState<ApiStadium[]>([]);
-  const [selectedStadium, setSelectedStadium] = useState('custom_only');
+  const [selectedStadium, setSelectedStadium] = useState('');
   
   // Generation parameters
-  const [generationStyle, setGenerationStyle] = useState<string>('realistic');
-  const [perspective, setPerspective] = useState<string>('external');
-  const [atmosphere, setAtmosphere] = useState<string>('packed');
-  const [timeOfDay, setTimeOfDay] = useState<string>('day');
-  const [weather, setWeather] = useState<string>('clear');
+  const [generationStyle, setGenerationStyle] = useState<string>('');
+  const [perspective, setPerspective] = useState<string>('');
+  const [atmosphere, setAtmosphere] = useState<string>('');
+  const [timeOfDay, setTimeOfDay] = useState<string>('');
+  const [weather, setWeather] = useState<string>('');
   const [quality, setQuality] = useState<string>('standard');
   
   // Custom inputs
@@ -405,14 +405,11 @@ This description will be used to generate a new version of the stadium with slig
           available_references: ref.available_references || [],
         }));
         setAvailableStadiums(stadiums);
-        if (stadiums.length > 0) {
-          setSelectedStadium(stadiums[0].id);
-        }
         console.log(`✅ Loaded ${stadiums.length} stadium references from DB.`);
       } catch (error) {
         console.error('❌ Error loading stadium references:', error);
         setAvailableStadiums([]);
-        setSelectedStadium('custom_only');
+        setSelectedStadium('');
       }
     };
 

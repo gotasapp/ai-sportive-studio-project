@@ -186,6 +186,7 @@ export default function ProfessionalBadgeSidebar({
                 selectedBadge ? "text-[#FDFDFD]" : "text-transparent"
               )}
             >
+              <option value="" disabled hidden></option>
               {availableBadges.map((badge) => (
                 <option key={badge.id} value={badge.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                   {badge.name}
@@ -242,6 +243,7 @@ export default function ProfessionalBadgeSidebar({
                 selectedStyle ? "text-[#FDFDFD]" : "text-transparent"
               )}
             >
+              <option value="" disabled hidden></option>
               {STYLE_FILTERS.map((style) => (
                 <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
                   {style.label}
