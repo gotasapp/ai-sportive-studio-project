@@ -132,7 +132,7 @@ export function CommerceHero() {
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative rounded-3xl min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full overflow-hidden transition-all duration-500"
+              className="group relative rounded min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full max-w-[221px] sm:max-w-[253px] md:max-w-[285px] mx-auto overflow-hidden transition-all duration-500"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
