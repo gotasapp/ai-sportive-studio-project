@@ -226,7 +226,7 @@ export default function BadgeEditor() {
   const generateContent = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      toast.warning('Connect your wallet to start generating and minting', {
+      toast.warning('Connect wallet', {
         icon: '🔒'
       })
       return
@@ -789,7 +789,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         <ProfessionalBadgeActionBar
           onGenerate={generateContent}
           isLoading={isLoading || isAnalyzing}
-          canGenerate={!!(isConnected && badgeName.trim())}
+          canGenerate={!!badgeName.trim()}
           onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
           canMintLegacy={!!canMintLegacy}

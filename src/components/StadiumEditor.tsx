@@ -528,7 +528,7 @@ This description will be used to generate a new version of the stadium with slig
         <ProfessionalStadiumActionBar
           onGenerate={generateStadium}
           isLoading={isGenerating}
-          canGenerate={!!(isConnected && ((selectedStadium && selectedStadium !== 'custom_only') || customPrompt.trim() || isVisionMode))}
+          canGenerate={!!((selectedStadium && selectedStadium !== 'custom_only') || customPrompt.trim() || isVisionMode)}
           generationCost={generationCost}
           onMintLegacy={() => handleMintNFT(false)}
           onMintGasless={() => handleMintNFT(true)}

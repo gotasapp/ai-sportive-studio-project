@@ -1408,7 +1408,7 @@ Design based on analysis: ${analysisText}`
         <ProfessionalActionBar
           onGenerate={generateContent}
           isLoading={isLoading}
-          canGenerate={!!(isConnected && ((selectedTeam && playerName && playerNumber) || isVisionMode))}
+          canGenerate={!!((selectedTeam && playerName && playerNumber) || isVisionMode)}
           generationCost={generationCost}
           onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
