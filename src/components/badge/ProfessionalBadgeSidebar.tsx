@@ -163,27 +163,27 @@ export default function ProfessionalBadgeSidebar({
           </div>
         )}
 
-        {/* NEW: Badge Template Selection */}
+        {/* NEW: Team Selection (Badge reference) */}
         <div className="space-y-2">
-          {/* Template select com placeholder interno */}
+          {/* Select com placeholder interno (ícone + título) */}
           <div className="relative">
-            {!selectedBadge && (
+            {(!selectedBadge || selectedBadge === 'custom_only') && (
               <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
                 <div
                   className="w-6 h-6 rounded-[6px] flex items-center justify-center"
                   style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
                 >
-                  <Award className="w-4 h-4 text-white" />
+                  <Globe className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-sm text-[#ADADAD]">Badge</span>
+                <span className="text-sm text-[#ADADAD]">Teams</span>
               </div>
             )}
             <select
-              value={selectedBadge}
+              value={selectedBadge === 'custom_only' ? '' : selectedBadge}
               onChange={(e) => setSelectedBadge(e.target.value)}
               className={cn(
                 "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
-                selectedBadge ? "text-[#FDFDFD]" : "text-transparent"
+                (!selectedBadge || selectedBadge === 'custom_only') ? "text-transparent" : "text-[#FDFDFD]"
               )}
             >
               <option value="" disabled hidden></option>

@@ -586,39 +586,7 @@ export default function ProfilePage() {
                   <span className="text-sm">{chain?.name || 'CHZ Chain'}</span>
                 </div>
               </div>
-              {/* Stats em chips/cards horizontais */}
-              <div className="flex gap-2 mt-2 overflow-x-auto w-full justify-center md:justify-start">
-                <button
-                  className={`px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none focus:outline-none ${
-                    'bg-[#A20131] text-white'
-                  }`}
-                  style={{ boxShadow: '0 1px 4px 0 rgba(0,0,0,0.10)' }}
-                  disabled
-                >
-                  NFTs: {userProfile?.totalNFTs ?? userNFTs.length}
-                </button>
-                <button
-                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
-                  style={{ background: 'rgba(20,16,30,0.4)' }}
-                  disabled
-                >
-                  Sales: {userProfile?.totalSales ?? 0}
-                </button>
-                <button
-                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
-                  style={{ background: 'rgba(20,16,30,0.4)' }}
-                  disabled
-                >
-                  Purchases: {userProfile?.totalPurchases ?? 0}
-                </button>
-                <button
-                  className="px-4 py-1.5 rounded-lg font-semibold text-xs min-w-[60px] transition-all duration-150 border-none text-white/80"
-                  style={{ background: 'rgba(20,16,30,0.4)' }}
-                  disabled
-                >
-                  Balance: {userProfile?.balance ?? '0'} CHZ
-                </button>
-              </div>
+              {/* Stats chips removidos: NFTs, Sales, Purchases, Balance */}
               {/* Contact Information */}
               {(hasEmail || hasPhone) && (
                 <div className="flex items-center space-x-4 text-gray-400 text-sm mt-2">

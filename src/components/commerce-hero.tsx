@@ -7,22 +7,22 @@ import { cn } from "@/lib/utils";
 const categories = [
   {
     title: "Jerseys",
-    image:" https://res.cloudinary.com/dpilz4p6g/image/upload/v1755113268/Shirt_1_poqt7y.png",
+    image:" https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114562/Shirt__1_-removebg-preview_t2toep.png",
     href: "/jerseys",
   },
   {
     title: "Stadiums",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755113292/Stadium_2_techax.png ",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114573/Stadium__2_-removebg-preview_puz1aw.png ",
     href: "/stadiums",
   },
   {
     title: "Badges",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114203/Badge_ui6gng.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114580/Badge-removebg-preview_bjthog.png",
     href: "/badges",
   },
   {
     title: "Marketplace",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755113274/Kart_1_vdxfqv.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114587/Kart__1_-removebg-preview_rwhdkr.png",
     href: "/marketplace",
   },
 ];
