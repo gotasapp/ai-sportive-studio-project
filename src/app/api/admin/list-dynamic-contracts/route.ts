@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     // 1. Buscar contratos das custom collections
     const customCollections = await db.collection('custom_collections')
       .find(
-        { contractAddress: { $exists: true, $ne: null, $ne: '' } },
+        { contractAddress: { $exists: true, $nin: [null, ''] } },
         { projection: { name: 1, contractAddress: 1, category: 1, createdAt: 1, creatorWallet: 1 } }
       )
       .toArray();
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const launchpadCollections = await db.collection('collections')
       .find(
         { 
-          contractAddress: { $exists: true, $ne: null, $ne: '' },
+          contractAddress: { $exists: true, $nin: [null, ''] },
           type: 'launchpad' 
         },
         { projection: { name: 1, contractAddress: 1, category: 1, createdAt: 1, creator: 1 } }
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       .aggregate([
         {
           $match: { 
-            contractAddress: { $exists: true, $ne: null, $ne: '' }
+            contractAddress: { $exists: true, $nin: [null, ''] }
           }
         },
         {
