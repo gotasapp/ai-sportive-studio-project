@@ -193,8 +193,8 @@ export default function CollectionsTable({
         
         // Launchpad Collections
         const launchpadCollections = marketplaceData.filter(item => {
-          // Dados reais do banco: type: 'launchpad' e contractAddress definido
-          return item.type === 'launchpad' || item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
+          // Dados reais do banco: type: 'launchpad' e status 'active'
+          return (item.type === 'launchpad' && item.status === 'active') || item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
         });
         
         console.log('📊 Categories breakdown:', {

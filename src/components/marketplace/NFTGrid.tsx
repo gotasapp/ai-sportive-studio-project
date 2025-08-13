@@ -36,6 +36,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
         // 🎯 DECISÃO CRÍTICA: Usar CollectionOverviewCard para collections
         // Tratar Launchpad como Custom Collection para navegação por collectionId
         const isLaunchpadCollection =
+          (item.type === 'launchpad' && item.status === 'active') ||
           item.type === 'launchpad_collection' ||
           item.collectionType === 'launchpad' ||
           item.marketplace?.isLaunchpadCollection;
