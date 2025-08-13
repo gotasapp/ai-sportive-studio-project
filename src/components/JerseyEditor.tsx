@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check, Eye, FileImage, X } from 'lucide-react'
+import { Upload, ChevronLeft, ChevronRight, Zap, Gamepad2, Globe, Crown, Palette, Wallet, AlertTriangle, Check, Eye, FileImage, X, CircleAlert } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { getContract, prepareContractCall, createThirdwebClient, sendTransaction } from 'thirdweb'
 import { polygonAmoy } from 'thirdweb/chains'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -57,6 +58,7 @@ const VISION_MODELS = [
 
 export default function JerseyEditor() {
   const router = useRouter()
+  const { toast } = useToast()
   
   // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount()
@@ -579,9 +581,16 @@ export default function JerseyEditor() {
       console.log('❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues')
     }
 
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      setError('🔒 Please connect your wallet to generate jerseys')
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <CircleAlert className="w-4 h-4 text-yellow-400" />
+            <span className="text-yellow-400 font-medium">Connect your wallet to start generating and minting</span>
+          </div>
+        ),
+      })
       return
     }
 

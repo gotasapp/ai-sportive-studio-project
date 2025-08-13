@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
+import { CircleAlert } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 // import { StadiumService, StadiumInfo } from '@/lib/services/stadium-service'; // REMOVED OLD SERVICE
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
@@ -41,6 +43,7 @@ export default function StadiumEditor() {
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
   const router = useRouter()
+  const { toast } = useToast()
   
   // Use account data directly
   const address = account?.address
@@ -160,6 +163,19 @@ export default function StadiumEditor() {
   }
 
   const generateStadium = async () => {
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
+    if (!isConnected) {
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <CircleAlert className="w-4 h-4 text-yellow-400" />
+            <span className="text-yellow-400 font-medium">Connect your wallet to start generating and minting</span>
+          </div>
+        ),
+      })
+      return
+    }
+
     if (isGenerating) return;
     setIsGenerating(true);
     setError('');

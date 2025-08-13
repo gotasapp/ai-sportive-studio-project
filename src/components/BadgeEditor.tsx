@@ -1,9 +1,10 @@
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react'
-import { Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
+import { Zap, Gamepad2, Globe, Crown, Palette, CircleAlert } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -44,6 +45,7 @@ export default function BadgeEditor() {
   const router = useRouter()
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
+  const { toast } = useToast()
   
   const address = account?.address
   const isConnected = !!account
@@ -223,9 +225,16 @@ export default function BadgeEditor() {
   console.log('DEBUG availableBadges:', availableBadges);
 
   const generateContent = async () => {
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      setError('🔒 Please connect your wallet to generate badges')
+      toast({
+        description: (
+          <div className="flex items-center gap-2">
+            <CircleAlert className="w-4 h-4 text-yellow-400" />
+            <span className="text-yellow-400 font-medium">Connect your wallet to start generating and minting</span>
+          </div>
+        ),
+      })
       return
     }
 
