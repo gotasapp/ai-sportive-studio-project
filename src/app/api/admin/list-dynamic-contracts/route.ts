@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
+// Interface para contratos dinâmicos
+interface DynamicContract {
+  address: string;
+  name: string;
+  type: 'custom_collection' | 'launchpad_collection' | 'individual_nft';
+  category: string | null;
+  createdAt: string;
+  creator: string;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const client = await clientPromise;
@@ -58,11 +68,11 @@ export async function GET(request: NextRequest) {
       .toArray();
 
     // Extrair apenas os endereços únicos
-    const allContracts = [
+    const allContracts: DynamicContract[] = [
       ...customCollections.map(c => ({
         address: c.contractAddress,
         name: c.name,
-        type: 'custom_collection',
+        type: 'custom_collection' as const,
         category: c.category,
         createdAt: c.createdAt,
         creator: c.creatorWallet || 'Unknown'
@@ -70,7 +80,7 @@ export async function GET(request: NextRequest) {
       ...launchpadCollections.map(c => ({
         address: c.contractAddress,
         name: c.name,
-        type: 'launchpad_collection',
+        type: 'launchpad_collection' as const,
         category: c.category,
         createdAt: c.createdAt,
         creator: c.creator?.wallet || 'Unknown'
@@ -78,7 +88,7 @@ export async function GET(request: NextRequest) {
       ...nftContracts.map(c => ({
         address: c.contractAddress,
         name: `${c.name} (${c.nftCount} NFTs)`,
-        type: 'individual_nft',
+        type: 'individual_nft' as const,
         category: c.category,
         createdAt: c.createdAt,
         creator: 'Various'
@@ -86,7 +96,7 @@ export async function GET(request: NextRequest) {
     ];
 
     // Remover duplicatas por endereço
-    const uniqueContracts = allContracts.reduce((acc, current) => {
+    const uniqueContracts = allContracts.reduce<DynamicContract[]>((acc, current) => {
       const existing = acc.find(item => item.address === current.address);
       if (!existing) {
         acc.push(current);
