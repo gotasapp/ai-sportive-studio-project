@@ -146,14 +146,15 @@ export function CommerceHero() {
                   />
                 </div>
                 
-                {/* Barra inferior alinhada à direita: título mais próximo da seta */}
-                <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                  <h2 className="text-right mr-[10%] text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
+                {/* Título centralizado na base do card */}
+                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10">
+                  <h2 className="text-center text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
                     {category.title}
                   </h2>
-                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
-                    <ArrowUpRight className="w-5 h-5 text-white" />
-                  </div>
+                </div>
+                {/* Botão de navegação no canto inferior direito (forma anterior) */}
+                <div className="absolute bottom-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center z-10 group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
+                  <ArrowUpRight className="w-5 h-5 text-white" />
                 </div>
               </a>
             </motion.div>

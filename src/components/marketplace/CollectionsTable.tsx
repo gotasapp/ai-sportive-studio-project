@@ -103,10 +103,11 @@ export default function CollectionsTable({
       }
 
       // 2) Contrato antigo (NFT individual) → mesmo padrão do grid
-      //    /marketplace/collection/{category}/{category}/{tokenId}
+      //    Apenas para category 'jersey'
+      //    /marketplace/collection/jersey/jersey/{tokenId}
       const cat = (c.category === 'custom' ? 'jersey' : (c.category || 'jersey'))
-      if (c.tokenId !== undefined && c.tokenId !== null) {
-        router.push(`/marketplace/collection/${cat}/${cat}/${c.tokenId}`)
+      if (c.category === 'jersey' && c.tokenId !== undefined && c.tokenId !== null) {
+        router.push(`/marketplace/collection/jersey/jersey/${c.tokenId}`)
         return
       }
 
