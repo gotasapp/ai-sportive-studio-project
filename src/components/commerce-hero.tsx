@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const categories = [
   {
     title: "Jerseys",
-    image:" https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114562/Shirt__1_-removebg-preview_t2toep.png",
+    image:" https://res.cloudinary.com/dpilz4p6g/image/upload/v1755117248/Jersey_by2802.png",
     href: "/jerseys",
   },
   {
