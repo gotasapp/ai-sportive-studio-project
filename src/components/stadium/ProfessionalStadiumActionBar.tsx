@@ -232,14 +232,7 @@ export default function ProfessionalStadiumActionBar({
       </div>
 
       {/* Connection Warning - Apenas se necessário */}
-      {!isConnected && (
-        <div className="flex items-center justify-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg">
-          <AlertCircle className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm text-yellow-400 font-medium">
-            Connect your wallet to start generating and minting
-          </span>
-        </div>
-      )}
+
 
       {isConnected && !isOnSupportedChain && (
         <div className="flex items-center justify-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg">

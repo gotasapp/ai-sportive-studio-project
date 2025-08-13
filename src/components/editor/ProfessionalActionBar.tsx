@@ -333,8 +333,8 @@ export default function ProfessionalActionBar({
                 body: JSON.stringify({
                   imageUrl: uploadResult.url,
                   category: 'jerseys',
-                  name: 'Jersey para Launchpad',
-                  description: 'Imagem enviada para aprovação',
+                  name: 'Jersey for Launchpad',
+                  description: 'Image sent for approval',
                   price: '0.1',
                   maxSupply: 100,
                   status: 'pending_launchpad'
@@ -344,15 +344,15 @@ export default function ProfessionalActionBar({
               const result = await response.json()
               
               if (result.success) {
-                toast.success('Imagem enviada para o Launchpad!')
-                console.log('✅ Sucesso:', result)
+                toast.success('Image sent to Launchpad!')
+                console.log('✅ Success:', result)
               } else {
-                throw new Error(result.error || 'Falha ao salvar')
+                throw new Error(result.error || 'Failed to save')
               }
               
             } catch (error) {
               console.error('❌ Erro:', error)
-              toast.error('Erro ao enviar para Launchpad')
+              toast.error('Failed to send to Launchpad')
             }
           }}
           disabled={!generatedImageBlob}
@@ -361,7 +361,7 @@ export default function ProfessionalActionBar({
         >
           <div className="flex items-center gap-2">
             <Rocket className="w-5 h-5" />
-            <span>Enviar para Launchpad</span>
+            <span>Send to Launchpad</span>
           </div>
         </Button>
       </div>
@@ -377,15 +377,7 @@ export default function ProfessionalActionBar({
         {hasGeneratedImage && renderMintButtons()}
       </div>
 
-      {/* Connection Warning - Apenas se necessário */}
-      {!isConnected && (
-        <div className="flex items-center justify-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg max-lg:flex-col max-lg:gap-1 max-lg:text-center">
-          <AlertCircle className="w-4 h-4 text-yellow-400" />
-          <span className="text-sm text-yellow-400 font-medium max-lg:text-xs">
-            Connect your wallet to start generating and minting
-          </span>
-        </div>
-      )}
+
 
       {isConnected && !isOnSupportedChain && (
         <div className="flex items-center justify-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg max-lg:flex-col max-lg:gap-1 max-lg:text-center">

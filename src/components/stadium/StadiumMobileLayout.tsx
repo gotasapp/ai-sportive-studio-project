@@ -146,12 +146,7 @@ export default function StadiumMobileLayout({
           <span className="text-red-400 text-sm">{mintError}</span>
         </div>
       )}
-      {!isConnected && (
-        <div className="w-full max-w-sm mb-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-2">
-          <Wallet className="w-5 h-5 text-yellow-400" />
-          <span className="text-yellow-400 text-sm">Connect your wallet to start generating and minting</span>
-        </div>
-      )}
+
       {!isOnSupportedChain && isConnected && (
         <div className="w-full max-w-sm mb-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-yellow-400" />

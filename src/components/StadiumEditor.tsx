@@ -164,7 +164,7 @@ export default function StadiumEditor() {
   const generateStadium = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      toast.warning('Connect your wallet to start generating and minting', {
+      toast.warning('Connect wallet', {
         icon: '🔒'
       })
       return

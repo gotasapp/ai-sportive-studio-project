@@ -250,8 +250,8 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
   return (
     <div className="space-y-4 bg-[#14101e] border border-gray-700 p-6 rounded-lg">
       <RequireWallet
-        title="Conecte sua Wallet"
-        message="Conecte a carteira para mintar o NFT do Launchpad."
+        title="Connect your Wallet"
+        message="Connect your wallet to mint the Launchpad NFT."
         feature="Launchpad Mint"
       >
         <NetworkStatus />
