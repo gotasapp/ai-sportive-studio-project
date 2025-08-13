@@ -64,6 +64,7 @@ interface CollectionStat {
   isCustomCollection?: boolean
   tokenId?: string | number
   contractAddress?: string
+  contractType?: 'legacy' | 'launchpad' | 'custom'
 }
 
 interface CollectionsTableProps {
@@ -95,6 +96,20 @@ export default function CollectionsTable({
 
   const navigateToCollection = (c: CollectionStat) => {
     try {
+      const LEGACY_CONTRACT = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
+
+      // 0) Se veio com contractAddress e bate com contratos conhecidos, priorizar por tipo
+      if (c.contractAddress && LEGACY_CONTRACT && c.contractAddress?.toLowerCase() === LEGACY_CONTRACT.toLowerCase() && c.tokenId != null) {
+        // Contrato antigo (legacy): endpoint de token individual
+        router.push(`/marketplace/collection/jersey/jersey/${c.tokenId}`)
+        return
+      }
+      // Launchpad: não depende de env; usar tipo/flag e collectionId
+      if ((c.contractType === 'launchpad' || c.category === 'launchpad') && c.collectionId) {
+        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
+        return
+      }
+
       // Regras:
       // 1) Launchpad/Custom → página da coleção por id (como no grid)
       if ((c.isCustomCollection || c.category === 'launchpad' || c.category === 'custom') && c.collectionId) {
@@ -178,7 +193,8 @@ export default function CollectionsTable({
         
         // Launchpad Collections
         const launchpadCollections = marketplaceData.filter(item => {
-          return item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
+          // Dados reais do banco: type: 'launchpad' e contractAddress definido
+          return item.type === 'launchpad' || item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
         });
         
         console.log('📊 Categories breakdown:', {
@@ -462,7 +478,9 @@ export default function CollectionsTable({
             isWatchlisted: false,
             isOwned: false,
             collectionId: collection.collectionData?._id || collection.customCollectionId || collection._id,
-            isCustomCollection: true
+            isCustomCollection: true,
+            contractAddress: collection.contractAddress || collection.marketplace?.contractAddress || undefined,
+            contractType: 'launchpad'
           });
         });
 
