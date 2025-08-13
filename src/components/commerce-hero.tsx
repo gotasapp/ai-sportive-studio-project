@@ -17,12 +17,12 @@ const categories = [
   },
   {
     title: "Badges",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1751644118/jerseys/badge_Corinthians_CHAMPION_1_1751644096784.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114203/Badge_ui6gng.png",
     href: "/badges",
   },
   {
     title: "Marketplace",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeiduwpvjbr3f7pkcmgztstb34ru3ogyghpz4ph2yryoovkb2u5romq_dmdv5q.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755113274/Kart_1_vdxfqv.png",
     href: "/marketplace",
   },
 ];
