@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import Link from 'next/link'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -96,13 +97,13 @@ export function HeaderLogo() {
   const isMobile = useIsMobile()
   
   return (
-    <div className="flex items-center space-x-3">
+    <Link href="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity cursor-pointer">
       <Logo 
         width={isMobile ? 120 : 180}
         height={isMobile ? 32 : 48}
         className={isMobile ? "w-auto h-8 ml-2" : "w-auto h-12 ml-6"}
         priority
       />
-    </div>
+    </Link>
   )
 } 
