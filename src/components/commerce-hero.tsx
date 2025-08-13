@@ -138,15 +138,13 @@ export function CommerceHero() {
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
             >
               <a href={category.href} className="absolute inset-0 z-20">
-                {/* Imagem de fundo cobrindo todo o card */}
-                <div className="absolute inset-0">
+                {/* Imagem centralizada e reduzida (50%) com fundo transparente */}
+                <div className="absolute inset-0 flex items-center justify-center bg-transparent">
                   <img
                     src={category.image}
                     alt={category.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+                    className="max-w-[50%] max-h-[50%] object-contain transition-transform duration-500 group-hover:scale-105"
                   />
-                  {/* Overlay escuro para melhorar legibilidade do texto */}
-                  <div className="absolute inset-0 bg-black/40 group-hover:bg-black/30 transition-all duration-300"></div>
                 </div>
                 
                 {/* Título sobreposto */}
