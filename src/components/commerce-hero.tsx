@@ -36,7 +36,7 @@ export function CommerceHero() {
           
           {/* Left Column - Text Content (4/7 of space with left margin) */}
           <motion.div
-            className="text-left lg:col-span-4 ml-12 md:ml-20 lg:ml-24 xl:ml-28 pl-[50px] ml-[50px]"
+            className="text-left lg:col-span-4 ml-0 pl-0 sm:ml-4 md:ml-8 lg:ml-12 xl:ml-16"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
@@ -109,15 +109,14 @@ export function CommerceHero() {
 
           {/* Right Column - Video */}
           <motion.div
-            className="relative lg:col-span-3"
-            style={{ marginLeft: '-60px' }}
+            className="relative lg:col-span-3 lg:-ml-16"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
           >
-            <div className="relative w-full h-[350px] bg-transparent">
+            <div className="relative w-full h-[220px] sm:h-[260px] md:h-[300px] lg:h-[350px] bg-transparent">
               <video
-                className="w-full h-full object-contain pl-{0}"
+                className="w-full h-full object-contain"
                 autoPlay
                 loop
                 muted
@@ -132,7 +131,7 @@ export function CommerceHero() {
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative rounded min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full max-w-[221px] sm:max-w-[253px] md:max-w-[285px] mx-auto overflow-hidden transition-all duration-500"
+              className="group relative rounded min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full max-w-full sm:max-w-[280px] md:max-w-[300px] lg:max-w-[285px] mx-auto overflow-hidden transition-all duration-500"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
@@ -143,13 +142,13 @@ export function CommerceHero() {
                   <img
                     src={category.image}
                     alt={category.title}
-                    className="max-w-[50%] max-h-[50%] object-contain transition-transform duration-500 group-hover:scale-105"
+                    className="max-w-[60%] max-h-[60%] md:max-w-[50%] md:max-h-[50%] object-contain transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 
                 {/* Barra inferior alinhada à direita: título mais próximo da seta */}
                 <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                  <h2 className="text-right text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
+                  <h2 className="text-right mr-[5px] text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
                     {category.title}
                   </h2>
                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
