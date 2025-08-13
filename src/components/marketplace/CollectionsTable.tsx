@@ -96,21 +96,21 @@ export default function CollectionsTable({
   const navigateToCollection = (c: CollectionStat) => {
     try {
       // Regras:
-      // - Launchpad/Custom → página da coleção por id
-      if ((c.isCustomCollection || c.category === 'launchpad') && c.collectionId) {
+      // 1) Launchpad/Custom → página da coleção por id (ex.: /marketplace/collection/jersey/6896...)
+      if ((c.isCustomCollection || c.category === 'launchpad' || c.category === 'custom') && c.collectionId) {
         router.push(`/marketplace/collection/jersey/${c.collectionId}`)
         return
       }
 
-      // - Contrato antigo (NFT individual) → mesmo padrão do grid
-      //   /marketplace/collection/{category}/{category}/{tokenId}
+      // 2) Contrato antigo (NFT individual) → mesmo padrão do grid
+      //    /marketplace/collection/{category}/{category}/{tokenId}
       const cat = (c.category === 'custom' ? 'jersey' : (c.category || 'jersey'))
-      if (c.tokenId) {
+      if (c.tokenId !== undefined && c.tokenId !== null) {
         router.push(`/marketplace/collection/${cat}/${cat}/${c.tokenId}`)
         return
       }
 
-      // - Fallback: página agregada por tipo
+      // 3) Fallback: página agregada por tipo
       router.push(`/marketplace/collection/${cat}`)
     } catch (e) {
       console.warn('Failed to navigate to collection', e)
@@ -288,9 +288,27 @@ export default function CollectionsTable({
           return stats;
         };
 
+        // Helper: escolher um tokenId representativo (para rotas legacy)
+        const getRepresentativeLegacyTokenId = (items: any[]) => {
+          // Prioriza listados/auction, depois menor tokenId disponível
+          const candidates = items.filter(it => it.tokenId !== undefined && it.tokenId !== null)
+          if (candidates.length === 0) return undefined
+          const listed = candidates.filter(it => it.isListed || it.isAuction)
+          const pickFrom = listed.length > 0 ? listed : candidates
+          try {
+            return pickFrom
+              .map(it => ({ id: Number(it.tokenId), raw: it.tokenId }))
+              .filter(x => !Number.isNaN(x.id))
+              .sort((a, b) => a.id - b.id)[0].raw
+          } catch {
+            return pickFrom[0].tokenId
+          }
+        }
+
         // Jersey Collection - IMAGEM FIXA GARANTIDA
         console.log('👕 Creating Jersey Collection with FIXED IMAGE...');
         const jerseyImage = getCollectionImage('Jersey Collection');
+        const jerseyTokenId = getRepresentativeLegacyTokenId(jerseys)
         
         const jerseyStats = jerseys.length > 0 ? calculateRealStats(jerseys, 'jersey') : {
           floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
@@ -311,12 +329,14 @@ export default function CollectionsTable({
             category: 'jersey',
             trendData: generateTrendData(jerseyStats.floorPrice),
             isWatchlisted: false,
-            isOwned: false
+            isOwned: false,
+            tokenId: jerseyTokenId
           });
 
         // Stadium Collection - IMAGEM FIXA GARANTIDA
         console.log('🏟️ Creating Stadium Collection with FIXED IMAGE...');
         const stadiumImage = getCollectionImage('Stadium Collection');
+        const stadiumTokenId = getRepresentativeLegacyTokenId(stadiums)
         
         const stadiumStats = stadiums.length > 0 ? calculateRealStats(stadiums, 'stadium') : {
           floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
@@ -337,12 +357,14 @@ export default function CollectionsTable({
             category: 'stadium',
             trendData: generateTrendData(stadiumStats.floorPrice),
             isWatchlisted: true,
-            isOwned: false
+            isOwned: false,
+            tokenId: stadiumTokenId
           });
 
         // Badge Collection - IMAGEM FIXA GARANTIDA
         console.log('🏆 Creating Badge Collection with FIXED IMAGE...');
         const badgeImage = getCollectionImage('Badge Collection');
+        const badgeTokenId = getRepresentativeLegacyTokenId(badges)
         
         const badgeStats = badges.length > 0 ? calculateRealStats(badges, 'badge') : {
           floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
@@ -363,7 +385,8 @@ export default function CollectionsTable({
             category: 'badge',
             trendData: generateTrendData(badgeStats.floorPrice),
             isWatchlisted: false,
-            isOwned: true
+            isOwned: true,
+            tokenId: badgeTokenId
           });
 
         // Launchpad Collections - USAR IMAGEM DIRETA DO BANCO
