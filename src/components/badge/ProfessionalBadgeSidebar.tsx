@@ -165,51 +165,49 @@ export default function ProfessionalBadgeSidebar({
 
         {/* NEW: Badge Template Selection */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Badge" 
-            section="template" 
-            icon={Award}
-            required
-          />
-          <select
-            value={selectedBadge}
-            onChange={(e) => setSelectedBadge(e.target.value)}
-            className={cn(
-              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
-              selectedBadge ? "text-[#707070]" : "text-[#FDFDFD]"
+          {/* Template select com placeholder interno */}
+          <div className="relative">
+            {!selectedBadge && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Award className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Badge</span>
+              </div>
             )}
-          >
-            <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
-              Select a badge...
-            </option>
-            {availableBadges.map((badge) => (
-              <option key={badge.id} value={badge.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                {badge.name}
-              </option>
-            ))}
-          </select>
+            <select
+              value={selectedBadge}
+              onChange={(e) => setSelectedBadge(e.target.value)}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                selectedBadge ? "text-[#FDFDFD]" : "text-transparent"
+              )}
+            >
+              {availableBadges.map((badge) => (
+                <option key={badge.id} value={badge.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {badge.name}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
         </div>
 
         {/* Badge Details */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Badge Details" 
-            section="details" 
-            icon={User}
-            required
-            badge={badgeName ? badgeName : undefined}
-          />
+          {/* Sem título externo para evitar duplicação */}
           <div>
-            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-              Badge Name <span className="text-[#A20131]">*</span>
-            </label>
+            {/* Label removido; usar placeholder */}
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
               <input
                 type="text"
                 value={badgeName}
                 onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
-                placeholder="CHAMPION"
+                placeholder="Badge Name"
                 maxLength={15}
                 className={cn(
                   "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
@@ -223,29 +221,35 @@ export default function ProfessionalBadgeSidebar({
         
         {/* Badge Style */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Style" 
-            section="style" 
-            icon={Palette}
-            badge={STYLE_FILTERS.find(s => s.id === selectedStyle)?.label}
-          />
-          <select
-            value={selectedStyle}
-            onChange={(e) => setSelectedStyle(e.target.value)}
-            className={cn(
-              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
-              selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+          {/* Style select com placeholder interno */}
+          <div className="relative">
+            {!selectedStyle && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Palette className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Style</span>
+              </div>
             )}
-          >
-            {STYLE_FILTERS.map((style) => (
-              <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                {style.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-[#ADADAD] mt-2">
-            Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-          </p>
+            <select
+              value={selectedStyle}
+              onChange={(e) => setSelectedStyle(e.target.value)}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                selectedStyle ? "text-[#FDFDFD]" : "text-transparent"
+              )}
+            >
+              {STYLE_FILTERS.map((style) => (
+                <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {style.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
         </div>
 
         {/* Upload Image */}

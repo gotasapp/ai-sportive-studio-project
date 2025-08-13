@@ -175,38 +175,41 @@ export default function ProfessionalSidebar({
 
         {/* Team Selection */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Team" 
-            section="team" 
-            icon={Globe}
-            required={!isVisionMode}
-          />
-          <select
-            value={selectedTeam}
-            onChange={(e) => setSelectedTeam(e.target.value)}
-            disabled={isVisionMode}
-            className={cn(
-              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none",
-              "transition-colors",
-              "pointer-events-auto relative", 
-              selectedTeam ? "text-[#707070]" : "text-[#FDFDFD]",
-              isVisionMode && "opacity-50 cursor-not-allowed"
+          {/* Header removido para evitar título duplicado */}
+          <div className="relative">
+            {!selectedTeam && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Globe className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Team</span>
+              </div>
             )}
-            style={{ 
-              pointerEvents: 'auto',
-              zIndex: 10,
-              position: 'relative'
-            }}
-          >
-            <option value="" className="bg-[#1C1C1C] text-[#FDFDFD]">
-              Select a team...
-            </option>
-            {availableTeams.map((team) => (
-              <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                {team}
-              </option>
-            ))}
-          </select>
+            <select
+              value={selectedTeam}
+              onChange={(e) => setSelectedTeam(e.target.value)}
+              disabled={isVisionMode}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                "transition-colors",
+                selectedTeam ? "text-[#FDFDFD]" : "text-transparent",
+                isVisionMode && "opacity-50 cursor-not-allowed"
+              )}
+              style={{ 
+                pointerEvents: 'auto'
+              }}
+            >
+              {availableTeams.map((team) => (
+                <option key={team} value={team} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {team}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
           {isVisionMode && (
             <p className="text-xs text-[#ADADAD] mt-2">
               Team auto-detected from reference image
@@ -216,55 +219,47 @@ export default function ProfessionalSidebar({
 
         {/* Style Selection */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Style" 
-            section="style" 
-            icon={Palette}
-          />
-          <select
-            value={selectedStyle}
-            onChange={(e) => setSelectedStyle(e.target.value)}
-            className={cn(
-              "w-full px-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none", 
-              selectedStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+          {/* Style select com placeholder interno */}
+          <div className="relative">
+            {!selectedStyle && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Palette className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Style</span>
+              </div>
             )}
-            style={{ 
-              pointerEvents: 'auto',
-              zIndex: 10,
-              position: 'relative'
-            }}
-          >
-            {STYLE_FILTERS.map((style) => (
-              <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                {style.label}
-              </option>
-            ))}
-          </select>
-          <p className="text-xs text-[#ADADAD] mt-2">
-            Selected: {STYLE_FILTERS.find(s => s.id === selectedStyle)?.label} style
-          </p>
+            <select
+              value={selectedStyle}
+              onChange={(e) => setSelectedStyle(e.target.value)}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                selectedStyle ? "text-[#FDFDFD]" : "text-transparent"
+              )}
+            >
+              {STYLE_FILTERS.map((style) => (
+                <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {style.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
         </div>
 
-        {/* Player Details */}
+        {/* Player (no section title) */}
         <div className="space-y-2">
-          <SectionHeader 
-            title="Player" 
-            section="player" 
-            icon={User}
-            required
-            badge={playerName && playerNumber ? `${playerName} #${playerNumber}` : undefined}
-          />
           <div>
-            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-              Player Name
-            </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
               <input
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value.toUpperCase())}
-                placeholder="JEFF"
+                placeholder="Player Name"
                 maxLength={12}
                 className={cn(
                   "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none placeholder-[#ADADAD] transition-colors", 
@@ -275,16 +270,13 @@ export default function ProfessionalSidebar({
           </div>
           
           <div>
-            <label className="block text-xs font-medium text-[#ADADAD] mb-1">
-              Jersey Number
-            </label>
             <div className="relative">
               <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
               <input
                 type="text"
                 value={playerNumber}
                 onChange={(e) => setPlayerNumber(e.target.value)}
-                placeholder="10"
+                placeholder="Player Number"
                 maxLength={2}
                 className={cn(
                   "w-full pl-10 pr-3 py-2 cyber-select text-sm rounded-[2px] bg-transparent border-none shadow-none placeholder-[#ADADAD] transition-colors", 

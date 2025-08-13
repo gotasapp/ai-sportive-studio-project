@@ -199,58 +199,65 @@ export default function ProfessionalStadiumSidebar({
             </div>
           )}
 
-          {/* NEW: Stadium Template Selection */}
-          <div className="space-y-2">
-            <SectionHeader 
-              title="Select Template" 
-              section="template" 
-              icon={Building}
-              required
-            />
-            <Select
+        {/* NEW: Stadium Template Selection (sem título externo, placeholder interno) */}
+        <div className="space-y-2">
+          <div className="relative">
+            {(selectedStadium === '' || selectedStadium === 'custom_only') && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Building className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Template</span>
+              </div>
+            )}
+            <select
               value={selectedStadium}
-              onValueChange={setSelectedStadium}
+              onChange={(e) => setSelectedStadium(e.target.value)}
               disabled={availableStadiums.length === 0}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                selectedStadium && selectedStadium !== 'custom_only' ? "text-[#FDFDFD]" : "text-transparent"
+              )}
             >
-              <SelectTrigger className="w-full bg-transparent border-none text-[#FDFDFD]">
-                <SelectValue placeholder="Select a stadium template..." />
-              </SelectTrigger>
-              <SelectContent className="bg-[#1C1C1C] border-none text-[#FDFDFD] shadow-lg">
-                {availableStadiums.length > 0 ? (
-                  availableStadiums.map((stadium) => (
-                    <SelectItem key={stadium.id} value={stadium.id} className="focus:bg-[#A20131]/20">
-                      {stadium.name}
-                    </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="loading" disabled>
-                    Loading stadiums...
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
+              {availableStadiums.length > 0 ? (
+                availableStadiums.map((stadium) => (
+                  <option key={stadium.id} value={stadium.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                    {stadium.name}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>Loading stadiums...</option>
+              )}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
           </div>
+        </div>
           
           {/* Generation Style */}
           <div className="space-y-2">
-            <SectionHeader 
-              title="Style" 
-              section="style" 
-              icon={Camera}
-              badge={GENERATION_STYLES.find(s => s.id === generationStyle)?.label}
-            />
+          {/* Style select com placeholder interno */}
+          <div className="relative">
+            {!generationStyle && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Camera className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Style</span>
+              </div>
+            )}
             <select
               value={generationStyle}
               onChange={(e) => setGenerationStyle(e.target.value)}
               className={cn(
-                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                generationStyle ? "text-[#707070]" : "text-[#FDFDFD]"
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                generationStyle ? "text-[#FDFDFD]" : "text-transparent"
               )}
-              style={{ 
-                pointerEvents: 'auto',
-                zIndex: 10,
-                position: 'relative'
-              }}
             >
               {GENERATION_STYLES.map((style) => (
                 <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
@@ -258,137 +265,124 @@ export default function ProfessionalStadiumSidebar({
                 </option>
               ))}
             </select>
-            <p className="text-xs text-[#ADADAD] mt-2">
-              Selected: {GENERATION_STYLES.find(s => s.id === generationStyle)?.label} style
-            </p>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
           </div>
 
-          {/* Perspective */}
+          {/* Perspective - placeholder interno */}
           <div className="space-y-2">
-            <SectionHeader 
-              title="Perspective" 
-              section="perspective" 
-              icon={Eye}
-              badge={PERSPECTIVES.find(p => p.id === perspective)?.label}
-            />
-            <select
-              value={perspective}
-              onChange={(e) => setPerspective(e.target.value)}
-              className={cn(
-                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                perspective ? "text-[#707070]" : "text-[#FDFDFD]"
+            <div className="relative">
+              {!perspective && (
+                <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                  <div className="w-6 h-6 rounded-[6px] flex items-center justify-center" style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}>
+                    <Eye className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-[#ADADAD]">Perspective</span>
+                </div>
               )}
-              style={{ 
-                pointerEvents: 'auto',
-                zIndex: 10,
-                position: 'relative'
-              }}
-            >
-              {PERSPECTIVES.map((persp) => (
-                <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                  {persp.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-[#ADADAD] mt-2">
-              Selected: {PERSPECTIVES.find(p => p.id === perspective)?.label} perspective
-            </p>
+              <select
+                value={perspective}
+                onChange={(e) => setPerspective(e.target.value)}
+                className={cn(
+                  "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                  perspective ? "text-[#FDFDFD]" : "text-transparent"
+                )}
+              >
+                {PERSPECTIVES.map((persp) => (
+                  <option key={persp.id} value={persp.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                    {persp.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+            </div>
           </div>
 
-          {/* Atmosphere */}
+          {/* Atmosphere - placeholder interno */}
           <div className="space-y-2">
-            <SectionHeader 
-              title="Atmosphere" 
-              section="atmosphere" 
-              icon={Users}
-              badge={ATMOSPHERES.find(a => a.id === atmosphere)?.label}
-            />
-            <select
-              value={atmosphere}
-              onChange={(e) => setAtmosphere(e.target.value)}
-              className={cn(
-                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                atmosphere ? "text-[#707070]" : "text-[#FDFDFD]"
+            <div className="relative">
+              {!atmosphere && (
+                <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                  <div className="w-6 h-6 rounded-[6px] flex items-center justify-center" style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}>
+                    <Users className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-[#ADADAD]">Atmosphere</span>
+                </div>
               )}
-              style={{ 
-                pointerEvents: 'auto',
-                zIndex: 10,
-                position: 'relative'
-              }}
-            >
-              {ATMOSPHERES.map((atm) => (
-                <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                  {atm.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-[#ADADAD] mt-2">
-              Selected: {ATMOSPHERES.find(a => a.id === atmosphere)?.label} atmosphere
-            </p>
+              <select
+                value={atmosphere}
+                onChange={(e) => setAtmosphere(e.target.value)}
+                className={cn(
+                  "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                  atmosphere ? "text-[#FDFDFDF]" : "text-transparent"
+                )}
+              >
+                {ATMOSPHERES.map((atm) => (
+                  <option key={atm.id} value={atm.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                    {atm.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+            </div>
           </div>
 
-          {/* Time of Day */}
+          {/* Time of Day - placeholder interno */}
           <div className="space-y-2">
-            <SectionHeader 
-              title="Time of Day" 
-              section="time" 
-              icon={Sunset}
-              badge={TIME_OPTIONS.find(t => t.id === timeOfDay)?.label}
-            />
-            <select
-              value={timeOfDay}
-              onChange={(e) => setTimeOfDay(e.target.value)}
-              className={cn(
-                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                timeOfDay ? "text-[#707070]" : "text-[#FDFDFD]"
+            <div className="relative">
+              {!timeOfDay && (
+                <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                  <div className="w-6 h-6 rounded-[6px] flex items-center justify-center" style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}>
+                    <Sunset className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-[#ADADAD]">Time of Day</span>
+                </div>
               )}
-              style={{ 
-                pointerEvents: 'auto',
-                zIndex: 10,
-                position: 'relative'
-              }}
-            >
-              {TIME_OPTIONS.map((time) => (
-                <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                  {time.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-[#ADADAD] mt-2">
-              Selected: {TIME_OPTIONS.find(t => t.id === timeOfDay)?.label} time
-            </p>
+              <select
+                value={timeOfDay}
+                onChange={(e) => setTimeOfDay(e.target.value)}
+                className={cn(
+                  "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                  timeOfDay ? "text-[#FDFDFD]" : "text-transparent"
+                )}
+              >
+                {TIME_OPTIONS.map((time) => (
+                  <option key={time.id} value={time.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                    {time.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+            </div>
           </div>
 
-          {/* Weather */}
+          {/* Weather - placeholder interno */}
           <div className="space-y-2">
-            <SectionHeader 
-              title="Weather" 
-              section="weather" 
-              icon={Cloud}
-              badge={WEATHER_OPTIONS.find(w => w.id === weather)?.label}
-            />
-            <select
-              value={weather}
-              onChange={(e) => setWeather(e.target.value)}
-              className={cn(
-                "w-full px-3 py-2 cyber-select text-sm transition-colors pointer-events-auto relative",
-                weather ? "text-[#707070]" : "text-[#FDFDFD]"
+            <div className="relative">
+              {!weather && (
+                <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                  <div className="w-6 h-6 rounded-[6px] flex items-center justify-center" style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}>
+                    <Cloud className="w-4 h-4 text-white" />
+                  </div>
+                  <span className="text-sm text-[#ADADAD]">Weather</span>
+                </div>
               )}
-              style={{ 
-                pointerEvents: 'auto',
-                zIndex: 10,
-                position: 'relative'
-              }}
-            >
-              {WEATHER_OPTIONS.map((w) => (
-                <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
-                  {w.label}
-                </option>
-              ))}
-            </select>
-            <p className="text-xs text-[#ADADAD] mt-2">
-              Selected: {WEATHER_OPTIONS.find(w => w.id === weather)?.label} weather
-            </p>
+              <select
+                value={weather}
+                onChange={(e) => setWeather(e.target.value)}
+                className={cn(
+                  "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                  weather ? "text-[#FDFDFD]" : "text-transparent"
+                )}
+              >
+                {WEATHER_OPTIONS.map((w) => (
+                  <option key={w.id} value={w.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                    {w.label}
+                  </option>
+                ))}
+              </select>
+              <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+            </div>
           </div>
 
           {/* Upload Image */}

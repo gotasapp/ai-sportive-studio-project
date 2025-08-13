@@ -88,10 +88,10 @@ export default function JerseyEditor() {
   // ===== EXISTING STATES =====
   const [availableTeams, setAvailableTeams] = useState<string[]>([])
   const [selectedTeam, setSelectedTeam] = useState<string>('')
-  const [playerName, setPlayerName] = useState<string>('JEFF')
-  const [playerNumber, setPlayerNumber] = useState<string>('10')
+  const [playerName, setPlayerName] = useState<string>('')
+  const [playerNumber, setPlayerNumber] = useState<string>('')
   const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
-  const [selectedStyle, setSelectedStyle] = useState<string>('modern')
+  const [selectedStyle, setSelectedStyle] = useState<string>('')
   const [generatedImage, setGeneratedImage] = useState<string | null>(null)
   
 
@@ -1295,9 +1295,6 @@ Design based on analysis: ${analysisText}`
           const teamNames = data.data.map((team: any) => team.teamName);
           console.log(`✅ Loaded ${teamNames.length} teams from DB references.`);
           setAvailableTeams(teamNames);
-          if (teamNames.length > 0) {
-            setSelectedTeam(teamNames[0]);
-          }
         } else {
            throw new Error('Invalid data structure from teams API.');
         }
