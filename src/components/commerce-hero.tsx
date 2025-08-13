@@ -42,7 +42,11 @@ export function CommerceHero() {
             transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <motion.h1
-              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 leading-tight "
+              className="text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-8 leading-tight Initial state check: {timestamp: '2025-08-13T10:14:45.505Z', hasReferenceImage: false, hasReferenceImageBlob: false, hasAnalysisResult: false, analysisResultType: 'object', …}
+page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues
+page-6ed4df8f86b65a0c.js:1 🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =🚀 [GENERATION START] =
+page-6ed4df8f86b65a0c.js:1 🔍 [GENERATION DEBUG] Initial state check: {timestamp: '2025-08-13T10:14:46.345Z', hasReferenceImage: false, hasReferenceImageBlob: false, hasAnalysisResult: false, analysisResultType: 'object', …}
+page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}

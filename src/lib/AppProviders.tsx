@@ -3,6 +3,7 @@
 import { ReactNode } from 'react'
 import { ThirdwebProvider } from './ThirdwebProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Toaster } from 'sonner'
 
 // Create QueryClient instance
 const queryClient = new QueryClient({
@@ -25,6 +26,18 @@ export default function AppProviders({ children }: AppProvidersProps) {
     <QueryClientProvider client={queryClient}>
       <ThirdwebProvider>
         {children}
+        <Toaster 
+          richColors 
+          position="top-right" 
+          theme="dark"
+          toastOptions={{
+            style: {
+              background: '#1f1f1f',
+              border: '1px solid #333',
+              color: '#fff',
+            },
+          }}
+        />
       </ThirdwebProvider>
     </QueryClientProvider>
   )
