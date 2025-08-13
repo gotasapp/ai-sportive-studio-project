@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 
-import { toast } from 'sonner';
+import { useToast } from '@/hooks/use-toast';
 // import { StadiumService, StadiumInfo } from '@/lib/services/stadium-service'; // REMOVED OLD SERVICE
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { useWeb3 } from '@/lib/useWeb3';
@@ -43,6 +43,7 @@ export default function StadiumEditor() {
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
   const router = useRouter()
+  const { toast } = useToast()
   
   // Use account data directly
   const address = account?.address
@@ -164,8 +165,10 @@ export default function StadiumEditor() {
   const generateStadium = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      toast.warning('Connect wallet', {
-        icon: '🔒'
+      toast({
+        variant: "destructive",
+        title: "Wallet Required",
+        description: "Connect your wallet to start generating NFTs"
       })
       return
     }

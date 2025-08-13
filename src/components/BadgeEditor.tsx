@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -45,6 +45,7 @@ export default function BadgeEditor() {
   const router = useRouter()
   const account = useActiveAccount()
   const chain = useActiveWalletChain()
+  const { toast } = useToast()
   
   const address = account?.address
   const isConnected = !!account
@@ -226,8 +227,10 @@ export default function BadgeEditor() {
   const generateContent = async () => {
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      toast.warning('Connect wallet', {
-        icon: '🔒'
+      toast({
+        variant: "destructive",
+        title: "Wallet Required",
+        description: "Connect your wallet to start generating NFTs"
       })
       return
     }

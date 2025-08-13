@@ -6,7 +6,7 @@ import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
 import { getContract, prepareContractCall, createThirdwebClient, sendTransaction } from 'thirdweb'
 import { polygonAmoy } from 'thirdweb/chains'
 import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 import { Dalle3Service } from '../lib/services/dalle3-service'
 import { IPFSService } from '../lib/services/ipfs-service'
@@ -58,6 +58,7 @@ const VISION_MODELS = [
 
 export default function JerseyEditor() {
   const router = useRouter()
+  const { toast } = useToast()
   
   // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount()
@@ -582,8 +583,10 @@ export default function JerseyEditor() {
 
     // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
     if (!isConnected) {
-      toast.warning('Connect wallet', {
-        icon: '🔒'
+      toast({
+        variant: "destructive",
+        title: "Wallet Required",
+        description: "Connect your wallet to start generating NFTs"
       })
       return
     }
