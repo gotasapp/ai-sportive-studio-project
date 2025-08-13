@@ -17,6 +17,7 @@ interface CollectionOverviewCardProps {
   // Collection-specific data
   collectionId?: string;
   isCustomCollection?: boolean;
+  hrefOverride?: string;
   
   // Overview information (not trading)
   mintedUnits?: number;
@@ -47,6 +48,7 @@ export default function CollectionOverviewCard({
   category = 'jersey',
   collectionId,
   isCustomCollection = false,
+  hrefOverride,
   mintedUnits = 0,
   totalUnits = 0,
   availableUnits = 0,
@@ -76,6 +78,8 @@ export default function CollectionOverviewCard({
   const collectionUrl = isCustomCollection && collectionId 
     ? `/marketplace/collection/${normalizedCategory}/${collectionId}`
     : `/marketplace/collection/${normalizedCategory}/${collection}`;
+
+  const href = hrefOverride || collectionUrl;
 
   return (
     <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
