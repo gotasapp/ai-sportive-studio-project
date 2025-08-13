@@ -195,16 +195,16 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
           </div>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="bg-[#14101e] border-gray-600 text-white max-w-md">
         <DialogHeader>
-          <DialogTitle>Batch Mint NFTs</DialogTitle>
+          <DialogTitle className="text-white">Batch Mint NFTs</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4">
+        <div className="space-y-6 py-4">
           {step === 'idle' && (
             <>
               <div className="space-y-2">
-                <label className="text-sm font-medium">
+                <label className="text-white font-medium">
                   Quantity (1-100)
                 </label>
                 <input
@@ -213,9 +213,9 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
                   max="100"
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, Math.min(100, parseInt(e.target.value) || 1)))}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 bg-[#0b0518] border border-gray-700 rounded-md text-white"
                 />
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-gray-400">
                   Creates an internal collection of {quantity} identical NFTs
                 </p>
               </div>
@@ -223,7 +223,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
               <Button 
                 onClick={handleMint}
                 disabled={!account || !imageBlob}
-                className="w-full"
+                className="w-full bg-[#A20131] hover:bg-[#8a0129]"
               >
                 Mint {quantity} NFT{quantity > 1 ? 's' : ''}
               </Button>
@@ -232,21 +232,21 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
 
           {(step === 'uploading' || step === 'minting') && (
             <div className="text-center space-y-2">
-              <div className="animate-spin h-8 w-8 border-b-2 border-primary mx-auto"></div>
-              <p className="text-sm">{getStepText()}</p>
+              <div className="animate-spin h-8 w-8 border-b-2 border-[#A20131] mx-auto"></div>
+              <p className="text-sm text-white">{getStepText()}</p>
             </div>
           )}
 
           {step === 'success' && (
             <div className="text-center space-y-4">
-              <div className="text-green-600">
+              <div className="text-green-400">
                 <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-green-600">{getStepText()}</p>
-                <p className="text-sm text-gray-600">
+                <p className="font-medium text-green-400">{getStepText()}</p>
+                <p className="text-sm text-gray-400">
                   Created internal collection of {quantity} NFTs
                 </p>
               </div>
@@ -255,12 +255,12 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
                   href={`https://amoy.polygonscan.com/tx/${txHash}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline text-sm"
+                  className="text-blue-400 hover:underline text-sm"
                 >
                   View on Explorer →
                 </a>
               )}
-              <Button onClick={handleClose} className="w-full">
+              <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
                 Close
               </Button>
             </div>
@@ -268,20 +268,20 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
 
           {step === 'error' && (
             <div className="text-center space-y-4">
-              <div className="text-red-600">
+              <div className="text-red-400">
                 <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
               <div>
-                <p className="font-medium text-red-600">{getStepText()}</p>
-                <p className="text-sm text-gray-600 break-words">{error}</p>
+                <p className="font-medium text-red-400">{getStepText()}</p>
+                <p className="text-sm text-gray-400 break-words">{error}</p>
               </div>
               <div className="space-y-2">
-                <Button onClick={handleMint} variant="outline" className="w-full">
+                <Button onClick={handleMint} variant="outline" className="w-full border-gray-600">
                   Try Again
                 </Button>
-                <Button onClick={handleClose} className="w-full">
+                <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
                   Close
                 </Button>
               </div>

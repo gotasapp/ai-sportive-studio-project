@@ -401,31 +401,31 @@ export function BatchMintDialog({
         {trigger}
       </DialogTrigger>
       
-      <DialogContent className="sm:max-w-md bg-[#030303] border border-[#FDFDFD]/10">
+      <DialogContent className="bg-[#14101e] border-gray-600 text-white max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[#FDFDFD] flex items-center gap-2">
+          <DialogTitle className="text-white flex items-center gap-2">
             <Zap className="h-5 w-5 text-[#A20131]" />
             Mint NFTs
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-6 py-4">
           <div className="space-y-2">
-            <Label className="text-[#FDFDFD]/70">NFT Name</Label>
-            <div className="p-3 bg-[#14101e] rounded-lg border border-[#FDFDFD]/10">
-              <p className="text-[#FDFDFD] text-sm">{nftName}</p>
+            <Label className="text-white">NFT Name</Label>
+            <div className="p-3 bg-[#0b0518] rounded-lg border border-gray-700">
+              <p className="text-white text-sm">{nftName}</p>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className="text-[#FDFDFD]/70">Recipient</Label>
-            <div className="p-3 bg-[#14101e] rounded-lg border border-[#FDFDFD]/10">
-              <p className="text-[#FDFDFD] text-sm font-mono">{to.slice(0, 6)}...{to.slice(-4)}</p>
+            <Label className="text-white">Recipient</Label>
+            <div className="p-3 bg-[#0b0518] rounded-lg border border-gray-700">
+              <p className="text-white text-sm font-mono">{to.slice(0, 6)}...{to.slice(-4)}</p>
             </div>
           </div>
 
             <div className="space-y-2">
-              <Label htmlFor="quantity" className="text-[#FDFDFD]/70">Quantity (1-100)</Label>
+              <Label htmlFor="quantity" className="text-white">Quantity (1-100)</Label>
               <div className="flex items-center space-x-2">
                 <Button
                   type="button"
@@ -433,7 +433,7 @@ export function BatchMintDialog({
                   size="icon"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={deployStep !== 'idle' || quantity <= 1}
-                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e] h-10 w-10 shrink-0"
+                  className="bg-[#0b0518] border-gray-700 text-white hover:bg-gray-800 h-10 w-10 shrink-0"
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
@@ -456,7 +456,7 @@ export function BatchMintDialog({
                     }
                   }}
                   disabled={deployStep !== 'idle'}
-                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] text-center flex-1 min-w-0"
+                  className="bg-[#0b0518] border-gray-700 text-white text-center flex-1 min-w-0"
                   inputMode="numeric"
                   pattern="[0-9]*"
                 />
@@ -467,23 +467,23 @@ export function BatchMintDialog({
                   size="icon"
                   onClick={() => setQuantity(Math.min(100, quantity + 1))}
                   disabled={deployStep !== 'idle' || quantity >= 100}
-                  className="bg-[#14101e] border-[#FDFDFD]/10 text-[#FDFDFD] hover:bg-[#1e1a2e] h-10 w-10 shrink-0"
+                  className="bg-[#0b0518] border-gray-700 text-white hover:bg-gray-800 h-10 w-10 shrink-0"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <div className="text-xs text-[#FDFDFD]/50 text-center">
+              <div className="text-xs text-gray-400 text-center">
                 Use os botões +/- ou digite diretamente
               </div>
             </div>
 
           {deployStep !== 'idle' && (
             <div className="space-y-3">
-              <Label className="text-[#FDFDFD]/70">Collection Progress</Label>
-              <div className="p-3 bg-[#0a0a0a] rounded border border-[#FDFDFD]/10 space-y-2">
+              <Label className="text-white">Collection Progress</Label>
+              <div className="p-3 bg-[#0b0518] rounded border border-gray-700 space-y-2">
                 <div className={`flex items-center gap-2 text-xs ${
                   deployStep === 'preparing' || deployStep === 'signing-deploy' ? 'text-yellow-400' : 
-                  ['signing-mint', 'completed'].includes(deployStep) ? 'text-green-400' : 'text-[#FDFDFD]/50'
+                  ['signing-mint', 'completed'].includes(deployStep) ? 'text-green-400' : 'text-gray-400'
                 }`}>
                   {['signing-mint', 'completed'].includes(deployStep) ? '✅' : 
                    deployStep === 'preparing' || deployStep === 'signing-deploy' ? '🔄' : '⏳'}
@@ -492,7 +492,7 @@ export function BatchMintDialog({
               
                 <div className={`flex items-center gap-2 text-xs ${
                   deployStep === 'signing-mint' ? 'text-yellow-400' : 
-                  deployStep === 'completed' ? 'text-green-400' : 'text-[#FDFDFD]/50'
+                  deployStep === 'completed' ? 'text-green-400' : 'text-gray-400'
                 }`}>
                   {deployStep === 'completed' ? '✅' : 
                    deployStep === 'signing-mint' ? '🔄' : '⏳'}
@@ -501,7 +501,7 @@ export function BatchMintDialog({
               </div>
 
               {contractAddress && (
-                <div className="p-2 bg-[#0a0a0a] rounded border border-green-500/30">
+                <div className="p-2 bg-[#0b0518] rounded border border-green-500/30">
                   <p className="text-xs text-green-400">Collection Contract: {contractAddress}</p>
                 </div>
               )}
@@ -514,13 +514,21 @@ export function BatchMintDialog({
             </div>
           )}
 
-          <div className="flex gap-3">
+          <div className="flex space-x-3 pt-4">
             {deployStep !== 'completed' ? (
               <>
                 <Button
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={deployStep !== 'idle'}
+                  className="flex-1 border-gray-600"
+                >
+                  Cancel
+                </Button>
+                <Button
                   onClick={handleBatchMint}
                   disabled={deployStep !== 'idle' || !to}
-                  className="flex-1 bg-[#A20131] hover:bg-[#A20131]/80 text-white"
+                  className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
                 >
                   {deployStep === 'idle' ? (
                     <>
@@ -537,17 +545,9 @@ export function BatchMintDialog({
                     </>
                   )}
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={handleClose}
-                  disabled={deployStep !== 'idle'}
-                  className="border-[#FDFDFD]/10 text-[#FDFDFD]"
-                >
-                  Cancel
-                </Button>
               </>
             ) : (
-              <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#A20131]/80 text-white">
+              <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
                 Done
               </Button>
             )}
