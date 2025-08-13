@@ -136,7 +136,7 @@ page-6ed4df8f86b65a0c.js:1 ❌ [ANALYSIS DEBUG] No analysis result found - this 
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative rounded-3xl min-h-[250px] sm:min-h-[300px] w-full overflow-hidden transition-all duration-500"
+              className="group relative rounded-3xl min-h-[190px] sm:min-h-[230px] w-full overflow-hidden transition-all duration-500"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
