@@ -147,9 +147,9 @@ export function CommerceHero() {
                   />
                 </div>
                 
-                {/* Barra inferior com título (30% menor) e seta de navegação alinhados */}
-                <div className="absolute left-4 right-4 bottom-4 z-10 flex items-center justify-between">
-                  <h2 className="text-left text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
+                {/* Barra inferior alinhada à direita: título mais próximo da seta */}
+                <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
+                  <h2 className="text-right text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
                     {category.title}
                   </h2>
                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">

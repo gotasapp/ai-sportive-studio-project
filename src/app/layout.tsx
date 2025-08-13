@@ -13,6 +13,11 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "Chiliz Fan NFT",
   description: "Generate and mint sports NFTs with AI - Jerseys and Stadiums",
+  icons: {
+    icon: "/chiliz-logo-fallback.svg",
+    shortcut: "/chiliz-logo-fallback.svg",
+    apple: "/chiliz-logo-fallback.svg",
+  },
 };
 
 export default async function RootLayout({
