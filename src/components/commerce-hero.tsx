@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 const categories = [
   {
     title: "Jerseys",
-    image:" https://res.cloudinary.com/dpilz4p6g/image/upload/v1755117248/Jersey_by2802.png",
+    image:"https://res.cloudinary.com/dpilz4p6g/image/upload/v1755117564/Jersey-removebg-preview_q2vfqh.png",
     href: "/jerseys",
   },
   {
@@ -131,7 +131,7 @@ export function CommerceHero() {
           {categories.map((category, index) => (
             <motion.div
               key={category.title}
-              className="group relative rounded min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full max-w-full sm:max-w-[280px] md:max-w-[300px] lg:max-w-[285px] mx-auto overflow-hidden transition-all duration-500"
+              className="group relative rounded min-h-[12rem] sm:min-h-[14rem] md:min-h-[15rem] lg:min-h-[16rem] w-full max-w-full sm:max-w-[280px] md:max-w-[300px] lg:max-w-[285px] mx-auto overflow-hidden transition-all duration-500 border border-[#3B3644]"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
@@ -148,7 +148,7 @@ export function CommerceHero() {
                 
                 {/* Barra inferior alinhada à direita: título mais próximo da seta */}
                 <div className="absolute right-4 bottom-4 z-10 flex items-center gap-2">
-                  <h2 className="text-right mr-[5px] text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
+                  <h2 className="text-right mr-[10%] text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
                     {category.title}
                   </h2>
                   <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
