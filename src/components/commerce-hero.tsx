@@ -22,7 +22,7 @@ const categories = [
   },
   {
     title: "Marketplace",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114587/Kart__1_-removebg-preview_rwhdkr.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755115555/u7539642511_httpss.mj.rung0Yw7HI-LnI_create_a_3_D_shopping_ka_09b5f39d-3fbe-452d-99ed-213ab6a4edcf_3-removebg-preview_ppkabh.png",
     href: "/marketplace",
   },
 ];
@@ -147,16 +147,14 @@ export function CommerceHero() {
                   />
                 </div>
                 
-                {/* Título sobreposto */}
-                <div className="absolute inset-0 flex items-center justify-center z-10">
-                  <h2 className="text-center text-xl sm:text-2xl md:text-3xl lg:text-[clamp(1.2rem,3vw,2rem)] font-bold text-white drop-shadow-lg group-hover:scale-105 transition-all duration-300">
+                {/* Barra inferior com título (30% menor) e seta de navegação alinhados */}
+                <div className="absolute left-4 right-4 bottom-4 z-10 flex items-center justify-between">
+                  <h2 className="text-left text-lg sm:text-xl md:text-2xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
                     {category.title}
                   </h2>
+                  <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
+                    <ArrowUpRight className="w-5 h-5 text-white" />
                   </div>
-                
-                {/* Ícone de seta no canto */}
-                <div className="absolute bottom-4 right-4 w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center z-10 group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
-                  <ArrowUpRight className="w-5 h-5 text-white" />
                 </div>
               </a>
             </motion.div>
