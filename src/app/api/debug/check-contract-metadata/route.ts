@@ -4,6 +4,32 @@ import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getNFT } from 'thirdweb/extensions/erc721';
 
+// Interface para comparação de metadata
+interface MetadataComparison {
+  contractAddress: string;
+  tokenId: string;
+  customCollection: {
+    name: string | null;
+    category: string | null;
+    description: string | null;
+  };
+  mongoMints: {
+    count: number;
+    firstMint: {
+      name: string;
+      tokenId: string;
+      metadataUrl: string;
+      imageUrl: string;
+    } | null;
+  };
+  thirdweb: {
+    success: boolean;
+    error: string | null;
+    data: any;
+  };
+  issues: string[];
+}
+
 const client = createThirdwebClient({
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID!,
 });
@@ -99,7 +125,7 @@ export async function GET(request: NextRequest) {
         error: thirdwebError,
         data: thirdwebData
       },
-      issues: []
+      issues: [] as string[]
     };
 
     // 4. Identificar problemas
