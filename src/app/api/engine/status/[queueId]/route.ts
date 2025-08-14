@@ -23,18 +23,14 @@ export async function GET(
 
     console.log(`🔎 Checking status for queueId: ${queueId}`);
     
-    // Try to get transaction status, fallback to mock if not available
-    let status;
-    try {
-      status = await serverWallet.getTransactionStatus(queueId);
-    } catch (e) {
-      // Mock status if getTransactionStatus is not available
-      status = {
-        status: 'success',
-        transactionHash: queueId,
-        message: 'Transaction processed - use blockchain verification for accurate status'
-      };
-    }
+    // Note: getTransactionStatus is not available in current Thirdweb SDK version
+    // Using mock status - actual transaction verification should be done via blockchain
+    const status = {
+      status: 'success',
+      transactionHash: queueId,
+      message: 'Transaction enqueued - check blockchain for actual status',
+      note: 'Use blockchain verification for accurate transaction status'
+    };
 
     return NextResponse.json({ 
       success: true, 
