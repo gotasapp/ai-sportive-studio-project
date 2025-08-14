@@ -66,10 +66,11 @@ export default function CollectionOverviewCard({
   // Calculate progress percentage for minting
   const mintProgress = totalUnits > 0 ? Math.round((mintedUnits / totalUnits) * 100) : 0;
   
-  // Normalização de categoria (cobre plurais e aliases de launchpad)
+  // Normalização de categoria (NÃO normalizar launchpad para jersey!)
   const normalizedCategory = (() => {
     const c = (category || '').toLowerCase();
-    if (c === 'jersey' || c === 'jerseys' || c === 'launchpad' || c === 'launchpad_collection') return 'jersey';
+    if (c === 'launchpad' || c === 'launchpad_collection') return 'launchpad';
+    if (c === 'jersey' || c === 'jerseys') return 'jersey';
     if (c === 'stadium' || c === 'stadiums') return 'stadium';
     if (c === 'badge' || c === 'badges') return 'badge';
     return c || 'jersey';

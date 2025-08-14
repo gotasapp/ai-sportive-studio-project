@@ -180,7 +180,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             canTrade: true,
             verified: true,
             collection: collection.name,
-            category: collection.category,
+            category: 'launchpad', // Categoria específica para launchpad
             isCollection: true,
             isCustomCollection: true,
             type: 'launchpad_collection', // Marcar como launchpad
