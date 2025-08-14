@@ -46,9 +46,9 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           const computedCollectionId =
             item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
           const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
-          // Para launchpad ativos, enviar para a página de mint dedicada
+          // Para launchpad ativos, enviar para a página de mint dedicada (que já existe!)
           const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
-            ? `/marketplace/collection/launchpad/${computedCollectionId}`
+            ? `/launchpad/${computedCollectionId}`
             : undefined;
           return (
             <CollectionOverviewCard
