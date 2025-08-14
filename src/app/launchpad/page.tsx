@@ -320,6 +320,35 @@ function LaunchpadCollectionCard({
             >
               <Settings className="w-4 h-4" />
             </Button>
+            {/* Auto‑Deploy (simulado) */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-blue-400 border-blue-400 hover:bg-blue-400/10"
+              onClick={async () => {
+                try {
+                  const payload = {
+                    collectionId: (collection as any)._id,
+                    name: collection.name,
+                    description: collection.description,
+                    image: (collection as any).image || (collection as any).imageUrl,
+                  };
+                  const resp = await fetch('/api/launchpad/auto-deploy-collection', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                  });
+                  const data = await resp.json();
+                  if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
+                  alert(`Deployed (simulated). Contract: ${data.contractAddress}`);
+                  onUpdateStatus?.((collection as any)._id, (collection as any).status);
+                } catch (e: any) {
+                  alert(e?.message || 'Auto-deploy failed');
+                }
+              }}
+            >
+              Deploy
+            </Button>
           </div>
         )}
 
@@ -466,9 +495,11 @@ export default function LaunchpadPage() {
   const [selectedPendingImage, setSelectedPendingImage] = useState<any>(null);
   const [approvalLaunchDate, setApprovalLaunchDate] = useState('');
   const [approvalForm, setApprovalForm] = useState({
+    collectionId: '',
     // Basic info
     name: '',
     description: '',
+    image: '',
     price: '0.1 CHZ',
     maxSupply: 100,
     status: 'upcoming' as LaunchpadStatus,
@@ -774,9 +805,11 @@ export default function LaunchpadPage() {
     
     // Initialize approval form with pending image data
     setApprovalForm({
+      collectionId: image._id || '',
       // Basic info from pending image
       name: image.name || '',
       description: image.description || '',
+      image: image.image || image.imageUrl || '',
       price: image.price || '0.1 CHZ',
       maxSupply: image.maxSupply || 100,
       status: 'upcoming' as LaunchpadStatus,
@@ -848,8 +881,10 @@ export default function LaunchpadPage() {
       setSelectedPendingImage(null);
       setApprovalLaunchDate('');
       setApprovalForm({
+        collectionId: '',
         name: '',
         description: '',
+        image: '',
         price: '0.1 CHZ',
         maxSupply: 100,
         status: 'upcoming' as LaunchpadStatus,
@@ -1657,6 +1692,63 @@ export default function LaunchpadPage() {
                      className="mt-1 bg-gray-800 border-gray-600 text-white"
                      placeholder="0x1234...5678"
                    />
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-blue-600/20 border-blue-600/30 text-blue-400 hover:bg-blue-600/30"
+                    onClick={async () => {
+                      try {
+                        const payload = {
+                          collectionId: approvalForm.collectionId || (selectedPendingImage as any)?._id || '',
+                          name: approvalForm.name,
+                          description: approvalForm.description,
+                          image: approvalForm.image || (selectedPendingImage as any)?.image,
+                        };
+                        const resp = await fetch('/api/launchpad/auto-deploy-collection', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(payload)
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
+                        updateApprovalForm('contractAddress', data.contractAddress);
+                        alert(`Deployed (simulated). Contract: ${data.contractAddress}`);
+                      } catch (e: any) {
+                        alert(e?.message || 'Auto deploy failed');
+                      }
+                    }}
+                  >
+                    Auto‑Deploy
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="bg-emerald-600/20 border-emerald-600/30 text-emerald-400 hover:bg-emerald-600/30"
+                    onClick={async () => {
+                      try {
+                        if (!approvalForm.contractAddress) throw new Error('Contract address required');
+                        const resp = await fetch('/api/launchpad/configure-claim-conditions', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            contractAddress: approvalForm.contractAddress,
+                            mintStages: approvalForm.mintStages || [],
+                            claimCurrency: approvalForm.claimCurrency || 'MATIC',
+                            collectionId: approvalForm.collectionId || (selectedPendingImage as any)?._id || '',
+                          })
+                        });
+                        const data = await resp.json();
+                        if (!resp.ok || !data.success) throw new Error(data.error || 'Configure failed');
+                        alert(`Claim conditions saved: ${data.stages} stage(s)`);
+                      } catch (e: any) {
+                        alert(e?.message || 'Configure claim conditions failed');
+                      }
+                    }}
+                  >
+                    Set Claim Conditions
+                  </Button>
+                </div>
                  </div>
                  
                  <div className="grid grid-cols-3 gap-4">
