@@ -183,6 +183,8 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             category: collection.category,
             isCollection: true,
             isCustomCollection: true,
+            type: 'launchpad_collection', // Marcar como launchpad
+            isLaunchpadCollection: true, // Flag explícita
             mintedUnits: mintedNFTs.length,
             totalUnits: collection.totalSupply || mintedNFTs.length,
             availableUnits: (collection.totalSupply || 0) - mintedNFTs.length,
