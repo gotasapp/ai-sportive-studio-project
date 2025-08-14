@@ -12,6 +12,7 @@ const amoy = defineChain({
 
 // Variáveis de ambiente
 const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
+const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN; // Preferível se configurado
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 const DB_NAME = 'chz-app-db';
 
@@ -19,9 +20,9 @@ export async function POST(request: NextRequest) {
   console.log('🚀 Launchpad Mint API: Processing request...');
 
   // Validação das variáveis de ambiente
-  if (!THIRDWEB_SECRET_KEY || !BACKEND_WALLET_ADDRESS) {
+  if ((!THIRDWEB_SECRET_KEY && !ENGINE_ACCESS_TOKEN) || !BACKEND_WALLET_ADDRESS) {
     const missing = [
-      !THIRDWEB_SECRET_KEY && "THIRDWEB_SECRET_KEY",
+      (!THIRDWEB_SECRET_KEY && !ENGINE_ACCESS_TOKEN) && "THIRDWEB_SECRET_KEY or ENGINE_ACCESS_TOKEN",
       !BACKEND_WALLET_ADDRESS && "BACKEND_WALLET_ADDRESS"
     ].filter(Boolean).join(", ");
 
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     // Inicializar cliente Thirdweb
     const thirdwebClient = createThirdwebClient({ 
-      secretKey: THIRDWEB_SECRET_KEY 
+      secretKey: THIRDWEB_SECRET_KEY || ENGINE_ACCESS_TOKEN || '' 
     });
     
     const contract = getContract({ 
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
     const serverWallet = Engine.serverWallet({
       address: BACKEND_WALLET_ADDRESS,
       client: thirdwebClient,
-      vaultAccessToken: THIRDWEB_SECRET_KEY,
+      vaultAccessToken: ENGINE_ACCESS_TOKEN || THIRDWEB_SECRET_KEY || '',
     });
 
     // Preparar transação de mint direto (gasless admin mint)
@@ -154,6 +155,12 @@ export async function POST(request: NextRequest) {
     const { transactionId } = await serverWallet.enqueueTransaction({ transaction });
     
     console.log(`✅ Launchpad Mint: Transaction enqueued successfully! Queue ID: ${transactionId}`);
+    console.log('🔎 Engine diagnostics:', {
+      usingEngineAccessToken: !!ENGINE_ACCESS_TOKEN,
+      backendWallet: BACKEND_WALLET_ADDRESS,
+      chainId: amoy.id,
+      contractAddress,
+    });
 
     // Atualizar contador de minted na coleção
     await db.collection('collections').updateOne(
