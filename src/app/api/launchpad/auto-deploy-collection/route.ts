@@ -87,14 +87,10 @@ export async function POST(request: NextRequest) {
       address: contractAddress,
     });
 
-    // Convert MATIC to wei correctly (only once!)
-    const priceInWei = (priceInMatic * 1e18).toString();
-    
-    console.log('💰 Price conversion:', {
-      inputMatic: priceInMatic,
-      outputWei: priceInWei,
-      weiDigits: priceInWei.length,
-      backToMatic: Number(priceInWei) / 1e18
+    // NO conversion needed! SDK handles wei conversion automatically
+    console.log('💰 Price (human format for SDK):', {
+      priceInMatic: priceInMatic,
+      note: 'SDK will convert to wei automatically'
     });
 
     const claimConditionTransaction = setClaimConditions({
@@ -104,7 +100,7 @@ export async function POST(request: NextRequest) {
           startTime: new Date(), // Inicia imediatamente
           maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
-          price: priceInWei, // Preço em wei como string
+          price: priceInMatic, // Human-readable price, SDK converts to wei automatically
         },
       ],
     });
@@ -163,7 +159,6 @@ export async function POST(request: NextRequest) {
       deployedBy: backendAccount.address,
       maxSupply: maxSupply || 100,
       priceInMatic,
-      priceInWei,
       message: `Contract deployed with correct price: ${priceInMatic} MATIC`,
       claimConditionsSet: true,
       tokensLazyMinted: true,
