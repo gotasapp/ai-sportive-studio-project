@@ -110,12 +110,24 @@ export async function GET(request: NextRequest) {
       if (units.length === 0) {
         const launchpadCollection = await db.collection('collections').findOne({ _id: objectId, type: 'launchpad' });
         if (launchpadCollection) {
-          console.log('🚀 Collection é Launchpad. Tentando mints em custom_collection_mints com o mesmo ID...');
-          // Muitas implementações reutilizam a mesma coleção de mints para launchpad
-          units = await db.collection('custom_collection_mints')
-            .find({ customCollectionId: objectId })
-            .sort({ mintedAt: -1 })
+          console.log('🚀 Collection é Launchpad. Buscando unidades mintadas pelo contractAddress em coleções padrão...');
+          const lpCategory = (launchpadCollection.category || 'jerseys').toLowerCase();
+          const collectionName = lpCategory.includes('stadium') ? 'stadiums' : lpCategory.includes('badge') ? 'badges' : 'jerseys';
+          const filters: any = {
+            status: 'Approved',
+            contractAddress: launchpadCollection.contractAddress,
+            $or: [
+              { transactionHash: { $exists: true, $nin: [null, ''] } },
+              { isMinted: true },
+              { mintStatus: { $in: ['minted', 'success'] } }
+            ]
+          };
+          units = await db.collection(collectionName)
+            .find(filters)
+            .sort({ createdAt: -1 })
+            .limit(100)
             .toArray();
+          console.log(`📋 Unidades encontradas via contractAddress (${collectionName}): ${units.length}`);
         }
       }
       
