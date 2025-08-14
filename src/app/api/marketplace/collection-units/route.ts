@@ -93,31 +93,39 @@ export async function GET(request: NextRequest) {
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(collectionId);
     
     if (isObjectId) {
-      // É Custom Collection - buscar em custom_collection_mints
-      console.log('🎨 Buscando unidades de Custom Collection...');
+      // É Custom/Launchpad Collection - buscar em custom_collection_mints (fallback launchpad)
+      console.log('🎨 Buscando unidades de Custom/Launchpad Collection...');
       
       // ✅ CONVERTER STRING PARA OBJECTID
       const { ObjectId } = require('mongodb');
       const objectId = new ObjectId(collectionId);
       
+      // 1) Custom Collections (caminho original)
       units = await db.collection('custom_collection_mints')
         .find({ customCollectionId: objectId })
         .sort({ mintedAt: -1 })
         .toArray();
-        
-      console.log(`📋 Encontradas ${units.length} unidades de custom collection`);
       
-      // 🔍 DEBUG: Se não encontrou, verificar o que existe no banco
+      // 2) Fallback Launchpad: se nada foi encontrado, verificar se a collection é de launchpad
       if (units.length === 0) {
-        console.log('🔍 DEBUG: Verificando todas as custom_collection_mints...');
-        const allMints = await db.collection('custom_collection_mints')
-          .find({})
-          .limit(5)
-          .toArray();
-        console.log('📋 Samples de mints encontrados:', allMints.map(m => ({
-          customCollectionId: m.customCollectionId?.toString(),
-          tokenId: m.tokenId,
-          name: m.name
+        const launchpadCollection = await db.collection('collections').findOne({ _id: objectId, type: 'launchpad' });
+        if (launchpadCollection) {
+          console.log('🚀 Collection é Launchpad. Tentando mints em custom_collection_mints com o mesmo ID...');
+          // Muitas implementações reutilizam a mesma coleção de mints para launchpad
+          units = await db.collection('custom_collection_mints')
+            .find({ customCollectionId: objectId })
+            .sort({ mintedAt: -1 })
+            .toArray();
+        }
+      }
+      
+      console.log(`📋 Unidades encontradas (custom/launchpad): ${units.length}`);
+      
+      // 🔍 DEBUG: Se não encontrou, amostrar alguns documentos para investigar campos
+      if (units.length === 0) {
+        const sample = await db.collection('custom_collection_mints').find({}).limit(3).toArray();
+        console.log('📋 Samples custom_collection_mints (debug):', sample.map((m: any) => ({
+          customCollectionId: m.customCollectionId?.toString(), tokenId: m.tokenId, name: m.name
         })));
       }
       
