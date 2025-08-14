@@ -84,7 +84,7 @@ export default function CollectionOverviewCard({
   return (
     <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
       {/* Collection Image with Link */}
-      <Link href={collectionUrl} prefetch={false} legacyBehavior>
+      <Link href={href} prefetch={false} legacyBehavior>
         <a className="block relative aspect-square focus:outline-none">
           <CardImage 
             src={imageUrl} 

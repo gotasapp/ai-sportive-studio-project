@@ -35,16 +35,28 @@ async function fetchCollectionData(collectionId: string, category: string) {
       return data.success ? { ...data.collection, type: 'custom', detectedTokenId: actualTokenId } : null;
     }
     
-    // Verificar se é um ObjectId (24 caracteres hex) = Custom Collection
+    // Verificar se é um ObjectId (24 caracteres hex) = Custom/Launchpad Collection
     const isObjectId = collectionIsObjectId;
     
     if (isObjectId) {
-      // É uma Custom Collection
-      console.log('🎨 Detected Custom Collection, using /api/custom-collections/');
-      const res = await fetch(
-        `/api/custom-collections/${collectionId}`,
-        { next: { revalidate: 30 } }
-      );
+      // Tentar primeiro como Launchpad Collection
+      try {
+        console.log('🚀 Trying Launchpad collection endpoint first...');
+        const lpRes = await fetch(`/api/launchpad/collections/${collectionId}`, { next: { revalidate: 30 } });
+        if (lpRes.ok) {
+          const lpData = await lpRes.json();
+          if (lpData && (lpData.success || lpData.collection)) {
+            const coll = lpData.collection || lpData.data || lpData;
+            // Tratamos launchpad como "custom-like" para reutilizar layout de coleção
+            return { ...coll, type: 'custom' };
+          }
+        }
+      } catch (e) {
+        console.log('Launchpad fetch failed, falling back to custom:', e);
+      }
+      // Fallback: Custom Collection
+      console.log('🎨 Falling back to Custom Collection, using /api/custom-collections/');
+      const res = await fetch(`/api/custom-collections/${collectionId}`, { next: { revalidate: 30 } });
       if (!res.ok) return null;
       const data = await res.json();
       return data.success ? { ...data.collection, type: 'custom' } : null;
