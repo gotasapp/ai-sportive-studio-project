@@ -96,8 +96,39 @@ export default function CollectionMintMobileLayout({
 
   const formatPrice = (priceWei: any) => {
     if (!priceWei || priceWei === '0') return '0 MATIC';
-    const priceInMatic = Number(priceWei) / Math.pow(10, 18);
-    return `${priceInMatic.toFixed(4)} MATIC`;
+    
+    let priceValue: bigint;
+    
+    // Handle different input types
+    try {
+      if (typeof priceWei === 'string') {
+        priceValue = BigInt(priceWei);
+      } else if (typeof priceWei === 'number') {
+        priceValue = BigInt(priceWei);
+      } else if (typeof priceWei === 'bigint') {
+        priceValue = priceWei;
+      } else {
+        // Try to convert to string first, then BigInt
+        priceValue = BigInt(String(priceWei));
+      }
+    } catch (error) {
+      console.warn('Failed to parse price:', priceWei, error);
+      return '0 MATIC';
+    }
+    
+    if (priceValue === BigInt(0)) return '0 MATIC';
+    
+    // Converter de wei para MATIC (18 decimais)
+    const priceInMatic = Number(priceValue) / Math.pow(10, 18);
+    
+    // Format with appropriate decimal places
+    if (priceInMatic < 0.0001) {
+      return `${priceInMatic.toFixed(6)} MATIC`;
+    } else if (priceInMatic < 1) {
+      return `${priceInMatic.toFixed(4)} MATIC`;
+    } else {
+      return `${priceInMatic.toFixed(2)} MATIC`;
+    }
   };
 
   const copyContractAddress = () => {
@@ -309,8 +340,8 @@ export default function CollectionMintMobileLayout({
                           <div className="text-xs text-[#FDFDFD]/60 leading-tight">
                             Total: {formatPrice(
                               claimCondition?.pricePerToken 
-                                ? (Number(claimCondition.pricePerToken) * mintQuantity).toString()
-                                : '0'
+                                ? claimCondition.pricePerToken * BigInt(mintQuantity)
+                                : BigInt(0)
                             )}
                           </div>
                         </div>
@@ -351,8 +382,8 @@ export default function CollectionMintMobileLayout({
                           Mint {mintQuantity} NFT{mintQuantity > 1 ? 's' : ''} 
                           ({formatPrice(
                             claimCondition?.pricePerToken 
-                              ? (Number(claimCondition.pricePerToken) * mintQuantity).toString()
-                              : '0'
+                              ? claimCondition.pricePerToken * BigInt(mintQuantity)
+                              : BigInt(0)
                           )})
                         </div>
                       )}
