@@ -1,11 +1,11 @@
 'use client'
 
 import { useActiveAccount, useActiveWalletConnectionStatus } from 'thirdweb/react';
-import { createThirdwebClient, getContract, sendTransaction, readContract } from 'thirdweb';
+import { createThirdwebClient, getContract, sendTransaction, readContract, prepareContractCall } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { mintTo } from 'thirdweb/extensions/erc721';
 import { claimTo as claimToERC1155 } from 'thirdweb/extensions/erc1155';
-import { claimTo, getActiveClaimCondition } from 'thirdweb/extensions/erc721';
+import { getActiveClaimCondition } from 'thirdweb/extensions/erc721';
 import { IPFSService } from './services/ipfs-service';
 
 
@@ -249,19 +249,20 @@ export function useWeb3() {
       // Calculate total cost
       const totalCost = claimCondition.pricePerToken * BigInt(quantity);
       
-      // Prepare claim transaction
-      const baseTx = claimTo({
+      // Prepare claim transaction with value using v5 prepareContractCall
+      const transaction = prepareContractCall({
         contract: launchpadContract,
-        to: account.address,
-        quantity: BigInt(quantity),
+        method: "function claimTo(address _to, uint256 _quantity)",
+        params: [account.address, BigInt(quantity)],
+        value: totalCost,
       });
 
-      console.log('✅ Transaction prepared for Launchpad claim');
+      console.log('✅ Transaction prepared for Launchpad claim (with value)');
       console.log('💰 Total cost:', totalCost.toString(), 'wei');
 
       // Send transaction (user pays gas + price)
       console.log('📤 Sending transaction...');
-      const result = await sendTransaction({ transaction: baseTx, account, value: totalCost });
+      const result = await sendTransaction({ transaction, account });
 
       console.log('✅ LAUNCHPAD CLAIM successful:', result);
 
