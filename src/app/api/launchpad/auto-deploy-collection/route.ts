@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
           startTime: new Date(), // Inicia imediatamente
           maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
-          price: priceInWei, // Preço em wei (pode ser 0 para grátis)
+          price: BigInt(priceInWei), // Preço em wei como BigInt
         },
       ],
     });
