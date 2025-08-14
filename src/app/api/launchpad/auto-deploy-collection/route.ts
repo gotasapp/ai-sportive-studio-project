@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       // If price is already in wei (18+ digits), use as is
       // If price is in MATIC (less than 18 digits), convert to wei
       const priceNum = Number(price);
-      if (price.length >= 18) {
+      if ((price?.length || 0) >= 18) {
         priceInWei = price; // Already in wei
       } else {
         priceInWei = (priceNum * 1e18).toString(); // Convert MATIC to wei
@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
     console.log('💰 Price conversion:', {
       original: price,
       processed: priceInWei,
-      originalLength: price?.length,
-      isAlreadyWei: price?.length >= 18
+      originalLength: price?.length || 0,
+      isAlreadyWei: (price?.length || 0) >= 18
     });
 
     const claimConditionTransaction = setClaimConditions({
