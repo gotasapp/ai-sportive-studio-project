@@ -22,7 +22,9 @@ export async function POST(request: NextRequest) {
       collectionId, 
       name, 
       priceInMatic: `${priceInMatic} MATIC`, 
-      maxSupply
+      maxSupply,
+      priceInMaticType: typeof priceInMatic,
+      priceInMaticValue: priceInMatic
     });
 
     if (!name || !description || !image || !collectionId) {
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest) {
           startTime: new Date(), // Inicia imediatamente
           maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
-          price: BigInt(priceInWei), // Preço em wei como BigInt
+          price: priceInWei, // Preço em wei como string
         },
       ],
     });
