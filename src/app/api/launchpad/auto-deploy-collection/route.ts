@@ -18,6 +18,14 @@ export async function POST(request: NextRequest) {
     const price: string | undefined = body?.price || '0'; // Price in wei
     const maxSupply: number | undefined = body?.maxSupply || 100;
 
+    console.log('📋 Deploy params received:', { 
+      collectionId, 
+      name, 
+      price: `${price} wei`, 
+      maxSupply,
+      priceInMatic: Number(price) / 1e18 
+    });
+
     if (!name || !description || !image || !collectionId) {
       return NextResponse.json({ 
         success: false, 
@@ -78,6 +86,28 @@ export async function POST(request: NextRequest) {
       address: contractAddress,
     });
 
+    // Ensure price is properly formatted as BigInt in wei
+    let priceInWei: string;
+    if (!price || price === '0') {
+      priceInWei = '0';
+    } else {
+      // If price is already in wei (18+ digits), use as is
+      // If price is in MATIC (less than 18 digits), convert to wei
+      const priceNum = Number(price);
+      if (price.length >= 18) {
+        priceInWei = price; // Already in wei
+      } else {
+        priceInWei = (priceNum * 1e18).toString(); // Convert MATIC to wei
+      }
+    }
+
+    console.log('💰 Price conversion:', {
+      original: price,
+      processed: priceInWei,
+      originalLength: price?.length,
+      isAlreadyWei: price?.length >= 18
+    });
+
     const claimConditionTransaction = setClaimConditions({
       contract,
       phases: [
@@ -85,7 +115,7 @@ export async function POST(request: NextRequest) {
           startTime: new Date(), // Inicia imediatamente
           maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
-          price: price, // Preço em wei (pode ser 0 para grátis)
+          price: priceInWei, // Preço em wei (pode ser 0 para grátis)
         },
       ],
     });
