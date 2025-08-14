@@ -110,24 +110,37 @@ export async function GET(request: NextRequest) {
       if (units.length === 0) {
         const launchpadCollection = await db.collection('launchpad_collections').findOne({ _id: objectId });
         if (launchpadCollection) {
-          console.log('🚀 Collection é Launchpad. Buscando unidades mintadas pelo contractAddress em coleções padrão...');
-          const lpCategory = (launchpadCollection.category || 'jerseys').toLowerCase();
-          const collectionName = lpCategory.includes('stadium') ? 'stadiums' : lpCategory.includes('badge') ? 'badges' : 'jerseys';
-          const filters: any = {
-            status: 'Approved',
-            contractAddress: launchpadCollection.contractAddress,
-            $or: [
-              { transactionHash: { $exists: true, $nin: [null, ''] } },
-              { isMinted: true },
-              { mintStatus: { $in: ['minted', 'success'] } }
-            ]
-          };
-          units = await db.collection(collectionName)
-            .find(filters)
-            .sort({ createdAt: -1 })
-            .limit(100)
+          console.log('🚀 Collection é Launchpad. Buscando unidades mintadas na tabela launchpad_collection_mints...');
+          
+          // Primeiro buscar na nova tabela de launchpad mints
+          units = await db.collection('launchpad_collection_mints')
+            .find({ launchpadCollectionId: objectId })
+            .sort({ mintedAt: -1 })
             .toArray();
-          console.log(`📋 Unidades encontradas via contractAddress (${collectionName}): ${units.length}`);
+          
+          console.log(`📋 Unidades encontradas na launchpad_collection_mints: ${units.length}`);
+          
+          // Se ainda não encontrou, buscar legacy pelo contractAddress (para compatibilidade)
+          if (units.length === 0) {
+            console.log('🔍 Fallback: Buscando unidades pelo contractAddress em coleções legacy...');
+            const lpCategory = (launchpadCollection.category || 'jerseys').toLowerCase();
+            const collectionName = lpCategory.includes('stadium') ? 'stadiums' : lpCategory.includes('badge') ? 'badges' : 'jerseys';
+            const filters: any = {
+              status: 'Approved',
+              contractAddress: launchpadCollection.contractAddress,
+              $or: [
+                { transactionHash: { $exists: true, $nin: [null, ''] } },
+                { isMinted: true },
+                { mintStatus: { $in: ['minted', 'success'] } }
+              ]
+            };
+            units = await db.collection(collectionName)
+              .find(filters)
+              .sort({ createdAt: -1 })
+              .limit(100)
+              .toArray();
+            console.log(`📋 Unidades encontradas via contractAddress (${collectionName}): ${units.length}`);
+          }
         }
       }
       

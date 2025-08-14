@@ -1,6 +1,21 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
+// Utility function to convert price string to wei
+function convertPriceToWei(priceStr: string): string {
+  if (!priceStr) return '0';
+  
+  // Remove common currency indicators and normalize
+  const cleanPrice = priceStr.replace(/[^0-9.]/g, '');
+  const price = parseFloat(cleanPrice);
+  
+  if (isNaN(price)) return '0';
+  
+  // Convert to wei (18 decimals)
+  const weiValue = BigInt(Math.floor(price * 1e18)).toString();
+  return weiValue;
+}
 import { useActiveAccount } from 'thirdweb/react';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -332,6 +347,8 @@ function LaunchpadCollectionCard({
                     name: collection.name,
                     description: collection.description,
                     image: (collection as any).image || (collection as any).imageUrl,
+                    price: convertPriceToWei((collection as any).price) || '1000000000000000', // 0.001 MATIC em wei
+                    maxSupply: (collection as any).maxSupply || 100,
                   };
                   const resp = await fetch('/api/launchpad/auto-deploy-collection', {
                     method: 'POST',
@@ -340,10 +357,10 @@ function LaunchpadCollectionCard({
                   });
                   const data = await resp.json();
                   if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
-                  alert(`Deployed (simulated). Contract: ${data.contractAddress}`);
+                  alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.price} wei`);
                   onUpdateStatus?.((collection as any)._id, (collection as any).status);
                 } catch (e: any) {
-                  alert(e?.message || 'Auto-deploy failed');
+                  alert(`❌ Auto-deploy failed: ${e?.message || 'Unknown error'}`);
                 }
               }}
             >
@@ -1704,6 +1721,8 @@ export default function LaunchpadPage() {
                           name: approvalForm.name,
                           description: approvalForm.description,
                           image: approvalForm.image || (selectedPendingImage as any)?.image,
+                          price: convertPriceToWei(approvalForm.price) || '1000000000000000', // 0.001 MATIC em wei
+                          maxSupply: approvalForm.maxSupply || 100,
                         };
                         const resp = await fetch('/api/launchpad/auto-deploy-collection', {
                           method: 'POST',
@@ -1713,9 +1732,9 @@ export default function LaunchpadPage() {
                         const data = await resp.json();
                         if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
                         updateApprovalForm('contractAddress', data.contractAddress);
-                        alert(`Deployed (simulated). Contract: ${data.contractAddress}`);
+                        alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.price} wei`);
                       } catch (e: any) {
-                        alert(e?.message || 'Auto deploy failed');
+                        alert(`❌ Auto deploy failed: ${e?.message || 'Unknown error'}`);
                       }
                     }}
                   >

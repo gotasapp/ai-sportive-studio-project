@@ -366,6 +366,29 @@ export default function CollectionMintPage() {
           }
         }).catch(console.warn);
       }
+
+      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      try {
+        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        for (let i = 0; i < mintQuantity; i++) {
+          const tokenId = startTokenId + i;
+          await fetch('/api/launchpad/save-individual-nft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              collectionId: collection._id,
+              tokenId: tokenId,
+              transactionHash: result.transactionHash,
+              minterAddress: address,
+              price: claimCondition.pricePerToken.toString()
+            })
+          });
+        }
+        console.log(`✅ Saved ${mintQuantity} individual NFTs to database`);
+      } catch (saveError) {
+        console.warn('⚠️ Failed to save individual NFTs:', saveError);
+        // Não falhar o mint por causa disso
+      }
       
       setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
       toast.success(`Mint successful`);
@@ -505,6 +528,29 @@ export default function CollectionMintPage() {
         if (refreshData.success) {
           setCollection(refreshData.collection);
         }
+      }
+
+      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      try {
+        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        for (let i = 0; i < mintQuantity; i++) {
+          const tokenId = startTokenId + i;
+          await fetch('/api/launchpad/save-individual-nft', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              collectionId: collection._id,
+              tokenId: tokenId,
+              transactionHash: result.queueId, // Using queueId for gasless mints
+              minterAddress: address,
+              price: '0' // Gasless mint (admin pays)
+            })
+          });
+        }
+        console.log(`✅ Saved ${mintQuantity} individual gasless NFTs to database`);
+      } catch (saveError) {
+        console.warn('⚠️ Failed to save individual gasless NFTs:', saveError);
+        // Não falhar o mint por causa disso
       }
       
       setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}! Queue ID: ${result.queueId}`);
