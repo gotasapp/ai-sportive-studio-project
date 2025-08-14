@@ -34,6 +34,10 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
+import { createThirdwebClient, getContract } from 'thirdweb';
+import { defineChain } from 'thirdweb/chains';
+import { claimTo, getActiveClaimCondition } from 'thirdweb/extensions/erc721';
+import { sendTransaction } from 'thirdweb/transaction';
 import { IPFSService } from '@/lib/services/ipfs-service';
 import { isAdmin } from '@/lib/admin-config';
 import { useIsMobile } from '@/hooks/useIsMobile';
@@ -55,11 +59,11 @@ export default function CollectionMintPage() {
   // Admin check
   const isUserAdmin = isAdmin(account);
   
-  // Web3 hooks for public mint using claim conditions
-  const { 
-    claimLaunchpadNFT,
-    getLaunchpadClaimCondition
-  } = useWeb3();
+  // Collection-specific claim functions state
+  const [collectionClaimFunctions, setCollectionClaimFunctions] = useState<{
+    claimLaunchpadNFT: ((quantity: number) => Promise<any>) | null;
+    getLaunchpadClaimCondition: (() => Promise<any>) | null;
+  }>({ claimLaunchpadNFT: null, getLaunchpadClaimCondition: null });
   
   // Engine hook for gasless admin mint
   const { 
@@ -117,16 +121,72 @@ export default function CollectionMintPage() {
     }
   }, [collectionId]);
 
+  // Create collection-specific claim functions when collection loads
+  useEffect(() => {
+    if (!collection?.contractAddress || !account) {
+      setCollectionClaimFunctions({ claimLaunchpadNFT: null, getLaunchpadClaimCondition: null });
+      return;
+    }
+
+    const client = createThirdwebClient({ 
+      clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '' 
+    });
+    
+    const amoy = defineChain({
+      id: 80002,
+      name: 'Polygon Amoy Testnet',
+      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+      rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology/',
+    });
+    
+    const collectionContract = getContract({
+      client,
+      chain: amoy,
+      address: collection.contractAddress,
+    });
+    
+    const claimCollectionNFT = async (quantity: number) => {
+      if (!account) throw new Error('Wallet not connected');
+      
+      const claimCondition = await getActiveClaimCondition({ contract: collectionContract });
+      const totalCost = claimCondition.pricePerToken * BigInt(quantity);
+      
+      const baseTx = claimTo({
+        contract: collectionContract,
+        to: account.address,
+        quantity: BigInt(quantity),
+      });
+      
+      const transaction = {
+        ...baseTx,
+        value: totalCost,
+      };
+      
+      return await sendTransaction({ transaction, account });
+    };
+    
+    const getCollectionClaimCondition = async () => {
+      return await getActiveClaimCondition({ contract: collectionContract });
+    };
+    
+    setCollectionClaimFunctions({
+      claimLaunchpadNFT: claimCollectionNFT,
+      getLaunchpadClaimCondition: getCollectionClaimCondition
+    });
+
+    console.log(`🎯 Created collection-specific functions for contract: ${collection.contractAddress}`);
+  }, [collection, account]);
+
   // Carregar claim conditions quando a collection estiver disponível
   useEffect(() => {
     const loadClaimConditions = async () => {
-      if (!collection) return;
+      if (!collection || !collectionClaimFunctions.getLaunchpadClaimCondition) return;
       
       try {
         setIsLoadingClaimCondition(true);
-        const condition = await getLaunchpadClaimCondition();
+        const condition = await collectionClaimFunctions.getLaunchpadClaimCondition();
         setClaimCondition(condition);
-        console.log('📋 Claim condition loaded successfully');
+        console.log('📋 Claim condition loaded successfully for contract:', collection.contractAddress);
       } catch (error) {
         console.error('❌ Failed to load claim conditions:', error);
         setClaimCondition(null);
@@ -136,7 +196,7 @@ export default function CollectionMintPage() {
     };
 
     loadClaimConditions();
-  }, [collection]); // Removida a dependência getLaunchpadClaimCondition
+  }, [collection, collectionClaimFunctions]);
 
   // Countdown timer
   useEffect(() => {
@@ -263,14 +323,19 @@ export default function CollectionMintPage() {
       });
       
       // Mint público usando claim conditions (usuário paga gas + preço)
-      const result = await claimLaunchpadNFT(mintQuantity);
+      if (!collectionClaimFunctions.claimLaunchpadNFT) {
+        throw new Error('Collection-specific claim function not available');
+      }
+      const result = await collectionClaimFunctions.claimLaunchpadNFT(mintQuantity);
       
       console.log('✅ Public mint successful:', result);
       
       // Atualizar claim conditions após o mint
       try {
-        const updatedCondition = await getLaunchpadClaimCondition();
-        setClaimCondition(updatedCondition);
+        if (collectionClaimFunctions.getLaunchpadClaimCondition) {
+          const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
+          setClaimCondition(updatedCondition);
+        }
       } catch (error) {
         console.warn('Failed to refresh claim conditions:', error);
       }
@@ -389,20 +454,34 @@ export default function CollectionMintPage() {
       
       console.log('✅ IPFS upload completed for gasless mint:', metadataUrl);
       
-      // Gasless mint using Engine
-      const result = await mintGasless({
-        to: address,
-        metadataUri: metadataUrl,
-        collectionId: collection._id,
-        chainId: 80002, // Polygon Amoy
+      // Gasless mint via dedicated Launchpad endpoint (ensures correct contract)
+      if (!collection.contractAddress) {
+        throw new Error('Contract address not configured for this collection');
+      }
+
+      const resp = await fetch('/api/launchpad/admin-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: address,
+          metadataUri: metadataUrl,
+          contractAddress: collection.contractAddress,
+          quantity: mintQuantity,
+        }),
       });
-      
-      console.log('✅ Gasless mint successful:', result);
+      const result = await resp.json();
+      if (!resp.ok || !result.success) {
+        throw new Error(result.error || 'Admin gasless mint failed');
+      }
+      console.log('✅ Gasless mint enqueued:', result);
+      setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT(s)! Queue ID: ${result.queueId}`);
       
       // Atualizar claim conditions após o mint
       try {
-        const updatedCondition = await getLaunchpadClaimCondition();
-        setClaimCondition(updatedCondition);
+        if (collectionClaimFunctions.getLaunchpadClaimCondition) {
+          const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
+          setClaimCondition(updatedCondition);
+        }
       } catch (error) {
         console.warn('Failed to refresh claim conditions:', error);
       }

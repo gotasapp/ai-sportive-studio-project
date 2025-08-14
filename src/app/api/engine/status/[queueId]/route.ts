@@ -1,6 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, Engine } from 'thirdweb';
 
+export async function GET(request: NextRequest, { params }: { params: { queueId: string } }) {
+  try {
+    const queueId = params.queueId;
+    if (!queueId) return NextResponse.json({ success: false, error: 'queueId required' }, { status: 400 });
+
+    const client = createThirdwebClient({
+      secretKey: process.env.ENGINE_ACCESS_TOKEN || process.env.THIRDWEB_SECRET_KEY || '',
+    });
+
+    const serverWallet = Engine.serverWallet({
+      address: process.env.BACKEND_WALLET_ADDRESS || '',
+      client,
+      vaultAccessToken: process.env.ENGINE_ACCESS_TOKEN || process.env.THIRDWEB_SECRET_KEY || '',
+    });
+
+    const status = await serverWallet.getTransactionStatus(queueId).catch(() => null);
+
+    return NextResponse.json({ success: true, result: status });
+  } catch (e: any) {
+    return NextResponse.json({ success: false, error: e?.message || 'Unhandled error' }, { status: 500 });
+  }
+}
+
+import { NextRequest, NextResponse } from 'next/server';
+import { createThirdwebClient, Engine } from 'thirdweb';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { queueId: string } }
