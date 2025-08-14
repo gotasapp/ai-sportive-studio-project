@@ -344,9 +344,9 @@ export default function CollectionMintPage() {
       // baseado no contador 'minted' que será atualizado abaixo
       console.log('✅ Collection will appear in marketplace automatically');
 
-      // Opcional: Atualizar dados da coleção no banco
+      // Atualizar dados da coleção no banco (launchpad_collections)
       if (collection._id) {
-        fetch(`/api/collections/${collection._id}`, {
+        fetch(`/api/launchpad/collections/${collection._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -354,12 +354,15 @@ export default function CollectionMintPage() {
           })
         }).then(async (updateResponse) => {
           if (updateResponse.ok) {
+            console.log('✅ Collection minted count updated in launchpad_collections');
             // Refresh collection data
             const refreshResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
             const refreshData = await refreshResponse.json();
             if (refreshData.success) {
               setCollection(refreshData.collection);
             }
+          } else {
+            console.warn('❌ Failed to update collection minted count');
           }
         }).catch(console.warn);
       }
@@ -486,8 +489,8 @@ export default function CollectionMintPage() {
         console.warn('Failed to refresh claim conditions:', error);
       }
       
-      // Update collection mint count in database
-      const updateResponse = await fetch(`/api/collections/${collection._id}`, {
+      // Update collection mint count in database (launchpad_collections)
+      const updateResponse = await fetch(`/api/launchpad/collections/${collection._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

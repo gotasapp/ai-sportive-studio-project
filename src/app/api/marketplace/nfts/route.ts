@@ -281,10 +281,13 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
 async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
   try {
     // Buscar coleções ativas do launchpad com NFTs mintados
+    console.log('🔍 Buscando launchpad_collections com minted > 0...');
     const launchpadCollections = await db.collection('launchpad_collections').find({
       status: { $in: ['active', 'upcoming', 'approved'] },
       minted: { $gt: 0 }
     }).toArray();
+    console.log(`📋 Encontradas ${launchpadCollections.length} coleções launchpad com minted > 0:`, 
+      launchpadCollections.map(c => ({ name: c.name, minted: c.minted, status: c.status, _id: c._id })));
 
     const launchpadNFTs = [];
 
@@ -405,6 +408,7 @@ export async function GET(request: NextRequest) {
     
     // Adicionar NFTs do launchpad de coleções ativas
     const launchpadNFTs = await getLaunchpadNFTs(db, owner, limit);
+    console.log('🚀 Launchpad NFTs encontradas:', launchpadNFTs.length);
 
     for (const collectionName of collections) {
       // Filtrar por tipo se especificado
