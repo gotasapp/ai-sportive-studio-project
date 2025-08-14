@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
       
       // 2) Fallback Launchpad: se nada foi encontrado, verificar se a collection é de launchpad
       if (units.length === 0) {
-        const launchpadCollection = await db.collection('collections').findOne({ _id: objectId, type: 'launchpad' });
+        const launchpadCollection = await db.collection('launchpad_collections').findOne({ _id: objectId });
         if (launchpadCollection) {
           console.log('🚀 Collection é Launchpad. Buscando unidades mintadas pelo contractAddress em coleções padrão...');
           const lpCategory = (launchpadCollection.category || 'jerseys').toLowerCase();

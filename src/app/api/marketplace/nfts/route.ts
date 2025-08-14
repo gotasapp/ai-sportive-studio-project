@@ -281,9 +281,8 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
 async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
   try {
     // Buscar coleções ativas do launchpad com NFTs mintados
-    const launchpadCollections = await db.collection('collections').find({
-      type: 'launchpad',
-      status: { $in: ['active', 'upcoming'] },
+    const launchpadCollections = await db.collection('launchpad_collections').find({
+      status: { $in: ['active', 'upcoming', 'approved'] },
       minted: { $gt: 0 }
     }).toArray();
 
