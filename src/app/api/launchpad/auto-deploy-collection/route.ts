@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       phases: [
         {
           startTime: new Date(), // Inicia imediatamente
-          maxClaimableSupply: BigInt(maxSupply), // Supply máximo da coleção
+          maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
           price: price, // Preço em wei (pode ser 0 para grátis)
         },
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     
     const lazyMintTransaction = lazyMint({
       contract,
-      nfts: Array(maxSupply).fill({
+      nfts: Array(maxSupply || 100).fill({
         name: name, // Mesmo nome da coleção
         description: description, // Mesma descrição
         image: image, // Mesma imagem IPFS para todos os NFTs
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
             contractAddress: contractAddress,
             deployed: true,
             deployedAt: new Date(),
-            maxSupply: maxSupply,
+            maxSupply: maxSupply || 100,
             price: price,
             updatedAt: new Date()
           } 
@@ -142,7 +142,7 @@ export async function POST(request: NextRequest) {
       success: true,
       contractAddress,
       deployedBy: backendAccount.address,
-      maxSupply,
+      maxSupply: maxSupply || 100,
       price,
       message: `Launchpad collection deployed successfully with metadata`,
       claimConditionsSet: true,
