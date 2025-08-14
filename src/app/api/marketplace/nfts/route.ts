@@ -287,7 +287,7 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
       minted: { $gt: 0 }
     }).toArray();
     console.log(`📋 Encontradas ${launchpadCollections.length} coleções launchpad com minted > 0:`, 
-      launchpadCollections.map(c => ({ name: c.name, minted: c.minted, status: c.status, _id: c._id })));
+      launchpadCollections.map((c: any) => ({ name: c.name, minted: c.minted, status: c.status, _id: c._id })));
 
     const launchpadNFTs = [];
 
