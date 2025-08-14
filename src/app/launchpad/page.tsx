@@ -347,7 +347,7 @@ function LaunchpadCollectionCard({
                     name: collection.name,
                     description: collection.description,
                     image: (collection as any).image || (collection as any).imageUrl,
-                    price: convertPriceToWei((collection as any).price) || '1000000000000000', // 0.001 MATIC em wei
+                    priceInMatic: parseFloat(((collection as any).price || '0.2').replace(/[^0-9.]/g, '')) || 0.2,
                     maxSupply: (collection as any).maxSupply || 100,
                   };
                   const resp = await fetch('/api/launchpad/auto-deploy-collection', {
@@ -357,7 +357,7 @@ function LaunchpadCollectionCard({
                   });
                   const data = await resp.json();
                   if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
-                  alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.price} wei`);
+                  alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.priceInMatic} MATIC`);
                   onUpdateStatus?.((collection as any)._id, (collection as any).status);
                 } catch (e: any) {
                   alert(`❌ Auto-deploy failed: ${e?.message || 'Unknown error'}`);
@@ -1721,7 +1721,7 @@ export default function LaunchpadPage() {
                           name: approvalForm.name,
                           description: approvalForm.description,
                           image: approvalForm.image || (selectedPendingImage as any)?.image,
-                          price: convertPriceToWei(approvalForm.price) || '1000000000000000', // 0.001 MATIC em wei
+                          priceInMatic: parseFloat(approvalForm.price.replace(/[^0-9.]/g, '')) || 0.2,
                           maxSupply: approvalForm.maxSupply || 100,
                         };
                         const resp = await fetch('/api/launchpad/auto-deploy-collection', {
@@ -1732,7 +1732,7 @@ export default function LaunchpadPage() {
                         const data = await resp.json();
                         if (!resp.ok || !data.success) throw new Error(data.error || 'Auto-deploy failed');
                         updateApprovalForm('contractAddress', data.contractAddress);
-                        alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.price} wei`);
+                        alert(`✅ Contract deployed successfully!\nAddress: ${data.contractAddress}\nMax Supply: ${data.maxSupply}\nPrice: ${data.priceInMatic} MATIC`);
                       } catch (e: any) {
                         alert(`❌ Auto deploy failed: ${e?.message || 'Unknown error'}`);
                       }

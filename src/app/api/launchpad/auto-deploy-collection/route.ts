@@ -15,15 +15,14 @@ export async function POST(request: NextRequest) {
     const name: string | undefined = body?.name;
     const description: string | undefined = body?.description;
     const image: string | undefined = body?.image;
-    const price: string | undefined = body?.price || '0'; // Price in wei
+    const priceInMatic: number = body?.priceInMatic || 0.2; // Price in MATIC
     const maxSupply: number | undefined = body?.maxSupply || 100;
 
     console.log('📋 Deploy params received:', { 
       collectionId, 
       name, 
-      price: `${price} wei`, 
-      maxSupply,
-      priceInMatic: Number(price) / 1e18 
+      priceInMatic: `${priceInMatic} MATIC`, 
+      maxSupply
     });
 
     if (!name || !description || !image || !collectionId) {
@@ -86,26 +85,14 @@ export async function POST(request: NextRequest) {
       address: contractAddress,
     });
 
-    // Ensure price is properly formatted as BigInt in wei
-    let priceInWei: string;
-    if (!price || price === '0') {
-      priceInWei = '0';
-    } else {
-      // If price is already in wei (18+ digits), use as is
-      // If price is in MATIC (less than 18 digits), convert to wei
-      const priceNum = Number(price);
-      if ((price?.length || 0) >= 18) {
-        priceInWei = price; // Already in wei
-      } else {
-        priceInWei = (priceNum * 1e18).toString(); // Convert MATIC to wei
-      }
-    }
-
+    // Convert MATIC to wei correctly (only once!)
+    const priceInWei = (priceInMatic * 1e18).toString();
+    
     console.log('💰 Price conversion:', {
-      original: price,
-      processed: priceInWei,
-      originalLength: price?.length || 0,
-      isAlreadyWei: (price?.length || 0) >= 18
+      inputMatic: priceInMatic,
+      outputWei: priceInWei,
+      weiDigits: priceInWei.length,
+      backToMatic: Number(priceInWei) / 1e18
     });
 
     const claimConditionTransaction = setClaimConditions({
@@ -159,7 +146,7 @@ export async function POST(request: NextRequest) {
             deployed: true,
             deployedAt: new Date(),
             maxSupply: maxSupply || 100,
-            price: price,
+            priceInMatic: priceInMatic,
             updatedAt: new Date()
           } 
         }
@@ -173,8 +160,9 @@ export async function POST(request: NextRequest) {
       contractAddress,
       deployedBy: backendAccount.address,
       maxSupply: maxSupply || 100,
-      price,
-      message: `Launchpad collection deployed successfully with metadata`,
+      priceInMatic,
+      priceInWei,
+      message: `Contract deployed with correct price: ${priceInMatic} MATIC`,
       claimConditionsSet: true,
       tokensLazyMinted: true,
       collectionId

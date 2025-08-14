@@ -7,22 +7,22 @@ import { cn } from "@/lib/utils";
 const categories = [
   {
     title: "Jerseys",
-    image:"https://res.cloudinary.com/dpilz4p6g/image/upload/v1755117564/Jersey-removebg-preview_q2vfqh.png",
+    image:"https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201840/T-Shirt_with_Background__2_-removebg-preview_mhywqw.png",
     href: "/jerseys",
   },
   {
     title: "Stadiums",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114573/Stadium__2_-removebg-preview_puz1aw.png ",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201830/Stadion_without_Background-removebg-preview_mzor0r.png",
     href: "/stadiums",
   },
   {
     title: "Badges",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755114580/Badge-removebg-preview_bjthog.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201820/Badge_with_background-removebg-preview_nbdfqm.png",
     href: "/badges",
   },
   {
     title: "Marketplace",
-    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755115555/u7539642511_httpss.mj.rung0Yw7HI-LnI_create_a_3_D_shopping_ka_09b5f39d-3fbe-452d-99ed-213ab6a4edcf_3-removebg-preview_ppkabh.png",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201870/Kart_with_Background-removebg-preview_ame0qx.png",
     href: "/marketplace",
   },
 ];
