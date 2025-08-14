@@ -258,12 +258,31 @@ export default function CollectionMintPage() {
     : 0;
   
   // Helper para formatar preço das claim conditions
-  const formatPrice = (priceWei: bigint) => {
-    if (priceWei === BigInt(0)) return '0 MATIC';
+  const formatPrice = (priceWei: bigint | string | number) => {
+    let priceValue: bigint;
+    
+    // Handle different input types
+    if (typeof priceWei === 'string') {
+      priceValue = BigInt(priceWei);
+    } else if (typeof priceWei === 'number') {
+      priceValue = BigInt(priceWei);
+    } else {
+      priceValue = priceWei;
+    }
+    
+    if (priceValue === BigInt(0)) return '0 MATIC';
     
     // Converter de wei para MATIC (18 decimais)
-    const priceInMatic = Number(priceWei) / Math.pow(10, 18);
-    return `${priceInMatic.toFixed(4)} MATIC`;
+    const priceInMatic = Number(priceValue) / Math.pow(10, 18);
+    
+    // Format with appropriate decimal places
+    if (priceInMatic < 0.0001) {
+      return `${priceInMatic.toFixed(6)} MATIC`;
+    } else if (priceInMatic < 1) {
+      return `${priceInMatic.toFixed(4)} MATIC`;
+    } else {
+      return `${priceInMatic.toFixed(2)} MATIC`;
+    }
   };
   
   // Usar claim conditions para determinar preço e limites
