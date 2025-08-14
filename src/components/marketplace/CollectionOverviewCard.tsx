@@ -79,6 +79,7 @@ export default function CollectionOverviewCard({
     ? `/marketplace/collection/${normalizedCategory}/${collectionId}`
     : `/marketplace/collection/${normalizedCategory}/${collection}`;
 
+  // hrefOverride tem prioridade absoluta (para launchpad, custom, etc.)
   const href = hrefOverride || collectionUrl;
 
   return (
@@ -176,7 +177,7 @@ export default function CollectionOverviewCard({
         
         {/* Action Buttons - OVERVIEW ONLY */}
         <div className="space-y-2">
-          <Link href={collectionUrl} legacyBehavior>
+          <Link href={href} legacyBehavior>
             <a className="w-full">
               <Button className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white">
                 <Eye className="mr-2 h-4 w-4" />
