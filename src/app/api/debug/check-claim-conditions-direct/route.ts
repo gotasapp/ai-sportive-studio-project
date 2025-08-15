@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error checking claim conditions:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to check claim conditions',
+      error: error instanceof Error ? error.message : 'Failed to check claim conditions',
       contractAddress: '0x20f77c542E9Fa6ebB597117dA5aED746D7137064'
     }, { status: 500 });
   }

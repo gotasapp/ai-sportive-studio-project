@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error finding Kane collection:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to find Kane collection'
+      error: error instanceof Error ? error.message : 'Failed to find Kane collection'
     }, { status: 500 });
   }
 }

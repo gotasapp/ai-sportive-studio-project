@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     console.error('❌ Error fixing claim conditions:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || 'Failed to fix claim conditions'
+      error: error instanceof Error ? error.message : 'Failed to fix claim conditions'
     }, { status: 500 });
   }
 }

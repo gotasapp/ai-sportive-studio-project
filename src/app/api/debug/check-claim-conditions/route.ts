@@ -62,7 +62,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Error checking claim conditions:', error);
     return NextResponse.json({
       success: false,
-      error: error.message || 'Failed to check claim conditions'
+      error: error instanceof Error ? error.message : 'Failed to check claim conditions'
     }, { status: 500 });
   }
 }

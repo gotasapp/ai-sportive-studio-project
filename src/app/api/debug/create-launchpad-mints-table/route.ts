@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error creating launchpad mints table:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to create launchpad mints table'
+      error: error instanceof Error ? error.message : 'Failed to create launchpad mints table'
     }, { status: 500 });
   }
 }

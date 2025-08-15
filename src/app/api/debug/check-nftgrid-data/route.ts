@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error checking NFTGrid data:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to check NFTGrid data'
+      error: error instanceof Error ? error.message : 'Failed to check NFTGrid data'
     }, { status: 500 });
   }
 }

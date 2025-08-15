@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error finding collection:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to find collection'
+      error: error instanceof Error ? error.message : 'Failed to find collection'
     }, { status: 500 });
   }
 }

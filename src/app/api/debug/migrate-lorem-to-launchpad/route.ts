@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error migrating Lorem collection:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to migrate Lorem collection'
+      error: error instanceof Error ? error.message : 'Failed to migrate Lorem collection'
     }, { status: 500 });
   }
 }
@@ -144,7 +144,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error checking Lorem migration status:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to check migration status'
+      error: error instanceof Error ? error.message : 'Failed to check migration status'
     }, { status: 500 });
   }
 }

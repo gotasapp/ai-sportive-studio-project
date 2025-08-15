@@ -164,7 +164,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('❌ Erro na análise NFT vs Collection:', error);
     return NextResponse.json(
-      { error: error.message || 'Erro na análise' },
+      { error: error instanceof Error ? error.message : 'Erro na análise' },
       { status: 500 }
     );
   }

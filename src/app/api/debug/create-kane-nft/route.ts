@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error creating Kane NFT:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to create Kane NFT'
+      error: error instanceof Error ? error.message : 'Failed to create Kane NFT'
     }, { status: 500 });
   }
 }

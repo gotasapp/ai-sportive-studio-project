@@ -92,8 +92,8 @@ export async function GET(request: NextRequest) {
         metadata: nftData.metadata
       };
     } catch (error: any) {
-      thirdwebError = error.message;
-      console.log('❌ Erro ao buscar NFT na Thirdweb:', error.message);
+      thirdwebError = error instanceof Error ? error.message : 'Unknown error';
+      console.log('❌ Erro ao buscar NFT na Thirdweb:', error instanceof Error ? error.message : 'Unknown error');
     }
 
     // 3. Comparar dados
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Erro no debug:', error);
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }

@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error in cleanup:', error);
     return NextResponse.json({
-      error: error.message || 'Cleanup failed'
+      error: error instanceof Error ? error.message : 'Cleanup failed'
     }, { status: 500 });
   }
 }

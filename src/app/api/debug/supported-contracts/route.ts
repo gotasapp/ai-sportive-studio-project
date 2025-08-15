@@ -87,7 +87,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('❌ Erro ao verificar contratos suportados:', error);
     return NextResponse.json(
-      { error: error.message || 'Erro ao verificar contratos' },
+      { error: error instanceof Error ? error.message : 'Erro ao verificar contratos' },
       { status: 500 }
     );
   }

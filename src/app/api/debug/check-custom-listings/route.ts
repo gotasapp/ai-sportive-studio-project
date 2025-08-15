@@ -95,7 +95,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('❌ Erro ao verificar custom collections:', error);
     return NextResponse.json(
-      { error: error.message || 'Erro ao verificar custom collections' },
+      { error: error instanceof Error ? error.message : 'Erro ao verificar custom collections' },
       { status: 500 }
     );
   }

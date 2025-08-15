@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error checking collection:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to check collection'
+      error: error instanceof Error ? error.message : 'Failed to check collection'
     }, { status: 500 });
   }
 }

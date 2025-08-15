@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error listing launchpad collections:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to list launchpad collections'
+      error: error instanceof Error ? error.message : 'Failed to list launchpad collections'
     }, { status: 500 });
   }
 }

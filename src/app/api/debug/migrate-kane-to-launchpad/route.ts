@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error migrating Kane collection:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to migrate Kane collection'
+      error: error instanceof Error ? error.message : 'Failed to migrate Kane collection'
     }, { status: 500 });
   }
 }

@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     console.error('❌ Error listing collections:', error);
     return NextResponse.json({
-      error: error.message || 'Failed to list collections'
+      error: error instanceof Error ? error.message : 'Failed to list collections'
     }, { status: 500 });
   }
 }

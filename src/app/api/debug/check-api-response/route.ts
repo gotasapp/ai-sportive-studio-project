@@ -52,7 +52,7 @@ export async function GET() {
   } catch (error: any) {
     console.error('❌ Erro ao testar API:', error);
     return NextResponse.json(
-      { error: error.message || 'Erro ao testar API' },
+      { error: error instanceof Error ? error.message : 'Erro ao testar API' },
       { status: 500 }
     );
   }
