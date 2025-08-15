@@ -55,10 +55,11 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
   const [stats, setStats] = useState<any>(null);
   const account = useActiveAccount();
 
-  // Estados dos modais (MESMA LÓGICA DO BACKUP)
-  const [showCreateListing, setShowCreateListing] = useState<string | null>(null);
-  const [showUpdateListing, setShowUpdateListing] = useState<string | null>(null);
-  const [showCreateAuction, setShowCreateAuction] = useState<string | null>(null);
+  // Estados dos modais (ALINHADO COM MARKETPLACECARD)
+  const [showCreateListing, setShowCreateListing] = useState(false);
+  const [showUpdateListing, setShowUpdateListing] = useState(false);
+  const [showCreateAuction, setShowCreateAuction] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<CollectionUnit | null>(null);
 
   // Buscar unidades da coleção
   useEffect(() => {
@@ -227,7 +228,10 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setShowUpdateListing(unit.id)}
+              onClick={() => {
+                setSelectedUnit(unit);
+                setShowUpdateListing(true);
+              }}
               className="rounded-full px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
             >
               Update
@@ -330,14 +334,20 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         return (
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => setShowCreateListing(unit.id)}
+              onClick={() => {
+                setSelectedUnit(unit);
+                setShowCreateListing(true);
+              }}
               className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
             >
               List for Sale
             </Button>
             <Button
               variant="outline"
-              onClick={() => setShowCreateAuction(unit.id)}
+              onClick={() => {
+                setSelectedUnit(unit);
+                setShowCreateAuction(true);
+              }}
               className="rounded-full px-4 py-1.5 text-[#FF0052] hover:bg-[#FF0052]/10 text-xs font-medium"
             >
               Create Auction
@@ -360,10 +370,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     }
   };
 
-  // Encontrar unidade para modais
-  const getUnitForModal = (unitId: string) => {
-    return units.find(u => u.id === unitId);
-  };
+
 
   if (loading) {
     return (
@@ -501,72 +508,43 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         </CardContent>
       </Card>
 
-      {/* Modais de Trading (MESMA LÓGICA DO BACKUP) */}
-      {showCreateListing && (
+      {/* Modais de Trading (ALINHADO COM MARKETPLACECARD) */}
+      {showCreateListing && selectedUnit && (
         <CreateListingModal
-          isOpen={true}
-          onOpenChange={(open) => !open && setShowCreateListing(null)}
-          nft={(() => {
-            const unit = getUnitForModal(showCreateListing);
-            if (!unit) {
-              // Fallback NFT para evitar null
-              return {
-                assetContractAddress: '',
-                tokenId: '',
-                name: 'Unknown NFT',
-                imageUrl: ''
-              };
-            }
-            return {
-              assetContractAddress: unit.contractAddress,
-              tokenId: unit.tokenId,
-              name: unit.name,
-              imageUrl: unit.imageUrl
-            };
-          })()}
+          isOpen={showCreateListing}
+          onOpenChange={setShowCreateListing}
+          nft={{
+            assetContractAddress: selectedUnit.contractAddress,
+            tokenId: selectedUnit.tokenId,
+            name: selectedUnit.name,
+            imageUrl: selectedUnit.imageUrl
+          }}
         />
       )}
 
-      {showUpdateListing && (() => {
-        const unit = getUnitForModal(showUpdateListing);
-        if (!unit) return null;
-        
-        return (
-          <UpdateListingModal
-            isOpen={true}
-            onOpenChange={(open) => !open && setShowUpdateListing(null)}
-            listingId={unit.marketplace?.listingId || ''}
-            currentPrice={unit.marketplace?.price || '0'}
-            nftName={unit.name}
-            tokenId={unit.tokenId}
-          />
-        );
-      })()}
+      {showUpdateListing && selectedUnit && (
+        <UpdateListingModal
+          isOpen={showUpdateListing}
+          onOpenChange={setShowUpdateListing}
+          listingId={selectedUnit.marketplace?.listingId || ''}
+          currentPrice={selectedUnit.marketplace?.price || '0'}
+          nftName={selectedUnit.name}
+          tokenId={selectedUnit.tokenId}
+        />
+      )}
 
-      {showCreateAuction && (
+      {showCreateAuction && selectedUnit && (
         <CreateAuctionModal
-          isOpen={true}
-          onOpenChange={(open) => !open && setShowCreateAuction(null)}
-          nft={(() => {
-            const unit = getUnitForModal(showCreateAuction);
-            if (!unit) {
-              // Fallback NFT para evitar null
-              return {
-                assetContractAddress: '',
-                tokenId: '',
-                name: 'Unknown NFT',
-                imageUrl: ''
-              };
-            }
-            return {
-              assetContractAddress: unit.contractAddress,
-              tokenId: unit.tokenId,
-              name: unit.name,
-              imageUrl: unit.imageUrl
-            };
-          })()}
+          isOpen={showCreateAuction}
+          onOpenChange={setShowCreateAuction}
+          nft={{
+            assetContractAddress: selectedUnit.contractAddress,
+            tokenId: selectedUnit.tokenId,
+            name: selectedUnit.name,
+            imageUrl: selectedUnit.imageUrl
+          }}
           onSuccess={() => {
-            setShowCreateAuction(null);
+            setShowCreateAuction(false);
             refreshUnits();
           }}
         />
