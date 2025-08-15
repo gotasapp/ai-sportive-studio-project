@@ -27,27 +27,27 @@ export const chzMainnet = defineChain({
   },
 });
 
-// 🎯 CONTRATOS ATIVOS (CONTROLADOS PELO MASTER SWITCH)
+// 🎯 ACTIVE CONTRACTS (CONTROLLED BY MASTER SWITCH)
 export const MARKETPLACE_CONTRACT = ACTIVE_CONTRACTS.marketplace;
 export const NFT_CONTRACT = ACTIVE_CONTRACTS.nftDrop;
 export const LAUNCHPAD_CONTRACT = ACTIVE_CONTRACTS.launchpad;
 
-// 📋 CONFIGURAÇÃO LEGACY (MANTER COMPATIBILIDADE)
+// 📋 LEGACY CONFIGURATION (MAINTAIN COMPATIBILITY)
 export const MARKETPLACE_CONTRACTS = {
   [chzMainnet.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '',
   [polygon.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
   [polygonAmoy.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
 } as const;
 
-// NFT Collection contracts - usando os contratos corretos do .env.local
+// NFT Collection contracts - using correct contracts from .env.local
 export const NFT_CONTRACTS = {
-  // CHZ Mainnet - usando NFT_DROP_CONTRACT_CHZ
+  // CHZ Mainnet - using NFT_DROP_CONTRACT_CHZ
   [chzMainnet.id]: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ || '0x3db78Cf4543cff5c4f514bcDA5a56c3234d5EC78',
-  // Polygon Mainnet - vai usar o testnet por enquanto até termos contrato na mainnet
+  // Polygon Mainnet - will use testnet for now until we have mainnet contract
   [polygon.id]: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
   // Polygon Amoy Testnet (ID: 80002) - usando NFT_DROP_CONTRACT_POLYGON_TESTNET
   [polygonAmoy.id]: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
-  // Fallback explícito para Polygon Amoy por ID numérico
+  // Explicit fallback for Polygon Amoy by numeric ID
   80002: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
 } as const;
 
@@ -55,7 +55,7 @@ export const NFT_CONTRACTS = {
 export const LAUNCHPAD_CONTRACTS = {
   // Polygon Amoy Testnet - contrato do launchpad  
   [polygonAmoy.id]: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
-  // Fallback explícito para Polygon Amoy por ID numérico
+  // Explicit fallback for Polygon Amoy by numeric ID
   80002: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
 } as const;
 

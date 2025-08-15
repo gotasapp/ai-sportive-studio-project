@@ -26,9 +26,9 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    // Construir filtro base
+    // Construir filtro base - buscar coleções deployadas
     const filter: any = {
-      type: 'launchpad'
+      deployed: true
     };
     
     // Filtrar por status
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Buscar coleções
-    const collections = await db.collection('collections')
+    const collections = await db.collection('launchpad_collections')
       .find(filter)
       .sort({ 
         // Ordenar por: upcoming primeiro (por data de lançamento), depois active
@@ -67,7 +67,7 @@ export async function GET(request: NextRequest) {
       .toArray();
     
     // Contar total para paginação
-    const total = await db.collection('collections').countDocuments(filter);
+    const total = await db.collection('launchpad_collections').countDocuments(filter);
     
     // Calcular metadados de paginação
     const totalPages = Math.ceil(total / limit);

@@ -1,17 +1,17 @@
 /**
- * 🎯 MASTER NETWORK SWITCH - CONTROLE TOTAL CHZ ↔ AMOY
+ * 🎯 MASTER NETWORK SWITCH - TOTAL CONTROL CHZ ↔ AMOY
  * 
- * Para trocar de rede: 
- * 1. Mudar USE_CHZ_MAINNET para true/false
- * 2. Fazer deploy
+ * To switch networks: 
+ * 1. Change USE_CHZ_MAINNET to true/false
+ * 2. Deploy
  * 
- * SIMPLES E DIRETO!
+ * SIMPLE AND DIRECT!
  */
 
-// 🔥 MASTER SWITCH - ALTERE AQUI PARA TROCAR TUDO
+// 🔥 MASTER SWITCH - CHANGE HERE TO SWITCH EVERYTHING
 export const USE_CHZ_MAINNET = false; // true = CHZ | false = Amoy
 
-// ⚙️ CONFIGURAÇÕES AUTOMÁTICAS BASEADAS NO SWITCH
+// ⚙️ AUTOMATIC CONFIGURATIONS BASED ON SWITCH
 export const ACTIVE_NETWORK = USE_CHZ_MAINNET ? {
   // 🟢 CHZ MAINNET CONFIGURATION
   chainId: 88888,
@@ -22,14 +22,14 @@ export const ACTIVE_NETWORK = USE_CHZ_MAINNET ? {
   explorerUrl: 'https://scan.chiliz.com',
   explorerName: 'ChilizScan',
   
-  // Contratos CHZ (já deployados)
+  // CHZ Contracts (already deployed)
   contracts: {
     marketplace: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ!,
     nftDrop: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ!,
     launchpad: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_CHZ!,
   },
   
-  // Configurações específicas CHZ
+  // CHZ specific configurations
   isTestnet: false,
   faucet: null,
   defaultPrice: '0.1 CHZ',
@@ -45,14 +45,14 @@ export const ACTIVE_NETWORK = USE_CHZ_MAINNET ? {
   explorerUrl: 'https://amoy.polygonscan.com',
   explorerName: 'PolygonScan',
   
-  // Contratos Amoy (funcionando)
+  // Amoy Contracts (working)
   contracts: {
     marketplace: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
     nftDrop: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
     launchpad: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
   },
   
-  // Configurações específicas Amoy
+  // Amoy specific configurations
   isTestnet: true,
   faucet: 'https://faucet.polygon.technology',
   defaultPrice: '0.1 MATIC',

@@ -95,8 +95,8 @@ export async function POST(
       updatedAt: nowUTC
     };
     
-    console.log('💾 Criando nova coleção...')
-    const collectionResult = await db.collection('collections').insertOne(newCollection);
+    console.log('💾 Criando nova coleção na tabela launchpad_collections...')
+    const collectionResult = await db.collection('launchpad_collections').insertOne(newCollection);
     console.log('✅ Coleção criada com ID:', collectionResult.insertedId.toString())
     
     // 🎯 Configurar claim conditions automaticamente se habilitado
@@ -120,7 +120,7 @@ export async function POST(
           console.log('✅ Claim conditions configured automatically:', claimResult.queueId);
           
           // Atualizar a coleção com o queue ID das claim conditions
-          await db.collection('collections').updateOne(
+          await db.collection('launchpad_collections').updateOne(
             { _id: collectionResult.insertedId },
             { 
               $set: { 
@@ -166,7 +166,7 @@ export async function POST(
           console.log('✅ Shared metadata configured automatically:', metadataResult.queueId);
           
           // Atualizar a coleção com o queue ID da metadata
-          await db.collection('collections').updateOne(
+          await db.collection('launchpad_collections').updateOne(
             { _id: collectionResult.insertedId },
             { 
               $set: { 

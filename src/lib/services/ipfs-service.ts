@@ -1,9 +1,9 @@
 /**
- * Serviço IPFS usando Pinata
+ * IPFS Service using Pinata
  */
 import { PinataSDK } from "pinata";
 
-// Configuração do Pinata
+// Pinata configuration
 const pinata = new PinataSDK({
   pinataJwt: process.env.NEXT_PUBLIC_PINATA_JWT!,
   pinataGateway: process.env.NEXT_PUBLIC_PINATA_GATEWAY || "gateway.pinata.cloud"
@@ -27,16 +27,16 @@ export interface NFTMetadata {
 
 export class IPFSService {
   /**
-   * Upload de imagem para IPFS
+   * Upload image to IPFS
    */
   static async uploadImage(imageBlob: Blob, filename: string): Promise<string> {
     try {
       console.log('📤 Uploading image to IPFS...');
       
-      // Converter blob para File
+      // Convert blob to File
       const file = new File([imageBlob], filename, { type: 'image/png' });
       
-      // Upload para Pinata
+      // Upload to Pinata
       const upload = await pinata.upload.public.file(file).name(filename).keyvalues({
         type: 'jersey-image',
         uploaded_at: new Date().toISOString()
@@ -97,7 +97,7 @@ export class IPFSService {
       { trait_type: 'Generator', value: 'AI Sports NFT' }
     ];
 
-    // Adicionar atributos do jogador se fornecidos
+    // Add player attributes if provided
     if (playerName) {
       attributes.push({ trait_type: 'Player Name', value: playerName });
     }
@@ -132,11 +132,11 @@ export class IPFSService {
     playerNumber?: string
   ): Promise<{ imageUrl: string; metadataUrl: string; metadata: NFTMetadata }> {
     try {
-      // 1. Upload da imagem
+      // 1. Upload image
       const filename = `${team}-${playerName || 'player'}-${playerNumber || '0'}.png`;
       const imageUrl = await this.uploadImage(imageBlob, filename);
 
-      // 2. Criar metadata
+      // 2. Create metadata
       const metadata = this.createNFTMetadata(
         name,
         description,
@@ -147,7 +147,7 @@ export class IPFSService {
         playerNumber
       );
 
-      // 3. Upload da metadata
+      // 3. Upload metadata
       const metadataUrl = await this.uploadMetadata(metadata);
 
       return {

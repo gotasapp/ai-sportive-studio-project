@@ -5,7 +5,7 @@ import { polygonAmoy } from 'thirdweb/chains';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
 
-// Tipos baseados na documentação Thirdweb Marketplace V3
+// Types based on Thirdweb Marketplace V3 documentation
 export interface DirectListing {
   listingId: bigint;
   listingCreator: string;
