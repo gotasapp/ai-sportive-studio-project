@@ -1,164 +1,183 @@
 # 🏆 CHZ Fan Token Studio
 
-> **Plataforma NFT de ponta para criação de colecionáveis esportivos** utilizando IA avançada para gerar jerseys, estádios e badges únicos. Construído sobre a Chiliz Chain para máximo engajamento de fãs de esportes no Web3.
+> **Next-generation NFT platform for sports collectibles** powered by advanced AI to generate unique jerseys, stadiums, and badges. Built on Chiliz Chain for maximum sports fan engagement in Web3.
 
-## 🎯 **STATUS ATUAL: SISTEMA OPERACIONAL EM PRODUÇÃO** ✅
+## 🎯 **CURRENT STATUS: PRODUCTION-READY SYSTEM** ✅
 
-O CHZ Fan Token Studio está **completamente funcional e pronto para produção**, com todas as funcionalidades principais implementadas e testadas com dados reais.
+CHZ Fan Token Studio is **fully functional and ready for production**, with all core features implemented and tested with real data.
 
-### 📊 **Métricas do Sistema:**
-- ✅ **100% Dados Reais**: MongoDB Atlas integrado, zero dados mock
-- ✅ **Performance Otimizada**: Admin panel carrega instantaneamente
-- ✅ **APIs Funcionais**: Todas conectadas e operacionais
-- ✅ **Marketplace Live**: Filtros, busca e visualização em tempo real
-- ✅ **Sistema de Moderação**: Auto-approve e moderação manual
-- ✅ **Web3 Integrado**: Thirdweb v5 + Engine para gasless minting
+### 📊 **System Metrics:**
+- ✅ **100% Real Data**: MongoDB Atlas integrated, zero mock data
+- ✅ **Optimized Performance**: Admin panel loads instantly
+- ✅ **Functional APIs**: All connected and operational
+- ✅ **Live Marketplace**: Real-time filters, search, and visualization
+- ✅ **Moderation System**: Auto-approve and manual moderation
+- ✅ **Web3 Integrated**: Thirdweb v5 + Engine for gasless minting
 
 ---
 
-## ⚡ **Funcionalidades Implementadas**
+## ⚡ **Implemented Features**
 
-### 🎨 **Geração de NFTs**
-- **Jersey Generator**: DALL-E 3 com prompts otimizados por time
-- **Stadium Generator**: Sistema avançado com referências arquitetônicas
-- **Badge Generator**: Criação modular de emblemas e conquistas
-- **Upload Automático**: Cloudinary → MongoDB → Marketplace
+### 🎨 **NFT Generation**
+- **Jersey Generator**: DALL-E 3 with team-optimized prompts
+- **Stadium Generator**: Advanced system with architectural references
+- **Badge Generator**: Modular emblems and achievements creation
+- **Automatic Upload**: Cloudinary → MongoDB → Marketplace
 
-### 🛒 **Marketplace Completo**
-- **Dados Live**: Conectado diretamente às APIs MongoDB
-- **Filtros Inteligentes**: Com contadores dinâmicos por categoria
-- **Busca Avançada**: Por nome, coleção e criador
-- **Featured Carousel**: NFTs mais recentes destacados automaticamente
-- **Top Collections**: Rankings baseados em dados reais
+### 🛒 **Complete Marketplace**
+- **Live Data**: Directly connected to MongoDB APIs
+- **Smart Filters**: Dynamic counters by category
+- **Advanced Search**: By name, collection, and creator
+- **Featured Carousel**: Latest NFTs automatically highlighted
+- **Top Collections**: Real data-based rankings
 
-### 🔧 **Admin Panel Profissional**
-- **Dashboard Otimizado**: Métricas em tempo real com fallback instantâneo
-- **Gestão de NFTs**: Interface completa para jerseys, stadiums e badges
-- **Sistema de Moderação**: Toggle auto-approve/manual com filtros de conteúdo
-- **Analytics Avançado**: Estatísticas detalhadas de uso
-- **Configurações Globais**: Gerenciamento centralizado de settings
+### 🔧 **Professional Admin Panel**
+- **Optimized Dashboard**: Real-time metrics with instant fallback
+- **NFT Management**: Complete interface for jerseys, stadiums, and badges
+- **Moderation System**: Auto-approve/manual toggle with content filters
+- **Advanced Analytics**: Detailed usage statistics
+- **Global Settings**: Centralized configuration management
 
 ### 🌐 **Web3 & Blockchain**
-- **Reown AppKit**: Conectores modernos de carteira
-- **CHZ Chain**: Configurada como rede padrão
-- **Gasless Minting**: Thirdweb Engine para experiência sem fricção
-- **IPFS Storage**: Armazenamento descentralizado otimizado
+- **Reown AppKit**: Modern wallet connectors
+- **CHZ Chain**: Configured as default network
+- **Gasless Minting**: Thirdweb Engine for frictionless experience
+- **IPFS Storage**: Optimized decentralized storage
 
 ---
 
-## 🛠️ **Stack Tecnológico**
+## 🛠️ **Technology Stack**
 
 ### **Frontend**
 - **Next.js 14** (App Router) + TypeScript
 - **Tailwind CSS** + Shadcn/UI components
-- **Reown AppKit** para Web3 connections
+- **Reown AppKit** for Web3 connections
 
 ### **Backend & APIs**
-- **MongoDB Atlas** (banco principal)
-- **Python FastAPI** (APIs de geração)
-- **Cloudinary** (upload e otimização de imagens)
+- **MongoDB Atlas** (main database)
+- **Python FastAPI** (generation APIs)
+- **Cloudinary** (image upload and optimization)
 
-### **IA & Geração**
-- **DALL-E 3** (geração principal)
-- **GPT-4 Vision** (análise e melhorias)
-- **Custom Prompts** otimizados por categoria
+### **AI & Generation**
+- **DALL-E 3** (primary generation)
+- **GPT-4 Vision** (analysis and improvements)
+- **Custom Prompts** optimized by category
 
 ### **Blockchain**
 - **Thirdweb v5** + Engine
 - **Polygon Amoy** (testnet)
-- **CHZ Chain** (produção)
+- **CHZ Chain** (production)
 
 ---
 
-## 🚀 **Setup e Execução**
+## 🚀 **Setup and Installation**
 
-### **1. Pré-requisitos**
+### **1. Prerequisites**
 ```bash
 Node.js v18+
 Git
-Conta MongoDB Atlas (gratuita)
+MongoDB Atlas account (free)
 ```
 
-### **2. Instalação**
+### **2. Installation**
 ```bash
-# Clone o repositório
-git clone <URL_DO_REPOSITORIO>
-cd CHZ
+# Clone repository
+git clone <REPOSITORY_URL>
+cd jersey-generator-ai
 
-# Instale dependências
+# Install dependencies
 npm install
 ```
 
-### **3. Configuração de Ambiente**
+### **3. Environment Configuration**
 ```bash
-# Copie o arquivo de exemplo
+# Copy example file
 cp env.example .env.local
 
-# Configure variáveis essenciais:
-MONGODB_URI="sua-connection-string-mongodb-atlas"
+# Configure essential variables:
+MONGODB_URI="your-mongodb-atlas-connection-string"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Para funcionalidades completas, adicione:
-THIRDWEB_SECRET_KEY="sua-chave-thirdweb"
-CLOUDINARY_CLOUD_NAME="seu-cloud-name"
-CLOUDINARY_API_KEY="sua-api-key"
+# For full functionality, add:
+THIRDWEB_SECRET_KEY="your-thirdweb-key"
+CLOUDINARY_CLOUD_NAME="your-cloud-name"
+CLOUDINARY_API_KEY="your-api-key"
 ```
 
-### **4. Popular Banco de Dados**
+### **4. Populate Database**
 ```bash
-# Execute o script de população
+# Run population script
 npm run db:seed
 ```
 
-### **5. Executar Aplicação**
+### **5. Run Application**
 ```bash
 # Frontend (Next.js)
 npm run dev
 
-# Backend Python (APIs de geração)
+# Backend Python (Generation APIs)
 cd api
 python main_unified.py
 ```
 
-### **6. Acessar Sistema**
+### **6. Access System**
 - **Frontend**: http://localhost:3000
-- **APIs Backend**: http://localhost:8000
+- **Backend APIs**: http://localhost:8000
 - **Admin Panel**: http://localhost:3000/admin
+- **API Documentation**: http://localhost:3000/docs
 
 ---
 
-## 📱 **Como Usar**
+## 📚 **API Documentation**
 
-### **Para Criadores:**
-1. **Conecte sua carteira** via Reown AppKit
-2. **Escolha o tipo**: Jersey, Stadium ou Badge
-3. **Configure parâmetros** (time, jogador, estilo)
-4. **Gere e mint** - processo gasless automático
-5. **Veja no marketplace** - aprovação instantânea (configurável)
+### **Complete Swagger Documentation Available**
+The project includes comprehensive API documentation with 13+ documented endpoints:
 
-### **Para Administradores:**
-1. **Acesse /admin** com carteira autorizada
-2. **Dashboard**: Monitore métricas em tempo real
-3. **Moderação**: Aprove/rejeite conteúdo se necessário
-4. **Configurações**: Ajuste auto-approve e filtros
-5. **Analytics**: Acompanhe crescimento e uso
+- **📍 `/docs`** - Interactive Swagger UI
+- **📍 `/api/docs`** - OpenAPI JSON specification
+
+### **Main API Categories:**
+- **🏪 Marketplace**: NFT trading and collection management
+- **🚀 Launchpad**: Gasless minting and collection deployment
+- **📤 Upload**: Cloudinary and IPFS storage
+- **🎨 Generation**: AI-powered content creation
+- **👤 Users**: Profile and authentication management
+- **⚙️ Engine**: Thirdweb blockchain operations
 
 ---
 
-## 🔧 **Configurações Avançadas**
+## 📱 **How to Use**
 
-### **Sistema de Moderação**
+### **For Creators:**
+1. **Connect wallet** via Reown AppKit
+2. **Choose type**: Jersey, Stadium, or Badge
+3. **Configure parameters** (team, player, style)
+4. **Generate and mint** - automatic gasless process
+5. **See in marketplace** - instant approval (configurable)
+
+### **For Administrators:**
+1. **Access /admin** with authorized wallet
+2. **Dashboard**: Monitor real-time metrics
+3. **Moderation**: Approve/reject content if needed
+4. **Settings**: Adjust auto-approve and filters
+5. **Analytics**: Track growth and usage
+
+---
+
+## 🔧 **Advanced Configuration**
+
+### **Moderation System**
 ```javascript
-// Alternar entre auto-approve e moderação manual
-// Disponível em: /admin/moderation → Settings
-autoApprove: true  // NFTs aprovados automaticamente
-autoApprove: false // NFTs vão para fila de moderação
+// Toggle between auto-approve and manual moderation
+// Available at: /admin/moderation → Settings
+autoApprove: true  // NFTs automatically approved
+autoApprove: false // NFTs go to moderation queue
 ```
 
-### **Filtros de Conteúdo**
+### **Content Filters**
 ```javascript
-// Prompts negativos configuráveis
-// Disponível em: /admin/moderation → Filters
+// Configurable negative prompts
+// Available at: /admin/moderation → Filters
 negativePrompts: [
   "violence",
   "inappropriate content",
@@ -168,141 +187,191 @@ negativePrompts: [
 
 ### **Performance**
 ```javascript
-// Admin panel otimizado para carregamento instantâneo
-fallbackData: true // Dados estáticos enquanto carrega dados reais
-lazyLoading: true  // Carregamento assíncrono otimizado
+// Admin panel optimized for instant loading
+fallbackData: true // Static data while loading real data
+lazyLoading: true  // Optimized async loading
 ```
 
 ---
 
-## 📈 **Status de Desenvolvimento**
+## 📈 **Development Status**
 
-| Funcionalidade | Status | Detalhes |
+| Feature | Status | Details |
 |---|---|---|
-| 🎨 Geração de NFTs | ✅ **Completo** | DALL-E 3, prompts otimizados |
-| 🛒 Marketplace | ✅ **Completo** | Dados reais, filtros, busca |
-| 🔧 Admin Panel | ✅ **Completo** | Dashboard, moderação, analytics |
-| 🌐 Web3 Integration | ✅ **Completo** | Gasless minting, CHZ Chain |
-| 📱 Mobile UI | ✅ **Responsivo** | Design adaptativo completo |
-| 🔒 Security | ✅ **Implementado** | Autenticação, validações |
-| 👁️ Vision Analysis | 🚧 **Em desenvolvimento** | AI Vision para análise de referências |
-| 👤 User Profile | 🚧 **Planejado** | Avatar, wallet management |
-| 🎬 Loading Videos | 🚧 **Planejado** | Videos temáticos durante geração |
-| 🎨 UI Premium | 🚧 **Em progresso** | Design profissional refinado |
+| 🎨 NFT Generation | ✅ **Complete** | DALL-E 3, optimized prompts |
+| 🛒 Marketplace | ✅ **Complete** | Real data, filters, search |
+| 🔧 Admin Panel | ✅ **Complete** | Dashboard, moderation, analytics |
+| 🌐 Web3 Integration | ✅ **Complete** | Gasless minting, CHZ Chain |
+| 📱 Mobile UI | ✅ **Responsive** | Complete adaptive design |
+| 🔒 Security | ✅ **Implemented** | Authentication, validations |
+| 📚 API Documentation | ✅ **Complete** | Swagger/OpenAPI documentation |
+| 👁️ Vision Analysis | ✅ **Complete** | AI Vision for reference analysis |
+| 👤 User Profile | 🚧 **Planned** | Avatar, wallet management |
+| 🎬 Loading Videos | 🚧 **Planned** | Themed videos during generation |
 
 ---
 
-## 🚀 **Próximas Funcionalidades (v2.0)**
+## 🌟 **Environment Variables**
 
-### **👁️ Sistema Vision Analysis**
-Integração do sistema de análise visual com IA em todas as páginas:
+### **Required Variables:**
+```bash
+# Database
+MONGODB_URI=mongodb+srv://...
 
-- **Jersey Vision**: Upload de camisa existente → análise de estilo → geração personalizada
-- **Stadium Vision**: Upload de estádio → análise arquitetônica → criação de novo estádio
-- **Badge Vision**: Upload de logo/escudo → análise de elementos → geração de badge único
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
 
-**Modelos suportados**: GPT-4O, Claude 3 Sonnet, Llama 3.2 Vision, Qwen 2 VL
+# Thirdweb
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_client_id
+THIRDWEB_SECRET_KEY=your_secret_key
 
-### **👤 Página de Perfil do Usuário**
-Sistema completo de perfil personalizado:
+# Image Upload
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
 
-- **Avatar Upload**: Upload de imagem de perfil personalizada
-- **Multi-Wallet Support**: Conectar e gerenciar múltiplas wallets
-- **NFT Gallery**: Visualização de todos os NFTs criados pelo usuário
-- **History & Analytics**: Histórico de criações e estatísticas pessoais
-- **Preferences**: Configurações de tema, notificações e privacidade
+# AI Generation
+OPENAI_API_KEY=your_openai_key
+PYTHON_API_URL=http://localhost:8000
 
-### **🎬 Loading Videos Temáticos**
-Mini-videos (3-5 segundos) com loop durante geração:
+# IPFS Storage
+NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt
+```
 
-- **Jersey Loading**: Animação de camisa sendo desenhada
-- **Stadium Loading**: Construção de estádio em timelapse
-- **Badge Loading**: Formação de escudo/logo animado
-- **Design moderno**: Efeitos cyberpunk/neon matching do tema
+### **Network Configuration:**
+```bash
+# Testnet (free tokens)
+NEXT_PUBLIC_USE_TESTNET=true
 
-### **🎨 UI/UX Premium Refinement**
-Upgrade visual completo para nível profissional:
+# Polygon vs CHZ
+NEXT_PUBLIC_USE_POLYGON=false  # CHZ Chain
+NEXT_PUBLIC_USE_POLYGON=true   # Polygon
+```
 
-- **Color System**: Paleta de cores mais sofisticada e consistente
-- **Typography**: Hierarquia tipográfica melhorada
-- **Lines & Borders**: Sistema de linhas e bordas mais elegante
-- **Animations**: Micro-interações e transições suaves
-- **Responsive**: Otimização para todas as telas e dispositivos
+### **Contract Addresses:**
+```bash
+# NFT Collections (Polygon Amoy Testnet)
+NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON_TESTNET=0xfF973a4aFc5A96DEc81366461A461824c4f80254
 
----
+# Edition Collections (ERC1155)
+NEXT_PUBLIC_NFT_EDITION_CONTRACT_POLYGON_TESTNET=0xdFE746c26D3a7d222E89469C8dcb033fbBc75236
 
-## 🎯 **Próximos Desenvolvimentos v2.0**
-
-### **🚀 Imediato (Próximas 2 semanas)**
-- [ ] **👁️ Vision Analysis Integration** - Sistema de análise visual em todas as páginas
-- [ ] **🎨 UI Premium Refinement** - Upgrade visual completo para nível enterprise
-- [ ] **🎬 Loading Videos Temáticos** - Animações personalizadas durante geração
-- [ ] **Deploy & Otimização** - Resolver bugs críticos e deploy em produção
-
-### **📈 Curto Prazo (1 mês)**
-- [ ] **👤 User Profile System** - Página completa de perfil com multi-wallet
-- [ ] **📊 Advanced Analytics** - Métricas detalhadas e insights
-- [ ] **🔍 SEO & Performance** - Otimização para descoberta e velocidade
-- [ ] **📱 Mobile Enhancement** - Experiência mobile premium
-
-### **🌟 Médio Prazo (2-3 meses)**
-- [ ] **🛒 Marketplace V3** - Sistema completo de compra/venda
-- [ ] **💰 Creator Economy** - Sistema de royalties e incentivos
-- [ ] **🤝 Social Features** - Comunidade, curtidas, comentários
-- [ ] **🏆 Gamification** - Achievements, rankings, desafios
-
-### **🚀 Longo Prazo (3-6 meses)**
-- [ ] **🌐 Multi-chain Expansion** - Ethereum, BSC, mais redes
-- [ ] **🤖 AI Model Evolution** - Modelos personalizados e treinados
-- [ ] **🏢 Enterprise Solutions** - Ferramentas para clubes e organizações
-- [ ] **📱 Native Mobile App** - App iOS/Android completo
-
-**📋 Roadmap detalhado**: `docs/NEXT_STEPS_ROADMAP_V2.md`
+# Marketplace V3
+NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET=your_marketplace_contract
+```
 
 ---
 
-## 🤝 **Contribuição**
+## 🔐 **Security Features**
 
-O projeto está pronto para colaboradores! Principais áreas:
+### **Wallet Authentication**
+- Secure wallet-based authentication
+- Admin wallet authorization
+- Multi-wallet support
+
+### **Content Moderation**
+- AI-powered content filtering
+- Manual moderation queue
+- Configurable approval systems
+
+### **Smart Contract Security**
+- Thirdweb audited contracts
+- Gasless transaction security
+- Permission-based minting
+
+---
+
+## 🚀 **Deployment Guide**
+
+### **Frontend (Vercel)**
+```bash
+# Deploy to Vercel
+vercel --prod
+
+# Set environment variables in Vercel dashboard
+# Point PYTHON_API_URL to your backend deployment
+```
+
+### **Backend (Render)**
+```bash
+# Deploy Python API to Render
+# Set NEXT_PUBLIC_API_URL to your Render URL
+# Example: https://your-api.onrender.com
+```
+
+### **Database (MongoDB Atlas)**
+- Use MongoDB Atlas (free tier available)
+- Configure IP whitelist for your deployment
+- Set connection string in environment variables
+
+---
+
+## 🧪 **Testing**
+
+### **Test Credentials**
+- **Testnet**: Use Polygon Amoy for free testing
+- **Faucet**: Get free test tokens from Polygon faucet
+- **Admin Access**: Configure admin wallet in environment
+
+### **Test Features**
+```bash
+# Test database population
+npm run db:seed
+
+# Test API endpoints
+npm run dev
+# Visit /docs for API testing
+
+# Test admin features
+# Visit /admin with admin wallet
+```
+
+---
+
+## 🤝 **Contributing**
+
+The project is ready for contributors! Main areas:
 
 1. **Frontend**: React/Next.js components
-2. **Backend**: Python APIs e ML models
+2. **Backend**: Python APIs and ML models
 3. **Smart Contracts**: Solidity development
 4. **Design**: UI/UX improvements
 5. **Testing**: Automated testing suites
 
-### **Como Contribuir:**
-1. Fork o repositório
-2. Crie uma branch feature (`git checkout -b feature/nova-funcionalidade`)
-3. Commit suas mudanças (`git commit -m 'Adiciona nova funcionalidade'`)
-4. Push para a branch (`git push origin feature/nova-funcionalidade`)
-5. Abra um Pull Request
+### **How to Contribute:**
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/new-feature`)
+3. Commit your changes (`git commit -m 'Add new feature'`)
+4. Push to branch (`git push origin feature/new-feature`)
+5. Open a Pull Request
 
 ---
 
-## 📞 **Suporte e Contato**
+## 📞 **Support and Contact**
 
-- **Issues**: Use o GitHub Issues para bugs e sugestões
-- **Documentação**: Consulte `/docs` para guias detalhados
-- **Discord**: [Link da comunidade]
-- **Email**: [email de suporte]
+- **Issues**: Use GitHub Issues for bugs and suggestions
+- **Documentation**: Check `/docs` for detailed guides
+- **API Docs**: Visit `/docs` for interactive API documentation
+- **Discord**: [Community link]
+- **Email**: [Support email]
 
 ---
 
-## 📄 **Licença**
+## 📄 **License**
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
 
-**🚀 CHZ Fan Token Studio - Transformando o futuro dos colecionáveis esportivos**
+**🚀 CHZ Fan Token Studio - Transforming the future of sports collectibles**
 
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Tailwind](https://img.shields.io/badge/Tailwind-CSS-38B2AC)](https://tailwindcss.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green)](https://mongodb.com/)
 [![Thirdweb](https://img.shields.io/badge/Thirdweb-v5-purple)](https://thirdweb.com/)
+[![OpenAPI](https://img.shields.io/badge/OpenAPI-3.0-85EA2D)](https://swagger.io/specification/)
 
 </div>

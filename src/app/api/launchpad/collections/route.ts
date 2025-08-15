@@ -5,7 +5,78 @@ import { VISIBLE_LAUNCHPAD_STATUSES } from '@/lib/collection-config';
 const DB_NAME = 'chz-app-db';
 
 /**
- * GET - Retornar apenas coleções do launchpad visíveis para usuários
+ * @swagger
+ * /api/launchpad/collections:
+ *   get:
+ *     summary: Get launchpad collections
+ *     description: |
+ *       Returns all visible launchpad collections with filtering and pagination support.
+ *       Only returns deployed collections that are visible to users.
+ *     tags: [Launchpad, Collections]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [upcoming, active, completed, all]
+ *         description: Filter by collection status
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [jersey, stadium, badge]
+ *         description: Filter by collection category
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search collections by name or description
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of collections per page
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved launchpad collections
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/LaunchpadCollection'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationInfo'
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: number
+ *                       description: Total collections
+ *                     active:
+ *                       type: number
+ *                       description: Active collections
+ *                     upcoming:
+ *                       type: number
+ *                       description: Upcoming collections
+ *                     completed:
+ *                       type: number
+ *                       description: Completed collections
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
  */
 export async function GET(request: NextRequest) {
   try {

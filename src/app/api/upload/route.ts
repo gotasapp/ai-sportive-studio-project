@@ -8,6 +8,67 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+/**
+ * @swagger
+ * /api/upload:
+ *   post:
+ *     summary: Upload image to Cloudinary
+ *     description: |
+ *       Uploads an image file to Cloudinary storage and returns the secure URL.
+ *       Supports various image formats for NFT assets.
+ *     tags: [Upload]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file to upload
+ *               fileName:
+ *                 type: string
+ *                 description: Custom filename (optional)
+ *                 example: "jersey_design_001"
+ *     responses:
+ *       200:
+ *         description: File uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 url:
+ *                   type: string
+ *                   format: uri
+ *                   description: Cloudinary secure URL
+ *                   example: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1234567890/jersey_design_001.jpg"
+ *                 public_id:
+ *                   type: string
+ *                   description: Cloudinary public ID
+ *                 width:
+ *                   type: number
+ *                   description: Image width in pixels
+ *                 height:
+ *                   type: number
+ *                   description: Image height in pixels
+ *       400:
+ *         description: No file provided or invalid file
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "No file provided"
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();

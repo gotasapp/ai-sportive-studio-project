@@ -1,6 +1,108 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { IPFSService } from '@/lib/services/ipfs-service'
 
+/**
+ * @swagger
+ * /api/ipfs-upload:
+ *   post:
+ *     summary: Upload content to IPFS
+ *     description: |
+ *       Uploads images or metadata to IPFS (InterPlanetary File System) using Pinata service.
+ *       Supports both binary file uploads and JSON metadata uploads.
+ *     tags: [Upload, IPFS]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Image file to upload to IPFS
+ *               fileName:
+ *                 type: string
+ *                 description: Custom filename for the uploaded file
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - metadata
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [metadata]
+ *                 description: Upload type
+ *                 example: "metadata"
+ *               metadata:
+ *                 type: object
+ *                 description: NFT metadata object to upload
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     description: NFT name
+ *                   description:
+ *                     type: string
+ *                     description: NFT description
+ *                   image:
+ *                     type: string
+ *                     format: uri
+ *                     description: Image URL (can be IPFS URL)
+ *                   attributes:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         trait_type:
+ *                           type: string
+ *                         value:
+ *                           type: string
+ *                     description: NFT attributes/traits
+ *                   external_url:
+ *                     type: string
+ *                     format: uri
+ *                     description: External URL for the NFT
+ *     responses:
+ *       200:
+ *         description: Content uploaded to IPFS successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 ipfsUrl:
+ *                   type: string
+ *                   format: uri
+ *                   description: IPFS URL of uploaded content
+ *                   example: "ipfs://QmX1234567890abcdef..."
+ *                 ipfsHash:
+ *                   type: string
+ *                   description: IPFS hash
+ *                 type:
+ *                   type: string
+ *                   enum: [image, metadata]
+ *                   description: Type of content uploaded
+ *                 size:
+ *                   type: number
+ *                   description: File size in bytes (for images)
+ *       400:
+ *         description: Invalid request or missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: IPFS upload failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function POST(request: NextRequest) {
   try {
     const contentType = request.headers.get('content-type')

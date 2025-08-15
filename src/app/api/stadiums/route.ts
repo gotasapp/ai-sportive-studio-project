@@ -4,6 +4,145 @@ import clientPromise from '@/lib/mongodb';
 const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'stadiums';
 
+/**
+ * @swagger
+ * /api/stadiums:
+ *   post:
+ *     summary: Create new stadium NFT
+ *     description: |
+ *       Creates a new stadium NFT with AI-generated design and metadata.
+ *       Stadium is created with automatic approval based on moderation settings.
+ *     tags: [NFTs, Collections]
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - imageUrl
+ *               - creatorWallet
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Stadium name
+ *                 example: "Old Trafford Stadium"
+ *               imageUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: Generated stadium image URL
+ *               creatorWallet:
+ *                 type: string
+ *                 description: Creator wallet address
+ *                 example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *               description:
+ *                 type: string
+ *                 description: Stadium description
+ *               team:
+ *                 type: string
+ *                 description: Associated team name
+ *                 example: "Manchester United"
+ *               location:
+ *                 type: string
+ *                 description: Stadium location
+ *                 example: "Manchester, England"
+ *               capacity:
+ *                 type: number
+ *                 description: Stadium capacity
+ *                 example: 74310
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Stadium tags
+ *               metadata:
+ *                 type: object
+ *                 description: Additional NFT metadata
+ *     responses:
+ *       201:
+ *         description: Stadium created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Stadium created successfully"
+ *                 stadiumId:
+ *                   type: string
+ *                   description: Created stadium MongoDB ID
+ *                 data:
+ *                   $ref: '#/components/schemas/NFT'
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ *   get:
+ *     summary: Get all stadiums
+ *     description: |
+ *       Retrieves all stadium NFTs with filtering and pagination support.
+ *       Includes approved, pending, and user-specific stadiums.
+ *     tags: [NFTs, Collections]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [Approved, Pending, Rejected, all]
+ *         description: Filter by approval status
+ *       - in: query
+ *         name: creator
+ *         schema:
+ *           type: string
+ *         description: Filter by creator wallet address
+ *       - in: query
+ *         name: team
+ *         schema:
+ *           type: string
+ *         description: Filter by team name
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of stadiums per page
+ *     responses:
+ *       200:
+ *         description: Stadiums retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 stadiums:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/NFT'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationInfo'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: NextRequest) {
   console.log('🏟️ Stadium API: POST request received')
   

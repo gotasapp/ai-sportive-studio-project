@@ -8,8 +8,97 @@ const DB_NAME = 'chz-app-db';
 const MARKETPLACE_CONTRACT_ADDRESS = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
 
 /**
- * 🎯 API para buscar unidades individuais de uma coleção com dados de trading
- * Esta API pega TODA a lógica de trading do backup e aplica às unidades
+ * @swagger
+ * /api/marketplace/collection-units:
+ *   get:
+ *     summary: Get individual units from a collection
+ *     description: |
+ *       Retrieves all individual NFT units from a specific collection with complete trading data.
+ *       Supports both custom collections and launchpad collections.
+ *       Includes real-time marketplace status (listings, auctions) from blockchain.
+ *     tags: [Collections, Marketplace]
+ *     parameters:
+ *       - in: query
+ *         name: collectionId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Collection ID (MongoDB ObjectId for custom/launchpad collections, or category name for standard collections)
+ *         example: "689e70b34341ccf79a223460"
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [jersey, stadium, badge, launchpad, custom]
+ *         description: Collection category
+ *         example: "launchpad"
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved collection units
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     allOf:
+ *                       - $ref: '#/components/schemas/NFT'
+ *                       - type: object
+ *                         properties:
+ *                           contractAddress:
+ *                             type: string
+ *                             description: Smart contract address (added at root level)
+ *                           marketplace:
+ *                             type: object
+ *                             properties:
+ *                               isListed:
+ *                                 type: boolean
+ *                                 description: Whether NFT is currently listed for sale
+ *                               isAuction:
+ *                                 type: boolean
+ *                                 description: Whether NFT is currently in auction
+ *                               canTrade:
+ *                                 type: boolean
+ *                                 description: Whether NFT can be traded
+ *                               verified:
+ *                                 type: boolean
+ *                                 description: Whether NFT is verified
+ *                               price:
+ *                                 type: string
+ *                                 description: Current price (formatted)
+ *                               listingId:
+ *                                 type: string
+ *                                 description: Blockchain listing ID
+ *                               auctionId:
+ *                                 type: string
+ *                                 description: Blockchain auction ID
+ *                               thirdwebData:
+ *                                 type: object
+ *                                 description: Raw Thirdweb marketplace data
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: number
+ *                       description: Total number of units
+ *                     listed:
+ *                       type: number
+ *                       description: Number of units listed for sale
+ *                     auctions:
+ *                       type: number
+ *                       description: Number of units in auction
+ *                     available:
+ *                       type: number
+ *                       description: Number of units available for trade
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
  */
 export async function GET(request: NextRequest) {
   try {

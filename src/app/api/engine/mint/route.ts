@@ -15,6 +15,82 @@ const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 
+/**
+ * @swagger
+ * /api/engine/mint:
+ *   post:
+ *     summary: Mint NFT using Thirdweb Engine
+ *     description: |
+ *       Mints an NFT using Thirdweb Engine for gasless transactions.
+ *       The backend wallet pays the gas fees for the minting process.
+ *     tags: [Engine, NFTs]
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - to
+ *               - metadataUri
+ *             properties:
+ *               to:
+ *                 type: string
+ *                 description: Recipient wallet address
+ *                 example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *               metadataUri:
+ *                 type: string
+ *                 format: uri
+ *                 description: IPFS metadata URI
+ *                 example: "ipfs://QmX1234567890abcdef..."
+ *               contractAddress:
+ *                 type: string
+ *                 description: NFT contract address (optional, uses default if not provided)
+ *                 example: "0xfF973a4aFc5A96DEc81366461A461824c4f80254"
+ *     responses:
+ *       200:
+ *         description: NFT minted successfully via Engine
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 transactionHash:
+ *                   type: string
+ *                   description: Blockchain transaction hash
+ *                 queueId:
+ *                   type: string
+ *                   description: Thirdweb Engine queue ID for tracking
+ *                 tokenId:
+ *                   type: string
+ *                   description: Minted token ID
+ *                 contractAddress:
+ *                   type: string
+ *                   description: Contract address used
+ *                 recipient:
+ *                   type: string
+ *                   description: Recipient address
+ *                 metadataUri:
+ *                   type: string
+ *                   description: Metadata URI used
+ *       400:
+ *         description: Missing required parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Minting failed or environment not configured
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 export async function POST(request: NextRequest) {
   // --- DIAGNÓSTICO ---
   console.log('--- VERCEL ENVIRONMENT DIAGNOSTIC ---');

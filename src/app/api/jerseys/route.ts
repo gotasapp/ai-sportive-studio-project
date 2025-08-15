@@ -5,7 +5,143 @@ const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'jerseys';
 const LOG_COLLECTION_NAME = 'jerseys_log';
 
-// POST handler to create a new Jersey
+/**
+ * @swagger
+ * /api/jerseys:
+ *   post:
+ *     summary: Create new jersey NFT
+ *     description: |
+ *       Creates a new jersey NFT with AI-generated design and metadata.
+ *       Jersey is initially created in pending status and requires approval.
+ *     tags: [NFTs, Collections]
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - imageUrl
+ *               - prompt
+ *               - creatorWallet
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Jersey name/title
+ *                 example: "Manchester United Home 2024"
+ *               imageUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: Generated jersey image URL
+ *               prompt:
+ *                 type: string
+ *                 description: AI generation prompt used
+ *               creatorWallet:
+ *                 type: string
+ *                 description: Creator wallet address
+ *                 example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *               team:
+ *                 type: string
+ *                 description: Team name
+ *                 example: "Manchester United"
+ *               season:
+ *                 type: string
+ *                 description: Season year
+ *                 example: "2024"
+ *               playerName:
+ *                 type: string
+ *                 description: Player name on jersey
+ *               playerNumber:
+ *                 type: string
+ *                 description: Player number on jersey
+ *               metadata:
+ *                 type: object
+ *                 description: Additional NFT metadata
+ *     responses:
+ *       201:
+ *         description: Jersey created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Jersey created successfully"
+ *                 jerseyId:
+ *                   type: string
+ *                   description: Created jersey MongoDB ID
+ *                 data:
+ *                   $ref: '#/components/schemas/NFT'
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ *   get:
+ *     summary: Get all jerseys
+ *     description: |
+ *       Retrieves all jersey NFTs with filtering and pagination support.
+ *       Includes approved, pending, and user-specific jerseys.
+ *     tags: [NFTs, Collections]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [Approved, Pending, Rejected, all]
+ *         description: Filter by approval status
+ *       - in: query
+ *         name: creator
+ *         schema:
+ *           type: string
+ *         description: Filter by creator wallet address
+ *       - in: query
+ *         name: team
+ *         schema:
+ *           type: string
+ *         description: Filter by team name
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of jerseys per page
+ *     responses:
+ *       200:
+ *         description: Jerseys retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 jerseys:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/NFT'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationInfo'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: Request) {
   try {
     console.log('👕 Jersey API: POST request received');

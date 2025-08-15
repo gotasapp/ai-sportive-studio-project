@@ -4,6 +4,157 @@ import clientPromise from '@/lib/mongodb';
 const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'badges';
 
+/**
+ * @swagger
+ * /api/badges:
+ *   post:
+ *     summary: Create new badge NFT
+ *     description: |
+ *       Creates a new badge NFT with AI-generated design and metadata.
+ *       Badges are achievement-based collectibles with automatic approval.
+ *     tags: [NFTs, Collections]
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - imageUrl
+ *               - creatorWallet
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Badge name
+ *                 example: "Golden Boot Achievement"
+ *               imageUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: Generated badge image URL
+ *               creatorWallet:
+ *                 type: string
+ *                 description: Creator wallet address
+ *                 example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *               description:
+ *                 type: string
+ *                 description: Badge description
+ *               achievement:
+ *                 type: string
+ *                 description: Achievement type
+ *                 example: "Top Scorer"
+ *               rarity:
+ *                 type: string
+ *                 enum: [Common, Rare, Epic, Legendary]
+ *                 description: Badge rarity level
+ *               season:
+ *                 type: string
+ *                 description: Season or event
+ *                 example: "2024"
+ *               team:
+ *                 type: string
+ *                 description: Associated team
+ *               player:
+ *                 type: string
+ *                 description: Associated player
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Badge tags
+ *               metadata:
+ *                 type: object
+ *                 description: Additional NFT metadata
+ *     responses:
+ *       201:
+ *         description: Badge created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Badge created successfully"
+ *                 badgeId:
+ *                   type: string
+ *                   description: Created badge MongoDB ID
+ *                 data:
+ *                   $ref: '#/components/schemas/NFT'
+ *       400:
+ *         description: Missing required fields
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ *   get:
+ *     summary: Get all badges
+ *     description: |
+ *       Retrieves all badge NFTs with filtering and pagination support.
+ *       Includes various achievement types and rarity levels.
+ *     tags: [NFTs, Collections]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [Approved, Pending, Rejected, all]
+ *         description: Filter by approval status
+ *       - in: query
+ *         name: creator
+ *         schema:
+ *           type: string
+ *         description: Filter by creator wallet address
+ *       - in: query
+ *         name: rarity
+ *         schema:
+ *           type: string
+ *           enum: [Common, Rare, Epic, Legendary]
+ *         description: Filter by rarity level
+ *       - in: query
+ *         name: achievement
+ *         schema:
+ *           type: string
+ *         description: Filter by achievement type
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Number of badges per page
+ *     responses:
+ *       200:
+ *         description: Badges retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 badges:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/NFT'
+ *                 pagination:
+ *                   $ref: '#/components/schemas/PaginationInfo'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: NextRequest) {
   console.log('🏆 Badge API: POST request received')
   

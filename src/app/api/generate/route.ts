@@ -2,6 +2,89 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+/**
+ * @swagger
+ * /api/generate:
+ *   post:
+ *     summary: Generate AI-powered NFT content
+ *     description: |
+ *       Generates NFT content using AI models. Supports multiple generation types including
+ *       jerseys, stadiums, badges, and vision-enhanced generation with reference images.
+ *     tags: [Generation]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [jersey, stadium, badge, vision-test]
+ *                 description: Type of NFT to generate
+ *                 example: "jersey"
+ *               model_id:
+ *                 type: string
+ *                 description: AI model identifier
+ *                 example: "jersey_model_v1"
+ *               team:
+ *                 type: string
+ *                 description: Team name for sports NFTs
+ *                 example: "Manchester United"
+ *               generation_mode:
+ *                 type: string
+ *                 enum: [standard, vision_enhanced]
+ *                 description: Generation mode
+ *               reference_image_base64:
+ *                 type: string
+ *                 description: Base64 encoded reference image for vision-enhanced generation
+ *               vision_analysis:
+ *                 type: object
+ *                 description: Vision analysis data for enhanced generation
+ *               badge_name:
+ *                 type: string
+ *                 description: Badge name for badge generation
+ *               badge_number:
+ *                 type: string
+ *                 description: Badge number for badge generation
+ *               custom_prompt:
+ *                 type: string
+ *                 description: Custom generation prompt
+ *     responses:
+ *       200:
+ *         description: Content generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 image_url:
+ *                   type: string
+ *                   format: uri
+ *                   description: Generated image URL
+ *                 metadata:
+ *                   type: object
+ *                   description: Generated metadata
+ *                 generation_type:
+ *                   type: string
+ *                   description: Type of generation performed
+ *                 model_used:
+ *                   type: string
+ *                   description: AI model used
+ *       400:
+ *         description: Invalid request parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

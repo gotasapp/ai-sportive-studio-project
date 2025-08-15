@@ -14,8 +14,89 @@ const client = createThirdwebClient({
 const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
 
 /**
- * 🔍 CRITICAL FUNCTION: Check if NFTs are listed OR in auction on Thirdweb
- * This is the SAME logic that works for legacy NFTs!
+ * @swagger
+ * /api/marketplace/nfts:
+ *   get:
+ *     summary: Get all marketplace NFTs
+ *     description: |
+ *       Returns all NFTs available in the marketplace including custom collections, launchpad collections, and individual NFTs.
+ *       Includes real-time marketplace data (listings, auctions) from the blockchain.
+ *     tags: [Marketplace]
+ *     parameters:
+ *       - in: query
+ *         name: _t
+ *         schema:
+ *           type: string
+ *         description: Cache busting timestamp
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [jersey, stadium, badge, launchpad]
+ *         description: Filter by NFT category
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved marketplace NFTs
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/NFT'
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     total_nfts:
+ *                       type: number
+ *                       description: Total number of NFTs
+ *                     custom_collections:
+ *                       type: number
+ *                       description: Number of custom collections
+ *                     launchpad_collections:
+ *                       type: number
+ *                       description: Number of launchpad collections
+ *                     launchpad_total_units:
+ *                       type: number
+ *                       description: Total units in launchpad collections
+ *                     listings_count:
+ *                       type: number
+ *                       description: Number of active listings
+ *                     auctions_count:
+ *                       type: number
+ *                       description: Number of active auctions
+ *                 thirdweb_data:
+ *                   type: object
+ *                   properties:
+ *                     listings:
+ *                       type: number
+ *                       description: Number of blockchain listings found
+ *                     auctions:
+ *                       type: number
+ *                       description: Number of blockchain auctions found
+ *                     last_sync:
+ *                       type: string
+ *                       format: date-time
+ *                       description: Last sync timestamp
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
  */
 async function getThirdwebMarketplaceData() {
   try {

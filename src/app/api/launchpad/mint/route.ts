@@ -16,6 +16,92 @@ const ENGINE_ACCESS_TOKEN = process.env.ENGINE_ACCESS_TOKEN; // Preferível se c
 const BACKEND_WALLET_ADDRESS = process.env.BACKEND_WALLET_ADDRESS;
 const DB_NAME = 'chz-app-db';
 
+/**
+ * @swagger
+ * /api/launchpad/mint:
+ *   post:
+ *     summary: Gasless mint NFT from launchpad collection
+ *     description: |
+ *       Mints an NFT from a launchpad collection using gasless minting (admin pays gas fees).
+ *       This bypasses claim conditions and mints directly to the specified wallet.
+ *     tags: [Launchpad, NFTs]
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - to
+ *               - metadataUri
+ *               - collectionId
+ *             properties:
+ *               to:
+ *                 type: string
+ *                 description: Recipient wallet address
+ *                 example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *               metadataUri:
+ *                 type: string
+ *                 format: uri
+ *                 description: IPFS metadata URI for the NFT
+ *                 example: "ipfs://QmX1234567890abcdef..."
+ *               collectionId:
+ *                 type: string
+ *                 description: Launchpad collection MongoDB ObjectId
+ *                 example: "689e70b34341ccf79a223460"
+ *               chainId:
+ *                 type: integer
+ *                 description: "Blockchain chain ID (default: 80002 for Polygon Amoy)"
+ *                 example: 80002
+ *     responses:
+ *       200:
+ *         description: NFT minted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "NFT minted successfully!"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     transactionHash:
+ *                       type: string
+ *                       description: Blockchain transaction hash
+ *                     tokenId:
+ *                       type: string
+ *                       description: Minted token ID
+ *                     nftId:
+ *                       type: string
+ *                       description: MongoDB document ID
+ *                     contractAddress:
+ *                       type: string
+ *                       description: Collection contract address
+ *                     metadataUri:
+ *                       type: string
+ *                       description: IPFS metadata URI
+ *       400:
+ *         description: Bad request - Missing or invalid parameters
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Collection not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function POST(request: NextRequest) {
   console.log('🚀 Launchpad Mint API: Processing request...');
 

@@ -17,7 +17,169 @@ async function connectToDatabase() {
   return client
 }
 
-// GET user profile by wallet address - OTIMIZADO
+/**
+ * @swagger
+ * /api/users/{address}:
+ *   get:
+ *     summary: Get user profile by wallet address
+ *     description: |
+ *       Retrieves complete user profile including personal info, NFTs owned, trading history,
+ *       and collection statistics. Optimized with caching and pagination.
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Ethereum wallet address
+ *         example: "0xEf381c5fB1697b0f21F99c7A7b546821cF481B56"
+ *       - in: query
+ *         name: includeNFTs
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Include user's NFTs in response
+ *       - in: query
+ *         name: includeHistory
+ *         schema:
+ *           type: boolean
+ *           default: true
+ *         description: Include trading history
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 profile:
+ *                   type: object
+ *                   properties:
+ *                     address:
+ *                       type: string
+ *                       description: Wallet address
+ *                     name:
+ *                       type: string
+ *                       description: Display name
+ *                     avatar:
+ *                       type: string
+ *                       format: uri
+ *                       description: Profile avatar URL
+ *                     bio:
+ *                       type: string
+ *                       description: User biography
+ *                     social:
+ *                       type: object
+ *                       properties:
+ *                         twitter:
+ *                           type: string
+ *                         discord:
+ *                           type: string
+ *                         website:
+ *                           type: string
+ *                     verified:
+ *                       type: boolean
+ *                       description: Verification status
+ *                     joinedAt:
+ *                       type: string
+ *                       format: date-time
+ *                 stats:
+ *                   type: object
+ *                   properties:
+ *                     nfts_owned:
+ *                       type: number
+ *                       description: Total NFTs owned
+ *                     nfts_created:
+ *                       type: number
+ *                       description: Total NFTs created
+ *                     collections_owned:
+ *                       type: number
+ *                       description: Number of collections owned
+ *                     total_volume:
+ *                       type: string
+ *                       description: Total trading volume in MATIC
+ *                     floor_value:
+ *                       type: string
+ *                       description: Portfolio floor value
+ *                 nfts:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/NFT'
+ *       400:
+ *         description: Invalid wallet address
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ *   put:
+ *     summary: Update user profile
+ *     description: Updates user profile information
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: address
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Ethereum wallet address
+ *     security:
+ *       - WalletAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Display name
+ *                 maxLength: 50
+ *               bio:
+ *                 type: string
+ *                 description: User biography
+ *                 maxLength: 500
+ *               avatar:
+ *                 type: string
+ *                 format: uri
+ *                 description: Profile avatar URL
+ *               social:
+ *                 type: object
+ *                 properties:
+ *                   twitter:
+ *                     type: string
+ *                   discord:
+ *                     type: string
+ *                   website:
+ *                     type: string
+ *                     format: uri
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessResponse'
+ *       400:
+ *         $ref: '#/components/responses/BadRequest'
+ *       401:
+ *         $ref: '#/components/responses/Unauthorized'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: { address: string } }
