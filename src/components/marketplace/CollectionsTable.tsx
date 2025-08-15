@@ -96,40 +96,52 @@ export default function CollectionsTable({
 
   const navigateToCollection = (c: CollectionStat) => {
     try {
-      const LEGACY_CONTRACT = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS;
+      console.log('🚀 Navigation Debug:', {
+        name: c.name,
+        category: c.category,
+        contractType: c.contractType,
+        collectionId: c.collectionId,
+        isCustomCollection: c.isCustomCollection,
+        tokenId: c.tokenId,
+        contractAddress: c.contractAddress
+      });
 
-      // Launchpad collections devem ir para a página de mint dedicada
-      if ((c.contractType === 'launchpad' || c.category === 'launchpad') && c.collectionId) {
-        router.push(`/launchpad/${c.collectionId}`)
+      // 🎯 REGRA 1: Launchpad Collections → Sempre para /launchpad/{id}
+      if (c.contractType === 'launchpad' || c.category === 'launchpad') {
+        if (c.collectionId) {
+          console.log('✅ Navigating to launchpad:', `/launchpad/${c.collectionId}`);
+          router.push(`/launchpad/${c.collectionId}`)
+          return
+        }
+      }
+
+      // 🎯 REGRA 2: Custom Collections → /marketplace/collection/jersey/{id}
+      if (c.isCustomCollection && c.collectionId && c.category === 'custom') {
+        console.log('✅ Navigating to custom collection:', `/marketplace/collection/jersey/${c.collectionId}`);
+        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
         return
       }
 
-      // 0) Se veio com contractAddress e bate com contratos conhecidos, priorizar por tipo
-      if (c.contractAddress && LEGACY_CONTRACT && c.contractAddress?.toLowerCase() === LEGACY_CONTRACT.toLowerCase() && c.tokenId != null) {
-        // Contrato antigo (legacy): endpoint de token individual
-        router.push(`/marketplace/collection/jersey/jersey/${c.tokenId}`)
+      // 🎯 REGRA 3: Legacy Collections (Jersey, Stadium, Badge) → por categoria
+      if (c.category === 'jersey' || c.category === 'stadium' || c.category === 'badge') {
+        // Se tem tokenId específico, vai para NFT individual
+        if (c.tokenId !== undefined && c.tokenId !== null) {
+          console.log('✅ Navigating to legacy NFT:', `/marketplace/collection/${c.category}/${c.category}/${c.tokenId}`);
+          router.push(`/marketplace/collection/${c.category}/${c.category}/${c.tokenId}`)
+          return
+        }
+        // Senão, vai para coleção agregada
+        console.log('✅ Navigating to legacy collection:', `/marketplace/collection/${c.category}`);
+        router.push(`/marketplace/collection/${c.category}`)
         return
       }
 
-      // Regras:
-      // 1) Launchpad/Custom → página da coleção por id (como no grid)
-      if ((c.isCustomCollection || c.category === 'launchpad' || c.category === 'custom') && c.collectionId) {
-        const catForUrl = 'jersey'
-        router.push(`/marketplace/collection/${catForUrl}/${c.collectionId}`)
-        return
-      }
-
-      // 2) Contrato antigo (NFT individual) → mesmo padrão do grid
-      //    /marketplace/collection/{category}/{category}/{tokenId}
-      const cat = (c.category === 'custom' ? 'jersey' : (c.category || 'jersey'))
-      if (c.tokenId !== undefined && c.tokenId !== null) {
-        router.push(`/marketplace/collection/${cat}/${cat}/${c.tokenId}`)
-        return
-      }
-
-      // 3) Fallback: página agregada por tipo
-      router.push(`/marketplace/collection/${cat}`)
+      // 🎯 FALLBACK: Página de jersey por padrão
+      console.log('⚠️ Fallback navigation to jersey collection');
+      router.push('/marketplace/collection/jersey')
+      
     } catch (e) {
+      console.error('❌ Navigation failed:', e)
       console.warn('Failed to navigate to collection', e)
     }
   }
