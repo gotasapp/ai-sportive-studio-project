@@ -65,6 +65,8 @@ interface CollectionStat {
   tokenId?: string | number
   contractAddress?: string
   contractType?: 'legacy' | 'launchpad' | 'custom'
+  // 🎯 HÍBRIDO: Item original do marketplace para navegação NFTGrid-style
+  originalItem?: any
 }
 
 interface CollectionsTableProps {
@@ -90,548 +92,200 @@ export default function CollectionsTable({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 20
+  const itemsPerPage = 12 // 🎯 HÍBRIDO: 12 itens por página como solicitado
   const account = useActiveAccount()
   const router = useRouter()
 
-  const navigateToCollection = (c: CollectionStat) => {
+  // 🎯 HÍBRIDO: Função de navegação copiada do NFTGrid (que funciona 100%)
+  const navigateToItem = (item: any) => {
     try {
-      console.log('🚀 Navigation Debug:', {
-        name: c.name,
-        category: c.category,
-        contractType: c.contractType,
-        collectionId: c.collectionId,
-        isCustomCollection: c.isCustomCollection,
-        tokenId: c.tokenId,
-        contractAddress: c.contractAddress
-      });
+      console.log('🚀 NFTGrid-style Navigation:', { item });
 
-      // 🎯 REGRA 1: Launchpad Collections → Sempre para /launchpad/{id}
-      if (c.contractType === 'launchpad' || c.category === 'launchpad') {
-        if (c.collectionId) {
-          console.log('✅ Navigating to launchpad:', `/launchpad/${c.collectionId}`);
-          router.push(`/launchpad/${c.collectionId}`)
-          return
+      // 🎯 LÓGICA COPIADA DO NFTGRID: Detectar se é coleção ou NFT individual
+      const isLaunchpadCollection =
+        (item.type === 'launchpad' && item.status === 'active') ||
+        item.type === 'launchpad_collection' ||
+        item.collectionType === 'launchpad' ||
+        item.marketplace?.isLaunchpadCollection;
+      
+      const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
+      
+      if (isCollection) {
+        const computedCollectionId =
+          item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
+        const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
+        
+        // Para launchpad ativos, enviar para a página de mint dedicada
+        const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
+          ? `/launchpad/${computedCollectionId}`
+          : undefined;
+        
+        if (hrefOverride) {
+          console.log('✅ Launchpad navigation:', hrefOverride);
+          router.push(hrefOverride);
+          return;
+        }
+        
+        // Custom collections
+        if (computedIsCustom && computedCollectionId) {
+          const route = `/marketplace/collection/jersey/${computedCollectionId}`;
+          console.log('✅ Custom collection navigation:', route);
+          router.push(route);
+          return;
         }
       }
-
-      // 🎯 REGRA 2: Custom Collections → /marketplace/collection/jersey/{id}
-      if (c.isCustomCollection && c.collectionId && c.category === 'custom') {
-        console.log('✅ Navigating to custom collection:', `/marketplace/collection/jersey/${c.collectionId}`);
-        router.push(`/marketplace/collection/jersey/${c.collectionId}`)
-        return
+      
+      // 🎯 NFTs individuais - mesma lógica do MarketplaceCard
+      const category = item.category || 'jersey';
+      if (item.tokenId !== undefined && item.tokenId !== null) {
+        const route = `/marketplace/collection/${category}/${category}/${item.tokenId}`;
+        console.log('✅ Individual NFT navigation:', route);
+        router.push(route);
+        return;
       }
-
-      // 🎯 REGRA 3: Legacy Collections (Jersey, Stadium, Badge) → por categoria
-      if (c.category === 'jersey' || c.category === 'stadium' || c.category === 'badge') {
-        // Se tem tokenId específico, vai para NFT individual
-        if (c.tokenId !== undefined && c.tokenId !== null) {
-          console.log('✅ Navigating to legacy NFT:', `/marketplace/collection/${c.category}/${c.category}/${c.tokenId}`);
-          router.push(`/marketplace/collection/${c.category}/${c.category}/${c.tokenId}`)
-          return
-        }
-        // Senão, vai para coleção agregada
-        console.log('✅ Navigating to legacy collection:', `/marketplace/collection/${c.category}`);
-        router.push(`/marketplace/collection/${c.category}`)
-        return
-      }
-
-      // 🎯 FALLBACK: Página de jersey por padrão
-      console.log('⚠️ Fallback navigation to jersey collection');
-      router.push('/marketplace/collection/jersey')
+      
+      // Fallback: página da categoria
+      const fallbackRoute = `/marketplace/collection/${category}`;
+      console.log('⚠️ Fallback navigation:', fallbackRoute);
+      router.push(fallbackRoute);
       
     } catch (e) {
-      console.error('❌ Navigation failed:', e)
-      console.warn('Failed to navigate to collection', e)
+      console.error('❌ Navigation failed:', e);
     }
   }
 
   useEffect(() => {
     const processCollectionData = () => {
-      console.log('🚀 processCollectionData CALLED!');
-      console.log('📥 marketplaceData received:', marketplaceData);
-      console.log('📏 marketplaceData.length:', marketplaceData?.length);
+      console.log('🚀 HÍBRIDO: Usando dados direto do NFTGrid!');
+      console.log('📥 marketplaceData received:', marketplaceData?.length, 'items');
       
       setLoading(true)
       setError(null)
       
       try {
-        // Gerar dados de trend mais realistas baseados no floor price
+        // 🎯 HÍBRIDO: Processar TODOS os items do marketplace como no NFTGrid
+        // Não separar por categoria, usar todos os 54 itens!
+        
         const generateTrendData = (floorPrice: number) => {
-          const baseValue = Math.max(floorPrice * 100, 50); // Base para o trend
-          const variation = baseValue * 0.2; // Variação de ±20%
-          
+          const baseValue = Math.max(floorPrice * 100, 50);
+          const variation = baseValue * 0.2;
           return Array.from({ length: 7 }, (_, index) => {
-            // Criar uma tendência suave com alguma volatilidade
-            const trendFactor = 1 + (index - 3) * 0.02; // Leve tendência
-            const randomFactor = 0.9 + Math.random() * 0.2; // ±10% de volatilidade
+            const trendFactor = 1 + (index - 3) * 0.02;
+            const randomFactor = 0.9 + Math.random() * 0.2;
             return Math.max(10, baseValue * trendFactor * randomFactor);
           });
         }
-        // DESABILITADO: Fast-path que impedia cálculo de dados reais
-        // Agora sempre usa a lógica completa para calcular dados reais
-        console.log('🚫 Fast-path desabilitado - usando cálculo de dados reais');
 
-        // Usar dados do marketplace que já funcionam
-        console.log('🎯 Processing collection data from marketplace:', marketplaceData.length, 'items');
-        console.log('🔍 Marketplace data sample:', marketplaceData[0]);
-        console.log('🔍 Sample categories found:', marketplaceData.slice(0, 5).map(item => ({ name: item.name, category: item.category })));
-        
-        // Separar NFTs por categoria (com fallback baseado no nome se category não estiver definida)
-        const jerseys = marketplaceData.filter(item => {
-          if (item.category === 'jersey') return true;
-          // Fallback: detectar jersey pelo nome/descrição
-          const name = (item.name || '').toLowerCase();
-          const description = (item.description || '').toLowerCase();
-          return name.includes('jersey') || description.includes('jersey') || 
-                 name.includes('#') || description.includes('ai-generated') ||
-                 (name.includes(' ') && name.match(/\b\w+\s+\w+\s+#\d+/)); // Pattern: "Team Player #Number"
-        });
-        
-        const stadiums = marketplaceData.filter(item => {
-          if (item.category === 'stadium') return true;
-          const name = (item.name || '').toLowerCase();
-          const description = (item.description || '').toLowerCase();
-          return name.includes('stadium') || description.includes('stadium') ||
-                 name.includes('arena') || description.includes('arena');
-        });
-        
-        const badges = marketplaceData.filter(item => {
-          if (item.category === 'badge') return true;
-          const name = (item.name || '').toLowerCase();
-          const description = (item.description || '').toLowerCase();
-          return name.includes('badge') || description.includes('badge') ||
-                 name.includes('achievement') || description.includes('achievement');
-        });
-        
-        // Launchpad Collections
-        const launchpadCollections = marketplaceData.filter(item => {
-          // Dados reais do banco: type: 'launchpad' e status 'active'
-          return (item.type === 'launchpad' && item.status === 'active') || item.type === 'launchpad_collection' || item.category === 'launchpad_collection';
-        });
-        
-        console.log('📊 Categories breakdown:', {
-          total: marketplaceData.length,
-          jerseys: jerseys.length,
-          stadiums: stadiums.length,
-          badges: badges.length,
-          launchpadCollections: launchpadCollections.length
-        });
-        
-        // 🔍 DEBUG: Verificar estrutura dos dados para cálculo de floor price
-        console.log('🔍 DEBUG: Estrutura dos dados do marketplace:', {
-          totalItems: marketplaceData.length,
-          sampleItem: marketplaceData[0],
-          jerseysSample: jerseys.slice(0, 2).map(item => ({
-            name: item.name,
-            price: item.price,
-            isListed: item.isListed,
-            marketplace: item.marketplace,
-            hasMarketplace: !!item.marketplace,
-            isListedMarketplace: item.marketplace?.isListed
-          }))
-        });
-        
-        console.log('🖼️ Launchpad Collections Image Debug:', launchpadCollections.map(item => ({
-          name: item.name,
-          hasImage: !!item.image,
-          hasImageUrl: !!item.imageUrl,
-          hasMetadataImage: !!item.metadata?.image,
-          imageValue: item.image || item.imageUrl || item.metadata?.image,
-          imageType: typeof (item.image || item.imageUrl || item.metadata?.image)
-        })));
-
-        console.log('🎲 About to create collections array');
-        const collectionsData: CollectionStat[] = []
-        console.log('✅ Collections array created:', collectionsData);
-
-        // ESTRATÉGIA SIMPLIFICADA: 
-        // - Jersey, Stadium, Badge = IMAGENS FIXAS
-        // - Launchpad Collections = IMAGENS ORIGINAIS
-
-        // Função para calcular estatísticas reais dos nossos dados
-        const calculateRealStats = (categoryItems: any[], categoryName: string) => {
-          console.log(`📊 Calculando stats para ${categoryName}:`, categoryItems.length, 'items');
+        // 🎯 ESTRATÉGIA NOVA: Transformar cada item do marketplace em uma linha da tabela
+        const tableData: CollectionStat[] = marketplaceData.map((item, index) => {
           
-          // Filtrar NFTs listados (que têm marketplace.isListed ou isListed)
-          const listedItems = categoryItems.filter(item => 
-            item.marketplace?.isListed || 
-            item.isListed || 
-            item.isAuction || 
-            item.marketplace?.isAuction
-          );
+          // Calcular estatísticas baseadas no item
+          const price = item.price ? parseFloat(item.price.toString().replace(/[^\d.-]/g, '')) || 0 : 0;
+          const floorPrice = price;
           
-          console.log(`📊 ${categoryName} - Items listados:`, listedItems.length);
+          // Supply baseado no tipo do item
+          let supply = 1; // Default para NFT individual
+          if (item.marketplace?.totalUnits) {
+            supply = item.marketplace.totalUnits;
+          } else if (item.type === 'launchpad' || item.collectionType === 'launchpad') {
+            supply = 100; // Default para coleções Launchpad
+          }
           
-          // Extrair preços dos items listados
-          const prices = listedItems.map(item => {
-            let priceStr = '';
-            
-            // Tentar diferentes campos de preço
-            if (item.marketplace?.priceFormatted) {
-              priceStr = item.marketplace.priceFormatted;
-            } else if (item.marketplace?.price) {
-              priceStr = item.marketplace.price;
-            } else if (item.price) {
-              priceStr = item.price;
-            }
-            
-            // Remover " MATIC", "(Bid)", etc e converter para número
-            const cleanPrice = priceStr.toString()
-              .replace(/\s*(MATIC|CHZ|ETH)\s*/gi, '')
-              .replace(/\s*\(.*?\)\s*/g, '')
-              .replace(/,/g, '')
-              .trim();
-            
-            const price = parseFloat(cleanPrice);
-            console.log(`💰 ${item.name}: "${priceStr}" → "${cleanPrice}" → ${price}`);
-            
-            return isNaN(price) ? 0 : price;
-          }).filter(price => price > 0);
+          // Owners baseado no tipo
+          let owners = 1;
+          if (item.marketplace?.uniqueOwners) {
+            owners = item.marketplace.uniqueOwners;
+          } else if (item.type === 'launchpad') {
+            owners = Math.max(1, Math.floor(supply * 0.7)); // Estimativa
+          }
           
-          console.log(`📊 ${categoryName} - Preços válidos:`, prices);
+          // Sales baseadas em listagens
+          const sales24h = item.marketplace?.mintedUnits || (item.isListed ? 1 : 0);
           
-          const floorPrice = prices.length > 0 ? Math.min(...prices) : 0;
-          const totalVolume = prices.reduce((sum, price) => sum + price, 0);
-          const avgPrice = prices.length > 0 ? totalVolume / prices.length : 0;
-          
-          // Calcular unique owners
-          const owners = Array.from(new Set(
-            categoryItems.map(item => 
-              item.owner || 
-              item.creator?.wallet || 
-              item.minterAddress ||
-              item.stats?.uniqueOwners ||
-              'unknown'
-            ).filter(owner => owner !== 'unknown')
-          )).length || 1;
-          
-          const stats = {
+          return {
+            rank: index + 1,
+            name: item.name || `Item #${index + 1}`,
+            imageUrl: item.imageUrl || item.image || '/fallback.svg',
             floorPrice,
-            volume24h: totalVolume, // Total volume dos listados
-            sales24h: listedItems.length, // Quantidade de items listados
-            supply: categoryItems.length,
-            owners
+            floorPriceChange: 0, // Mockado
+            volume24h: floorPrice * sales24h,
+            volumeChange: 0, // Mockado
+            sales24h,
+            salesChange: 0, // Mockado
+            supply,
+            owners,
+            category: item.category || 'jersey',
+            trendData: generateTrendData(floorPrice),
+            isWatchlisted: false,
+            isOwned: false,
+            
+            // 🎯 CRÍTICO: Preservar dados originais para navegação NFTGrid-style
+            originalItem: item,
+            collectionId: item.collectionId || item.customCollectionId || item._id,
+            isCustomCollection: !!(item.isCustomCollection || item.marketplace?.isCustomCollection),
+            tokenId: item.tokenId,
+            contractAddress: item.contractAddress,
+            contractType: item.type === 'launchpad' ? 'launchpad' as const : 'legacy' as const
           };
-          
-          console.log(`✅ ${categoryName} stats:`, stats);
-          return stats;
-        };
-
-        // Helper: escolher um tokenId representativo (para rotas legacy)
-        const getRepresentativeLegacyTokenId = (items: any[]) => {
-          // Prioriza listados/auction, depois menor tokenId disponível
-          const candidates = items.filter(it => it.tokenId !== undefined && it.tokenId !== null)
-          if (candidates.length === 0) return undefined
-          const listed = candidates.filter(it => it.isListed || it.isAuction)
-          const pickFrom = listed.length > 0 ? listed : candidates
-          try {
-            return pickFrom
-              .map(it => ({ id: Number(it.tokenId), raw: it.tokenId }))
-              .filter(x => !Number.isNaN(x.id))
-              .sort((a, b) => a.id - b.id)[0].raw
-          } catch {
-            return pickFrom[0].tokenId
-          }
-        }
-
-        // Jersey Collection - IMAGEM FIXA GARANTIDA
-        console.log('👕 Creating Jersey Collection with FIXED IMAGE...');
-        const jerseyImage = getCollectionImage('Jersey Collection');
-        const jerseyTokenId = getRepresentativeLegacyTokenId(jerseys)
-        
-        const jerseyStats = jerseys.length > 0 ? calculateRealStats(jerseys, 'jersey') : {
-          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
-        };
-        
-        collectionsData.push({
-          rank: 1,
-          name: 'Jersey Collection',
-          imageUrl: jerseyImage,
-          floorPrice: jerseyStats.floorPrice,
-            floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: jerseyStats.volume24h,
-            volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: jerseyStats.sales24h,
-            salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: jerseyStats.supply,
-            owners: jerseyStats.owners,
-            category: 'jersey',
-            trendData: generateTrendData(jerseyStats.floorPrice),
-            isWatchlisted: false,
-            isOwned: false,
-            tokenId: jerseyTokenId
-          });
-
-        // Stadium Collection - IMAGEM FIXA GARANTIDA
-        console.log('🏟️ Creating Stadium Collection with FIXED IMAGE...');
-        const stadiumImage = getCollectionImage('Stadium Collection');
-        const stadiumTokenId = getRepresentativeLegacyTokenId(stadiums)
-        
-        const stadiumStats = stadiums.length > 0 ? calculateRealStats(stadiums, 'stadium') : {
-          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
-        };
-        
-        collectionsData.push({
-          rank: 2,
-          name: 'Stadium Collection',
-          imageUrl: stadiumImage,
-          floorPrice: stadiumStats.floorPrice,
-            floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: stadiumStats.volume24h,
-            volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: stadiumStats.sales24h,
-            salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: stadiumStats.supply,
-            owners: stadiumStats.owners,
-            category: 'stadium',
-            trendData: generateTrendData(stadiumStats.floorPrice),
-            isWatchlisted: true,
-            isOwned: false,
-            tokenId: stadiumTokenId
-          });
-
-        // Badge Collection - IMAGEM FIXA GARANTIDA
-        console.log('🏆 Creating Badge Collection with FIXED IMAGE...');
-        const badgeImage = getCollectionImage('Badge Collection');
-        const badgeTokenId = getRepresentativeLegacyTokenId(badges)
-        
-        const badgeStats = badges.length > 0 ? calculateRealStats(badges, 'badge') : {
-          floorPrice: 0, volume24h: 0, sales24h: 0, supply: 0, owners: 1
-        };
-        
-        collectionsData.push({
-          rank: 3,
-          name: 'Badge Collection',
-          imageUrl: badgeImage,
-          floorPrice: badgeStats.floorPrice,
-            floorPriceChange: 0, // Sem dados históricos, mantém neutro
-            volume24h: badgeStats.volume24h,
-            volumeChange: 0, // Sem dados históricos, mantém neutro
-            sales24h: badgeStats.sales24h,
-            salesChange: 0, // Sem dados históricos, mantém neutro
-            supply: badgeStats.supply,
-            owners: badgeStats.owners,
-            category: 'badge',
-            trendData: generateTrendData(badgeStats.floorPrice),
-            isWatchlisted: false,
-            isOwned: true,
-            tokenId: badgeTokenId
-          });
-
-        // Launchpad Collections - USAR IMAGEM DIRETA DO BANCO
-        launchpadCollections.forEach((collection, index) => {
-          // SOLUÇÃO DIRETA: usar imageUrl diretamente do banco, com validação e normalização
-          let dbImageUrl = collection.image || collection.imageUrl || collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
-          
-          // Validar e normalizar imagem
-          if (dbImageUrl && !dbImageUrl.includes('undefined') && !dbImageUrl.includes('null') && dbImageUrl.trim() !== '') {
-            // Normalizar IPFS URLs se necessário
-            if (dbImageUrl.startsWith('ipfs://') || dbImageUrl.startsWith('Qm') || dbImageUrl.startsWith('bafy')) {
-              dbImageUrl = normalizeIpfsUri(dbImageUrl);
-            }
-          } else {
-            // Fallback para imagem padrão se não houver imagem válida
-            dbImageUrl = getCollectionImage('default');
-          }
-          
-          // Calcular estatísticas específicas para launchpad usando dados reais
-          const calculateLaunchpadStats = (collection: any) => {
-            const totalSupply = collection.marketplace?.totalUnits || collection.collectionData?.totalSupply || 100;
-            const mintedUnits = collection.marketplace?.mintedUnits || collection.collectionData?.minted || 0;
-            const availableUnits = collection.marketplace?.availableUnits || (totalSupply - mintedUnits);
-            
-            // Buscar NFTs listados desta coleção nos dados do marketplace
-            const collectionNFTs = marketplaceData.filter(item => 
-              item.collectionId === collection.collectionId ||
-              item.customCollectionId === collection.collectionId ||
-              item._id === collection.collectionId
-            );
-            
-            console.log(`📊 Launchpad ${collection.name}: ${collectionNFTs.length} NFTs encontrados`);
-            
-            // Se temos NFTs da coleção, calcular stats reais
-            if (collectionNFTs.length > 0) {
-              const realStats = calculateRealStats(collectionNFTs, `Launchpad-${collection.name}`);
-              return {
-                floorPrice: realStats.floorPrice,
-                volume24h: realStats.volume24h,
-                sales24h: realStats.sales24h,
-                supply: totalSupply, // Total supply da coleção
-                owners: realStats.owners
-              };
-            }
-            
-            // Fallback para coleções sem NFTs específicos
-            const price = parseFloat(collection.collectionData?.price || collection.price || '0');
-            return {
-              floorPrice: price, // Preço base da coleção
-              volume24h: mintedUnits * price, // Volume baseado no mintado
-              sales24h: mintedUnits, // NFTs mintados como "vendas"
-              supply: totalSupply,
-              owners: collection.stats?.uniqueOwners || Math.max(1, Math.floor(mintedUnits * 0.7)) // Estimativa: 70% dos mintados = unique owners
-            };
-          };
-
-          const stats = calculateLaunchpadStats(collection);
-          collectionsData.push({
-            rank: collectionsData.length + 1,
-            name: collection.metadata?.name || collection.name || 'Launchpad Collection',
-            imageUrl: dbImageUrl, // USAR DIRETAMENTE DO BANCO SEM FILTROS
-            floorPrice: stats.floorPrice,
-            floorPriceChange: 0,
-            volume24h: stats.volume24h,
-            volumeChange: 0,
-            sales24h: stats.sales24h,
-            salesChange: 0,
-            supply: stats.supply,
-            owners: stats.owners,
-            category: 'launchpad',
-            trendData: generateTrendData(stats.floorPrice),
-            isWatchlisted: false,
-            isOwned: false,
-            collectionId: collection.collectionData?._id || collection.customCollectionId || collection._id,
-            isCustomCollection: true,
-            contractAddress: collection.contractAddress || collection.marketplace?.contractAddress || undefined,
-            contractType: 'launchpad'
-          });
         });
 
-        // Custom Collections - USAR IMAGEM DIRETA DO BANCO
-        const customCollections = marketplaceData.filter(item => {
-          return item.type === 'custom_collection' || item.category === 'custom_collection';
-        });
-        
-        customCollections.forEach((collection, index) => {
-          // SOLUÇÃO DIRETA: usar imageUrl diretamente do banco, com validação e normalização
-          let dbImageUrl = collection.image || collection.imageUrl || collection.metadata?.image || collection.collectionData?.image || collection.collectionData?.imageUrl;
-          
-          // Validar e normalizar imagem
-          if (dbImageUrl && !dbImageUrl.includes('undefined') && !dbImageUrl.includes('null') && dbImageUrl.trim() !== '') {
-            // Normalizar IPFS URLs se necessário
-            if (dbImageUrl.startsWith('ipfs://') || dbImageUrl.startsWith('Qm') || dbImageUrl.startsWith('bafy')) {
-              dbImageUrl = normalizeIpfsUri(dbImageUrl);
-            }
-          } else {
-            // Fallback para imagem padrão se não houver imagem válida
-            dbImageUrl = getCollectionImage('default');
-          }
-          
-          // Calcular estatísticas específicas para custom collections usando dados reais
-          const calculateCustomStats = (collection: any) => {
-            const totalSupply = collection.marketplace?.totalUnits || collection.collectionData?.totalSupply || 100;
-            const mintedUnits = collection.marketplace?.mintedUnits || collection.collectionData?.minted || 0;
-            const availableUnits = collection.marketplace?.availableUnits || (totalSupply - mintedUnits);
-            
-            // Buscar NFTs listados desta coleção nos dados do marketplace
-            const collectionNFTs = marketplaceData.filter(item => 
-              item.collectionId === collection.collectionId ||
-              item.customCollectionId === collection.collectionId ||
-              item._id === collection.collectionId
-            );
-            
-            console.log(`📊 Custom ${collection.name}: ${collectionNFTs.length} NFTs encontrados`);
-            
-            // Se temos NFTs da coleção, calcular stats reais
-            if (collectionNFTs.length > 0) {
-              const realStats = calculateRealStats(collectionNFTs, `Custom-${collection.name}`);
-              return {
-                floorPrice: realStats.floorPrice,
-                volume24h: realStats.volume24h,
-                sales24h: realStats.sales24h,
-                supply: totalSupply, // Total supply da coleção
-                owners: realStats.owners
-              };
-            }
-            
-            // Fallback para coleções sem NFTs específicos
-            const price = parseFloat(collection.collectionData?.price || collection.price || '0');
-            return {
-              floorPrice: price, // Preço base da coleção
-              volume24h: mintedUnits * price, // Volume baseado no mintado
-              sales24h: mintedUnits, // NFTs mintados como "vendas"
-              supply: totalSupply,
-              owners: collection.stats?.uniqueOwners || Math.max(1, Math.floor(mintedUnits * 0.7)) // Estimativa: 70% dos mintados = unique owners
-            };
-          };
+        console.log('✅ HÍBRIDO: Transformou', marketplaceData.length, 'items em', tableData.length, 'linhas de tabela');
 
-          const stats = calculateCustomStats(collection);
-          collectionsData.push({
-            rank: collectionsData.length + 1,
-            name: collection.metadata?.name || collection.name || 'Custom Collection',
-            imageUrl: dbImageUrl, // USAR DIRETAMENTE DO BANCO
-            floorPrice: stats.floorPrice,
-            floorPriceChange: 0,
-            volume24h: stats.volume24h,
-            volumeChange: 0,
-            sales24h: stats.sales24h,
-            salesChange: 0,
-            supply: stats.supply,
-            owners: stats.owners,
-            category: 'custom',
-            trendData: generateTrendData(stats.floorPrice),
-            isWatchlisted: false,
-            isOwned: false,
-            collectionId: collection.customCollectionId || collection._id,
-            isCustomCollection: true
-          });
-        });
-
-        // Aplicar filtros
-        let filteredCollections = collectionsData
+        // 🎯 HÍBRIDO: Aplicar filtros na tabela de dados
+        let filteredData = tableData;
 
         // Filtro por tipo de token
         if (tokenType !== 'all') {
           const categoryMap = {
             'jerseys': 'jersey',
-            'stadiums': 'stadium',
+            'stadiums': 'stadium', 
             'badges': 'badge',
             'launchpad': 'launchpad',
             'custom': 'custom'
           }
-          filteredCollections = filteredCollections.filter(c => 
-            c.category === categoryMap[tokenType as keyof typeof categoryMap]
+          filteredData = filteredData.filter(item => 
+            item.category === categoryMap[tokenType as keyof typeof categoryMap]
           )
         }
 
         // Filtro por tab
         if (activeTab === 'watchlist') {
-          filteredCollections = filteredCollections.filter(c => c.isWatchlisted)
+          filteredData = filteredData.filter(item => item.isWatchlisted)
         } else if (activeTab === 'owned') {
-          filteredCollections = filteredCollections.filter(c => c.isOwned)
+          filteredData = filteredData.filter(item => item.isOwned)
         }
 
         // Filtro por busca
         if (searchTerm.trim()) {
-          filteredCollections = filteredCollections.filter(c =>
-            c.name.toLowerCase().includes(searchTerm.toLowerCase())
+          filteredData = filteredData.filter(item =>
+            item.name.toLowerCase().includes(searchTerm.toLowerCase())
           )
         }
 
         // Ordenação
         switch (priceSort) {
           case 'low-to-high':
-            filteredCollections.sort((a, b) => a.floorPrice - b.floorPrice)
+            filteredData.sort((a, b) => a.floorPrice - b.floorPrice)
             break
           case 'high-to-low':
-            filteredCollections.sort((a, b) => b.floorPrice - a.floorPrice)
+            filteredData.sort((a, b) => b.floorPrice - a.floorPrice)
             break
           case 'volume-desc':
-            filteredCollections.sort((a, b) => b.volume24h - a.volume24h)
+            filteredData.sort((a, b) => b.volume24h - a.volume24h)
             break
           case 'volume-asc':
-            filteredCollections.sort((a, b) => a.volume24h - b.volume24h)
+            filteredData.sort((a, b) => a.volume24h - b.volume24h)
             break
         }
 
         // Reordenar ranks
-        filteredCollections.forEach((collection, index) => {
-          collection.rank = index + 1
+        filteredData.forEach((item, index) => {
+          item.rank = index + 1
         })
 
-        console.log('✅ Final collections to display:', filteredCollections.length);
-        console.log('📋 Collections data:', filteredCollections);
-        setCollections(filteredCollections)
+        console.log('✅ HÍBRIDO: Final table data:', filteredData.length, 'items');
+        console.log('📋 Sample items:', filteredData.slice(0, 3));
+        setCollections(filteredData)
 
       } catch (error: any) {
         console.error('❌ Error processing collection data:', error)
@@ -854,9 +508,9 @@ export default function CollectionsTable({
                 
                 <td className="p-4">
                   <div className="flex items-center gap-3">
-                    {/* Collection Image with Navigation */}
+                    {/* Collection Image with Navigation - HÍBRIDO */}
                     <div 
-                      onClick={() => navigateToCollection(collection)}
+                      onClick={() => navigateToItem(collection.originalItem || collection)}
                       className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#A20131]/50 transition-all cursor-pointer"
                     >
                       {collection.imageUrl && 
@@ -883,7 +537,7 @@ export default function CollectionsTable({
                     <div>
                       <div
                         className="font-semibold text-[#FDFDFD] flex items-center gap-2 cursor-pointer hover:underline"
-                        onClick={() => navigateToCollection(collection)}
+                        onClick={() => navigateToItem(collection.originalItem || collection)}
                       >
                         {collection.name}
                         {collection.category === 'jersey' && (
