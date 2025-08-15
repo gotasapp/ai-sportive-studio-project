@@ -11,7 +11,7 @@ import {
   FaFacebookF,
   FaYoutube,
   FaInstagram,
-  FaMediumM,
+  FaMedium,
 } from "react-icons/fa6";
 
 type FooterProps = {
@@ -50,7 +50,7 @@ export default function Footer({ minHeight = 420, className = "" }: FooterProps)
     { href: "https://facebook.com/chiliz", label: "Facebook", icon: <FaFacebookF /> },
     { href: "https://youtube.com/chiliz", label: "YouTube", icon: <FaYoutube /> },
     { href: "https://instagram.com/chiliz", label: "Instagram", icon: <FaInstagram /> },
-    { href: "https://medium.com/@chiliz", label: "Medium", icon: <FaMediumM /> },
+    { href: "https://medium.com/@chiliz", label: "Medium", icon: <FaMedium /> },
   ];
 
   return (
