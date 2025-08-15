@@ -870,7 +870,6 @@ export default function CollectionMintPage() {
                     <CollectionUnitsTable 
                       collectionId={collectionId}
                       category="launchpad"
-                      contractAddress={collection.contractAddress}
                     />
                   </CardContent>
                 </Card>

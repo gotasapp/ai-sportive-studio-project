@@ -47,10 +47,9 @@ interface CollectionUnit {
 interface CollectionUnitsTableProps {
   collectionId: string;
   category?: string;
-  contractAddress?: string;
 }
 
-export default function CollectionUnitsTable({ collectionId, category, contractAddress }: CollectionUnitsTableProps) {
+export default function CollectionUnitsTable({ collectionId, category }: CollectionUnitsTableProps) {
   const [units, setUnits] = useState<CollectionUnit[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -353,7 +352,6 @@ export default function CollectionUnitsTable({ collectionId, category, contractA
                   unitId: unit.id,
                   tokenId: unit.tokenId,
                   unitContract: unit.contractAddress,
-                  passedContract: contractAddress,
                   category: category,
                   fallbackContract: getContractByCategory(category || 'launchpad')
                 });
@@ -536,16 +534,15 @@ export default function CollectionUnitsTable({ collectionId, category, contractA
           {console.log('🎯 MODAL DATA:', {
             selectedUnit,
             originalContract: selectedUnit.contractAddress,
-            passedContract: contractAddress,
             fallbackContract: getContractByCategory(category || 'launchpad'),
-            finalContract: selectedUnit.contractAddress || contractAddress || getContractByCategory(category || 'launchpad'),
+            finalContract: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
             category: category
           })}
           <CreateListingModal
             isOpen={showCreateListing}
             onOpenChange={setShowCreateListing}
             nft={{
-              assetContractAddress: selectedUnit.contractAddress || contractAddress || getContractByCategory(category || 'launchpad'),
+              assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
               tokenId: selectedUnit.tokenId,
               name: selectedUnit.name,
               imageUrl: selectedUnit.imageUrl
@@ -570,7 +567,7 @@ export default function CollectionUnitsTable({ collectionId, category, contractA
           isOpen={showCreateAuction}
           onOpenChange={setShowCreateAuction}
           nft={{
-            assetContractAddress: selectedUnit.contractAddress || contractAddress || getContractByCategory(category || 'launchpad'),
+            assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
             tokenId: selectedUnit.tokenId,
             name: selectedUnit.name,
             imageUrl: selectedUnit.imageUrl

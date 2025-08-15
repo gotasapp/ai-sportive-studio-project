@@ -173,7 +173,8 @@ export async function GET(request: NextRequest) {
     // 4. APLICAR LÓGICA DE TRADING (EXATAMENTE COMO NO BACKUP!)
     const unitsWithTrading = units.map(unit => {
       const tokenId = unit.tokenId?.toString();
-      const contractAddress = unit.contractAddress?.toLowerCase();
+      // 🎯 CORREÇÃO: Para launchpad collections, o contractAddress está em marketplace.contractAddress
+      const contractAddress = (unit.contractAddress || unit.marketplace?.contractAddress)?.toLowerCase();
       
       if (!tokenId || !contractAddress) {
         return {
@@ -239,6 +240,7 @@ export async function GET(request: NextRequest) {
         id: unit._id.toString(),
         name: unit.name || `${unit.metadata?.name || 'NFT'} #${tokenId}`,
         imageUrl: unit.imageUrl || unit.metadata?.image || '',
+        contractAddress: contractAddress, // 🎯 ADICIONAR contractAddress no nível raiz
         
         // 🎯 MARKETPLACE DATA (MESMA LÓGICA DO BACKUP)
         marketplace: {
