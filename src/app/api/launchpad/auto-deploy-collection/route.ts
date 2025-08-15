@@ -157,8 +157,8 @@ export async function POST(request: NextRequest) {
       contractAddress,
       deployedBy: backendAccount.address,
       maxSupply: maxSupply || 100,
-      priceInMatic,
-      message: `Contract deployed with correct price: ${priceInMatic} MATIC`,
+      priceInNative,
+      message: `Contract deployed with correct price: ${priceInNative} ${ACTIVE_NETWORK.currency}`,
       claimConditionsSet: true,
       tokensLazyMinted: true,
       collectionId

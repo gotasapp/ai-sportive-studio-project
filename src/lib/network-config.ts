@@ -83,6 +83,39 @@ export const getExplorerLink = (hash: string) => {
 export const isChzNetwork = () => USE_CHZ_MAINNET;
 export const isAmoyNetwork = () => !USE_CHZ_MAINNET;
 
+// 🔗 HELPER PARA THIRDWEB CHAINS
+export const getActiveChain = () => {
+  if (USE_CHZ_MAINNET) {
+    // CHZ Mainnet
+    return {
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'Chiliz', symbol: 'CHZ', decimals: 18 },
+      rpc: 'https://rpc.ankr.com/chiliz',
+      blockExplorers: [
+        {
+          name: 'ChilizScan',
+          url: 'https://scan.chiliz.com',
+        },
+      ],
+    };
+  } else {
+    // Polygon Amoy
+    return {
+      id: 80002,
+      name: 'Polygon Amoy Testnet',
+      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
+      rpc: 'https://rpc-amoy.polygon.technology',
+      blockExplorers: [
+        {
+          name: 'PolygonScan',
+          url: 'https://amoy.polygonscan.com',
+        },
+      ],
+    };
+  }
+};
+
 // 🚨 VALIDAÇÃO DE CONTRATOS
 if (!ACTIVE_CONTRACTS.marketplace || !ACTIVE_CONTRACTS.nftDrop) {
   console.error('❌ CONTRATOS OBRIGATÓRIOS FALTANDO!', {
