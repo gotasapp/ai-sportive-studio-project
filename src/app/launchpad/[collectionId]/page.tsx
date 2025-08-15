@@ -34,6 +34,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';
+import CollectionUnitsTable from '../../../components/marketplace/CollectionUnitsTable';
 import { createThirdwebClient, getContract } from 'thirdweb';
 import { defineChain } from 'thirdweb/chains';
 import { claimTo, getActiveClaimCondition } from 'thirdweb/extensions/erc721';
