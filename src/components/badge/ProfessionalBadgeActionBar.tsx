@@ -8,6 +8,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { BatchMintDialog } from '@/components/ui/batch-mint-dialog'
+import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 
 interface ProfessionalBadgeActionBarProps {

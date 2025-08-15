@@ -238,7 +238,7 @@ export default function CollectionsTable({
         if (tokenType !== 'all') {
           const categoryMap = {
             'jerseys': 'jersey',
-            'stadiums': 'stadium', 
+            'stadiums': 'stadium',
             'badges': 'badge',
             'launchpad': 'launchpad',
             'custom': 'custom'
