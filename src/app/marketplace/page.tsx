@@ -345,12 +345,30 @@ export default function MarketplacePage() {
               totalVolume={(() => {
                 const totalVol = marketplaceItems?.reduce((sum, item) => {
                   if (item.isListed || item.isAuction) {
-                    const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
-                    return sum + (isNaN(price) ? 0 : price);
+                    // Limpar o preço e converter corretamente
+                    let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
+                    
+                    // Se o preço contém 'e+' ou é muito grande, pode estar em Wei
+                    const price = parseFloat(priceStr);
+                    
+                    // Se o preço é maior que 1 milhão, provavelmente está em Wei - converter
+                    const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
+                    
+                    // Debug para números suspeitos
+                    if (price > 1000000) {
+                      console.log('🔍 Large price detected:', {
+                        item: item.name,
+                        originalPrice: item.price,
+                        parsedPrice: price,
+                        convertedPrice: finalPrice
+                      });
+                    }
+                    
+                    return sum + (isNaN(finalPrice) ? 0 : finalPrice);
                   }
                   return sum;
                 }, 0) || 0;
-                return `${totalVol.toFixed(2)} MATIC`;
+                return `${totalVol.toFixed(4)} MATIC`;
               })()}
               floorPrice={(() => {
                 const listedItems = marketplaceItems?.filter(item => 
@@ -358,12 +376,18 @@ export default function MarketplacePage() {
                 ) || [];
                 if (listedItems.length === 0) return '0 MATIC';
                 const prices = listedItems.map(item => {
-                  const price = parseFloat(item.price?.replace(' MATIC', '') || '0');
-                  return isNaN(price) ? 0 : price;
+                  // Limpar o preço
+                  let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
+                  const price = parseFloat(priceStr);
+                  
+                  // Converter de Wei se necessário
+                  const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
+                  
+                  return isNaN(finalPrice) ? 0 : finalPrice;
                 }).filter(price => price > 0);
                 if (prices.length === 0) return '0 MATIC';
                 const minPrice = Math.min(...prices);
-                return `${minPrice.toFixed(3)} MATIC`;
+                return `${minPrice.toFixed(6)} MATIC`;
               })()}
             />
           )}
