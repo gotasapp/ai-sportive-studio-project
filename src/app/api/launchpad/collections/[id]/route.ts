@@ -17,10 +17,18 @@ export async function GET(
     // Buscar coleção específica
     let collection;
     try {
-      collection = await db.collection('collections').findOne({
-        _id: new ObjectId(params.id),
-        type: 'launchpad'
+      // Buscar primeiro na tabela launchpad_collections (novo formato)
+      collection = await db.collection('launchpad_collections').findOne({
+        _id: new ObjectId(params.id)
       });
+      
+      // Fallback: buscar na tabela collections (formato antigo)
+      if (!collection) {
+        collection = await db.collection('collections').findOne({
+          _id: new ObjectId(params.id),
+          type: 'launchpad'
+        });
+      }
     } catch (error) {
       console.log('❌ Erro ao converter ID para ObjectId:', error);
       return NextResponse.json(
