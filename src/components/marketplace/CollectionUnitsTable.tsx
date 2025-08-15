@@ -348,6 +348,13 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           <div className="flex items-center gap-2">
             <Button
               onClick={() => {
+                console.log('🎯 BUTTON CLICKED - List for Sale:', {
+                  unitId: unit.id,
+                  tokenId: unit.tokenId,
+                  contractAddress: unit.contractAddress,
+                  category: category,
+                  fallbackContract: getContractByCategory(category || 'launchpad')
+                });
                 setSelectedUnit(unit);
                 setShowCreateListing(true);
               }}
@@ -523,16 +530,25 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
 
       {/* Modais de Trading (ALINHADO COM MARKETPLACECARD) */}
       {showCreateListing && selectedUnit && (
-        <CreateListingModal
-          isOpen={showCreateListing}
-          onOpenChange={setShowCreateListing}
-          nft={{
-            assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
-            tokenId: selectedUnit.tokenId,
-            name: selectedUnit.name,
-            imageUrl: selectedUnit.imageUrl
-          }}
-        />
+        <>
+          {console.log('🎯 MODAL DATA:', {
+            selectedUnit,
+            originalContract: selectedUnit.contractAddress,
+            fallbackContract: getContractByCategory(category || 'launchpad'),
+            finalContract: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
+            category: category
+          })}
+          <CreateListingModal
+            isOpen={showCreateListing}
+            onOpenChange={setShowCreateListing}
+            nft={{
+              assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
+              tokenId: selectedUnit.tokenId,
+              name: selectedUnit.name,
+              imageUrl: selectedUnit.imageUrl
+            }}
+          />
+        </>
       )}
 
       {showUpdateListing && selectedUnit && (
