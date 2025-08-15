@@ -40,6 +40,20 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           item.type === 'launchpad_collection' ||
           item.collectionType === 'launchpad' ||
           item.marketplace?.isLaunchpadCollection;
+        
+        // DEBUG: Log para coleção Kane 2018
+        if (item.name?.includes('Kane') || item.collection?.includes('Kane')) {
+          console.log('🔍 DEBUG Kane Collection:', {
+            name: item.name,
+            type: item.type,
+            status: item.status,
+            collectionType: item.collectionType,
+            isLaunchpadCollection: item.marketplace?.isLaunchpadCollection,
+            isLaunchpadDetected: isLaunchpadCollection,
+            _id: item._id,
+            collectionId: item.collectionId
+          });
+        }
         const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
         
         if (isCollection) {
@@ -50,6 +64,17 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
             ? `/launchpad/${computedCollectionId}`
             : undefined;
+          
+          // DEBUG: Log para Kane 2018
+          if (item.name?.includes('Kane') || item.collection?.includes('Kane')) {
+            console.log('🔍 DEBUG Kane hrefOverride:', {
+              isLaunchpadCollection,
+              status: item.status,
+              computedCollectionId,
+              hrefOverride,
+              willUseOverride: !!hrefOverride
+            });
+          }
           return (
             <CollectionOverviewCard
               key={item.id}
