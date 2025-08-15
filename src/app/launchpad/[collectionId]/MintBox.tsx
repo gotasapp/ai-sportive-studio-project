@@ -173,7 +173,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
       
       console.log('✅ Gasless mint successful:', result);
       
-      setTransactionHash(result.queueId); // Engine retorna queueId
+      setTransactionHash(result.queueId || null); // Engine retorna queueId
       setMintStatus('success');
       toast.success(`Gasless mint successful`);
 
