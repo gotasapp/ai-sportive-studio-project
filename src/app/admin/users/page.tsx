@@ -12,7 +12,7 @@ import {
   Link, Zap, Database, TrendingUp
 } from 'lucide-react'
 
-// Definindo o tipo de usuário com base na API real (MongoDB + Blockchain)
+// Definindo o tipo de usuário com base na API real (MongoDB + Blockchain + Profile)
 interface User {
   _id: string;
   wallet?: string;
@@ -26,6 +26,14 @@ interface User {
   displayName: string;
   hasLinkedAccounts: boolean;
   joinedAt: string;
+  
+  // 📋 DADOS DO PERFIL EDITADO PELO USUÁRIO
+  profileData?: {
+    username: string;
+    bio: string;
+    avatar: string;
+    hasCustomProfile: boolean;
+  };
   
   // 🔗 DADOS DA BLOCKCHAIN (Thirdweb)
   blockchain?: {
@@ -138,13 +146,7 @@ export default function UsersPage() {
     return matchesSearch && matchesStatus;
   })
 
-  const handleUserAction = (userId: string, action: string) => {
-    alert(`${action} user ${userId}`)
-  }
 
-  const handleBulkAction = (action: string) => {
-    alert(`${action} ${selectedUsers.length} selected users`)
-  }
 
   const renderSkeleton = () => (
     Array.from({ length: 5 }).map((_, i) => (
@@ -154,7 +156,6 @@ export default function UsersPage() {
          <td className="p-4"><div className="h-5 w-24 bg-gray-700 rounded animate-pulse"></div></td>
          <td className="p-4"><div className="h-5 w-20 bg-gray-700 rounded animate-pulse"></div></td>
          <td className="p-4"><div className="h-5 w-12 bg-gray-700 rounded animate-pulse"></div></td>
-         <td className="p-4"><div className="h-5 w-16 bg-gray-700 rounded animate-pulse"></div></td>
        </tr>
     ))
   );
@@ -166,10 +167,10 @@ export default function UsersPage() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-200">User Management</h1>
           <p className="text-gray-400 mt-2 text-sm md:text-base">
-            Manage users, permissions and activity
+            Real-time user data with profile integration and blockchain activity
             {userStats && (
               <span className="ml-2 text-cyan-400">
-                • {userStats.totalUsers} total users • {userStats.usersWithNFTs} creators
+                • {userStats.totalUsers} total users • {userStats.usersWithNFTs} creators • {userStats.usersWithOnChainNFTs} on-chain
               </span>
             )}
           </p>
@@ -333,14 +334,13 @@ export default function UsersPage() {
                       <th className="p-4 font-medium">Status</th>
                       <th className="p-4 font-medium">NFTs (DB/Chain)</th>
                       <th className="p-4 font-medium hidden md:table-cell">Joined</th>
-                      <th className="p-4 font-medium">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? renderSkeleton() : (
                       filteredUsers.length === 0 ? (
                         <tr>
-                          <td colSpan={6} className="p-8 text-center text-gray-400">
+                          <td colSpan={5} className="p-8 text-center text-gray-400">
                             {error ? `Error: ${error}` : 'No users found'}
                           </td>
                         </tr>
@@ -353,24 +353,46 @@ export default function UsersPage() {
                             <tr key={user._id} className="border-b border-gray-800 hover:bg-gray-800/50">
                               <td className="p-4"><input type="checkbox" className="cyber-checkbox" /></td>
                               <td className="p-4">
-                                <div className="font-medium text-white">{user.displayName}</div>
-                                <div className="text-gray-400 text-xs">
-                                  {userWallet !== 'Not connected' && userWallet.length > 20 
-                                    ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` 
-                                    : userWallet}
-                                </div>
-                                {user.linkedAccounts?.email && (
-                                  <div className="text-cyan-400 text-xs flex items-center gap-1">
-                                    <Mail className="w-3 h-3" />
-                                    {user.linkedAccounts.email}
+                                <div className="flex items-center gap-3">
+                                  {/* Avatar do perfil se disponível */}
+                                  {user.profileData?.avatar ? (
+                                    <img 
+                                      src={user.profileData.avatar} 
+                                      alt={user.displayName}
+                                      className="w-8 h-8 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-xs font-semibold text-white">
+                                      {user.displayName.slice(0, 2).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <div className="font-medium text-white flex items-center gap-2">
+                                      {user.displayName}
+                                      {user.profileData?.hasCustomProfile && (
+                                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                                          Profile
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-gray-400 text-xs">
+                                      {userWallet !== 'Not connected' && userWallet.length > 20 
+                                        ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` 
+                                        : userWallet}
+                                    </div>
+                                    {user.profileData?.bio && (
+                                      <div className="text-gray-500 text-xs mt-1 max-w-48 truncate">
+                                        {user.profileData.bio}
+                                      </div>
+                                    )}
+                                    {user.linkedAccounts?.email && (
+                                      <div className="text-cyan-400 text-xs flex items-center gap-1 mt-1">
+                                        <Mail className="w-3 h-3" />
+                                        {user.linkedAccounts.email}
+                                      </div>
+                                    )}
                                   </div>
-                                )}
-                                {user.linkedAccounts?.discord && (
-                                  <div className="text-purple-400 text-xs">Discord linked</div>
-                                )}
-                                {user.linkedAccounts?.twitter && (
-                                  <div className="text-blue-400 text-xs">Twitter linked</div>
-                                )}
+                                </div>
                               </td>
                               <td className="p-4">
                                 <Badge className={statusColors[user.status]}>{user.status}</Badge>
@@ -406,16 +428,6 @@ export default function UsersPage() {
                                     {user.stats.daysSinceJoined} days ago
                                   </div>
                                 )}
-                              </td>
-                              <td className="p-4">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm"
-                                  className="w-10 h-10"
-                                  onClick={() => handleUserAction(user._id, 'view')}
-                                >
-                                  <MoreHorizontal className="w-4 h-4" />
-                                </Button>
                               </td>
                             </tr>
                           );
@@ -458,11 +470,27 @@ export default function UsersPage() {
                     .map((user, index) => (
                       <div key={user._id} className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors">
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-sm font-semibold text-white">
-                            {user.displayName.slice(0, 2).toUpperCase()}
-                          </div>
+                          {/* Avatar do perfil na atividade */}
+                          {user.profileData?.avatar ? (
+                            <img 
+                              src={user.profileData.avatar} 
+                              alt={user.displayName}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-sm font-semibold text-white">
+                              {user.displayName.slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
                           <div>
-                            <div className="font-medium text-white">{user.displayName}</div>
+                            <div className="font-medium text-white flex items-center gap-2">
+                              {user.displayName}
+                              {user.profileData?.hasCustomProfile && (
+                                <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs">
+                                  Profile
+                                </Badge>
+                              )}
+                            </div>
                             <div className="text-sm text-gray-400">
                               {user.nftsCreated > 0 && `Created ${user.nftsCreated} NFTs`}
                               {user.blockchain?.onChainNFTs && user.blockchain.onChainNFTs > 0 && ` • ${user.blockchain.onChainNFTs} on-chain`}

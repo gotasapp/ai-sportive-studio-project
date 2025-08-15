@@ -97,9 +97,24 @@ export async function GET() {
 
     console.log('📊 Fetching all users with enhanced data...');
 
-    // Buscar todos os usuários
+    // Buscar todos os usuários (da coleção 'users' principal)
     const allUsers = await users.find({}).toArray();
     console.log(`👥 Found ${allUsers.length} users in database`);
+
+    // Buscar dados de perfil da coleção 'users' (profiles editados pelos usuários)
+    const profilesCollection = db.collection('users');
+    const userProfiles = await profilesCollection.find({
+      walletAddress: { $exists: true }
+    }).toArray();
+    console.log(`📋 Found ${userProfiles.length} user profiles with data`);
+
+    // Criar mapeamento de perfis por walletAddress para lookup rápido
+    const profilesMap = new Map();
+    userProfiles.forEach(profile => {
+      if (profile.walletAddress) {
+        profilesMap.set(profile.walletAddress.toLowerCase(), profile);
+      }
+    });
 
     // Buscar estatísticas de NFTs por usuário em paralelo
     const collections = ['jerseys', 'stadiums', 'badges'];
@@ -114,9 +129,12 @@ export async function GET() {
         let lastActivity = user.updatedAt || user.createdAt;
         let blockchainData = { onChainNFTs: 0, contractInteractions: 0 };
 
+        // 📋 BUSCAR DADOS DO PERFIL EDITADO PELO USUÁRIO
+        const userWallet = user.wallet?.toLowerCase();
+        const profileData = userWallet ? profilesMap.get(userWallet) : null;
+
         // Contar NFTs criados por este usuário (MongoDB)
         try {
-          const userWallet = user.wallet?.toLowerCase();
           if (userWallet) {
             // Buscar dados do MongoDB
             const nftCounts = await Promise.all(
@@ -184,10 +202,16 @@ export async function GET() {
           lastActivity,
           status: user.status || status, // Usar status existente ou calculado
           
-          // Dados adicionais para o frontend
-          displayName: user.name || user.linkedAccounts?.email || 'Anonymous User',
+          // 📋 DADOS INTEGRADOS DO PERFIL + WALLET
+          displayName: profileData?.username || user.name || user.linkedAccounts?.email || 'Anonymous User',
+          profileData: profileData ? {
+            username: profileData.username,
+            bio: profileData.bio,
+            avatar: profileData.avatar,
+            hasCustomProfile: true
+          } : null,
           hasLinkedAccounts: !!(user.linkedAccounts?.email || user.linkedAccounts?.discord || user.linkedAccounts?.twitter),
-          joinedAt: user.createdAt || new Date(),
+          joinedAt: profileData?.createdAt || user.createdAt || new Date(),
           
           // 🔗 DADOS DA BLOCKCHAIN (Thirdweb)
           blockchain: {
