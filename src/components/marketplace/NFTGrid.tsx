@@ -16,7 +16,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   
-  // Calcular paginação
+  // Calculate pagination
   const totalPages = Math.ceil(items.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
@@ -24,24 +24,24 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
 
   const goToPage = (page: number) => {
     setCurrentPage(page);
-    // Scroll para o topo do grid
+    // Scroll to top of grid
     document.querySelector('.grid')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
     <div className="space-y-6">
-      {/* Grid com 5 colunas */}
+      {/* Grid with 5 columns */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 p-6">
         {currentItems.map((item) => {
-        // 🎯 DECISÃO CRÍTICA: Usar CollectionOverviewCard para collections
-        // Tratar Launchpad como Custom Collection para navegação por collectionId
+        // 🎯 CRITICAL DECISION: Use CollectionOverviewCard for collections
+        // Treat Launchpad as Custom Collection for navigation by collectionId
         const isLaunchpadCollection =
           (item.type === 'launchpad' && item.status === 'active') ||
           item.type === 'launchpad_collection' ||
           item.collectionType === 'launchpad' ||
           item.marketplace?.isLaunchpadCollection;
         
-        // DEBUG: Log para coleção Kane 2018
+        // DEBUG: Log for Kane 2018 collection
         if (item.name?.includes('Kane') || item.collection?.includes('Kane')) {
           console.log('🔍 DEBUG Kane Collection:', {
             name: item.name,
@@ -60,12 +60,12 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           const computedCollectionId =
             item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
           const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
-          // Para launchpad ativos, enviar para a página de mint dedicada (que já existe!)
+          // For active launchpads, send to dedicated mint page (which already exists!)
           const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
             ? `/launchpad/${computedCollectionId}`
             : undefined;
           
-          // DEBUG: Log para Kane 2018
+          // DEBUG: Log for Kane 2018
           if (item.name?.includes('Kane') || item.collection?.includes('Kane')) {
             console.log('🔍 DEBUG Kane hrefOverride:', {
               isLaunchpadCollection,
@@ -99,7 +99,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
           );
         }
         
-        // 🎯 Para NFTs individuais, usar MarketplaceCard normal
+        // 🎯 For individual NFTs, use normal MarketplaceCard
         return (
           <MarketplaceCard
             key={item.id}
@@ -118,7 +118,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
             currentBid={item.currentBid}
             endTime={item.endTime}
             activeOffers={item.activeOffers || 0}
-            // Props para Custom Collections (caso seja NFT de collection)
+            // Props for Custom Collections (in case it's a collection NFT)
             collectionId={item.customCollectionId || item._id}
             isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection' || item.marketplace?.isCustomCollection}
           />
@@ -144,7 +144,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
             {/* Números das páginas */}
             <div className="flex items-center gap-1">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                // Mostrar apenas páginas próximas da atual
+                // Show only pages close to current
                 if (
                   page === 1 ||
                   page === totalPages ||

@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
-const COLLECTION_NAME = 'minted-badges'; // Coleção separada para NFTs mintados
+const COLLECTION_NAME = 'minted-badges'; // Separate collection for minted NFTs
 
 /**
- * GET handler para buscar badges que foram realmente mintados na blockchain
- * Usa coleção separada 'minted-badges' para performance e clareza
+ * GET handler to fetch badges that were actually minted on blockchain
+ * Uses separate 'minted-badges' collection for performance and clarity
  */
 export async function GET(request: Request) {
   try {
-    console.log('✅ GET Minted Badges - Buscando da coleção minted-badges');
+    console.log('✅ GET Minted Badges - Fetching from minted-badges collection');
     
     const { searchParams } = new URL(request.url);
     const owner = searchParams.get('owner');
@@ -20,18 +20,18 @@ export async function GET(request: Request) {
     const db = client.db(DB_NAME);
     const mintedBadges = db.collection(COLLECTION_NAME);
 
-    // Filtro simples - todos os NFTs nesta coleção já foram mintados
+    // Simple filter - all NFTs in this collection were already minted
     const filter: any = {};
 
-    // Filtrar por owner se especificado
+    // Filter by owner if specified
     if (owner) {
       filter['creator.wallet'] = owner;
     }
     
-    console.log('🔍 Buscando na coleção:', COLLECTION_NAME);
-    console.log('🔍 Filtro aplicado:', JSON.stringify(filter, null, 2));
+    console.log('🔍 Searching in collection:', COLLECTION_NAME);
+    console.log('🔍 Applied filter:', JSON.stringify(filter, null, 2));
 
-    // Estatísticas da coleção
+    // Collection statistics
     const totalMintedBadges = await mintedBadges.countDocuments({});
     const ownerMintedBadges = owner ? await mintedBadges.countDocuments(filter) : totalMintedBadges;
     
@@ -39,19 +39,19 @@ export async function GET(request: Request) {
     console.log(`Total minted badges: ${totalMintedBadges}`);
     console.log(`Owner minted badges: ${ownerMintedBadges}`);
 
-    // Buscar NFTs mintados
+    // Fetch minted NFTs
     const badges = await mintedBadges
       .find(filter)
-      .sort({ mintedAt: -1, createdAt: -1 }) // Ordenar por data de mint
+      .sort({ mintedAt: -1, createdAt: -1 }) // Sort by mint date
       .limit(50)
       .toArray();
       
     console.log(`✅ Found ${badges.length} minted badges`);
 
-    // Processar dados para garantir consistência
+    // Process data to ensure consistency
     const processedBadges = badges.map(badge => ({
       ...badge,
-      // Garantir que tenha informações de blockchain
+      // Ensure it has blockchain information
       blockchain: badge.blockchain || {
         chainId: parseInt(chainId),
         contractAddress: chainId === '80002' 
@@ -65,12 +65,12 @@ export async function GET(request: Request) {
         network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain'
       },
       
-      // Status confirmado (todos nesta coleção foram mintados)
+      // Confirmed status (all in this collection were minted)
       mintStatus: 'confirmed',
       isMinted: true,
       status: 'Approved',
       
-      // Metadados para marketplace
+      // Marketplace metadata
       marketplace: {
         isListable: true,
         canTrade: true,
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
       }
     }));
 
-    // Log detalhado para debug
+    // Detailed log for debugging
     if (processedBadges.length > 0) {
       console.log('📋 Minted Badge NFTs:');
       processedBadges.forEach((badge: any, index) => {

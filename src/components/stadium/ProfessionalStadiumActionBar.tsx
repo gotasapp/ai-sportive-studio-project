@@ -240,12 +240,12 @@ export default function ProfessionalStadiumActionBar({
               console.log('🚀 Enviando stadium para Launchpad...')
               
               try {
-                // Verificar se o blob existe
+                // Check if blob exists
                 if (!generatedImageBlob) {
                   throw new Error('No image available')
                 }
 
-                // 1. Upload para Cloudinary
+                // 1. Upload to Cloudinary
                 const formData = new FormData()
                 formData.append('file', generatedImageBlob, 'launchpad_stadium.png')
                 formData.append('fileName', `stadium_launchpad_${Date.now()}`)
@@ -262,7 +262,7 @@ export default function ProfessionalStadiumActionBar({
                 const uploadResult = await uploadResponse.json()
                 console.log('✅ Upload OK:', uploadResult.url)
                 
-                // 2. Salvar no banco
+                // 2. Save to database
                 const response = await fetch('/api/launchpad/pending-images', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },

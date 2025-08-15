@@ -232,12 +232,12 @@ export default function ProfessionalBadgeActionBar({
               console.log('🚀 Enviando badge para Launchpad...')
               
               try {
-                // Verificar se o blob existe
+                // Check if blob exists
                 if (!generatedImageBlob) {
                   throw new Error('No image available')
                 }
 
-                // 1. Upload para Cloudinary
+                // 1. Upload to Cloudinary
                 const formData = new FormData()
                 formData.append('file', generatedImageBlob, 'launchpad_badge.png')
                 formData.append('fileName', `badge_launchpad_${Date.now()}`)
@@ -254,7 +254,7 @@ export default function ProfessionalBadgeActionBar({
                 const uploadResult = await uploadResponse.json()
                 console.log('✅ Upload OK:', uploadResult.url)
                 
-                // 2. Salvar no banco
+                // 2. Save to database
                 const response = await fetch('/api/launchpad/pending-images', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },

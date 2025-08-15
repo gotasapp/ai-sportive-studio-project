@@ -5,12 +5,12 @@ const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'jerseys';
 
 /**
- * GET handler para buscar apenas jerseys que foram realmente mintados na blockchain
- * Filtra apenas NFTs com transactionHash (confirmação de mint)
+ * GET handler to fetch only jerseys that were actually minted on blockchain
+ * Filters only NFTs with transactionHash (mint confirmation)
  */
 export async function GET(request: NextRequest) {
   try {
-    console.log('✅ GET Minted Jerseys - Buscando apenas NFTs mintados');
+    console.log('✅ GET Minted Jerseys - Fetching only minted NFTs');
     
     const owner = request.nextUrl.searchParams.get('owner');
     const chainId = request.nextUrl.searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
@@ -19,12 +19,12 @@ export async function GET(request: NextRequest) {
     const db = client.db(DB_NAME);
     const jerseys = db.collection(COLLECTION_NAME);
 
-    // Filtros obrigatórios para NFTs mintados
+    // Required filters for minted NFTs
     const filter: any = {
-      // Status deve ser Approved
+      // Status must be Approved
       status: 'Approved',
       
-      // Deve ter transactionHash (prova de mint)
+      // Must have transactionHash (proof of mint)
       $or: [
         { transactionHash: { $exists: true, $nin: [null, ''] } },
         { mintedAt: { $exists: true, $ne: null } },
@@ -34,22 +34,22 @@ export async function GET(request: NextRequest) {
       ]
     };
 
-    // Filtrar por owner se especificado
+    // Filter by owner if specified
     if (owner) {
       filter['creator.wallet'] = owner;
     }
 
-    // Buscar apenas NFTs mintados
+    // Fetch only minted NFTs
     const mintedJerseys = await jerseys
       .find(filter)
       .sort({ createdAt: -1 })
       .limit(50)
       .toArray();
 
-    // Adicionar informações de blockchain para cada NFT
+    // Add blockchain information for each NFT
     const processedJerseys = mintedJerseys.map(jersey => ({
       ...jersey,
-      // Informações de blockchain
+      // Blockchain information
       blockchain: {
         chainId: parseInt(chainId),
         contractAddress: chainId === '80002' 
@@ -62,13 +62,13 @@ export async function GET(request: NextRequest) {
         network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain'
       },
       
-      // Status de mint confirmado
+      // Confirmed mint status
       mintStatus: jersey.transactionHash ? 'confirmed' : 'pending',
       isMinted: !!jersey.transactionHash,
       
-      // Metadados para marketplace
+      // Marketplace metadata
       marketplace: {
-        isListable: !!jersey.transactionHash, // Só pode listar se foi mintado
+        isListable: !!jersey.transactionHash, // Can only list if minted
         canTrade: !!jersey.transactionHash,
         verified: !!jersey.transactionHash
       }
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
 
     console.log(`✅ Found ${processedJerseys.length} minted jerseys for ${owner ? `owner ${owner}` : 'all users'} on chain ${chainId}`);
     
-    // Log detalhado para debug
+    // Detailed log for debugging
     if (processedJerseys.length > 0) {
       console.log('📋 Minted NFTs details:');
       processedJerseys.forEach((jersey: any, index) => {

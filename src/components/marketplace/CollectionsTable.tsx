@@ -59,13 +59,13 @@ interface CollectionStat {
   trendData: number[] // 7-day trend data for sparkline
   isWatchlisted?: boolean
   isOwned?: boolean
-  // Navegação correta
+  // Correct navigation
   collectionId?: string
   isCustomCollection?: boolean
   tokenId?: string | number
   contractAddress?: string
   contractType?: 'legacy' | 'launchpad' | 'custom'
-  // 🎯 HÍBRIDO: Item original do marketplace para navegação NFTGrid-style
+  // 🎯 HYBRID: Original marketplace item for NFTGrid-style navigation
   originalItem?: any
 }
 
@@ -92,16 +92,16 @@ export default function CollectionsTable({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 12 // 🎯 HÍBRIDO: 12 itens por página como solicitado
+  const itemsPerPage = 12 // 🎯 HYBRID: 12 items per page as requested
   const account = useActiveAccount()
   const router = useRouter()
 
-  // 🎯 HÍBRIDO: Função de navegação copiada do NFTGrid (que funciona 100%)
+  // 🎯 HYBRID: Navigation function copied from NFTGrid (which works 100%)
   const navigateToItem = (item: any) => {
     try {
       console.log('🚀 NFTGrid-style Navigation:', { item });
 
-      // 🎯 LÓGICA COPIADA DO NFTGRID: Detectar se é coleção ou NFT individual
+      // 🎯 LOGIC COPIED FROM NFTGRID: Detect if it's collection or individual NFT
       const isLaunchpadCollection =
         (item.type === 'launchpad' && item.status === 'active') ||
         item.type === 'launchpad_collection' ||
@@ -115,7 +115,7 @@ export default function CollectionsTable({
           item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
         const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
         
-        // Para launchpad ativos, enviar para a página de mint dedicada
+        // For active launchpads, send to dedicated mint page
         const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
           ? `/launchpad/${computedCollectionId}`
           : undefined;
@@ -135,7 +135,7 @@ export default function CollectionsTable({
         }
       }
       
-      // 🎯 NFTs individuais - mesma lógica do MarketplaceCard
+      // 🎯 Individual NFTs - same logic as MarketplaceCard
       const category = item.category || 'jersey';
       if (item.tokenId !== undefined && item.tokenId !== null) {
         const route = `/marketplace/collection/${category}/${category}/${item.tokenId}`;
@@ -144,7 +144,7 @@ export default function CollectionsTable({
         return;
       }
       
-      // Fallback: página da categoria
+      // Fallback: category page
       const fallbackRoute = `/marketplace/collection/${category}`;
       console.log('⚠️ Fallback navigation:', fallbackRoute);
       router.push(fallbackRoute);
@@ -163,8 +163,8 @@ export default function CollectionsTable({
       setError(null)
       
       try {
-        // 🎯 HÍBRIDO: Processar TODOS os items do marketplace como no NFTGrid
-        // Não separar por categoria, usar todos os 54 itens!
+        // 🎯 HYBRID: Process ALL marketplace items like in NFTGrid
+        // Don't separate by category, use all 54 items!
         
         const generateTrendData = (floorPrice: number) => {
           const baseValue = Math.max(floorPrice * 100, 50);
@@ -176,30 +176,30 @@ export default function CollectionsTable({
           });
         }
 
-        // 🎯 ESTRATÉGIA NOVA: Transformar cada item do marketplace em uma linha da tabela
+        // 🎯 NEW STRATEGY: Transform each marketplace item into a table row
         const tableData: CollectionStat[] = marketplaceData.map((item, index) => {
           
-          // Calcular estatísticas baseadas no item
+          // Calculate statistics based on item
           const price = item.price ? parseFloat(item.price.toString().replace(/[^\d.-]/g, '')) || 0 : 0;
           const floorPrice = price;
           
-          // Supply baseado no tipo do item
-          let supply = 1; // Default para NFT individual
+          // Supply based on item type
+          let supply = 1; // Default for individual NFT
           if (item.marketplace?.totalUnits) {
             supply = item.marketplace.totalUnits;
           } else if (item.type === 'launchpad' || item.collectionType === 'launchpad') {
-            supply = 100; // Default para coleções Launchpad
+            supply = 100; // Default for Launchpad collections
           }
           
-          // Owners baseado no tipo
+          // Owners based on type
           let owners = 1;
           if (item.marketplace?.uniqueOwners) {
             owners = item.marketplace.uniqueOwners;
           } else if (item.type === 'launchpad') {
-            owners = Math.max(1, Math.floor(supply * 0.7)); // Estimativa
+            owners = Math.max(1, Math.floor(supply * 0.7)); // Estimate
           }
           
-          // Sales baseadas em listagens
+          // Sales based on listings
           const sales24h = item.marketplace?.mintedUnits || (item.isListed ? 1 : 0);
           
           return {
@@ -207,11 +207,11 @@ export default function CollectionsTable({
             name: item.name || `Item #${index + 1}`,
             imageUrl: item.imageUrl || item.image || '/fallback.svg',
             floorPrice,
-            floorPriceChange: 0, // Mockado
+            floorPriceChange: 0, // Mocked
             volume24h: floorPrice * sales24h,
-            volumeChange: 0, // Mockado
+            volumeChange: 0, // Mocked
             sales24h,
-            salesChange: 0, // Mockado
+            salesChange: 0, // Mocked
             supply,
             owners,
             category: item.category || 'jersey',
@@ -219,7 +219,7 @@ export default function CollectionsTable({
             isWatchlisted: false,
             isOwned: false,
             
-            // 🎯 CRÍTICO: Preservar dados originais para navegação NFTGrid-style
+            // 🎯 CRITICAL: Preserve original data for NFTGrid-style navigation
             originalItem: item,
             collectionId: item.collectionId || item.customCollectionId || item._id,
             isCustomCollection: !!(item.isCustomCollection || item.marketplace?.isCustomCollection),
@@ -231,10 +231,10 @@ export default function CollectionsTable({
 
         console.log('✅ HÍBRIDO: Transformou', marketplaceData.length, 'items em', tableData.length, 'linhas de tabela');
 
-        // 🎯 HÍBRIDO: Aplicar filtros na tabela de dados
+        // 🎯 HYBRID: Apply filters to data table
         let filteredData = tableData;
 
-        // Filtro por tipo de token
+        // Filter by token type
         if (tokenType !== 'all') {
           const categoryMap = {
             'jerseys': 'jersey',
@@ -248,21 +248,21 @@ export default function CollectionsTable({
           )
         }
 
-        // Filtro por tab
+        // Filter by tab
         if (activeTab === 'watchlist') {
           filteredData = filteredData.filter(item => item.isWatchlisted)
         } else if (activeTab === 'owned') {
           filteredData = filteredData.filter(item => item.isOwned)
         }
 
-        // Filtro por busca
+        // Filter by search
         if (searchTerm.trim()) {
           filteredData = filteredData.filter(item =>
             item.name.toLowerCase().includes(searchTerm.toLowerCase())
           )
         }
 
-        // Ordenação
+        // Sorting
         switch (priceSort) {
           case 'low-to-high':
             filteredData.sort((a, b) => a.floorPrice - b.floorPrice)
@@ -278,7 +278,7 @@ export default function CollectionsTable({
             break
         }
 
-        // Reordenar ranks
+        // Reorder ranks
         filteredData.forEach((item, index) => {
           item.rank = index + 1
         })
@@ -299,12 +299,12 @@ export default function CollectionsTable({
     processCollectionData()
   }, [priceSort, tokenType, activeTab, searchTerm, marketplaceData])
 
-  // Reset página quando filtros mudam
+  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [priceSort, tokenType, activeTab, searchTerm])
 
-  // Calcular paginação
+  // Calculate pagination
   const totalPages = Math.ceil(collections.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
@@ -366,13 +366,13 @@ export default function CollectionsTable({
       const nextStarred = !target?.isWatchlisted;
       const action = nextStarred ? 'upvote' : 'remove';
 
-      // Persistir voto no backend (mesma lógica do like, aplicada à coleção)
+      // Persist vote in backend (same logic as like, applied to collection)
       const resp = await fetch('/api/collections/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ collectionName, action, walletAddress: account?.address || 'guest' })
       });
-      // Não bloqueia UI se API falhar, mas loga para debug
+      // Don't block UI if API fails, but log for debug
       if (!resp.ok) {
         console.warn('Collections vote API failed', resp.status, await resp.text());
       }
@@ -380,7 +380,7 @@ export default function CollectionsTable({
       if (onToggleWatchlist) {
         onToggleWatchlist(collectionName)
       }
-      // Update local state visual (estrela ligada/desligada)
+      // Update local visual state (star on/off)
       setCollections(prev => prev.map(c => 
         c.name === collectionName 
           ? { ...c, isWatchlisted: nextStarred }
@@ -391,7 +391,7 @@ export default function CollectionsTable({
     }
   }
 
-  // Sincroniza estado da estrela por usuário (wallet) ao carregar/alterar carteira
+  // Synchronize star state per user (wallet) when loading/changing wallet
   useEffect(() => {
     const syncUserVotes = async () => {
       if (!account?.address || collections.length === 0) return;

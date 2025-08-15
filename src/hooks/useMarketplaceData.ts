@@ -53,7 +53,7 @@ export function useMarketplaceData() {
       }
       console.log('🎯 [V2] Fetching NFTs from BOTH sources (API + Thirdweb)...');
       
-      // 1. Buscar da nossa API (inclui launchpad) - SEMPRE FRESH DATA
+      // 1. Fetch from our API (includes launchpad) - ALWAYS FRESH DATA
       const [apiResponse, thirdwebData] = await Promise.all([
         fetch('/api/marketplace/nfts?_t=' + Date.now()).then(res => res.json()), // Cache bust
         getThirdwebDataWithFallback()
@@ -66,7 +66,7 @@ export function useMarketplaceData() {
         thirdwebAuctions: thirdwebData.auctions.length
       });
       
-      // 2. Processar dados da API (coleções launchpad)
+      // 2. Process API data (launchpad collections)
       const apiNFTs = apiResponse.success ? apiResponse.data.map((nft: any) => ({
         id: nft._id || nft.tokenId,
         tokenId: nft.tokenId,
@@ -112,10 +112,10 @@ export function useMarketplaceData() {
         auctionCount: nft.marketplace?.thirdwebAuctionCount || 0
       })) : [];
 
-      // 3. Processar dados do Thirdweb (NFTs normais)
+      // 3. Process Thirdweb data (normal NFTs)
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
       
-      // Toggle global para desabilitar blacklist
+      // Global toggle to disable blacklist
       const DISABLE_HIDDEN = process.env.NEXT_PUBLIC_DISABLE_HIDDEN_NFTS === 'true';
       // === BUSCAR BLACKLIST DO BACKEND + APLICAR BLACKLIST LOCAL ===
       let hiddenIds: string[] = [];
@@ -165,7 +165,7 @@ export function useMarketplaceData() {
           
           let nftOwner = nft.owner || 'Unknown';
 
-          // Buscar owner real da blockchain
+          // Fetch real owner from blockchain
           try {
             const contract = getContract({ client, chain: polygonAmoy, address: contractAddress });
             const realOwner = await ownerOf({ contract, tokenId: BigInt(tokenId) });
@@ -221,7 +221,7 @@ export function useMarketplaceData() {
       const thirdwebProcessedResults = await Promise.all(thirdwebProcessedPromises);
       const validThirdwebNFTs = thirdwebProcessedResults.filter(Boolean) as MarketplaceNFT[];
       
-      // 4. Combinar todos os NFTs
+      // 4. Combine all NFTs
       const validProcessedNFTs = [...apiNFTs, ...validThirdwebNFTs];
 
       console.log(`✅ [V2] Combined NFTs:`, {
@@ -258,12 +258,12 @@ export function useMarketplaceData() {
     fetchNFTsFromContract();
   }, [fetchNFTsFromContract]);
 
-  // 🚀 REFRESH AUTOMÁTICO IGUAL ÀS NFTs LEGACY (30 segundos)
+  // 🚀 AUTOMATIC REFRESH SAME AS LEGACY NFTs (30 seconds)
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('🔄 Auto-refresh marketplace data (30s interval)...');
-      fetchNFTsFromContract(false); // Sem loading para não interfering na UI
-    }, 30000); // 30 segundos igual ao cache do thirdweb-production-fix
+      fetchNFTsFromContract(false); // Without loading to not interfere with UI
+    }, 30000); // 30 seconds same as thirdweb-production-fix cache
 
     return () => clearInterval(interval);
   }, [fetchNFTsFromContract]);

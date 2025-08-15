@@ -17,7 +17,7 @@ import { getTransactionUrl } from '../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../lib/admin-config'
 
-// Importando os novos componentes profissionais
+// Importing the new professional components
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
 import ProfessionalSidebar from '@/components/editor/ProfessionalSidebar'
 import ProfessionalCanvas from '@/components/editor/ProfessionalCanvas'
@@ -425,7 +425,7 @@ export default function JerseyEditor() {
       const result = await mintGasless({
         to: address,
         metadataUri: ipfsResult.metadataUrl,
-        chainId: chainId || 80002, // Adicionando chainId com fallback
+        chainId: chainId || 80002, // Adding chainId with fallback
       });
 
       // 3. Update UI with queue ID
@@ -487,7 +487,7 @@ export default function JerseyEditor() {
       setMintSuccess(`🎉 Legacy mint successful! Transaction: ${result.transactionHash}`)
       setTransactionHash(result.transactionHash || 'N/A')
 
-      // ✅ CRITICAL: Atualizar MongoDB também para LEGACY MINTs
+      // ✅ CRITICAL: Update MongoDB also for LEGACY MINTs
       try {
         console.log('💾 Updating MongoDB with legacy mint success...');
         const updateResponse = await fetch('/api/jerseys/update-mint-status', {
@@ -496,7 +496,7 @@ export default function JerseyEditor() {
           body: JSON.stringify({
             userWallet: address,
             transactionHash: result.transactionHash,
-            tokenId: null, // Legacy mint não retorna tokenId imediatamente
+            tokenId: null, // Legacy mint doesn't return tokenId immediately
             status: 'minted',
             chainId: 80002, // Polygon Amoy
             blockNumber: null
@@ -581,7 +581,7 @@ export default function JerseyEditor() {
       console.log('❌ [ANALYSIS DEBUG] No analysis result found - this will cause generation issues')
     }
 
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
+    // 🔒 SECURITY VALIDATION: Wallet required - Show toast
     if (!isConnected) {
       toast({
         variant: "destructive",
@@ -614,13 +614,13 @@ export default function JerseyEditor() {
       if (isVisionMode && referenceImageBlob) {
         console.log('👁️ [VISION GENERATION] Using complete vision-test flow...')
         
-        // **ANÁLISE AUTOMÁTICA TRANSPARENTE** - Sempre analisar se não há resultado
+        // **TRANSPARENT AUTOMATIC ANALYSIS** - Always analyze if no result
         if (!analysisResult) {
           console.log('🔍 [VISION ANALYSIS] Starting automatic reference image analysis...')
           
-          // Análise automática usando a mesma função, mas sem UI separada
+          // Automatic analysis using the same function, but without separate UI
           try {
-            setIsAnalyzing(true) // Para mostrar feedback visual
+            setIsAnalyzing(true) // To show visual feedback
             
             // Convert blob to base64
             const reader = new FileReader()

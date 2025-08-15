@@ -14,7 +14,7 @@ import { useRouter } from 'next/navigation';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import StadiumMobileLayout from '@/components/stadium/StadiumMobileLayout';
 
-// Importando os novos componentes profissionais
+// Importing the new professional components
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
 import ProfessionalStadiumSidebar from '@/components/stadium/ProfessionalStadiumSidebar'
 import ProfessionalStadiumCanvas from '@/components/stadium/ProfessionalStadiumCanvas'
@@ -26,7 +26,7 @@ interface ApiStadium {
   id: string;
   name: string;
   previewImage: string | null;
-  basePrompt?: string; // NOVO: prompt base do stadium
+  basePrompt?: string; // NEW: stadium base prompt
   available_references: string[];
 }
 
@@ -163,7 +163,7 @@ export default function StadiumEditor() {
   }
 
   const generateStadium = async () => {
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
+    // 🔒 SECURITY VALIDATION: Wallet required - Show toast
     if (!isConnected) {
       toast({
         variant: "destructive",
@@ -183,13 +183,13 @@ export default function StadiumEditor() {
       // Use the new reference generation flow
       if (selectedStadium !== 'custom_only') {
         console.log(`🚀 Starting reference generation for stadium: ${selectedStadium}`);
-        // Prompt base geral para stadiums
+        // General base prompt for stadiums
         const generalBasePrompt =
           'A professional football stadium, modern architecture, high-capacity seating, realistic lighting, clean background, ultra-high resolution, photorealistic rendering, premium sports venue, championship atmosphere.';
-        // Buscar prompt base do stadium selecionado (se disponível)
+        // Search for selected stadium base prompt (if available)
         const stadiumRef = availableStadiums.find(s => s.id === selectedStadium);
         const stadiumBasePrompt = stadiumRef && stadiumRef.basePrompt ? `\n${stadiumRef.basePrompt}` : '';
-        // Montar prompt final
+        // Build final prompt
         const prompt = [
           generalBasePrompt,
           stadiumBasePrompt,
@@ -208,8 +208,8 @@ export default function StadiumEditor() {
             atmosphere: atmosphere,
             timeOfDay: timeOfDay,
             weather: weather,
-            view: perspective, // pode ser ajustado conforme o backend espera
-            prompt // NOVO: prompt base geral + stadium + parâmetros + custom
+            view: perspective, // can be adjusted according to backend expectations
+            prompt // NEW: general base prompt + stadium + parameters + custom
           }),
         });
 
@@ -245,13 +245,13 @@ export default function StadiumEditor() {
     }
   };
 
-  // Função para análise vision de stadiums
+  // Function for vision analysis of stadiums
   const analyzeStadiumReferenceImage = async () => {
     if (!referenceImageBlob) return;
     setIsAnalyzing(true);
     setError('');
     try {
-      // Prompt de análise fornecido pelo usuário
+      // Analysis prompt provided by user
       const analysisPrompt = `Analyze this image of a soccer stadium and return ONLY a valid JSON object with the following structure:
 
 {
@@ -268,13 +268,13 @@ export default function StadiumEditor() {
 }
 
 This description will be used to generate a new version of the stadium with slight visual changes based on user filters (like style or lighting). Ensure the JSON is accurate, compact, and does not include any explanation or extra text. Return only the JSON.`;
-      // Converter imagem para base64
+      // Convert image to base64
       const imageBase64 = await new Promise<string>((resolve) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.readAsDataURL(referenceImageBlob);
       });
-      // Chamar vision-test/analysis
+      // Call vision-test/analysis
       const response = await fetch('/api/vision-prompts/analysis', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -289,7 +289,7 @@ This description will be used to generate a new version of the stadium with slig
         throw new Error('Failed to analyze stadium image');
       }
       const analysisData = await response.json();
-      // Aqui você pode salvar o resultado ou usar como preferir
+      // Here you can save the result or use as preferred
       console.log('✅ Stadium analysis result:', analysisData);
       setIsAnalyzing(false);
       return analysisData;
@@ -332,7 +332,7 @@ This description will be used to generate a new version of the stadium with slig
         const result = await mintGasless({
           to: address,
           metadataUri: ipfsResult.metadataUrl,
-          chainId: chainId || 80002, // Adicionando chainId com fallback
+          chainId: chainId || 80002, // Adding chainId with fallback
         });
 
         setMintStatus('pending');
@@ -386,7 +386,7 @@ This description will be used to generate a new version of the stadium with slig
 
   const resetError = () => setError('');
 
-  // useEffect para carregar stadiums
+  // useEffect to load stadiums
   useEffect(() => {
     const loadAvailableStadiums = async () => {
       try {
@@ -396,12 +396,12 @@ This description will be used to generate a new version of the stadium with slig
           throw new Error(`Failed to fetch stadium references: ${response.statusText}`);
         }
         const data = await response.json();
-        // data.data é o array de stadium references
+        // data.data is the array of stadium references
         const stadiums: ApiStadium[] = (data.data || []).map((ref: any) => ({
           id: ref.teamName || ref.stadiumId || ref._id,
           name: ref.teamName || ref.stadiumId || 'Unnamed Stadium',
           previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null,
-          basePrompt: ref.teamBasePrompt || '', // NOVO: prompt base do stadium
+          basePrompt: ref.teamBasePrompt || '', // NEW: stadium base prompt
           available_references: ref.available_references || [],
         }));
         setAvailableStadiums(stadiums);
@@ -465,7 +465,7 @@ This description will be used to generate a new version of the stadium with slig
         walletAddress={address || ""}
         nftName={selectedStadium !== 'custom_only' ? selectedStadium.replace(/_/g, ' ') : 'Custom Stadium'}
         hasGeneratedImage={!!generatedImage}
-        metadataUri={''} // Adapte se necessário para stadium
+        metadataUri={''} // Adapt if necessary for stadium
         collection="stadiums"
       />
     );

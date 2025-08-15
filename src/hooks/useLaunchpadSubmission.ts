@@ -25,7 +25,7 @@ export function useLaunchpadSubmission() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
-  // Enviar imagem para aprovação do Launchpad
+  // Send image for Launchpad approval
   const submitToLaunchpad = useCallback(async (data: PendingImageData) => {
     try {
       setIsSubmitting(true);
@@ -57,7 +57,7 @@ export function useLaunchpadSubmission() {
     }
   }, []);
 
-  // Reset estados
+  // Reset states
   const resetSubmission = useCallback(() => {
     setSubmitError(null);
     setSubmitSuccess(false);

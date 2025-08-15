@@ -5,7 +5,7 @@ const DB_NAME = 'chz-app-db';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('📋 GET /api/launchpad/pending-images chamado')
+    console.log('📋 GET /api/launchpad/pending-images called')
     
     const client = await clientPromise;
     const db = client.db(DB_NAME);
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .toArray();
     
-    console.log(`✅ Encontradas ${pendingImages.length} imagens pendentes`)
+    console.log(`✅ Found ${pendingImages.length} pending images`)
     
     return NextResponse.json({
       success: true,
@@ -34,12 +34,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🚀 POST /api/launchpad/pending-images chamado')
+    console.log('🚀 POST /api/launchpad/pending-images called')
     const data = await request.json();
-    console.log('📥 Dados recebidos:', JSON.stringify(data, null, 2))
+    console.log('📥 Data received:', JSON.stringify(data, null, 2))
     
     if (!data.imageUrl || !data.category) {
-      console.log('❌ Dados obrigatórios faltando:', { imageUrl: !!data.imageUrl, category: !!data.category })
+      console.log('❌ Required data missing:', { imageUrl: !!data.imageUrl, category: !!data.category })
       return NextResponse.json(
         { success: false, error: 'Missing required fields: imageUrl, category' },
         { status: 400 }
@@ -68,9 +68,9 @@ export async function POST(request: NextRequest) {
       updatedAt: new Date()
     };
     
-    console.log('💾 Salvando no MongoDB...')
+    console.log('💾 Saving to MongoDB...')
     const result = await db.collection('pending_launchpad_images').insertOne(pendingImage);
-    console.log('✅ Salvo no MongoDB com ID:', result.insertedId.toString())
+    console.log('✅ Saved to MongoDB with ID:', result.insertedId.toString())
     
     const response = {
       success: true,
@@ -78,7 +78,7 @@ export async function POST(request: NextRequest) {
       message: 'Image saved for admin approval'
     }
     
-    console.log('📤 Retornando resposta:', response)
+    console.log('📤 Returning response:', response)
     return NextResponse.json(response);
     
   } catch (error) {
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest) {
       error: 'Failed to save pending image',
       details: error instanceof Error ? error.message : 'Unknown error'
     }
-    console.log('📤 Retornando erro:', errorResponse)
+    console.log('📤 Returning error:', errorResponse)
     return NextResponse.json(errorResponse, { status: 500 });
   }
 } 

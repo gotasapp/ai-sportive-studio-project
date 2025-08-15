@@ -6,7 +6,7 @@ import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketp
 
 const DB_NAME = 'chz-app-db';
 
-// Cliente Thirdweb para verificar listagens
+// Thirdweb client to verify listings
 const client = createThirdwebClient({
   secretKey: process.env.THIRDWEB_SECRET_KEY!,
 });
@@ -14,12 +14,12 @@ const client = createThirdwebClient({
 const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
 
 /**
- * 🔍 FUNÇÃO CRÍTICA: Verificar se NFTs estão listadas OU em auction no Thirdweb
- * Esta é a MESMA lógica que funciona para NFTs legacy!
+ * 🔍 CRITICAL FUNCTION: Check if NFTs are listed OR in auction on Thirdweb
+ * This is the SAME logic that works for legacy NFTs!
  */
 async function getThirdwebMarketplaceData() {
   try {
-    console.log('🔍 Buscando listagens E auctions no Thirdweb marketplace...');
+    console.log('🔍 Searching for listings AND auctions on Thirdweb marketplace...');
     
     const marketplaceContract = getContract({
       client,
@@ -27,7 +27,7 @@ async function getThirdwebMarketplaceData() {
       address: MARKETPLACE_CONTRACT_ADDRESS,
     });
 
-    // Buscar TANTO listagens quanto auctions em paralelo
+    // Search for BOTH listings and auctions in parallel
     const [validListings, validAuctions] = await Promise.all([
       getAllValidListings({
         contract: marketplaceContract,
@@ -47,7 +47,7 @@ async function getThirdwebMarketplaceData() {
       total: validListings.length + validAuctions.length
     });
     
-    // Criar mapas separados para consulta rápida
+    // Create separate maps for quick lookup
     const listingsByKey = new Map();
     const auctionsByKey = new Map();
     
@@ -56,32 +56,32 @@ async function getThirdwebMarketplaceData() {
       listingsByKey.set(key, { ...listing, type: 'listing' });
     });
 
-    // ✅ FILTRAR APENAS AUCTIONS ATIVOS (não cancelados)
+    // ✅ FILTER ONLY ACTIVE AUCTIONS (not cancelled)
     validAuctions.forEach(auction => {
-      // Verificar se o auction não foi cancelado (status !== 3)
+      // Check if auction was not cancelled (status !== 3)
       if (auction.status?.toString() !== '3') {
         const key = `${auction.tokenId.toString()}_${auction.assetContractAddress.toLowerCase()}`;
         auctionsByKey.set(key, { ...auction, type: 'auction' });
       } else {
-        console.log(`⚠️ Auction cancelado filtrado: ${auction.id} (tokenId: ${auction.tokenId})`);
+        console.log(`⚠️ Cancelled auction filtered: ${auction.id} (tokenId: ${auction.tokenId})`);
       }
     });
 
     return { listingsByKey, auctionsByKey };
   } catch (error) {
-    console.error('❌ Erro ao buscar dados do Thirdweb marketplace:', error);
+    console.error('❌ Error fetching Thirdweb marketplace data:', error);
     return { listingsByKey: new Map(), auctionsByKey: new Map() };
   }
 }
 
 /**
- * Função para buscar Custom Collections mintadas
+ * Function to fetch minted Custom Collections
  */
 async function getCustomCollections(db: any, marketplaceData: { listingsByKey: Map<string, any>, auctionsByKey: Map<string, any> }, limit: number = 50) {
   try {
     console.log('🎨 Fetching custom collections...');
     
-    // Buscar custom collections ativas com NFTs mintados
+    // Search for active custom collections with minted NFTs
     const customCollections = await db.collection('custom_collections').find({
       status: 'active'
     }).toArray();
@@ -89,23 +89,23 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
     const customCollectionNFTs = [];
 
     for (const collection of customCollections) {
-      // Buscar NFTs mintadas desta coleção
+      // Search for minted NFTs from this collection
       const mintedNFTs = await db.collection('custom_collection_mints')
         .find({ customCollectionId: collection._id })
         .toArray();
 
       if (mintedNFTs.length === 0) continue;
 
-      // Criar entrada para a coleção (representada pelo primeiro NFT)
+      // Create entry for the collection (represented by the first NFT)
       const firstNFT = mintedNFTs[0];
       
       const collectionEntry = {
-        // 🔑 DADOS OBRIGATÓRIOS PARA MARKETPLACE
+        // 🔑 MANDATORY DATA FOR MARKETPLACE
         tokenId: collection._id.toString(),
         contractAddress: collection.contractAddress || firstNFT.contractAddress,
         owner: collection.creatorWallet || firstNFT.minterAddress,
         
-        // 🖼️ IMAGEM DIRETAMENTE NO NÍVEL SUPERIOR (para compatibilidade)
+        // 🖼️ IMAGE DIRECTLY AT TOP LEVEL (for compatibility)
         image: collection.imageUrl,
         imageUrl: collection.imageUrl,
         
@@ -128,12 +128,12 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
         
         // 🏪 DADOS PARA MARKETPLACE - VERIFICAR SE ESTÁ LISTADA
         marketplace: (() => {
-          // 🔍 VERIFICAÇÃO DUPLA: MongoDB + Thirdweb (MESMA LÓGICA DAS NFTs LEGACY!)
+          // 🔍 DOUBLE VERIFICATION: MongoDB + Thirdweb (SAME LOGIC AS LEGACY NFTs!)
           
-          // 1. Verificar no MongoDB (dados locais)
+          // 1. Check in MongoDB (local data)
           const mongoListedNFTs = mintedNFTs.filter((nft: any) => nft.marketplace?.isListed === true);
           
-          // 2. Verificar no Thirdweb (dados reais da blockchain) - LISTINGS E AUCTIONS
+          // 2. Check in Thirdweb (real blockchain data) - LISTINGS AND AUCTIONS
           const thirdwebListedNFTs = mintedNFTs.filter((nft: any) => {
             if (!nft.tokenId || !nft.contractAddress) return false;
             const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
@@ -146,7 +146,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             return marketplaceData.auctionsByKey.has(key);
           });
           
-          // 3. Combinar resultados (se QUALQUER um indica listagem/auction, está ativa)
+          // 3. Combine results (if ANY indicates listing/auction, it's active)
           const isListedMongo = mongoListedNFTs.length > 0;
           const isListedThirdweb = thirdwebListedNFTs.length > 0;
           const isAuctionThirdweb = thirdwebAuctionNFTs.length > 0;
@@ -161,7 +161,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             finalAuction: isAuctionFinal
           });
           
-          // 4. Dados do marketplace baseados na verificação real
+          // 4. Marketplace data based on real verification
           const allListedNFTs = [...mongoListedNFTs, ...thirdwebListedNFTs];
           const allAuctionNFTs = [...thirdwebAuctionNFTs];
           const firstListedNFT = allListedNFTs[0];
@@ -180,30 +180,30 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             canTrade: true,
             verified: true,
             collection: collection.name,
-            category: 'launchpad', // Categoria específica para launchpad
+            category: 'launchpad', // Specific category for launchpad
             isCollection: true,
             isCustomCollection: true,
-            type: 'launchpad_collection', // Marcar como launchpad
-            isLaunchpadCollection: true, // Flag explícita
+            type: 'launchpad_collection', // Mark as launchpad
+            isLaunchpadCollection: true, // Explicit flag
             mintedUnits: mintedNFTs.length,
             totalUnits: collection.totalSupply || mintedNFTs.length,
             availableUnits: (collection.totalSupply || 0) - mintedNFTs.length,
             
-            // Dados das NFTs listadas E auction (combinando fontes)
+            // Data from listed NFTs AND auction (combining sources)
             listedNFTs: allListedNFTs,
             auctionNFTs: allAuctionNFTs,
             mongoListedCount: mongoListedNFTs.length,
             thirdwebListedCount: thirdwebListedNFTs.length,
             thirdwebAuctionCount: thirdwebAuctionNFTs.length,
             
-            // Preço da listagem ou auction (priorizar auction depois Thirdweb)
+            // Price from listing or auction (prioritize auction then Thirdweb)
             price: thirdwebAuction ? 
               `${thirdwebAuction.minimumBidAmount?.toString()} (Bid)` :
               (thirdwebListing ? 
                 thirdwebListing.currencyValuePerToken?.displayValue || thirdwebListing.pricePerToken?.toString() :
                 (firstListedNFT?.marketplace?.priceFormatted || 'Not listed')),
             
-            // Dados adicionais do Thirdweb (listing)
+            // Additional Thirdweb data (listing)
             thirdwebData: thirdwebListing ? {
               listingId: thirdwebListing.id.toString(),
               price: thirdwebListing.pricePerToken?.toString(),
@@ -211,7 +211,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
               endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
             } : null,
 
-            // Dados adicionais do Thirdweb (auction)
+            // Additional Thirdweb data (auction)
             thirdwebAuctionData: thirdwebAuction ? {
               auctionId: thirdwebAuction.auctionId?.toString(),
               minimumBidAmount: thirdwebAuction.minimumBidAmount?.toString(),
@@ -282,7 +282,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
  */
 async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
   try {
-    // Buscar coleções ativas do launchpad com NFTs mintados
+    // Search for active launchpad collections with minted NFTs
     console.log('🔍 Buscando launchpad_collections com minted > 0...');
     const launchpadCollections = await db.collection('launchpad_collections').find({
       status: { $in: ['active', 'upcoming', 'approved'] },
@@ -294,17 +294,17 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
     const launchpadNFTs = [];
 
     for (const collection of launchpadCollections) {
-      // Filtrar por owner se especificado (para coleções do criador)
+      // Filter by owner if specified (for creator collections)
       if (owner && collection.creator?.wallet !== owner) continue;
 
-      // ✅ CRIAR APENAS UMA ENTRADA POR COLEÇÃO (não por unidade mintada)
+      // ✅ CREATE ONLY ONE ENTRY PER COLLECTION (not per minted unit)
       const collectionNFT = {
         // 🔑 DADOS OBRIGATÓRIOS PARA THIRDWEB MARKETPLACE V3
         tokenId: "collection", // Identificador especial para coleções
         contractAddress: collection.contractAddress || "0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639",
         owner: collection.creator?.wallet || "0x0000000000000000000000000000000000000000",
         
-        // 🖼️ IMAGEM DIRETAMENTE NO NÍVEL SUPERIOR (para compatibilidade)
+        // 🖼️ IMAGE DIRECTLY AT TOP LEVEL (for compatibility)
         image: collection.image || collection.imageUrl,
         imageUrl: collection.image || collection.imageUrl,
         
@@ -324,7 +324,7 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
           ]
         },
         
-        // 🏪 DADOS PARA MARKETPLACE (específicos para coleções)
+        // 🏪 MARKETPLACE DATA (specific for collections)
         marketplace: {
           isListed: false, // Coleções não são "listadas" individualmente
           isListable: false, // Não pode ser listada (é uma coleção, não NFT individual)

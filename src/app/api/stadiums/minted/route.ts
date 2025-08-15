@@ -2,15 +2,15 @@ import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
-const COLLECTION_NAME = 'minted-stadiums'; // Coleção separada para NFTs mintados
+const COLLECTION_NAME = 'minted-stadiums'; // Separate collection for minted NFTs
 
 /**
- * GET handler para buscar stadiums que foram realmente mintados na blockchain
- * Usa coleção separada 'minted-stadiums' para performance e clareza
+ * GET handler to fetch stadiums that were actually minted on blockchain
+ * Uses separate 'minted-stadiums' collection for performance and clarity
  */
 export async function GET(request: Request) {
   try {
-    console.log('✅ GET Minted Stadiums - Buscando da coleção minted-stadiums');
+    console.log('✅ GET Minted Stadiums - Fetching from minted-stadiums collection');
     
     const { searchParams } = new URL(request.url);
     const owner = searchParams.get('owner');
@@ -20,18 +20,18 @@ export async function GET(request: Request) {
     const db = client.db(DB_NAME);
     const mintedStadiums = db.collection(COLLECTION_NAME);
 
-    // Filtro simples - todos os NFTs nesta coleção já foram mintados
+    // Simple filter - all NFTs in this collection were already minted
     const filter: any = {};
 
-    // Filtrar por owner se especificado
+    // Filter by owner if specified
     if (owner) {
       filter['creator.wallet'] = owner;
     }
     
-    console.log('🔍 Buscando na coleção:', COLLECTION_NAME);
-    console.log('🔍 Filtro aplicado:', JSON.stringify(filter, null, 2));
+    console.log('🔍 Searching in collection:', COLLECTION_NAME);
+    console.log('🔍 Applied filter:', JSON.stringify(filter, null, 2));
 
-    // Estatísticas da coleção
+    // Collection statistics
     const totalMintedStadiums = await mintedStadiums.countDocuments({});
     const ownerMintedStadiums = owner ? await mintedStadiums.countDocuments(filter) : totalMintedStadiums;
     
@@ -39,19 +39,19 @@ export async function GET(request: Request) {
     console.log(`Total minted stadiums: ${totalMintedStadiums}`);
     console.log(`Owner minted stadiums: ${ownerMintedStadiums}`);
 
-    // Buscar NFTs mintados
+    // Fetch minted NFTs
     const stadiums = await mintedStadiums
       .find(filter)
-      .sort({ mintedAt: -1, createdAt: -1 }) // Ordenar por data de mint
+      .sort({ mintedAt: -1, createdAt: -1 }) // Sort by mint date
       .limit(50)
       .toArray();
       
     console.log(`✅ Found ${stadiums.length} minted stadiums`);
 
-    // Processar dados para garantir consistência
+    // Process data to ensure consistency
     const processedStadiums = stadiums.map(stadium => ({
       ...stadium,
-      // Garantir que tenha informações de blockchain
+      // Ensure it has blockchain information
       blockchain: stadium.blockchain || {
         chainId: parseInt(chainId),
         contractAddress: chainId === '80002' 
@@ -65,12 +65,12 @@ export async function GET(request: Request) {
         network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain'
       },
       
-      // Status confirmado (todos nesta coleção foram mintados)
+      // Confirmed status (all in this collection were minted)
       mintStatus: 'confirmed',
       isMinted: true,
       status: 'Approved',
       
-      // Metadados para marketplace
+      // Marketplace metadata
       marketplace: {
         isListable: true,
         canTrade: true,
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
       }
     }));
 
-    // Log detalhado para debug
+    // Detailed log for debugging
     if (processedStadiums.length > 0) {
       console.log('📋 Minted Stadium NFTs:');
       processedStadiums.forEach((stadium: any, index) => {
@@ -141,7 +141,7 @@ export async function POST(request: Request) {
     const stadiumsCollection = db.collection('stadiums');
     const mintedStadiumsCollection = db.collection(COLLECTION_NAME);
 
-    // Buscar o stadium original
+    // Search for the original stadium
     const originalStadium = await stadiumsCollection.findOne({ _id: stadiumId });
     
     if (!originalStadium) {
@@ -151,10 +151,10 @@ export async function POST(request: Request) {
       }, { status: 404 });
     }
 
-    // Criar documento para coleção de mintados
+    // Create document for minted collection
     const mintedStadium = {
       ...originalStadium,
-      // Informações de mint
+      // Mint information
       transactionHash,
       tokenId,
       mintedAt: new Date(),
@@ -162,7 +162,7 @@ export async function POST(request: Request) {
       isMinted: true,
       status: 'Approved',
       
-      // Informações de blockchain
+      // Blockchain information
       blockchain: {
         chainId: parseInt(chainId),
         contractAddress: chainId === 80002 
@@ -175,10 +175,10 @@ export async function POST(request: Request) {
       }
     };
 
-    // Inserir na coleção de mintados
+    // Insert into minted collection
     await mintedStadiumsCollection.insertOne(mintedStadium);
 
-    // Opcional: Marcar como mintado na coleção original (para histórico)
+    // Optional: Mark as minted in original collection (for history)
     await stadiumsCollection.updateOne(
       { _id: stadiumId },
       { 

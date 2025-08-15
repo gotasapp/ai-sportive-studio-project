@@ -35,12 +35,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Configurar cliente Thirdweb
+    // Configure Thirdweb client
     const client = createThirdwebClient({
       secretKey: process.env.THIRDWEB_SECRET_KEY!,
     });
 
-    // 🎯 USAR CHAIN ATIVA (CONTROLADA PELO MASTER SWITCH)
+    // 🎯 USE ACTIVE CHAIN (CONTROLLED BY MASTER SWITCH)
     const activeChain = getActiveChain();
     
     console.log('⚙️ Using active chain:', {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       currency: ACTIVE_NETWORK.currency
     });
 
-    // Conta do backend (gasless deploy)
+    // Backend account (gasless deploy)
     const backendAccount = privateKeyToAccount({
       client,
       privateKey: process.env.BACKEND_WALLET_PRIVATE_KEY!,
@@ -58,23 +58,23 @@ export async function POST(request: NextRequest) {
     console.log('🔑 Backend wallet:', backendAccount.address);
     console.log('📦 Deploying DropERC721 for Launchpad collection:', name);
 
-    // ETAPA 1: Deploy do contrato DropERC721
+    // STEP 1: Deploy DropERC721 contract
     const contractAddress = await deployERC721Contract({
       client,
-      chain: activeChain, // 🎯 CHAIN ATIVA (CHZ ou Amoy)
-      account: backendAccount, // Backend wallet assina (gasless para usuário)
+      chain: activeChain, // 🎯 ACTIVE CHAIN (CHZ or Amoy)
+      account: backendAccount, // Backend wallet signs (gasless for user)
       type: "DropERC721",
       params: {
         name: name,
         symbol: "LAUNCH", // Launchpad symbol
         description: description,
-        image: image, // IPFS da imagem aprovada
+        image: image, // IPFS of approved image
       },
     });
 
     console.log('✅ Launchpad contract deployed at:', contractAddress);
 
-    // ETAPA 2: Configurar claim conditions
+    // STEP 2: Configure claim conditions
     console.log('⚙️ Setting up claim conditions...');
     
     const contract = getContract({
@@ -94,15 +94,15 @@ export async function POST(request: NextRequest) {
       contract,
       phases: [
         {
-          startTime: new Date(), // Inicia imediatamente
-          maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
-          maxClaimablePerWallet: BigInt(10), // Máximo por wallet
+          startTime: new Date(), // Starts immediately
+          maxClaimableSupply: BigInt(maxSupply || 100), // Max collection supply
+          maxClaimablePerWallet: BigInt(10), // Max per wallet
           price: priceInNative, // Human-readable price, SDK converts to wei automatically
         },
       ],
     });
 
-    // Backend configura as condições (gasless)
+    // Backend configures conditions (gasless)
     await sendTransaction({
       transaction: claimConditionTransaction,
       account: backendAccount,
@@ -110,26 +110,26 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Claim conditions configured');
 
-    // ETAPA 3: Lazy mint tokens com metadata da coleção
+    // STEP 3: Lazy mint tokens with collection metadata
     console.log('📦 Lazy minting tokens with collection metadata...');
     
     const lazyMintTransaction = lazyMint({
       contract,
       nfts: Array(maxSupply || 100).fill({
-        name: name, // Mesmo nome da coleção
-        description: description, // Mesma descrição
-        image: image, // Mesma imagem IPFS para todos os NFTs
+        name: name, // Same as collection name
+        description: description, // Same description
+        image: image, // Same IPFS image for all NFTs
       }),
     });
 
     await sendTransaction({
       transaction: lazyMintTransaction,
-      account: backendAccount, // Backend faz o lazy mint (gasless)
+      account: backendAccount, // Backend performs lazy mint (gasless)
     });
 
     console.log('✅ Tokens lazy minted with collection metadata');
 
-    // ETAPA 4: Salvar contrato no banco de dados
+    // STEP 4: Save contract to database
     if (collectionId) {
       const mongo = await connectToDatabase();
       const db = mongo.db('chz-app-db');
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       console.log('✅ Contract address saved to database');
     }
 
-    // Retornar dados para o frontend
+    // Return data to frontend
     return NextResponse.json({
       success: true,
       contractAddress,

@@ -5,7 +5,7 @@ const DB_NAME = 'chz-app-db';
 const COLLECTION_NAME = 'jerseys';
 const LOG_COLLECTION_NAME = 'jerseys_log';
 
-// POST handler para criar uma nova Jersey
+// POST handler to create a new Jersey
 export async function POST(request: Request) {
   try {
     console.log('👕 Jersey API: POST request received');
@@ -55,7 +55,7 @@ export async function POST(request: Request) {
       editionSize: 100,
       tags: data.tags || [],
       
-      // Campos adicionais para coleções
+      // Additional fields for collections
       transactionHash: data.transactionHash || null,
       metadataUri: data.metadataUri || null,
       attributes: data.attributes || [],
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
   }
 }
 
-// GET handler para buscar jerseys aprovados do MongoDB
+// GET handler to fetch approved jerseys from MongoDB
 export async function GET(request: Request) {
   try {
     console.log('✅ GET Jerseys - Buscando do MongoDB');

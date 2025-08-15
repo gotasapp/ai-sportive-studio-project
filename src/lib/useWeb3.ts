@@ -25,16 +25,16 @@ export function useWeb3() {
   const amoy = defineChain(80002);
   const chzMainnet = defineChain(88888);
   
-  // Configuração simplificada - usar diretamente as variáveis configuradas no Vercel
+  // Simplified configuration - use variables configured directly in Vercel
   const activeChain = amoy; // Polygon Amoy testnet
     
-  // Usar diretamente a variável configurada no Vercel para NFT Collection (ERC721)
+  // Use variable configured directly in Vercel for NFT Collection (ERC721)
   const contractAddress = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";
   
-  // Edition Drop Contract - usar o mesmo por simplicidade
+  // Edition Drop Contract - use the same for simplicity
   const editionDropContractAddress = contractAddress;
   
-  // Launchpad Contract (OpenEditionERC721) - usar o novo endereço correto
+  // Launchpad Contract (OpenEditionERC721) - use the correct new address
   const launchpadContractAddress = process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || "0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639";
   
   // NFT Collection contract (ERC721) for unique individual NFTs

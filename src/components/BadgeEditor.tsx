@@ -15,7 +15,7 @@ import { getTransactionUrl } from '../lib/utils'
 import { Button } from '@/components/ui/button'
 import { isAdmin } from '../lib/admin-config'
 
-// Importando os novos componentes profissionais
+// Importing the new professional components
 import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
 import ProfessionalBadgeSidebar from '@/components/badge/ProfessionalBadgeSidebar'
 import ProfessionalBadgeCanvas from '@/components/badge/ProfessionalBadgeCanvas'
@@ -39,7 +39,7 @@ interface ApiBadge {
   previewImage: string | null;
 }
 
-// MarketplaceNFT interface removida - marketplace não é mais usado na página de badges
+// MarketplaceNFT interface removed - marketplace is no longer used on badge page
 
 export default function BadgeEditor() {
   const router = useRouter()
@@ -126,7 +126,7 @@ export default function BadgeEditor() {
         const result = await mintGasless({
             to: address,
             metadataUri: ipfsResult.metadataUrl,
-            chainId: chainId || 80002, // Adicionando chainId com fallback
+            chainId: chainId || 80002, // Adding chainId with fallback
         });
 
         setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
@@ -200,15 +200,15 @@ export default function BadgeEditor() {
           throw new Error(`Failed to fetch badge references: ${response.statusText}`);
         }
         const data = await response.json();
-        // data.data é o array de badge references
+        // data.data is the array of badge references
         const badges: ApiBadge[] = (data.data || []).map((ref: any) => ({
-          id: ref.teamName, // agora o id é o teamName
+          id: ref.teamName, // now id is the teamName
           name: ref.teamName || 'Unnamed Badge',
           previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
         }));
         setAvailableBadges(badges);
         if (badges.length > 0) {
-          // Você pode definir o badge selecionado aqui se quiser
+          // You can set the selected badge here if you want
           // setSelectedBadge(badges[0].id);
         }
         console.log(`✅ Loaded ${badges.length} badge references from DB.`);
@@ -221,11 +221,11 @@ export default function BadgeEditor() {
     loadAvailableBadges();
   }, []);
 
-  // LOG DE DEPURAÇÃO: badges disponíveis para o select
+  // DEBUG LOG: available badges for select
   console.log('DEBUG availableBadges:', availableBadges);
 
   const generateContent = async () => {
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória - Mostrar toast
+    // 🔒 SECURITY VALIDATION: Wallet required - Show toast
     if (!isConnected) {
       toast({
         variant: "destructive",
@@ -253,10 +253,10 @@ export default function BadgeEditor() {
           view: 'default',
           style: selectedStyle,
           customPrompt: customPrompt || undefined,
-          prompt: undefined, // Se quiser montar prompt no frontend, preencha aqui
-          analysis: analysisResult || undefined // Se houver análise vision
+          prompt: undefined, // If you want to build prompt on frontend, fill here
+          analysis: analysisResult || undefined // If there is vision analysis
         };
-        // Log detalhado do payload enviado
+        // Detailed log of sent payload
         console.log('[BADGE GENERATION] Payload enviado para /api/generate-from-reference:', payload);
         const response = await fetch('/api/generate-from-reference', {
           method: 'POST',
@@ -605,94 +605,94 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
     setIsAnalyzing(false)
   }
 
-  // useEffect para carregar dados do marketplace
+  // useEffect to load marketplace data
   useEffect(() => {
     const loadTopCollectionsData = async () => {
       try {
         console.log('🔄 Loading top collections data for badge editor...');
         
-        // Buscar dados reais das 3 APIs em paralelo
+        // Fetch real data from 3 APIs in parallel
         const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
           fetch('/api/jerseys'),
           fetch('/api/stadiums'),
           fetch('/api/badges')
         ]);
 
-        // Verificar se todas as respostas foram bem-sucedidas
+        // Check if all responses were successful
         if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
           throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
         }
 
-        // Processar dados reais
+        // Process real data
         const jerseys = await jerseysResponse.json();
         const stadiums = await stadiumsResponse.json();
         const badges = await badgesResponse.json();
 
         console.log('📊 Raw API data for badges:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
 
-        // Implementar lógica de "Top Collections" com foco em badges
-        // Top 2 Badges mais recentes (prioridade para página de badges)
+        // Implement "Top Collections" logic with focus on badges
+        // Top 2 most recent Badges (priority for badge page)
         const topBadges = badges
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
           .map((badge: any) => ({
             name: badge.name,
-            imageUrl: badge.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            imageUrl: badge.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
             description: badge.description || 'AI-generated badge',
             price: '0.03 CHZ',
             category: 'badge',
             createdAt: badge.createdAt
           }));
 
-        // Top 2 Jerseys mais recentes
+        // Top 2 most recent Jerseys
         const topJerseys = jerseys
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
           .map((jersey: any) => ({
             name: jersey.name,
-            imageUrl: jersey.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            imageUrl: jersey.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
             description: jersey.description || 'AI-generated jersey',
             price: '0.05 CHZ',
             category: 'jersey',
             createdAt: jersey.createdAt
           }));
 
-        // Top 2 Stadiums mais recentes
+        // Top 2 most recent Stadiums
         const topStadiums = stadiums
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
           .slice(0, 2)
           .map((stadium: any) => ({
             name: stadium.name,
-            imageUrl: stadium.imageUrl, // CORRIGIDO: MarketplaceCarousel espera imageUrl (sem underscore)
+            imageUrl: stadium.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
             description: stadium.description || 'AI-generated stadium',
             price: '0.15 CHZ',
             category: 'stadium',
             createdAt: stadium.createdAt
           }));
 
-        // Combinar priorizando badges primeiro, depois outros por data
+        // Combine prioritizing badges first, then others by date
         const allTopCollections = [
           ...topBadges,
           ...topJerseys,
           ...topStadiums
         ]
         .sort((a: any, b: any) => {
-          // Badges primeiro, depois por data
+          // Badges first, then by date
           if (a.category === 'badge' && b.category !== 'badge') return -1;
           if (a.category !== 'badge' && b.category === 'badge') return 1;
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })
-        .slice(0, 6); // Limitar a 6 itens no carrossel
+        .slice(0, 6); // Limit to 6 items in carousel
 
         console.log('✅ Top Collections compiled for badges:', allTopCollections);
-        // Marketplace foi removido da página de badges para manter consistência
-        // com as páginas de jersey e stadium
-        // Se APIs falharem, mantém fallback
+        // Marketplace was removed from badge page to maintain consistency
+        // with jersey and stadium pages
+        // If APIs fail, keep fallback
 
       } catch (error) {
         console.error('❌ Error loading top collections data for badges:', error);
         console.log('🔄 Keeping fallback NFT data due to API error');
-        // Mantém fallback com suas imagens reais
+        // Keep fallback with your real images
       }
     };
 
@@ -709,7 +709,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         setSelectedBadge={setSelectedBadge}
         badgeStyle={selectedStyle}
         setBadgeStyle={setSelectedStyle}
-        badgeLevel={''} // Adapte se houver nível de badge
+        badgeLevel={''} // Adapt if there is badge level
         setBadgeLevel={() => {}}
         customPrompt={customPrompt}
         setCustomPrompt={setCustomPrompt}
@@ -717,7 +717,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         referenceImage={referenceImage}
         onFileUpload={handleVisionFileUpload}
         onClearReference={exitVisionMode}
-        generationCost={null} // Adapte se necessário
+        generationCost={null} // Adapt if necessary
         error={error}
         onResetError={resetError}
         generatedImage={generatedImage || ''}
@@ -738,7 +738,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         walletAddress={address || ''}
         nftName={badgeName}
         hasGeneratedImage={!!generatedImage}
-        metadataUri={''} // Adapte se necessário
+        metadataUri={''} // Adapt if necessary
         collection="badges"
       />
     );
