@@ -8,10 +8,11 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
   Users, Search, Filter, UserCheck, UserX, Eye, Ban, Mail, Calendar, Activity, 
-  Crown, Shield, AlertTriangle, Download, RefreshCw, MoreHorizontal, Loader2 
+  Crown, Shield, AlertTriangle, Download, RefreshCw, MoreHorizontal, Loader2,
+  Link, Zap, Database, TrendingUp
 } from 'lucide-react'
 
-// Definindo o tipo de usuário com base na API real
+// Definindo o tipo de usuário com base na API real (MongoDB + Blockchain)
 interface User {
   _id: string;
   wallet?: string;
@@ -25,11 +26,23 @@ interface User {
   displayName: string;
   hasLinkedAccounts: boolean;
   joinedAt: string;
+  
+  // 🔗 DADOS DA BLOCKCHAIN (Thirdweb)
+  blockchain?: {
+    onChainNFTs: number;
+    contractInteractions: number;
+    isOnChainActive: boolean;
+  };
+  
   stats: {
     nftsCreated: number;
+    onChainNFTs: number;
+    totalNFTs: number; // MongoDB + Blockchain
+    contractInteractions: number;
     daysSinceJoined: number;
     daysSinceActivity: number;
   };
+  
   // Campos adicionais vindos do MongoDB
   linkedAccounts?: {
     email?: string;
@@ -47,6 +60,13 @@ interface UserStats {
   usersWithLinkedAccounts: number;
   totalNFTsCreated: number;
   newUsers: number;
+  
+  // 🔗 ESTATÍSTICAS DA BLOCKCHAIN
+  usersWithOnChainNFTs: number;
+  totalOnChainNFTs: number;
+  totalContractInteractions: number;
+  usersWithOnChainActivity: number;
+  totalNFTsAllSources: number; // MongoDB + Blockchain
 }
 
 interface ApiResponse {
@@ -174,8 +194,8 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Stats Cards - Dados Reais */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      {/* Stats Cards - Dados Reais (MongoDB + Blockchain) */}
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8 gap-6">
         <Card className="cyber-card border-cyan-500/30">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-gray-200">Total Users</CardTitle>
@@ -231,6 +251,46 @@ export default function UsersPage() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 🔗 NOVOS CARDS DA BLOCKCHAIN */}
+        <Card className="cyber-card border-orange-500/30">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">On-Chain Users</CardTitle>
+            <Link className="h-4 w-4 text-orange-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-orange-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.usersWithOnChainNFTs || 0)}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">With blockchain NFTs</p>
+          </CardContent>
+        </Card>
+
+        <Card className="cyber-card border-yellow-500/30">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">On-Chain NFTs</CardTitle>
+            <Zap className="h-4 w-4 text-yellow-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.totalOnChainNFTs || 0)}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">Total on blockchain</p>
+          </CardContent>
+        </Card>
+
+        <Card className="cyber-card border-indigo-500/30">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-gray-200">Total NFTs</CardTitle>
+            <TrendingUp className="h-4 w-4 text-indigo-400" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-indigo-300">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin" /> : (userStats?.totalNFTsAllSources || 0)}
+            </div>
+            <p className="text-xs text-gray-400 mt-1">DB + Blockchain</p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="users" className="space-y-6">
@@ -271,7 +331,7 @@ export default function UsersPage() {
                       <th className="p-4 font-medium"><input type="checkbox" className="cyber-checkbox" /></th>
                       <th className="p-4 font-medium">User</th>
                       <th className="p-4 font-medium">Status</th>
-                      <th className="p-4 font-medium">NFTs Created</th>
+                      <th className="p-4 font-medium">NFTs (DB/Chain)</th>
                       <th className="p-4 font-medium hidden md:table-cell">Joined</th>
                       <th className="p-4 font-medium">Actions</th>
                     </tr>
@@ -321,10 +381,23 @@ export default function UsersPage() {
                                 )}
                               </td>
                               <td className="p-4 text-white text-center">
-                                <div className="font-medium">{user.nftsCreated}</div>
-                                {user.nftsCreated > 0 && (
-                                  <div className="text-xs text-green-400">Creator</div>
-                                )}
+                                <div className="font-medium">
+                                  {user.stats?.totalNFTs || user.nftsCreated}
+                                </div>
+                                <div className="text-xs space-y-1">
+                                  {user.nftsCreated > 0 && (
+                                    <div className="text-cyan-400">DB: {user.nftsCreated}</div>
+                                  )}
+                                  {user.blockchain?.onChainNFTs > 0 && (
+                                    <div className="text-orange-400">Chain: {user.blockchain.onChainNFTs}</div>
+                                  )}
+                                  {user.blockchain?.isOnChainActive && (
+                                    <div className="text-green-400 flex items-center justify-center gap-1">
+                                      <Link className="w-3 h-3" />
+                                      <span>Active</span>
+                                    </div>
+                                  )}
+                                </div>
                               </td>
                               <td className="p-4 text-gray-400 hidden md:table-cell">
                                 <div>{joinDate}</div>
@@ -356,8 +429,76 @@ export default function UsersPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="activity">
-          <p>Recent activity feed coming soon.</p>
+        <TabsContent value="activity" className="space-y-6">
+          <Card className="cyber-card border-cyan-500/30">
+            <CardHeader>
+              <CardTitle className="text-lg text-white">Recent User Activity</CardTitle>
+              <CardDescription className="text-gray-400">
+                Latest user actions and NFT creations
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="flex items-center space-x-4 p-4 border border-gray-700 rounded-lg">
+                      <div className="w-10 h-10 bg-gray-700 rounded-full animate-pulse"></div>
+                      <div className="flex-1 space-y-2">
+                        <div className="h-4 w-1/3 bg-gray-700 rounded animate-pulse"></div>
+                        <div className="h-3 w-1/2 bg-gray-700 rounded animate-pulse"></div>
+                      </div>
+                      <div className="h-4 w-16 bg-gray-700 rounded animate-pulse"></div>
+                    </div>
+                  ))
+                ) : (
+                  filteredUsers
+                    .filter(user => user.lastActivity)
+                    .sort((a, b) => new Date(b.lastActivity!).getTime() - new Date(a.lastActivity!).getTime())
+                    .slice(0, 10)
+                    .map((user, index) => (
+                      <div key={user._id} className="flex items-center justify-between p-4 border border-gray-700 rounded-lg hover:bg-gray-800/50 transition-colors">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-sm font-semibold text-white">
+                            {user.displayName.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="font-medium text-white">{user.displayName}</div>
+                            <div className="text-sm text-gray-400">
+                              {user.nftsCreated > 0 && `Created ${user.nftsCreated} NFTs`}
+                              {user.blockchain?.onChainNFTs > 0 && ` • ${user.blockchain.onChainNFTs} on-chain`}
+                            </div>
+                            {user.wallet && (
+                              <div className="text-xs text-gray-500">
+                                {user.wallet.slice(0, 6)}...{user.wallet.slice(-4)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-400">
+                            {new Date(user.lastActivity!).toLocaleDateString()}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {user.stats.daysSinceActivity === 0 ? 'Today' : `${user.stats.daysSinceActivity}d ago`}
+                          </div>
+                          {user.blockchain?.isOnChainActive && (
+                            <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-xs mt-1">
+                              <Link className="w-3 h-3 mr-1" />
+                              On-Chain
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                )}
+                {!loading && filteredUsers.filter(user => user.lastActivity).length === 0 && (
+                  <div className="text-center text-gray-400 py-8">
+                    No recent activity found
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         <TabsContent value="reports">
           <p>Reports and moderation tools coming soon.</p>
