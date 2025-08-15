@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import {
   FaXTwitter,
   FaDiscord,
@@ -20,24 +21,24 @@ type FooterProps = {
   className?: string;
 };
 
-export default function Footer({ minHeight = 420, className = "" }: FooterProps) {
+export default function Footer({ minHeight = 504, className = "" }: FooterProps) {
   const primaryLinks = [
-    { href: "/governance", label: "Governance" },
-    { href: "/validators", label: "Become a Validator" },
-    { href: "/glossary", label: "Glossary" },
-    { href: "/security", label: "Report a Security Issue" },
-    { href: "/group", label: "The Chiliz Group" },
-    { href: "/careers", label: "Careers" },
+    { href: "https://www.chiliz.com/governance/", label: "Governance" },
+    { href: "https://www.chiliz.com/become-a-validator/", label: "Become a Validator" },
+    { href: "https://www.chiliz.com/glossary/", label: "Glossary" },
+    { href: "https://www.chiliz.com/security/", label: "Report a Security Issue" },
+    { href: "https://www.chiliz.com/the-chiliz-group/", label: "The Chiliz Group" },
+    { href: "https://www.chiliz.com/careers/", label: "Careers" },
   ];
 
   const policyLinks = [
-    { href: "/terms", label: "Terms of Use" },
-    { href: "/cookies", label: "Cookies Policy" },
-    { href: "/manage-cookies", label: "Manage Cookies" },
-    { href: "/privacy", label: "Privacy Policy" },
-    { href: "/staking-risk", label: "Staking Risk Disclosure" },
-    { href: "/recruitment-privacy", label: "Recruitment Privacy Policy" },
-    { href: "/insider-trading", label: "Insider Trading Policy" },
+    { href: "https://www.chiliz.com/terms-and-conditions/", label: "Terms of Use" },
+    { href: "https://www.chiliz.com/cookies-policy/", label: "Cookies Policy" },
+    { href: "https://jersey-generator-ai2.vercel.app/", label: "Manage Cookies" },
+    { href: "https://www.chiliz.com/privacy-policy/", label: "Privacy Policy" },
+    { href: "https://www.chiliz.com/staking-risks-disclosure/", label: "Staking Risk Disclosure" },
+    { href: "https://www.chiliz.com/recruitment-privacy-policy/", label: "Recruitment Privacy Policy" },
+    { href: "https://www.chiliz.com/insider-trading-policy/", label: "Insider Trading Policy" },
   ];
 
   const socials = [
@@ -55,60 +56,65 @@ export default function Footer({ minHeight = 420, className = "" }: FooterProps)
 
   return (
     <footer
-      className={`w-full border-t border-white/10 bg-[#151513] text-[#FDFDFD] ${className}`}
+      className={`w-full border-t border-gray-200 bg-white text-gray-900 ${className}`}
       style={{ minHeight }}
     >
-      <div className="mx-auto w-full max-w-7xl px-6 md:px-8">
+      <div className="mx-auto w-full max-w-[1920px] pl-12 pr-6 md:pl-16 md:pr-10 lg:pl-20 lg:pr-14">
         {/* Top link rows */}
-        <div className="pt-10 md:pt-12">
-          {/* ROW 1 */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] uppercase tracking-wide text-white/80">
-            <span className="text-[#A58CF5]">Chiliz</span>
-            <span className="hidden text-white/20 md:inline">|</span>
-            {primaryLinks.map((l, i) => (
-              <div key={l.href} className="flex items-center gap-5">
+        <div className="pt-16 md:pt-20 space-y-8">
+          {/* CHILIZ Section */}
+          <div>
+            <h3 className="text-[#A58CF5] text-[13px] uppercase tracking-wide font-semibold mb-3">Chiliz</h3>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] uppercase tracking-wide text-gray-700">
+              {primaryLinks.map((l, i) => (
+                <div key={l.href} className="flex items-center gap-5">
+                  <Link
+                    href={l.href}
+                    className="transition hover:text-gray-900"
+                  >
+                    {l.label}
+                  </Link>
+                  {i < primaryLinks.length - 1 && (
+                    <span className="hidden text-gray-400 md:inline">|</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* POLICIES Section */}
+          <div>
+            <h3 className="text-[#A58CF5] text-[12px] uppercase tracking-wide font-semibold mb-3">Policies</h3>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] uppercase tracking-wide text-gray-600">
+              {policyLinks.map((l) => (
                 <Link
+                  key={l.href}
                   href={l.href}
-                  className="transition hover:text-white"
+                  className="transition hover:text-gray-900"
                 >
                   {l.label}
                 </Link>
-                {i < primaryLinks.length - 1 && (
-                  <span className="hidden text-white/20 md:inline">|</span>
-                )}
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
-          {/* ROW 2 – Policies */}
-          <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-2 text-[12px] uppercase tracking-wide text-white/60">
-            <span className="text-white/70">Policies</span>
-            {policyLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="transition hover:text-white/90"
+          {/* SUPPORT Section */}
+          <div>
+            <h3 className="text-[#A58CF5] text-[12px] uppercase tracking-wide font-semibold mb-3">Support</h3>
+            <div className="text-[12px] uppercase tracking-wide text-gray-600">
+              <a
+                href="mailto:chilizchainsupport@chiliz.com"
+                className="underline decoration-gray-400 underline-offset-4 hover:decoration-gray-900"
               >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-
-          {/* ROW 3 – Support */}
-          <div className="mt-6 text-[12px] uppercase tracking-wide text-white/60">
-            <span className="mr-4 text-white/70">Support</span>
-            <a
-              href="mailto:chilizchainsupport@chiliz.com"
-              className="underline decoration-white/30 underline-offset-4 hover:decoration-white"
-            >
-              chilizchainsupport@chiliz.com
-            </a>
+                chilizchainsupport@chiliz.com
+              </a>
+            </div>
           </div>
         </div>
 
         {/* Big claim */}
-        <div className="pointer-events-none select-none pt-12 md:pt-16">
-          <h2 className="font-extrabold leading-[0.9] text-[40px] md:text-[72px] tracking-tight">
+        <div className="pointer-events-none select-none pt-20 md:pt-24">
+          <h2 className="font-extrabold leading-[0.9] text-[40px] md:text-[72px] tracking-tight text-gray-900">
             THE SPORTS
             <br />
             BLOCKCHAIN
@@ -116,16 +122,24 @@ export default function Footer({ minHeight = 420, className = "" }: FooterProps)
         </div>
 
         {/* Bottom bar */}
-        <div className="flex flex-col items-center justify-between gap-6 py-8 md:flex-row">
-          <div className="flex items-center gap-3 text-sm text-white/70">
-            {/* Logo placeholder - pode substituir por <Image /> se tiver logo */}
-            <div className="rounded bg-white/10 px-2 py-1 text-xs font-semibold uppercase tracking-wider">
-              chiliz
-            </div>
+        <div className="flex flex-col items-center justify-between gap-6 py-12 md:flex-row">
+          {/* Espaço vazio à esquerda */}
+          <div className="hidden md:block flex-1"></div>
+          
+          {/* Copyright centralizado */}
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Image 
+              src="/footer_icon.png" 
+              alt="Chiliz Logo" 
+              width={78} 
+              height={78}
+              className="object-contain mt-0.5"
+            />
             <span>© Copyright 2018 – {new Date().getFullYear()}. All Rights Reserved.</span>
           </div>
 
-          <nav className="flex items-center gap-5 text-xl text-white/80">
+          {/* Redes sociais à direita */}
+          <nav className="flex items-center gap-5 text-xl flex-1 justify-end" style={{ color: '#111827' }}>
             {socials.map((s) => (
               <a
                 key={s.label}

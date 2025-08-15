@@ -375,22 +375,22 @@ export default function UsersPage() {
                                         </Badge>
                                       )}
                                     </div>
-                                    <div className="text-gray-400 text-xs">
-                                      {userWallet !== 'Not connected' && userWallet.length > 20 
-                                        ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` 
-                                        : userWallet}
-                                    </div>
+                                <div className="text-gray-400 text-xs">
+                                  {userWallet !== 'Not connected' && userWallet.length > 20 
+                                    ? `${userWallet.slice(0, 6)}...${userWallet.slice(-4)}` 
+                                    : userWallet}
+                                </div>
                                     {user.profileData?.bio && (
                                       <div className="text-gray-500 text-xs mt-1 max-w-48 truncate">
                                         {user.profileData.bio}
                                       </div>
                                     )}
-                                    {user.linkedAccounts?.email && (
+                                {user.linkedAccounts?.email && (
                                       <div className="text-cyan-400 text-xs flex items-center gap-1 mt-1">
-                                        <Mail className="w-3 h-3" />
-                                        {user.linkedAccounts.email}
-                                      </div>
-                                    )}
+                                    <Mail className="w-3 h-3" />
+                                    {user.linkedAccounts.email}
+                                  </div>
+                                )}
                                   </div>
                                 </div>
                               </td>
@@ -407,7 +407,7 @@ export default function UsersPage() {
                                   {user.stats?.totalNFTs || user.nftsCreated}
                                 </div>
                                 <div className="text-xs space-y-1">
-                                  {user.nftsCreated > 0 && (
+                                {user.nftsCreated > 0 && (
                                     <div className="text-cyan-400">DB: {user.nftsCreated}</div>
                                   )}
                                   {user.blockchain?.onChainNFTs && user.blockchain.onChainNFTs > 0 && (
