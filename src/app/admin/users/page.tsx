@@ -388,7 +388,7 @@ export default function UsersPage() {
                                   {user.nftsCreated > 0 && (
                                     <div className="text-cyan-400">DB: {user.nftsCreated}</div>
                                   )}
-                                  {user.blockchain?.onChainNFTs > 0 && (
+                                  {user.blockchain?.onChainNFTs && user.blockchain.onChainNFTs > 0 && (
                                     <div className="text-orange-400">Chain: {user.blockchain.onChainNFTs}</div>
                                   )}
                                   {user.blockchain?.isOnChainActive && (
@@ -465,7 +465,7 @@ export default function UsersPage() {
                             <div className="font-medium text-white">{user.displayName}</div>
                             <div className="text-sm text-gray-400">
                               {user.nftsCreated > 0 && `Created ${user.nftsCreated} NFTs`}
-                              {user.blockchain?.onChainNFTs > 0 && ` • ${user.blockchain.onChainNFTs} on-chain`}
+                              {user.blockchain?.onChainNFTs && user.blockchain.onChainNFTs > 0 && ` • ${user.blockchain.onChainNFTs} on-chain`}
                             </div>
                             {user.wallet && (
                               <div className="text-xs text-gray-500">
