@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       .toArray();
     
     // 3. Verificar logs de deployment (se existir tabela de logs)
-    let deploymentLogs = [];
+    let deploymentLogs: any[] = [];
     try {
       deploymentLogs = await db.collection('deployment_logs')
         .find({})
