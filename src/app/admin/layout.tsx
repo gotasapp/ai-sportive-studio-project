@@ -4,11 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
-  LayoutDashboard, 
   Shirt, 
   Trophy, 
   Building2,
-  BarChart3,
   Settings,
   Users,
   Shield,
@@ -29,12 +27,6 @@ interface AdminLayoutProps {
 }
 
 const navigation = [
-  {
-    name: 'Dashboard',
-    href: '/admin',
-    icon: LayoutDashboard,
-    description: 'Overview & Metrics'
-  },
   {
     name: 'Jerseys',
     href: '/admin/jerseys',
@@ -60,12 +52,6 @@ const navigation = [
     description: 'Content Moderation'
   },
   {
-    name: 'Analytics',
-    href: '/admin/analytics',
-    icon: BarChart3,
-    description: 'Performance & Insights'
-  },
-  {
     name: 'Users',
     href: '/admin/users',
     icon: Users,
@@ -82,11 +68,6 @@ const navigation = [
 // Principais páginas para navegação bottom mobile
 const bottomNavigation = [
   {
-    name: 'Dashboard',
-    href: '/admin',
-    icon: LayoutDashboard
-  },
-  {
     name: 'Jerseys',
     href: '/admin/jerseys',
     icon: Shirt
@@ -97,9 +78,9 @@ const bottomNavigation = [
     icon: Building2
   },
   {
-    name: 'Analytics',
-    href: '/admin/analytics',
-    icon: BarChart3
+    name: 'Users',
+    href: '/admin/users',
+    icon: Users
   },
   {
     name: 'Settings',
@@ -142,7 +123,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             {/* Navegação principal */}
             <nav className="flex flex-col gap-y-2">
               <ul className="flex flex-col gap-y-1 mt-6">
-                {navigation.slice(0, 5).map((item) => {
+                {navigation.slice(0, 4).map((item) => {
                   const isActive = pathname === item.href;
                   return (
                     <li key={item.name}>
@@ -159,7 +140,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </ul>
               <div className="text-xs font-semibold leading-6 text-neutral-400 mt-6 mb-2 ml-2">System</div>
               <ul className="flex flex-col gap-y-1">
-                {navigation.slice(5).map((item) => {
+                {navigation.slice(4).map((item) => {
                   const isActive = pathname === item.href;
                   return (
                     <li key={item.name}>
