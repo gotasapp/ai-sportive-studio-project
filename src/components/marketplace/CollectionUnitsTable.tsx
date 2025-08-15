@@ -19,7 +19,8 @@ import { CancelAuctionButton } from './CancelAuctionButton';
 import BuyNowButton from './BuyNowButton';
 import AuctionBidButton from './AuctionBidButton';
 import MakeOfferButton from './MakeOfferButton';
-import { formatPriceSafe, isValidPrice } from '@/lib/marketplace-config';
+import { formatPriceSafe, isValidPrice, NFT_CONTRACTS } from '@/lib/marketplace-config';
+import { useActiveWalletChain } from 'thirdweb/react';
 
 interface CollectionUnit {
   id: string;
@@ -54,6 +55,18 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const account = useActiveAccount();
+  const chain = useActiveWalletChain();
+
+  // Helper para obter contrato NFT universal (igual ao MarketplaceCard)
+  const getContractByCategory = (category: string): string => {
+    const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
+    const contractAddress = NFT_CONTRACTS[chainId];
+    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
+    if (!contractAddress) {
+      return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
+    }
+    return contractAddress;
+  };
 
   // Estados dos modais (ALINHADO COM MARKETPLACECARD)
   const [showCreateListing, setShowCreateListing] = useState(false);
@@ -514,7 +527,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           isOpen={showCreateListing}
           onOpenChange={setShowCreateListing}
           nft={{
-            assetContractAddress: selectedUnit.contractAddress,
+            assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
             tokenId: selectedUnit.tokenId,
             name: selectedUnit.name,
             imageUrl: selectedUnit.imageUrl
@@ -538,7 +551,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           isOpen={showCreateAuction}
           onOpenChange={setShowCreateAuction}
           nft={{
-            assetContractAddress: selectedUnit.contractAddress,
+            assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
             tokenId: selectedUnit.tokenId,
             name: selectedUnit.name,
             imageUrl: selectedUnit.imageUrl

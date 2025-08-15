@@ -868,7 +868,7 @@ export default function CollectionMintPage() {
                   </CardHeader>
                   <CardContent>
                     <CollectionUnitsTable 
-                      collectionId={collection._id}
+                      collectionId={collectionId}
                       category="launchpad"
                     />
                   </CardContent>
