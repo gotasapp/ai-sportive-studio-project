@@ -749,6 +749,7 @@ export default function CollectionMintPage() {
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="bg-[#14101e] border-gray-700 w-full">
                 <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
+                <TabsTrigger value="individual-nfts" className="flex-1">Individual NFTs</TabsTrigger>
                 <TabsTrigger value="roadmap" className="flex-1">Roadmap</TabsTrigger>
                 <TabsTrigger value="team" className="flex-1">Team</TabsTrigger>
                 <TabsTrigger value="utility" className="flex-1">Utility</TabsTrigger>
@@ -853,6 +854,22 @@ export default function CollectionMintPage() {
                         <p className="text-gray-400 text-center py-8">No utility information available</p>
                       )}
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Nova aba para NFTs Individuais com funções de trade */}
+              <TabsContent value="individual-nfts" className="mt-6">
+                <Card className="bg-[#14101e] border-gray-700">
+                  <CardHeader>
+                    <CardTitle className="text-white">Individual NFTs</CardTitle>
+                    <p className="text-gray-400 text-sm">Mint, trade, and manage individual NFTs from this collection</p>
+                  </CardHeader>
+                  <CardContent>
+                    <CollectionUnitsTable 
+                      collectionId={collection._id}
+                      category="launchpad"
+                    />
                   </CardContent>
                 </Card>
               </TabsContent>

@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
     });
     
     // Buscar NFTs da Lorem em launchpad_collection_mints
-    let loremNFTs = [];
+    let loremNFTs: any[] = [];
     if (loremCollection) {
       loremNFTs = await db.collection('launchpad_collection_mints')
         .find({ launchpadCollectionId: loremCollection._id })
