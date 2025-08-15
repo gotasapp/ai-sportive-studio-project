@@ -76,10 +76,10 @@ export async function POST(request: NextRequest) {
             mintsDeleted: mintsResult.deletedCount
           });
           
-        } catch (error) {
+        } catch (error: any) {
           results.push({
             collectionId: id,
-            error: error.message
+            error: error?.message || 'Unknown error'
           });
         }
       }
