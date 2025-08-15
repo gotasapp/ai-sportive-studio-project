@@ -95,6 +95,48 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
       setMintStatus('success');
       toast.success(`Mint successful`);
 
+      // Salvar NFTs individuais no banco (igual ao page.tsx)
+      try {
+        // Buscar dados atuais da coleção para obter o contador correto
+        const collectionResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
+        const collectionData = await collectionResponse.json();
+        
+        if (collectionData.success) {
+          const currentMinted = collectionData.collection.minted || 0;
+          const startTokenId = Math.max(0, currentMinted - qty); // Token ID começando do mint anterior
+          
+          for (let i = 0; i < qty; i++) {
+            const tokenId = startTokenId + i;
+            await fetch('/api/launchpad/save-individual-nft', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                collectionId: collectionId,
+                tokenId: tokenId,
+                transactionHash: result.transactionHash,
+                minterAddress: address,
+                price: claimCondition?.pricePerToken?.toString() || "0.1"
+              })
+            });
+          }
+          
+          console.log(`✅ Saved ${qty} individual NFTs to database from MintBox`);
+          
+          // Atualizar contador da coleção
+          await fetch(`/api/launchpad/collections/${collectionId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              minted: currentMinted + qty
+            })
+          });
+          
+          console.log(`✅ Updated collection minted count: ${currentMinted} + ${qty} = ${currentMinted + qty}`);
+        }
+      } catch (saveError) {
+        console.warn('⚠️ Failed to save individual NFTs from MintBox:', saveError);
+      }
+
       // Atualizar claim condition após mint
       await loadClaimCondition();
 
@@ -110,51 +152,84 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
 
   // Mint gasless para admin
   const handleGaslessMint = async () => {
-    if (!isConnected || !address) {
+    if (!isConnected) {
       toast.error('Conecte a carteira');
       return;
     }
-
-    if (!isUserAdmin) {
-      toast.error('Acesso negado: apenas admins podem usar mint gasless');
-      return;
-    }
-
+    
+    setIsMinting(true);
+    setMintStatus('pending');
+    setMintError(null);
+    
     try {
-      // Criar metadados básicos para o admin mint
-      const metadata = {
-        name: `Launchpad NFT #${Date.now()}`,
-        description: 'NFT mintado via admin gasless mint',
-        image: 'https://via.placeholder.com/300x300.png?text=Launchpad+NFT',
-        attributes: [
-          { trait_type: 'Type', value: 'Admin Mint' },
-          { trait_type: 'Method', value: 'Gasless' },
-          { trait_type: 'Timestamp', value: new Date().toISOString() }
-        ]
-      };
-
-      // Upload metadata para IPFS
-      const ipfsResult = await IPFSService.uploadMetadata(metadata);
-
-      // Mint gasless usando Engine
       const result = await mintGasless({
-        to: address,
-        metadataUri: ipfsResult,
-        collectionId: collectionId,
-        chainId: 80002,
+        contractAddress: contractAddress,
+        recipientAddress: address!,
+        quantity: qty
       });
-
+      
       console.log('✅ Gasless mint successful:', result);
-      toast.success('Admin mint successful');
+      
+      setTransactionHash(result.queueId); // Engine retorna queueId
+      setMintStatus('success');
+      toast.success(`Gasless mint successful`);
+
+      // Salvar NFTs individuais no banco (igual aos outros fluxos)
+      try {
+        // Buscar dados atuais da coleção
+        const collectionResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
+        const collectionData = await collectionResponse.json();
+        
+        if (collectionData.success) {
+          const currentMinted = collectionData.collection.minted || 0;
+          const startTokenId = Math.max(0, currentMinted - qty);
+          
+          for (let i = 0; i < qty; i++) {
+            const tokenId = startTokenId + i;
+            await fetch('/api/launchpad/save-individual-nft', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                collectionId: collectionId,
+                tokenId: tokenId,
+                transactionHash: result.queueId || "gasless_mint",
+                minterAddress: address,
+                price: claimCondition?.pricePerToken?.toString() || "0.1"
+              })
+            });
+          }
+          
+          console.log(`✅ Saved ${qty} individual NFTs to database from gasless mint`);
+          
+          // Atualizar contador da coleção
+          await fetch(`/api/launchpad/collections/${collectionId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              minted: currentMinted + qty
+            })
+          });
+          
+          console.log(`✅ Updated collection minted count from gasless: ${currentMinted} + ${qty}`);
+        }
+      } catch (saveError) {
+        console.warn('⚠️ Failed to save individual NFTs from gasless mint:', saveError);
+      }
 
       // Atualizar claim condition após mint
       await loadClaimCondition();
 
     } catch (err: any) {
       console.error('❌ Gasless mint failed:', err);
+      setMintError(err.message || 'Gasless mint failed');
+      setMintStatus('error');
       toast.error(err?.message || 'Gasless mint failed');
+    } finally {
+      setIsMinting(false);
     }
   };
+
+
 
   // Helper para formatar preço
   const formatPrice = (priceWei: bigint | string | number) => {
