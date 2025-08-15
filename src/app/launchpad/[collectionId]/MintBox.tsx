@@ -162,10 +162,13 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     setMintError(null);
     
     try {
+      // Para mint gasless, precisamos gerar metadata URI para cada NFT
+      const metadataUri = `ipfs://QmYourMetadataHash/metadata.json`; // Placeholder - deveria ser gerado dinamicamente
+      
       const result = await mintGasless({
-        contractAddress: contractAddress,
-        recipientAddress: address!,
-        quantity: qty
+        to: address!,
+        metadataUri: metadataUri,
+        collectionId: collectionId
       });
       
       console.log('✅ Gasless mint successful:', result);
