@@ -223,6 +223,78 @@ export default function ProfessionalBadgeActionBar({
         {hasGeneratedImage && renderMintButtons()}
       </div>
 
+      {/* 🚀 BOTÃO SEND TO LAUNCHPAD - Após gerar imagem */}
+      {hasGeneratedImage && generatedImageBlob && (
+        <div className="flex items-center justify-center">
+          <Button
+            onClick={async () => {
+              console.log('🚀 Enviando badge para Launchpad...')
+              
+              try {
+                // Verificar se o blob existe
+                if (!generatedImageBlob) {
+                  throw new Error('No image available')
+                }
+
+                // 1. Upload para Cloudinary
+                const formData = new FormData()
+                formData.append('file', generatedImageBlob, 'launchpad_badge.png')
+                formData.append('fileName', `badge_launchpad_${Date.now()}`)
+                
+                const uploadResponse = await fetch('/api/upload', {
+                  method: 'POST',
+                  body: formData,
+                })
+
+                if (!uploadResponse.ok) {
+                  throw new Error('Upload failed')
+                }
+
+                const uploadResult = await uploadResponse.json()
+                console.log('✅ Upload OK:', uploadResult.url)
+                
+                // 2. Salvar no banco
+                const response = await fetch('/api/launchpad/pending-images', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    imageUrl: uploadResult.url,
+                    category: 'badges',
+                    name: 'Badge for Launchpad',
+                    description: 'Badge image sent for approval',
+                    price: '0.05',
+                    maxSupply: 100,
+                    status: 'pending_launchpad'
+                  })
+                })
+                
+                const result = await response.json()
+                
+                if (result.success) {
+                  toast.success('Badge sent to Launchpad!')
+                  console.log('✅ Success:', result)
+                } else {
+                  throw new Error(result.error || 'Failed to save')
+                }
+                
+              } catch (error) {
+                console.error('❌ Erro:', error)
+                toast.error('Failed to send badge to Launchpad')
+              }
+            }}
+            disabled={!generatedImageBlob}
+            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 
+                     text-white font-medium px-6 py-3 rounded-lg transition-all duration-200 
+                     hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center gap-2">
+              <Rocket className="w-5 h-5" />
+              <span>Send to Launchpad</span>
+            </div>
+          </Button>
+        </div>
+      )}
+
       {/* Connection Warning - Apenas se necessário */}
 
 
