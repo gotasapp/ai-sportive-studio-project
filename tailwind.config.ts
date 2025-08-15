@@ -90,7 +90,7 @@ const config: Config = {
           '2': '#ADADAD', // Chart secondary - cinza claro
           '3': '#707070', // Chart tertiary - cinza médio
           '4': '#333333', // Chart quaternary - cinza escuro
-          '5': '#A20131', // Chart quinternary - vermelho principal
+          '5': '#FF0052', // Chart quinternary - vermelho principal
         }
       },
       borderRadius: {

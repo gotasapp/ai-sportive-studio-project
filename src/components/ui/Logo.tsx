@@ -50,7 +50,7 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
     return (
       <div 
         className={cn(
-          "flex items-center justify-center bg-gradient-to-r from-[#A20131] to-[#D32F2F] text-white font-bold rounded-lg px-4 py-2 shadow-lg",
+          "flex items-center justify-center bg-gradient-to-r from-[#FF0052] to-[#D32F2F] text-white font-bold rounded-lg px-4 py-2 shadow-lg",
           className
         )}
         style={{ width, height }}

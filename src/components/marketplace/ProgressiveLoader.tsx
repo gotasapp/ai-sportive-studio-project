@@ -70,7 +70,7 @@ export default function ProgressiveLoader({ progress, className = '' }: Progress
         </div>
         <div className="w-full bg-[#FDFDFD]/10 rounded-full h-2 overflow-hidden">
           <motion.div
-            className="h-full bg-gradient-to-r from-[#A20131] to-[#E91E63] rounded-full"
+            className="h-full bg-gradient-to-r from-[#FF0052] to-[#E91E63] rounded-full"
             initial={{ width: 0 }}
             animate={{ width: `${percentage}%` }}
             transition={{ duration: 0.5, ease: 'easeOut' }}
@@ -97,7 +97,7 @@ export default function ProgressiveLoader({ progress, className = '' }: Progress
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              className="w-2 h-2 bg-[#A20131] rounded-full"
+              className="w-2 h-2 bg-[#FF0052] rounded-full"
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.7, 1, 0.7]

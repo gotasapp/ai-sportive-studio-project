@@ -268,7 +268,7 @@ export default function ProfessionalBadgeSidebar({
             <>
               {!referenceImage ? (
                 <div
-                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#FF0052] hover:bg-[#FF0052]/5 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
                   <input
@@ -311,7 +311,7 @@ export default function ProfessionalBadgeSidebar({
                             className={cn(
                               "p-2 rounded-lg border text-left transition-all duration-200",
                               selectedSport === sport.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                                 : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
@@ -332,7 +332,7 @@ export default function ProfessionalBadgeSidebar({
                             className={cn(
                               "p-2 rounded-lg border text-left transition-all duration-200",
                               selectedBadgeView === view.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                                 : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
@@ -408,7 +408,7 @@ export default function ProfessionalBadgeSidebar({
                   className={cn(
                     "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'standard'
-                      ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                      ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
@@ -425,7 +425,7 @@ export default function ProfessionalBadgeSidebar({
                   className={cn(
                     "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
                     quality === 'hd'
-                      ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                      ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                       : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                   )}
                   style={{ 
@@ -441,7 +441,7 @@ export default function ProfessionalBadgeSidebar({
               {generationCost && (
                 <div className="mt-3 p-2 cyber-select">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
-                  <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
+                  <div className="text-sm font-medium text-[#FF0052]">${generationCost.toFixed(3)}</div>
                 </div>
               )}
             </CardContent>

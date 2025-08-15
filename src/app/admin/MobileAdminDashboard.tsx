@@ -33,8 +33,8 @@ export default function MobileAdminDashboard(props: any) {
         <div className="grid grid-cols-2 gap-3 mb-6">
           {navigation.map((item) => (
             <Link key={item.name} href={item.href} className="no-underline">
-              <button className="w-full flex flex-col items-center justify-center rounded-xl p-4 bg-[#18141f] text-white shadow hover:bg-[#A20131]/80 transition-all">
-                <item.icon className="h-7 w-7 mb-1 text-[#A20131]" />
+              <button className="w-full flex flex-col items-center justify-center rounded-xl p-4 bg-[#18141f] text-white shadow hover:bg-[#FF0052]/80 transition-all">
+                <item.icon className="h-7 w-7 mb-1 text-[#FF0052]" />
                 <span className="text-sm font-semibold">{item.name}</span>
               </button>
             </Link>
@@ -64,7 +64,7 @@ export default function MobileAdminDashboard(props: any) {
               placeholder="Search..."
               // value={searchTerm}
               // onChange={e => onSearch(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 rounded-lg border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-[#A20131] transition-all text-sm bg-[#18141f]"
+              className="w-full pl-10 pr-3 py-2 rounded-lg border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-[#FF0052] transition-all text-sm bg-[#18141f]"
             />
           </div>
           {/* Adicione botões de filtro, se necessário */}

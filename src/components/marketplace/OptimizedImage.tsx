@@ -153,7 +153,7 @@ export default function OptimizedImage({
       {/* Loading Indicator for lazy loaded images */}
       {!isInView && lazy && !priority && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#FDFDFD]/5">
-          <div className="w-8 h-8 border-2 border-[#A20131] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-8 h-8 border-2 border-[#FF0052] border-t-transparent rounded-full animate-spin"></div>
         </div>
       )}
     </div>

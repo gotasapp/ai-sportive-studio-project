@@ -182,10 +182,10 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           <div className="flex items-center gap-2">
             <span className="text-xs text-[#FDFDFD]/70">Current Bid</span>
             {auctionData.isLoading && (
-              <div className="animate-spin h-3 w-3 border border-[#A20131] border-t-transparent rounded-full"></div>
+              <div className="animate-spin h-3 w-3 border border-[#FF0052] border-t-transparent rounded-full"></div>
             )}
           </div>
-          <div className="text-sm font-medium text-[#A20131]">
+          <div className="text-sm font-medium text-[#FF0052]">
             {displayCurrentBid || 'No bids'}
           </div>
           {auctionData.lastUpdated && (
@@ -250,7 +250,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               <BuyNowButton
                 listingId={listingId}
                 price={unit.marketplace.price}
-                className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
+                className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
               />
             ) : (
               <Button disabled className="rounded-full px-4 py-1.5 bg-red-500/20 text-red-400 text-xs font-medium cursor-not-allowed">
@@ -262,7 +262,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
+              className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
             />
           </div>
         );
@@ -302,14 +302,14 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                   minimumBid="0"
                   endTime={auctionEndTime || new Date()}
                   currency="MATIC"
-                  className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
+                  className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
                   onBidSuccess={refreshUnits}
                 />
                 <MakeOfferButton
                   assetContract={unit.contractAddress}
                   tokenId={unit.tokenId}
                   nftName={unit.name}
-                  className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
+                  className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
                 />
               </>
             ) : (
@@ -317,7 +317,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                 assetContract={unit.contractAddress}
                 tokenId={unit.tokenId}
                 nftName={unit.name}
-                className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
+                className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
               />
             )}
           </div>
@@ -331,14 +331,14 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           <div className="flex items-center gap-2">
             <Button
               onClick={() => setShowCreateListing(unit.id)}
-              className="rounded-full px-4 py-1.5 bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs font-medium"
+              className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
             >
               List for Sale
             </Button>
             <Button
               variant="outline"
               onClick={() => setShowCreateAuction(unit.id)}
-              className="rounded-full px-4 py-1.5 text-[#A20131] hover:bg-[#A20131]/10 text-xs font-medium"
+              className="rounded-full px-4 py-1.5 text-[#FF0052] hover:bg-[#FF0052]/10 text-xs font-medium"
             >
               Create Auction
             </Button>
@@ -352,7 +352,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               assetContract={unit.contractAddress}
               tokenId={unit.tokenId}
               nftName={unit.name}
-              className="rounded-full px-4 py-1.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-xs font-medium"
+              className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
             />
           </div>
         );
@@ -470,7 +470,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
                     <div className="flex items-center gap-2 mt-0.5 text-xs text-[#FDFDFD]/60">
                       <span>#{unit.tokenId}</span>
                       {isOwner(unit) && (
-                        <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] rounded-full px-2 py-0.5">
+                        <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] rounded-full px-2 py-0.5">
                           <User className="h-3 w-3 mr-1" />
                           Owned
                         </Badge>

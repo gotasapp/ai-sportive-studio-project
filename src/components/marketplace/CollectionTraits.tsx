@@ -124,7 +124,7 @@ export default function CollectionTraits({ traits = [], totalSupply = 0, collect
                         <span className="text-sm font-medium text-[#FDFDFD]">{trait.value}</span>
                         <Badge 
                           variant="outline" 
-                          className="rounded-full px-2 py-0.5 text-xs bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131]"
+                          className="rounded-full px-2 py-0.5 text-xs bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052]"
                         >
                           {percentage.toFixed(1)}%
                         </Badge>

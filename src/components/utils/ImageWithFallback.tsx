@@ -207,7 +207,7 @@ export default function ImageWithFallback({
       {/* Loading State */}
       {showLoadingState && isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-[#14101e] rounded-lg">
-          <Loader2 className="w-8 h-8 text-[#A20131] animate-spin" />
+          <Loader2 className="w-8 h-8 text-[#FF0052] animate-spin" />
         </div>
       )}
 

@@ -94,9 +94,9 @@ export default function BuyNowButton({
       <Button
         className={`${className} ${
           variant === 'default' 
-            ? 'bg-[#A20131] hover:bg-[#A20131]/90 text-white' 
+            ? 'bg-[#FF0052] hover:bg-[#FF0052]/90 text-white' 
             : variant === 'outline'
-            ? 'border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white'
+            ? 'border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white'
             : 'bg-[#333333]/20 hover:bg-[#333333]/30 text-[#FDFDFD]'
         }`}
         size={size}

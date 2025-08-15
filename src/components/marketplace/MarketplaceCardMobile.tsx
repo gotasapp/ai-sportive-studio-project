@@ -154,7 +154,7 @@ export default function MarketplaceCardMobile({
       return (
         <Button
           onClick={handleQuickBuy}
-          className="bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs px-2 py-1 h-7"
+          className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs px-2 py-1 h-7"
         >
           <ShoppingCart className="mr-1 h-3 w-3" />
           Buy
@@ -165,7 +165,7 @@ export default function MarketplaceCardMobile({
     if (isAuction && auctionId && !isOwner && endTime && new Date() < endTime) {
       return (
         <Button
-          className="bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs px-2 py-1 h-7"
+          className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs px-2 py-1 h-7"
         >
           <Gavel className="mr-1 h-3 w-3" />
           Bid
@@ -177,7 +177,7 @@ export default function MarketplaceCardMobile({
       return (
         <Button
           onClick={handleListButtonClick}
-          className="bg-[#A20131] hover:bg-[#A20131]/90 text-white text-xs px-2 py-1 h-7"
+          className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs px-2 py-1 h-7"
         >
           <Tag className="mr-1 h-3 w-3" />
           List
@@ -197,7 +197,7 @@ export default function MarketplaceCardMobile({
           <div className="space-y-2">
             <Button
               onClick={() => setShowUpdateListing(true)}
-              className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white text-sm py-2"
+              className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-sm py-2"
             >
               <Tag className="mr-2 h-4 w-4" />
               Update Price
@@ -324,7 +324,7 @@ export default function MarketplaceCardMobile({
             <>
               <Button
                 onClick={handleListButtonClick}
-                className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white text-sm"
+                className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-sm"
               >
                 <Tag className="mr-2 h-4 w-4" />
                 List for Sale
@@ -332,7 +332,7 @@ export default function MarketplaceCardMobile({
               <Button
                 onClick={() => setShowCreateAuction(true)}
                 variant="outline"
-                className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white text-sm"
+                className="w-full border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-sm"
               >
                 🏆 Create Auction
               </Button>
@@ -377,14 +377,14 @@ export default function MarketplaceCardMobile({
             <div className="mt-0.5">
               {isAuction ? (
                 <div className="flex items-center gap-1">
-                  <p className="text-xs text-[#A20131] font-bold">{displayCurrentBid || price}</p>
+                  <p className="text-xs text-[#FF0052] font-bold">{displayCurrentBid || price}</p>
                   {auctionData.isLoading && (
-                    <div className="animate-spin h-2 w-2 border border-[#A20131] border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-2 w-2 border border-[#FF0052] border-t-transparent rounded-full"></div>
                   )}
                 </div>
               ) : (
                 <div className="flex items-center gap-1">
-                  <p className={`text-xs font-bold ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>{safePrice}</p>
+                  <p className={`text-xs font-bold ${isPriceValid ? 'text-[#FF0052]' : 'text-red-400'}`}>{safePrice}</p>
                   {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
                     <AlertTriangle className="h-3 w-3 text-red-400" />
                   )}
@@ -530,16 +530,16 @@ export default function MarketplaceCardMobile({
           {isAuction ? (
             <div>
               <div className="flex items-center justify-center gap-1">
-                <p className={`${isLargeView ? 'text-sm' : 'text-xs'} text-[#A20131] font-bold`}>{displayCurrentBid || price}</p>
+                <p className={`${isLargeView ? 'text-sm' : 'text-xs'} text-[#FF0052] font-bold`}>{displayCurrentBid || price}</p>
                 {auctionData.isLoading && (
-                  <div className="animate-spin h-3 w-3 border border-[#A20131] border-t-transparent rounded-full"></div>
+                  <div className="animate-spin h-3 w-3 border border-[#FF0052] border-t-transparent rounded-full"></div>
                 )}
               </div>
               <p className="text-[10px] text-white/60">Current Bid</p>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-1">
-              <p className={`${isLargeView ? 'text-sm' : 'text-xs'} font-bold ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>{safePrice}</p>
+              <p className={`${isLargeView ? 'text-sm' : 'text-xs'} font-bold ${isPriceValid ? 'text-[#FF0052]' : 'text-red-400'}`}>{safePrice}</p>
               {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
                 <AlertTriangle className="h-3 w-3 text-red-400" />
               )}
@@ -548,7 +548,7 @@ export default function MarketplaceCardMobile({
           
           {/* Active Offers Counter */}
           {activeOffers > 0 && (
-            <p className="text-[10px] text-[#A20131] mt-1">
+            <p className="text-[10px] text-[#FF0052] mt-1">
               {activeOffers} offer{activeOffers !== 1 ? 's' : ''}
             </p>
           )}
@@ -560,7 +560,7 @@ export default function MarketplaceCardMobile({
             {renderQuickActions() || (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="sm" className="bg-[#A20131] text-white px-4 py-2 rounded-lg font-semibold w-full">
+                  <Button size="sm" className="bg-[#FF0052] text-white px-4 py-2 rounded-lg font-semibold w-full">
                     Actions
                   </Button>
                 </DropdownMenuTrigger>

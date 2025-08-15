@@ -137,8 +137,8 @@ export default function ProfessionalCanvas({
     <div className="flex-1 flex items-center justify-center">
       <div className="loading-content text-center">
         <div className="w-16 h-16 mx-auto mb-4 relative">
-          <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
-          <div className="absolute inset-0 w-16 h-16 border-2 border-[#A20131]/20 rounded-full"></div>
+          <Loader2 className="w-16 h-16 text-[#FF0052] animate-spin" />
+          <div className="absolute inset-0 w-16 h-16 border-2 border-[#FF0052]/20 rounded-full"></div>
         </div>
         <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
           Generating Jersey...
@@ -147,9 +147,9 @@ export default function ProfessionalCanvas({
           {isVisionMode ? 'Analyzing reference image and generating design...' : 'Creating your custom jersey design...'}
         </p>
         <div className="flex items-center justify-center gap-2">
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse"></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
         </div>
       </div>
     </div>
@@ -293,7 +293,7 @@ export default function ProfessionalCanvas({
             <img
               src={referenceImage}
               alt="Reference"
-              className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#A20131]/50 rounded-lg"
+              className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#FF0052]/50 rounded-lg"
             />
           </div>
         )}

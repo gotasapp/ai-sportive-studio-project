@@ -136,7 +136,7 @@ export default function ProfessionalSidebar({
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
-        {required && <span className="text-[#A20131] text-xs"></span>}
+        {required && <span className="text-[#FF0052] text-xs"></span>}
         {/* Remover badge do SectionHeader */}
         {/* {badge && (
           <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
@@ -304,7 +304,7 @@ export default function ProfessionalSidebar({
             <CardContent className="CardContent p-3 pt-0 space-y-3">
               {!referenceImage ? (
                                   <div
-                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/10 transition-colors"
+                    className="upload-area flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-[2px] text-center cursor-pointer hover:border-[#FF0052] hover:bg-[#FF0052]/10 transition-colors"
                     onClick={() => fileInputRef.current?.click()}
                   >
                   <input
@@ -347,7 +347,7 @@ export default function ProfessionalSidebar({
                             className={cn(
                               "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedSport === sport.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                                 : "border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
@@ -368,7 +368,7 @@ export default function ProfessionalSidebar({
                             className={cn(
                               "p-2 rounded-[2px] border text-left transition-all duration-200",
                               selectedView === view.id
-                                ? "border-[#A20131] bg-[#A20131]/10 text-[#A20131]"
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
                                 : "border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
                             )}
                           >
@@ -441,7 +441,7 @@ export default function ProfessionalSidebar({
                   className={cn(
                     "p-2 rounded-[2px] border transition-colors",
                     quality === 'standard' 
-                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
+                      ? 'border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]' 
                       : 'border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
                 >
@@ -452,7 +452,7 @@ export default function ProfessionalSidebar({
                   className={cn(
                     "p-2 rounded-[2px] border transition-colors",
                     quality === 'hd'
-                      ? 'border-[#A20131] bg-[#A20131]/10 text-[#A20131]' 
+                      ? 'border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]' 
                       : 'border-[#333333] bg-[#333333]/10 text-[#ADADAD] hover:border-[#ADADAD]'
                   )}
                 >

@@ -202,7 +202,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
       <DialogContent className="sm:max-w-[500px] bg-card border-secondary/20 text-white max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-[#FDFDFD] flex items-center gap-2">
-            <Gavel className="h-5 w-5 text-[#A20131]" />
+            <Gavel className="h-5 w-5 text-[#FF0052]" />
             Create Auction
           </DialogTitle>
           <p className="text-sm text-[#FDFDFD]/70">
@@ -243,7 +243,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
               </SelectTrigger>
               <SelectContent className="bg-[#333333] border-[#FDFDFD]/20">
                 {CURRENCY_OPTIONS.map((currencyOption) => (
-                  <SelectItem key={currencyOption.value} value={currencyOption.value} className="text-[#FDFDFD] hover:bg-[#A20131]">
+                  <SelectItem key={currencyOption.value} value={currencyOption.value} className="text-[#FDFDFD] hover:bg-[#FF0052]">
                     {currencyOption.label}
                   </SelectItem>
                 ))}
@@ -294,7 +294,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
               </SelectTrigger>
               <SelectContent className="bg-[#333333] border-[#FDFDFD]/20">
                 {DURATION_PRESETS.map((preset) => (
-                  <SelectItem key={preset.value} value={preset.value} className="text-[#FDFDFD] hover:bg-[#A20131]">
+                  <SelectItem key={preset.value} value={preset.value} className="text-[#FDFDFD] hover:bg-[#FF0052]">
                     {preset.label}
                   </SelectItem>
                 ))}
@@ -346,7 +346,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
               handleCreateAuction();
             }}
             disabled={!isFormValid || isProcessing}
-            className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+            className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
           >
             {isProcessing ? (
               <>

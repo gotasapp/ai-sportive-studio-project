@@ -100,20 +100,20 @@ export default function MarketplaceFilters({
           <TabsList className="bg-[#000000] border-[#FDFDFD]/10">
           <TabsTrigger 
             value="all" 
-            className="data-[state=active]:bg-[#A20131] data-[state=active]:text-[#FDFDFD]"
+            className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-[#FDFDFD]"
           >
             All collections
           </TabsTrigger>
           <TabsTrigger 
             value="watchlist" 
-            className="data-[state=active]:bg-[#A20131] data-[state=active]:text-[#FDFDFD]"
+            className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-[#FDFDFD]"
           >
             <Star className="w-4 h-4 mr-2" />
             Watchlist
           </TabsTrigger>
           <TabsTrigger 
             value="owned" 
-            className="data-[state=active]:bg-[#A20131] data-[state=active]:text-[#FDFDFD]"
+            className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-[#FDFDFD]"
           >
             <Wallet className="w-4 h-4 mr-2" />
             Owned collections
@@ -163,7 +163,7 @@ export default function MarketplaceFilters({
                 onClick={() => onViewChange(option.value as ViewType)}
                 className={`h-8 w-8 p-0 ${
                   viewType === option.value 
-                    ? 'bg-[#A20131] text-[#FDFDFD]' 
+                    ? 'bg-[#FF0052] text-[#FDFDFD]' 
                     : 'text-[#FDFDFD]/70 hover:text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
                 }`}
               >
@@ -187,7 +187,7 @@ export default function MarketplaceFilters({
                 color: '#FDFDFD',
                 backgroundColor: 'transparent'
               }}
-              className={`text-sm placeholder:text-[#FDFDFD]/50 transition-all duration-200 focus:border-[#A20131] hover:border-[#FDFDFD]/30 ${
+              className={`text-sm placeholder:text-[#FDFDFD]/50 transition-all duration-200 focus:border-[#FF0052] hover:border-[#FDFDFD]/30 ${
                 searchTerm ? 'pl-3' : 'pl-10'
               }`}
             />

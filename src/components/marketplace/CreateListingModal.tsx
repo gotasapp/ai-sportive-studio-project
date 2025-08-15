@@ -186,10 +186,10 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         
         <Tabs value={listingType} onValueChange={(value) => setListingType(value as any)} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-[#333333]/20">
-            <TabsTrigger value="direct" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="direct" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               Direct Sale
             </TabsTrigger>
-            <TabsTrigger value="auction" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="auction" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               Auction
             </TabsTrigger>
           </TabsList>
@@ -259,7 +259,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
         <Button
           onClick={listingType === 'direct' ? handleCreateDirectListing : handleCreateAuctionListing}
           disabled={isLoading}
-          className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+          className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
         >
           {isLoading ? 'Processing...' : `Create ${listingType === 'direct' ? 'Listing' : 'Auction'}`}
         </Button>

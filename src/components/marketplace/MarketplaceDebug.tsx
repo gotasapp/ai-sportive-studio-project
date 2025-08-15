@@ -266,7 +266,7 @@ export default function MarketplaceDebug() {
                 <div className="flex items-center justify-between">
                   <span className="text-[#FDFDFD]/70">Address:</span>
                   <div className="flex items-center gap-2">
-                    <code className="text-xs text-[#A20131] bg-[#333333]/20 px-2 py-1 rounded">
+                    <code className="text-xs text-[#FF0052] bg-[#333333]/20 px-2 py-1 rounded">
                       {account.address.slice(0, 6)}...{account.address.slice(-4)}
                     </code>
                     <Button
@@ -294,13 +294,13 @@ export default function MarketplaceDebug() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-[#FDFDFD]/70">Current Network:</span>
-                <Badge className="bg-[#A20131]/20 text-[#A20131]">
+                <Badge className="bg-[#FF0052]/20 text-[#FF0052]">
                   {getChainName(chainId)}
                 </Badge>
               </div>
               <div className="flex items-center justify-between">
                 <span className="text-[#FDFDFD]/70">Chain ID:</span>
-                <code className="text-xs text-[#A20131] bg-[#333333]/20 px-2 py-1 rounded">
+                <code className="text-xs text-[#FF0052] bg-[#333333]/20 px-2 py-1 rounded">
                   {chainId}
                 </code>
               </div>
@@ -320,14 +320,14 @@ export default function MarketplaceDebug() {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#FDFDFD]/70">Marketplace V3:</span>
                     {marketplaceContract ? (
-                      <CheckCircle className="h-4 w-4 text-[#A20131]" />
+                      <CheckCircle className="h-4 w-4 text-[#FF0052]" />
                     ) : (
                       <XCircle className="h-4 w-4 text-[#FDFDFD]/70" />
                     )}
                   </div>
                   {marketplaceContract ? (
                     <div className="flex items-center gap-2">
-                      <code className="text-xs text-[#A20131] bg-[#333333]/20 px-2 py-1 rounded">
+                      <code className="text-xs text-[#FF0052] bg-[#333333]/20 px-2 py-1 rounded">
                         {marketplaceContract.slice(0, 10)}...{marketplaceContract.slice(-8)}
                       </code>
                       <Button
@@ -363,14 +363,14 @@ export default function MarketplaceDebug() {
                                      <div className="flex items-center gap-2 mb-1">
                      <span className="text-[#FDFDFD]/70">NFT Collection Universal:</span>
                      {nftContract ? (
-                       <CheckCircle className="h-4 w-4 text-[#A20131]" />
+                       <CheckCircle className="h-4 w-4 text-[#FF0052]" />
                      ) : (
                        <XCircle className="h-4 w-4 text-[#FDFDFD]/70" />
                      )}
                    </div>
                    {nftContract ? (
                      <div className="flex items-center gap-2">
-                       <code className="text-xs text-[#A20131] bg-[#333333]/20 px-2 py-1 rounded">
+                       <code className="text-xs text-[#FF0052] bg-[#333333]/20 px-2 py-1 rounded">
                          {nftContract.slice(0, 10)}...{nftContract.slice(-8)}
                        </code>
                        <Button
@@ -407,7 +407,7 @@ export default function MarketplaceDebug() {
           {/* Configuration Guide */}
           <div>
             <h3 className="text-[#FDFDFD] font-medium mb-3 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-[#A20131]" />
+              <AlertTriangle className="h-4 w-4 text-[#FF0052]" />
               Configuração Necessária
             </h3>
             
@@ -419,7 +419,7 @@ export default function MarketplaceDebug() {
                 <p className="text-[#FDFDFD]/70 text-xs">
                   Adicione no seu .env.local:
                 </p>
-                <code className="text-xs text-[#A20131] bg-[#333333]/20 px-2 py-1 rounded block mt-1">
+                <code className="text-xs text-[#FF0052] bg-[#333333]/20 px-2 py-1 rounded block mt-1">
                   NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET=0xSEU_ENDERECO_AQUI
                 </code>
               </div>
@@ -473,7 +473,7 @@ export default function MarketplaceDebug() {
                   }
                 }}
                 size="sm"
-                className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
               >
                 🔍 Debug Listing ID 0
               </Button>

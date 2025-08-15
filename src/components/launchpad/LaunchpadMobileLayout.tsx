@@ -107,7 +107,7 @@ export default function LaunchpadMobileLayout({
     
     return (
       <Link href={`/launchpad/${collection._id}`} key={collection._id}>
-        <Card className="bg-[#14101e]/60 border-[#FDFDFD]/10 hover:border-[#A20131]/50 transition-all duration-300 overflow-hidden">
+        <Card className="bg-[#14101e]/60 border-[#FDFDFD]/10 hover:border-[#FF0052]/50 transition-all duration-300 overflow-hidden">
           <div className="relative">
             {/* Collection Image */}
             <div className="aspect-[4/3] relative overflow-hidden">
@@ -151,7 +151,7 @@ export default function LaunchpadMobileLayout({
 
               {/* Price and Supply */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-1 text-[#A20131] font-bold">
+                <div className="flex items-center space-x-1 text-[#FF0052] font-bold">
                   <Coins className="w-4 h-4" />
                   <span>{collection.price}</span>
                 </div>
@@ -174,7 +174,7 @@ export default function LaunchpadMobileLayout({
 
               {/* Action Button */}
               <Button 
-                className="w-full bg-[#A20131] hover:bg-[#A20131]/80 text-white font-semibold"
+                className="w-full bg-[#FF0052] hover:bg-[#FF0052]/80 text-white font-semibold"
                 disabled={collection.status !== 'active'}
               >
                 {collection.status === 'upcoming' && 'Coming Soon'}
@@ -194,7 +194,7 @@ export default function LaunchpadMobileLayout({
       <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518]">
         <Header />
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A20131]"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
         </div>
       </div>
     );
@@ -211,14 +211,14 @@ export default function LaunchpadMobileLayout({
           <div className="flex flex-col items-start min-w-[90px]">
             <span className="text-xs text-white/70 font-medium">Collections</span>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-[#A20131]">{stats.totalCollections}</span>
+              <span className="text-base font-bold text-[#FF0052]">{stats.totalCollections}</span>
             </div>
           </div>
           {/* Live Drops */}
           <div className="flex flex-col items-end min-w-[90px]">
             <span className="text-xs text-white/70 font-medium">Live Now</span>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-[#A20131]">{stats.activeDrops}</span>
+              <span className="text-base font-bold text-[#FF0052]">{stats.activeDrops}</span>
               {stats.activeDrops > 0 && (
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
               )}
@@ -242,7 +242,7 @@ export default function LaunchpadMobileLayout({
               ((filter === 'All' && activeTab === 'all') ||
                (filter === 'Live' && activeTab === 'live') ||
                (filter === 'Upcoming' && activeTab === 'upcoming')
-                ? 'bg-[#A20131] text-white'
+                ? 'bg-[#FF0052] text-white'
                 : 'text-white/80') +
               ' px-4 py-1.5 rounded-lg font-semibold text-xs border-none min-w-[60px] transition-all duration-150'
             }
@@ -265,7 +265,7 @@ export default function LaunchpadMobileLayout({
             placeholder="Search collections..."
             value={searchTerm}
             onChange={(e) => onSearch(e.target.value)}
-            className="pl-10 pr-3 py-3 rounded-xl bg-[#14101e]/60 border-[#FDFDFD]/10 text-white placeholder:text-[#FDFDFD]/40 focus:border-[#A20131] w-full"
+            className="pl-10 pr-3 py-3 rounded-xl bg-[#14101e]/60 border-[#FDFDFD]/10 text-white placeholder:text-[#FDFDFD]/40 focus:border-[#FF0052] w-full"
           />
         </div>
       </div>

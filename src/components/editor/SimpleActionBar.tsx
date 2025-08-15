@@ -44,7 +44,7 @@ export default function SimpleActionBar({
         disabled={!canGenerate || isLoading}
         className={cn(
           "h-12 px-6 text-base font-medium transition-all duration-200",
-          "bg-[#A20131] hover:bg-[#A20131]/90 text-white",
+          "bg-[#FF0052] hover:bg-[#FF0052]/90 text-white",
           "disabled:opacity-50 disabled:cursor-not-allowed w-full"
         )}
       >

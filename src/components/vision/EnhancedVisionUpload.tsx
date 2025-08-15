@@ -98,7 +98,7 @@ export function EnhancedVisionUpload({
   }
 
   const getAnalysisStatusIcon = () => {
-    if (isAnalyzing) return <Loader2 className="h-4 w-4 animate-spin text-[#A20131]" />
+    if (isAnalyzing) return <Loader2 className="h-4 w-4 animate-spin text-[#FF0052]" />
     if (analysisResult) return <CheckCircle className="h-4 w-4 text-green-500" />
     if (uploadError) return <AlertCircle className="h-4 w-4 text-red-500" />
     return <Sparkles className="h-4 w-4 text-[#FDFDFD]/60" />
@@ -117,7 +117,7 @@ export function EnhancedVisionUpload({
         <CardTitle className="text-[#FDFDFD] flex items-center gap-2">
           <Camera className="h-5 w-5" />
           Reference Upload
-          <Badge variant="outline" className="bg-[#A20131]/10 text-[#A20131] border-[#A20131]/30">
+          <Badge variant="outline" className="bg-[#FF0052]/10 text-[#FF0052] border-[#FF0052]/30">
             Premium
           </Badge>
         </CardTitle>
@@ -130,8 +130,8 @@ export function EnhancedVisionUpload({
             className={cn(
               "relative border-2 border-dashed rounded-lg p-8 text-center transition-all duration-300 cursor-pointer",
               isDragActive
-                ? "border-[#A20131] bg-[#A20131]/10 scale-[1.02]"
-                : "border-[#FDFDFD]/20 hover:border-[#A20131]/50 hover:bg-[#A20131]/5"
+                ? "border-[#FF0052] bg-[#FF0052]/10 scale-[1.02]"
+                : "border-[#FDFDFD]/20 hover:border-[#FF0052]/50 hover:bg-[#FF0052]/5"
             )}
             onDrop={handleDrop}
             onDragOver={handleDragOver}
@@ -149,11 +149,11 @@ export function EnhancedVisionUpload({
             <div className="space-y-4">
               <div className={cn(
                 "mx-auto w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300",
-                isDragActive ? "bg-[#A20131]/20 scale-110" : "bg-[#FDFDFD]/10"
+                isDragActive ? "bg-[#FF0052]/20 scale-110" : "bg-[#FDFDFD]/10"
               )}>
                 <Upload className={cn(
                   "h-8 w-8 transition-colors",
-                  isDragActive ? "text-[#A20131]" : "text-[#FDFDFD]/70"
+                  isDragActive ? "text-[#FF0052]" : "text-[#FDFDFD]/70"
                 )} />
               </div>
               
@@ -214,7 +214,7 @@ export function EnhancedVisionUpload({
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-[#FDFDFD]/70">Analyzing image...</span>
-                    <span className="text-[#A20131]">{Math.round(analysisProgress)}%</span>
+                    <span className="text-[#FF0052]">{Math.round(analysisProgress)}%</span>
                   </div>
                   <Progress value={analysisProgress} className="h-2" />
                   <div className="flex items-center gap-2 text-xs text-[#FDFDFD]/60">
@@ -241,10 +241,10 @@ export function EnhancedVisionUpload({
 
             {/* Quick Analysis Preview */}
             {analysisResult && !isAnalyzing && (
-              <div className="bg-[#A20131]/10 rounded-lg p-4 border border-[#A20131]/30">
+              <div className="bg-[#FF0052]/10 rounded-lg p-4 border border-[#FF0052]/30">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="h-4 w-4 text-[#A20131]" />
-                  <span className="text-sm font-medium text-[#A20131]">Analysis Ready</span>
+                  <Sparkles className="h-4 w-4 text-[#FF0052]" />
+                  <span className="text-sm font-medium text-[#FF0052]">Analysis Ready</span>
                 </div>
                 <p className="text-xs text-[#FDFDFD]/80 line-clamp-3">
                   {typeof analysisResult === 'string' 
@@ -255,7 +255,7 @@ export function EnhancedVisionUpload({
                 <Button 
                   variant="ghost" 
                   size="sm"
-                  className="mt-2 h-auto p-0 text-xs text-[#A20131] hover:text-[#A20131]/80"
+                  className="mt-2 h-auto p-0 text-xs text-[#FF0052] hover:text-[#FF0052]/80"
                 >
                   <Eye className="h-3 w-3 mr-1" />
                   View Full Analysis

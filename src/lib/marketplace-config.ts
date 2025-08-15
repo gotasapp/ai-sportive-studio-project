@@ -3,6 +3,7 @@ import { defineChain } from 'thirdweb/chains';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { client } from './ThirdwebProvider';
 import { getAllSupportedContractsUnified, isAnyContractValid } from './dynamic-contract-registry';
+import { ACTIVE_NETWORK, ACTIVE_CHAIN_ID, ACTIVE_CONTRACTS, isChzNetwork } from './network-config';
 
 // Define CHZ Chain
 export const chzMainnet = defineChain({
@@ -26,10 +27,14 @@ export const chzMainnet = defineChain({
   },
 });
 
-// Configuração dos contratos de marketplace por rede
+// 🎯 CONTRATOS ATIVOS (CONTROLADOS PELO MASTER SWITCH)
+export const MARKETPLACE_CONTRACT = ACTIVE_CONTRACTS.marketplace;
+export const NFT_CONTRACT = ACTIVE_CONTRACTS.nftDrop;
+export const LAUNCHPAD_CONTRACT = ACTIVE_CONTRACTS.launchpad;
+
+// 📋 CONFIGURAÇÃO LEGACY (MANTER COMPATIBILIDADE)
 export const MARKETPLACE_CONTRACTS = {
   [chzMainnet.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '',
-  // Usar o contrato correto do .env.local para ambas as redes Polygon
   [polygon.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
   [polygonAmoy.id]: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
 } as const;
@@ -60,7 +65,37 @@ export const ALL_SUPPORTED_CONTRACTS = {
   ...LAUNCHPAD_CONTRACTS
 } as const;
 
-// Helper para obter todos os endereços de contratos suportados para uma chain
+// 🎯 HELPERS SIMPLIFICADOS (USAR ESTES!)
+export function getActiveChain() {
+  return isChzNetwork() ? chzMainnet : polygonAmoy;
+}
+
+export function getActiveContractAddress(type: 'marketplace' | 'nft' | 'launchpad'): string {
+  switch(type) {
+    case 'marketplace': return MARKETPLACE_CONTRACT;
+    case 'nft': return NFT_CONTRACT; 
+    case 'launchpad': return LAUNCHPAD_CONTRACT;
+    default: throw new Error(`Unknown contract type: ${type}`);
+  }
+}
+
+export function getActiveMarketplaceContract() {
+  return getContract({
+    client,
+    chain: getActiveChain(),
+    address: MARKETPLACE_CONTRACT,
+  });
+}
+
+export function getActiveNFTContract() {
+  return getContract({
+    client,
+    chain: getActiveChain(),
+    address: NFT_CONTRACT,
+  });
+}
+
+// 📋 LEGACY HELPER (MANTER COMPATIBILIDADE)
 export function getSupportedContractAddresses(chainId: number): string[] {
   const contracts: string[] = [];
   

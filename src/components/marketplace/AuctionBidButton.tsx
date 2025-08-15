@@ -189,7 +189,7 @@ export default function AuctionBidButton({
         <Button
           onClick={() => setIsOpen(true)}
           disabled={!canBid || isProcessing}
-          className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+          className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
         >
           {isProcessing ? (
             <>
@@ -220,7 +220,7 @@ export default function AuctionBidButton({
             onClick={handleBuyout}
             disabled={isProcessing}
             variant="outline"
-            className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
+            className="w-full border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white"
           >
             Buy Now for {buyoutPrice}
           </Button>
@@ -265,7 +265,7 @@ export default function AuctionBidButton({
             <Button
               onClick={handleBid}
               disabled={isProcessing || !bidAmount || parseFloat(bidAmount) < parseFloat(nextMinBid)}
-              className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+              className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
             >
               {isProcessing ? 'Sending Bid...' : 'Confirm Bid'}
             </Button>

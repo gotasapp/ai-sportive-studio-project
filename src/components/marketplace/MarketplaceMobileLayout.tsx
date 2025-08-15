@@ -214,7 +214,7 @@ export default function MarketplaceMobileLayout({
             onClick={() => setActiveFilter(filter)}
             className={
               (activeFilter === filter
-                ? 'bg-[#A20131] text-white'
+                ? 'bg-[#FF0052] text-white'
                 : 'text-white/80') +
               ' px-4 py-1.5 rounded-lg font-semibold text-xs border-none min-w-[60px] transition-all duration-150'
             }
@@ -236,7 +236,7 @@ export default function MarketplaceMobileLayout({
             placeholder="Search..."
             value={searchTerm}
             onChange={e => onSearch(e.target.value)}
-            className="w-full pl-10 pr-3 py-2 rounded-lg border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-[#A20131] transition-all text-sm"
+            className="w-full pl-10 pr-3 py-2 rounded-lg border border-white/10 text-white placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-[#FF0052] transition-all text-sm"
             style={{ background: 'rgba(20,16,30,0.4)' }}
           />
         </div>
@@ -245,21 +245,21 @@ export default function MarketplaceMobileLayout({
       <div className="flex justify-center gap-2 mb-2">
         <Button
           variant={viewTypeMobile === 'large' ? 'default' : 'outline'}
-          className={`rounded-full p-2 ${viewTypeMobile === 'large' ? 'bg-[#A20131] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
+          className={`rounded-full p-2 ${viewTypeMobile === 'large' ? 'bg-[#FF0052] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
           onClick={() => setViewTypeMobile('large')}
         >
           <LayoutGrid className="w-5 h-5" />
         </Button>
         <Button
           variant={viewTypeMobile === 'medium' ? 'default' : 'outline'}
-          className={`rounded-full p-2 ${viewTypeMobile === 'medium' ? 'bg-[#A20131] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
+          className={`rounded-full p-2 ${viewTypeMobile === 'medium' ? 'bg-[#FF0052] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
           onClick={() => setViewTypeMobile('medium')}
         >
           <Grid3X3 className="w-5 h-5" />
         </Button>
         <Button
           variant={viewTypeMobile === 'compact' ? 'default' : 'outline'}
-          className={`rounded-full p-2 ${viewTypeMobile === 'compact' ? 'bg-[#A20131] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
+          className={`rounded-full p-2 ${viewTypeMobile === 'compact' ? 'bg-[#FF0052] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
           onClick={() => setViewTypeMobile('compact')}
         >
           <List className="w-5 h-5" />

@@ -144,7 +144,7 @@ export default function NFTDetailPage() {
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin h-8 w-8 border-2 border-[#A20131] border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-8 w-8 border-2 border-[#FF0052] border-t-transparent rounded-full"></div>
           </div>
         </div>
       </div>
@@ -185,7 +185,7 @@ export default function NFTDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button onClick={handleToggleLike} variant="ghost" size="icon" className="text-[#FDFDFD]">
-              <Heart className={`h-5 w-5 ${isLiked ? 'fill-[#A20131] text-[#A20131]' : ''}`} />
+              <Heart className={`h-5 w-5 ${isLiked ? 'fill-[#FF0052] text-[#FF0052]' : ''}`} />
             </Button>
             <Button onClick={handleShare} variant="ghost" size="icon" className="text-[#FDFDFD]">
               <Share2 className="h-5 w-5" />
@@ -207,7 +207,7 @@ export default function NFTDetailPage() {
               
               {/* Badge de categoria */}
               <div className="absolute top-4 left-4">
-                <Badge className="bg-[#A20131] text-white">
+                <Badge className="bg-[#FF0052] text-white">
                   {nft.category.toUpperCase()}
                 </Badge>
               </div>
@@ -246,7 +246,7 @@ export default function NFTDetailPage() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <p className="text-sm text-[#FDFDFD]/70">Current Price</p>
-                    <p className="text-3xl font-bold text-[#A20131]">{nft.price}</p>
+                    <p className="text-3xl font-bold text-[#FF0052]">{nft.price}</p>
                   </div>
                   {nft.isAuction && nft.auctionEndTime && (
                     <div className="text-right">
@@ -279,7 +279,7 @@ export default function NFTDetailPage() {
                   ) : isOwner ? (
                     <Button
                       onClick={() => setShowCreateListing(true)}
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/90"
+                      className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90"
                     >
                       List for Sale
                     </Button>

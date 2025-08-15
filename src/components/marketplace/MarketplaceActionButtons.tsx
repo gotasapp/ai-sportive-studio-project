@@ -61,7 +61,7 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
   if (isListed && listingId) {
     if (isOwner) {
       return <>
-        <Button onClick={() => setShowUpdateListing(true)} className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white h-10 text-sm">
+        <Button onClick={() => setShowUpdateListing(true)} className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white h-10 text-sm">
           <Tag className="mr-2 h-4 w-4" />Update Price
         </Button>
         <CancelListingButton listingId={listingId} price={price} nftName={name} tokenId={tokenId} className="w-full h-10 text-sm" variant="outline" />
@@ -104,10 +104,10 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
   } else {
     return <>
       {isOwner ? <>
-        <Button onClick={handleListButtonClick} className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white h-10 text-sm">
+        <Button onClick={handleListButtonClick} className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white h-10 text-sm">
           <Tag className="mr-2 h-4 w-4" />List for Sale
         </Button>
-        <Button onClick={() => setShowCreateAuction(true)} variant="outline" className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white h-10 text-sm">
+        <Button onClick={() => setShowCreateAuction(true)} variant="outline" className="w-full border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white h-10 text-sm">
           🏆 Create Auction
         </Button>
         {showCreateListing && assetContract && (

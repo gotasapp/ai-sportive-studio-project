@@ -158,7 +158,7 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
                       onClick={() => goToPage(page)}
                       className={`h-8 w-8 p-0 ${
                         page === currentPage
-                          ? 'bg-[#A20131] text-[#FDFDFD] hover:bg-[#A20131]/80'
+                          ? 'bg-[#FF0052] text-[#FDFDFD] hover:bg-[#FF0052]/80'
                           : 'bg-[#000000] border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
                       }`}
                     >

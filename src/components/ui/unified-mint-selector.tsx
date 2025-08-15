@@ -115,8 +115,8 @@ export function UnifiedMintSelector({
           disabled={!canMint || isMinting}
           className={cn(
             "h-12 px-6 text-base font-medium transition-all duration-200",
-            "bg-gradient-to-r from-[#A20131] to-[#C41E3A]",
-            "hover:from-[#8B0120] hover:to-[#A20131]",
+            "bg-gradient-to-r from-[#FF0052] to-[#C41E3A]",
+            "hover:from-[#8B0120] hover:to-[#FF0052]",
             "text-white border-0 shadow-lg",
             "disabled:opacity-50 disabled:cursor-not-allowed",
             "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
@@ -205,8 +205,8 @@ export function UnifiedMintSelector({
                 className={cn(
                   "cursor-pointer px-3 py-1",
                   mintType === 'public' 
-                    ? "bg-[#A20131] text-white" 
-                    : "bg-transparent border-[#FDFDFD]/20 text-[#ADADAD] hover:bg-[#A20131]/10"
+                    ? "bg-[#FF0052] text-white" 
+                    : "bg-transparent border-[#FDFDFD]/20 text-[#ADADAD] hover:bg-[#FF0052]/10"
                 )}
                 onClick={() => setMintType('public')}
               >
@@ -220,8 +220,8 @@ export function UnifiedMintSelector({
                   className={cn(
                     "cursor-pointer px-3 py-1",
                     mintType === 'gasless' 
-                      ? "bg-[#A20131] text-white" 
-                      : "bg-transparent border-[#FDFDFD]/20 text-[#ADADAD] hover:bg-[#A20131]/10"
+                      ? "bg-[#FF0052] text-white" 
+                      : "bg-transparent border-[#FDFDFD]/20 text-[#ADADAD] hover:bg-[#FF0052]/10"
                   )}
                   onClick={() => {
                     setMintType('gasless')
@@ -307,8 +307,8 @@ export function UnifiedMintSelector({
             onClick={handleMint}
             disabled={!canMint || isMinting || !userAddress}
             className={cn(
-              "flex-1 bg-gradient-to-r from-[#A20131] to-[#C41E3A]",
-              "hover:from-[#8B0120] hover:to-[#A20131]",
+              "flex-1 bg-gradient-to-r from-[#FF0052] to-[#C41E3A]",
+              "hover:from-[#8B0120] hover:to-[#FF0052]",
               "text-white border-0"
             )}
           >

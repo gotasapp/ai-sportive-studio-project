@@ -107,7 +107,7 @@ export default function ProfessionalActionBar({
       disabled={!canGenerate || isLoading}
       className={cn(
         "group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
-        "bg-white !text-black hover:bg-[#A20131] hover:!text-white",
+        "bg-white !text-black hover:bg-[#FF0052] hover:!text-white",
         // Mobile responsiveness
         "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
       )}
@@ -119,7 +119,7 @@ export default function ProfessionalActionBar({
         </div>
       ) : (
         <div className="flex items-center gap-3 max-lg:gap-2">
-          <Zap className="w-6 h-6 fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white max-lg:w-4 max-lg:h-4" />
+          <Zap className="w-6 h-6 fill-[#FF0052] stroke-[#FF0052] group-hover:fill-white group-hover:stroke-white max-lg:w-4 max-lg:h-4" />
           <span>Generate Jersey</span>
           {generationCost && (
             <Badge variant="secondary" className="border-none bg-black/20 text-black max-lg:text-xs max-lg:px-1.5 max-lg:py-0.5">
@@ -174,7 +174,7 @@ export default function ProfessionalActionBar({
                 variant="outline"
                 className={cn(
                   "h-12 px-6 text-base font-medium transition-all duration-200",
-                  "bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20",
+                  "bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052] hover:bg-[#FF0052]/20",
                   "disabled:opacity-50 disabled:cursor-not-allowed",
                   // Mobile responsiveness
                   "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
@@ -201,7 +201,7 @@ export default function ProfessionalActionBar({
             <Button
               disabled={!isConnected || isMinting}
               variant="outline"
-              className="h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
+              className="h-12 px-6 text-base font-medium bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052] hover:bg-[#FF0052]/20 disabled:opacity-50"
               onClick={() => console.log('🎯 Smart Mint clicked!')}
             >
               <span>Mint</span>

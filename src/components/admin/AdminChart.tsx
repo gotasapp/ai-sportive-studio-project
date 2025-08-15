@@ -23,7 +23,7 @@ const chartConfig = {
   },
   accent: {
     label: "Accent",
-    color: "#A20131", // Chart accent
+    color: "#FF0052", // Chart accent
   }
 };
 

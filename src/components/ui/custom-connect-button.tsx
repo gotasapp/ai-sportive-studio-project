@@ -49,7 +49,7 @@ export function CustomConnectButton({
         onClick={() => setIsDropdownOpen(!isDropdownOpen)}
       >
         <div className="flex items-center space-x-2">
-          <div className="w-6 h-6 rounded-full bg-[#A20131] flex items-center justify-center">
+          <div className="w-6 h-6 rounded-full bg-[#FF0052] flex items-center justify-center">
             <Wallet className="w-3 h-3 text-white" />
           </div>
           <div className="text-left">
@@ -79,7 +79,7 @@ export function CustomConnectButton({
           <div className="absolute right-0 top-full mt-2 w-64 bg-[#14101e] border border-gray-600 rounded-lg shadow-lg z-50">
             <div className="p-4">
               <div className="flex items-center space-x-3 mb-3">
-                <div className="w-10 h-10 rounded-full bg-[#A20131] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-[#FF0052] flex items-center justify-center">
                   <Wallet className="w-5 h-5 text-white" />
                 </div>
                 <div>

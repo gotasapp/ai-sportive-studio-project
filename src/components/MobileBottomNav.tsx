@@ -115,14 +115,14 @@ export default function MobileBottomNav() {
                   ${isActive 
                     ? 'text-white' 
                     : item.label === 'Admin' 
-                      ? 'text-[#FDFDFD]/60 hover:text-[#A20131] hover:scale-110'
+                      ? 'text-[#FDFDFD]/60 hover:text-[#FF0052] hover:scale-110'
                       : 'text-[#FDFDFD]/60 hover:text-white hover:scale-110'
                   }
                 `}
               >
                 {/* Active Background Circle */}
                 {isActive && (
-                  <div className="absolute inset-0 bg-[#A20131] rounded-xl opacity-90 animate-pulse" />
+                  <div className="absolute inset-0 bg-[#FF0052] rounded-xl opacity-90 animate-pulse" />
                 )}
                 
                 {/* Icon */}

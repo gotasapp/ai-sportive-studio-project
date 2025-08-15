@@ -33,28 +33,28 @@ export default function MarketplaceStats({
       title: "Listings",
       value: totalListings,
       description: "For sale",
-      icon: <Tag className="h-3 w-3 text-[#A20131]" />,
+      icon: <Tag className="h-3 w-3 text-[#FF0052]" />,
       color: "text-[#FDFDFD]"
     },
     {
       title: "Auctions", 
       value: totalAuctions,
       description: "Active",
-      icon: <TrendingUp className="h-3 w-3 text-[#A20131]" />,
+      icon: <TrendingUp className="h-3 w-3 text-[#FF0052]" />,
       color: "text-[#FDFDFD]"
     },
     {
       title: "Volume",
       value: totalVolume,
       description: "Total",
-      icon: <DollarSign className="h-3 w-3 text-[#A20131]" />,
+      icon: <DollarSign className="h-3 w-3 text-[#FF0052]" />,
       color: "text-[#FDFDFD]"
     },
     {
       title: "Floor",
       value: floorPrice,
       description: "Lowest",
-      icon: <BarChart3 className="h-3 w-3 text-[#A20131]" />,
+      icon: <BarChart3 className="h-3 w-3 text-[#FF0052]" />,
       color: "text-[#FDFDFD]"
     }
   ];
@@ -67,7 +67,7 @@ export default function MarketplaceStats({
             <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
               {stat.title}
             </CardTitle>
-            <div className="p-1 rounded bg-[#A20131]/20">
+            <div className="p-1 rounded bg-[#FF0052]/20">
               {stat.icon}
             </div>
           </CardHeader>

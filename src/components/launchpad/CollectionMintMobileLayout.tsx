@@ -83,7 +83,7 @@ export default function CollectionMintMobileLayout({
       <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518]">
         <Header />
         <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A20131]"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
         </div>
       </div>
     );
@@ -219,7 +219,7 @@ export default function CollectionMintMobileLayout({
           
           {/* Creator */}
           <div className="flex items-center space-x-2">
-            <div className="w-5 h-5 bg-[#A20131] rounded-full flex items-center justify-center">
+            <div className="w-5 h-5 bg-[#FF0052] rounded-full flex items-center justify-center">
               <span className="text-xs font-bold">
                 {collection.creator?.name?.charAt(0) || 'C'}
               </span>
@@ -235,19 +235,19 @@ export default function CollectionMintMobileLayout({
       <div className="px-3 py-3 bg-[#14101e]/40 border-b border-[#FDFDFD]/10">
         <div className="grid grid-cols-3 gap-3 text-center">
           <div>
-            <div className="text-[#A20131] font-bold text-base">
+            <div className="text-[#FF0052] font-bold text-base">
               {formatPrice(claimCondition?.pricePerToken)}
             </div>
             <div className="text-[#FDFDFD]/60 text-xs">Price</div>
           </div>
           <div>
-            <div className="text-[#A20131] font-bold text-base">
+            <div className="text-[#FF0052] font-bold text-base">
               {collection.minted}/{collection.totalSupply}
             </div>
             <div className="text-[#FDFDFD]/60 text-xs">Minted</div>
           </div>
           <div>
-            <div className="text-[#A20131] font-bold text-base">{progress}%</div>
+            <div className="text-[#FF0052] font-bold text-base">{progress}%</div>
             <div className="text-[#FDFDFD]/60 text-xs">Progress</div>
           </div>
         </div>
@@ -272,19 +272,19 @@ export default function CollectionMintMobileLayout({
             <TabsList className="grid w-full grid-cols-3 bg-transparent h-10">
               <TabsTrigger 
                 value="mint" 
-                className="text-white data-[state=active]:bg-[#A20131] data-[state=active]:text-white text-sm py-2"
+                className="text-white data-[state=active]:bg-[#FF0052] data-[state=active]:text-white text-sm py-2"
               >
                 Mint
               </TabsTrigger>
               <TabsTrigger 
                 value="details" 
-                className="text-white data-[state=active]:bg-[#A20131] data-[state=active]:text-white text-sm py-2"
+                className="text-white data-[state=active]:bg-[#FF0052] data-[state=active]:text-white text-sm py-2"
               >
                 Details
               </TabsTrigger>
               <TabsTrigger 
                 value="activity" 
-                className="text-white data-[state=active]:bg-[#A20131] data-[state=active]:text-white text-sm py-2"
+                className="text-white data-[state=active]:bg-[#FF0052] data-[state=active]:text-white text-sm py-2"
               >
                 Activity
               </TabsTrigger>
@@ -295,15 +295,15 @@ export default function CollectionMintMobileLayout({
             <TabsContent value="mint" className="mt-0 space-y-4">
               {/* Wallet Connection Check - Compacto */}
               {!isConnected && (
-                <Card className="bg-[#14101e]/60 border-[#A20131]/30">
+                <Card className="bg-[#14101e]/60 border-[#FF0052]/30">
                   <CardContent className="p-3 text-center">
-                    <Wallet className="w-6 h-6 text-[#A20131] mx-auto mb-2" />
+                    <Wallet className="w-6 h-6 text-[#FF0052] mx-auto mb-2" />
                     <h3 className="font-semibold text-white mb-1 text-sm">Connect Wallet</h3>
                     <p className="text-[#FDFDFD]/60 text-xs mb-3">
                       Connect your wallet to mint from this collection
                     </p>
                     <Button 
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/80 h-9 text-sm"
+                      className="w-full bg-[#FF0052] hover:bg-[#FF0052]/80 h-9 text-sm"
                       onClick={() => {/* Wallet connection handled by Header */}}
                     >
                       Connect Wallet
@@ -319,7 +319,7 @@ export default function CollectionMintMobileLayout({
                   <Card className="bg-[#14101e]/60 border-[#FDFDFD]/10">
                     <CardHeader className="pb-1 pt-2">
                       <CardTitle className="text-white flex items-center gap-1 text-sm">
-                        <Target className="w-3 h-3 text-[#A20131]" />
+                        <Target className="w-3 h-3 text-[#FF0052]" />
                         Select Quantity
                       </CardTitle>
                     </CardHeader>
@@ -330,7 +330,7 @@ export default function CollectionMintMobileLayout({
                           size="sm"
                           onClick={() => setMintQuantity(Math.max(1, mintQuantity - 1))}
                           disabled={mintQuantity <= 1}
-                          className="h-6 w-6 rounded-full border-[#FDFDFD]/20 text-white hover:bg-[#A20131]/20 p-0"
+                          className="h-6 w-6 rounded-full border-[#FDFDFD]/20 text-white hover:bg-[#FF0052]/20 p-0"
                         >
                           <Minus className="w-2.5 h-2.5" />
                         </Button>
@@ -351,7 +351,7 @@ export default function CollectionMintMobileLayout({
                           size="sm"
                           onClick={() => setMintQuantity(mintQuantity + 1)}
                           disabled={mintQuantity >= 10}
-                          className="h-6 w-6 rounded-full border-[#FDFDFD]/20 text-white hover:bg-[#A20131]/20 p-0"
+                          className="h-6 w-6 rounded-full border-[#FDFDFD]/20 text-white hover:bg-[#FF0052]/20 p-0"
                         >
                           <Plus className="w-2.5 h-2.5" />
                         </Button>
@@ -369,7 +369,7 @@ export default function CollectionMintMobileLayout({
                     <Button
                       onClick={onMint}
                       disabled={isMinting || collection.status !== 'active'}
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/80 text-white font-semibold h-10 text-sm"
+                      className="w-full bg-[#FF0052] hover:bg-[#FF0052]/80 text-white font-semibold h-10 text-sm"
                     >
                       {isMinting ? (
                         <div className="flex items-center gap-2">
@@ -395,11 +395,11 @@ export default function CollectionMintMobileLayout({
                         onClick={onGaslessMint}
                         disabled={isGaslessMinting}
                         variant="outline"
-                        className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131]/10 h-10 text-sm"
+                        className="w-full border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052]/10 h-10 text-sm"
                       >
                         {isGaslessMinting ? (
                           <div className="flex items-center gap-2">
-                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#A20131]"></div>
+                            <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#FF0052]"></div>
                             Gasless Minting...
                           </div>
                         ) : (
@@ -480,7 +480,7 @@ export default function CollectionMintMobileLayout({
                             variant="ghost" 
                             size="sm" 
                             onClick={copyContractAddress}
-                            className="text-[#A20131] hover:bg-[#A20131]/10 h-auto p-1 text-xs"
+                            className="text-[#FF0052] hover:bg-[#FF0052]/10 h-auto p-1 text-xs"
                           >
                             <Copy className="w-3 h-3 mr-1" />
                             {collection.contractAddress.slice(0, 6)}...{collection.contractAddress.slice(-4)}
@@ -505,7 +505,7 @@ export default function CollectionMintMobileLayout({
                           href={collection.website} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[#A20131] hover:text-[#A20131]/80 text-sm"
+                          className="flex items-center gap-2 text-[#FF0052] hover:text-[#FF0052]/80 text-sm"
                         >
                           <Globe className="w-3 h-3" />
                           Website
@@ -517,7 +517,7 @@ export default function CollectionMintMobileLayout({
                           href={collection.twitter} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[#A20131] hover:text-[#A20131]/80 text-sm"
+                          className="flex items-center gap-2 text-[#FF0052] hover:text-[#FF0052]/80 text-sm"
                         >
                           <Twitter className="w-3 h-3" />
                           Twitter
@@ -529,7 +529,7 @@ export default function CollectionMintMobileLayout({
                           href={collection.discord} 
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center gap-2 text-[#A20131] hover:text-[#A20131]/80 text-sm"
+                          className="flex items-center gap-2 text-[#FF0052] hover:text-[#FF0052]/80 text-sm"
                         >
                           <MessageCircle className="w-3 h-3" />
                           Discord

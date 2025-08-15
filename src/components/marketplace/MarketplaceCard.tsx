@@ -175,7 +175,7 @@ export default function MarketplaceCard({
           <div className="space-y-2">
             <Button
               onClick={() => setShowUpdateListing(true)}
-              className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+              className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
             >
               <Tag className="mr-2 h-4 w-4" />
               Update Price
@@ -296,7 +296,7 @@ export default function MarketplaceCard({
             <>
               <Button
                 onClick={handleListButtonClick}
-                className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
               >
                 <Tag className="mr-2 h-4 w-4" />
                 List for Sale
@@ -316,7 +316,7 @@ export default function MarketplaceCard({
                   setShowCreateAuction(true);
                 }}
                 variant="outline"
-                className="w-full border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white"
+                className="w-full border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white"
               >
                 🏆 Create Auction
               </Button>
@@ -336,7 +336,7 @@ export default function MarketplaceCard({
 
   return (
     <>
-      <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10 relative">
+      <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#FF0052]/10 relative">
         <Link href={
           isCustomCollection && collectionId 
             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
@@ -382,10 +382,10 @@ export default function MarketplaceCard({
                 <div className="flex items-center gap-2">
                   <p className="text-xs text-[#FDFDFD]/70">Current Bid</p>
                   {auctionData.isLoading && (
-                    <div className="animate-spin h-3 w-3 border border-[#A20131] border-t-transparent rounded-full"></div>
+                    <div className="animate-spin h-3 w-3 border border-[#FF0052] border-t-transparent rounded-full"></div>
                   )}
                 </div>
-                <p className="text-sm font-medium text-[#A20131]">{displayCurrentBid || price}</p>
+                <p className="text-sm font-medium text-[#FF0052]">{displayCurrentBid || price}</p>
                 {auctionData.lastUpdated && (
                   <p className="text-xs text-[#FDFDFD]/50">
                     Updated: {new Date(auctionData.lastUpdated).toLocaleTimeString()}
@@ -395,7 +395,7 @@ export default function MarketplaceCard({
             ) : (
               <div>
                 <div className="flex items-center gap-2">
-                  <p className={`text-sm font-medium ${isPriceValid ? 'text-[#A20131]' : 'text-red-400'}`}>{safePrice}</p>
+                  <p className={`text-sm font-medium ${isPriceValid ? 'text-[#FF0052]' : 'text-red-400'}`}>{safePrice}</p>
                   {!isPriceValid && price !== 'Not for sale' && price !== 'N/A' && (
                     <div title="Invalid price detected">
                       <AlertTriangle className="h-4 w-4 text-red-400" />
@@ -408,7 +408,7 @@ export default function MarketplaceCard({
             {/* Active Offers Counter */}
             {activeOffers > 0 && (
               <div className="mt-1">
-                <p className="text-xs text-[#A20131]">
+                <p className="text-xs text-[#FF0052]">
                   {activeOffers} active offer{activeOffers !== 1 ? 's' : ''}
                 </p>
               </div>

@@ -179,10 +179,10 @@ export function NFTDetailsModal({
 
   const getStatusBadge = (status: string) => {
     const config = {
-      owned: { variant: 'default' as const, color: 'bg-[#A20131]/20 text-[#A20131]' },
+      owned: { variant: 'default' as const, color: 'bg-[#FF0052]/20 text-[#FF0052]' },
       listed: { variant: 'secondary' as const, color: 'bg-[#FDFDFD]/20 text-[#FDFDFD]' },
       sold: { variant: 'outline' as const, color: 'bg-[#FDFDFD]/10 text-[#FDFDFD]/70' },
-      created: { variant: 'default' as const, color: 'bg-[#A20131]/20 text-[#A20131]' }
+      created: { variant: 'default' as const, color: 'bg-[#FF0052]/20 text-[#FF0052]' }
     }
     
     const statusConfig = config[status as keyof typeof config] || config.owned
@@ -257,7 +257,7 @@ export function NFTDetailsModal({
         {isLoading ? (
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#A20131] mx-auto mb-4" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#FF0052] mx-auto mb-4" />
               <p className="text-[#FDFDFD]/70">Loading NFT details...</p>
             </div>
           </div>
@@ -380,7 +380,7 @@ export function NFTDetailsModal({
                           <DollarSign className="h-4 w-4" />
                           Price
                         </span>
-                        <span className="text-[#A20131] font-semibold">{(displayData as any).price}</span>
+                        <span className="text-[#FF0052] font-semibold">{(displayData as any).price}</span>
                       </div>
                     )}
 
@@ -450,7 +450,7 @@ export function NFTDetailsModal({
                                 {/* Adicionar porcentagem se disponível */}
                                 <Badge 
                                   variant="outline" 
-                                  className="rounded-full px-2 py-0.5 text-xs bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131]"
+                                  className="rounded-full px-2 py-0.5 text-xs bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052]"
                                 >
                                   100%
                                 </Badge>

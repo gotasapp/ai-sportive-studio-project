@@ -169,7 +169,7 @@ export function UpdateListingModal({
           </div>
 
           {newPrice && (
-            <div className="p-3 bg-[#A20131]/10 border border-[#A20131]/30 rounded-lg">
+            <div className="p-3 bg-[#FF0052]/10 border border-[#FF0052]/30 rounded-lg">
               <p className="text-sm text-[#FDFDFD]">
                 <span className="text-[#FDFDFD]/70">Price change:</span>{' '}
                 <span className="font-medium">
@@ -200,7 +200,7 @@ export function UpdateListingModal({
           <Button
             onClick={handleUpdatePrice}
             disabled={isLoading || !priceChanged}
-            className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+            className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
           >
             {isLoading ? (
               <>

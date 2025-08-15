@@ -257,12 +257,12 @@ export default function StadiumMobileLayout({
         {!generatedImage && (
           <div className="mt-2 flex justify-center">
             <Button
-              className="group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-white !text-black hover:bg-[#A20131] hover:!text-white w-full"
+              className="group h-12 px-8 text-base font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed bg-white !text-black hover:bg-[#FF0052] hover:!text-white w-full"
               onClick={onGenerate}
               disabled={isLoading || !selectedStadium}
             >
               <div className="flex items-center gap-3 max-lg:gap-2">
-                <Zap className="w-6 h-6 fill-[#A20131] stroke-[#A20131] group-hover:fill-white group-hover:stroke-white max-lg:w-4 max-lg:h-4" />
+                <Zap className="w-6 h-6 fill-[#FF0052] stroke-[#FF0052] group-hover:fill-white group-hover:stroke-white max-lg:w-4 max-lg:h-4" />
                 <span>{isLoading ? 'Generating...' : 'Generate Stadium'}</span>
               </div>
             </Button>
@@ -322,7 +322,7 @@ export default function StadiumMobileLayout({
                   <Button
                     disabled={!isConnected || isMinting}
                     variant="outline"
-                    className="w-full h-12 px-6 text-base font-medium bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50"
+                    className="w-full h-12 px-6 text-base font-medium bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052] hover:bg-[#FF0052]/20 disabled:opacity-50"
                   >
                     Mint
                   </Button>

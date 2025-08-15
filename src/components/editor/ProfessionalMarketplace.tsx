@@ -110,7 +110,7 @@ export default function ProfessionalMarketplace({
   const renderGridItem = (item: MarketplaceItem, index: number) => (
     <Card 
       key={index}
-      className="bg-[#333333]/20 border-[#333333] hover:border-[#A20131]/50 transition-all duration-200 cursor-pointer group marketplace-card"
+      className="bg-[#333333]/20 border-[#333333] hover:border-[#FF0052]/50 transition-all duration-200 cursor-pointer group marketplace-card"
       onClick={() => onItemClick?.(item)}
     >
       <CardContent className="p-3 max-lg:p-2">
@@ -139,7 +139,7 @@ export default function ProfessionalMarketplace({
         <div className="space-y-2 max-lg:space-y-1">
           <h4 className="text-sm font-medium text-[#FDFDFD] truncate max-lg:text-xs">{item.name}</h4>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#A20131] font-medium max-lg:text-[10px]">{formatPrice(item.price)}</span>
+            <span className="text-xs text-[#FF0052] font-medium max-lg:text-[10px]">{formatPrice(item.price)}</span>
             <div className="flex items-center gap-2 text-xs text-[#ADADAD] max-lg:text-[10px] max-lg:gap-1">
               {item.likes && (
                 <div className="flex items-center gap-1 max-lg:gap-0.5">
@@ -192,7 +192,7 @@ export default function ProfessionalMarketplace({
         </div>
         
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#A20131] font-medium max-lg:text-[10px]">{formatPrice(item.price)}</span>
+          <span className="text-xs text-[#FF0052] font-medium max-lg:text-[10px]">{formatPrice(item.price)}</span>
           <div className="flex items-center gap-2 text-xs text-[#ADADAD] max-lg:text-[10px] max-lg:gap-1">
             {item.likes && (
               <div className="flex items-center gap-1 max-lg:gap-0.5">
@@ -218,7 +218,7 @@ export default function ProfessionalMarketplace({
       <div className="flex-shrink-0 mb-4 max-lg:mb-2">
         <div className="flex items-center justify-between mb-3 max-lg:mb-2">
           <div className="flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-[#A20131] max-lg:w-3 max-lg:h-3" />
+            <TrendingUp className="w-4 h-4 text-[#FF0052] max-lg:w-3 max-lg:h-3" />
             <h3 className="font-semibold text-[#FDFDFD] text-sm max-lg:text-xs">{title}</h3>
           </div>
           <div className="flex items-center gap-2 max-lg:gap-1">
@@ -245,7 +245,7 @@ export default function ProfessionalMarketplace({
                 variant="ghost"
                 size="sm"
                 onClick={onViewAll}
-                className="text-[#A20131] hover:text-[#FDFDFD] text-xs px-2 py-1 h-auto max-lg:text-[10px] max-lg:px-1"
+                className="text-[#FF0052] hover:text-[#FDFDFD] text-xs px-2 py-1 h-auto max-lg:text-[10px] max-lg:px-1"
               >
                 View All
               </Button>
@@ -327,7 +327,7 @@ export default function ProfessionalMarketplace({
                 {filteredItems.map((item, index) => (
                   <div key={index} className="flex-shrink-0 w-32 marketplace-card-mobile">
                     <Card 
-                      className="bg-[#333333]/20 border-[#333333] hover:border-[#A20131]/50 transition-all duration-200 cursor-pointer group h-full"
+                      className="bg-[#333333]/20 border-[#333333] hover:border-[#FF0052]/50 transition-all duration-200 cursor-pointer group h-full"
                       onClick={() => onItemClick?.(item)}
                     >
                       <CardContent className="p-2">
@@ -349,7 +349,7 @@ export default function ProfessionalMarketplace({
                         <div className="space-y-1">
                           <h4 className="text-[10px] font-medium text-[#FDFDFD] truncate">{item.name}</h4>
                           <div className="flex items-center justify-between">
-                            <span className="text-[9px] text-[#A20131] font-medium">{formatPrice(item.price)}</span>
+                            <span className="text-[9px] text-[#FF0052] font-medium">{formatPrice(item.price)}</span>
                           </div>
                         </div>
                       </CardContent>
@@ -365,7 +365,7 @@ export default function ProfessionalMarketplace({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleScroll('up')}
-                className="w-6 h-6 p-0 bg-[#333333]/50 hover:bg-[#A20131]/50 text-[#ADADAD] hover:text-[#FDFDFD]"
+                className="w-6 h-6 p-0 bg-[#333333]/50 hover:bg-[#FF0052]/50 text-[#ADADAD] hover:text-[#FDFDFD]"
               >
                 <ChevronUp className="w-3 h-3" />
               </Button>
@@ -373,7 +373,7 @@ export default function ProfessionalMarketplace({
                 variant="ghost"
                 size="sm"
                 onClick={() => handleScroll('down')}
-                className="w-6 h-6 p-0 bg-[#333333]/50 hover:bg-[#A20131]/50 text-[#ADADAD] hover:text-[#FDFDFD]"
+                className="w-6 h-6 p-0 bg-[#333333]/50 hover:bg-[#FF0052]/50 text-[#ADADAD] hover:text-[#FDFDFD]"
               >
                 <ChevronDown className="w-3 h-3" />
               </Button>

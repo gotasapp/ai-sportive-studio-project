@@ -249,7 +249,7 @@ export default function Header() {
                 onClick={toggleMobileMenu}
                 className={cn(
                   "text-[#ADADAD] hover:text-[#FDFDFD] hover:bg-[#333333]/50 p-2",
-                  mobileMenuOpen && "bg-[#A20131]/20 text-[#A20131]"
+                  mobileMenuOpen && "bg-[#FF0052]/20 text-[#FF0052]"
                 )}
               >
                 {mobileMenuOpen ? (

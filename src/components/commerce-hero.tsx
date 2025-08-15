@@ -53,7 +53,7 @@ export function CommerceHero() {
               <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent block mb-4">
                 FAN SPORTS
                 </span>
-              <span className="bg-gradient-to-r from-[#A20131] via-[#A20131]/90 to-[#A20131]/70 bg-clip-text text-transparent block">
+              <span className="bg-gradient-to-r from-[#FF0052] via-[#FF0052]/90 to-[#FF0052]/70 bg-clip-text text-transparent block">
                 NFTs
                 </span>
               </motion.h1>
@@ -75,12 +75,12 @@ export function CommerceHero() {
               transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
             >
               <a href="/marketplace" className="inline-block">
-                <button className="px-6 py-2.5 bg-[#A20131] hover:bg-[#8B0128] text-white rounded-full font-medium transition-all transform hover:scale-105 text-sm">
+                <button className="px-6 py-2.5 bg-[#FF0052] hover:bg-[#8B0128] text-white rounded-full font-medium transition-all transform hover:scale-105 text-sm">
                   MARKETPLACE
                 </button>
               </a>
               <a href="/jerseys" className="inline-block">
-                <button className="px-6 py-2.5 border border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white rounded-full font-medium transition-all text-sm">
+                <button className="px-6 py-2.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white rounded-full font-medium transition-all text-sm">
                   CREATE
                 </button>
               </a>
@@ -94,10 +94,10 @@ export function CommerceHero() {
               transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
             >
               <div className="flex -space-x-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B0128] to-[#A20131] border-2 border-[#14101e]"></div>
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#A20131] to-[#FF1744] border-2 border-[#14101e]"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#8B0128] to-[#FF0052] border-2 border-[#14101e]"></div>
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF0052] to-[#FF1744] border-2 border-[#14101e]"></div>
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FF1744] to-white border-2 border-[#14101e]"></div>
-                <div className="w-8 h-8 rounded-full bg-white border-2 border-[#14101e] flex items-center justify-center text-xs text-[#A20131] font-semibold">
+                <div className="w-8 h-8 rounded-full bg-white border-2 border-[#14101e] flex items-center justify-center text-xs text-[#FF0052] font-semibold">
                   +50
                 </div>
               </div>

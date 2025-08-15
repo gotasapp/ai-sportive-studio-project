@@ -404,7 +404,7 @@ export function BatchMintDialog({
       <DialogContent className="bg-[#14101e] border-gray-600 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-white flex items-center gap-2">
-            <Zap className="h-5 w-5 text-[#A20131]" />
+            <Zap className="h-5 w-5 text-[#FF0052]" />
             Mint NFTs
           </DialogTitle>
         </DialogHeader>
@@ -528,7 +528,7 @@ export function BatchMintDialog({
                 <Button
                   onClick={handleBatchMint}
                   disabled={deployStep !== 'idle' || !to}
-                  className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
+                  className="flex-1 bg-[#FF0052] hover:bg-[#8a0129]"
                 >
                   {deployStep === 'idle' ? (
                     <>
@@ -547,7 +547,7 @@ export function BatchMintDialog({
                 </Button>
               </>
             ) : (
-              <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
+              <Button onClick={handleClose} className="w-full bg-[#FF0052] hover:bg-[#8a0129]">
                 Done
               </Button>
             )}

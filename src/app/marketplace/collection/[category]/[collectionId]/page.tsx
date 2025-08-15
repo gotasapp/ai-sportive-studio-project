@@ -196,7 +196,7 @@ export default function CollectionDetailPage({
                 {collectionData?.description || 'Loading description...'}
               </p>
               <div className="flex gap-2 mb-4">
-                <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30">
+                <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/30">
                   {collectionData?.category || params.category}
                 </Badge>
                 <Badge variant="secondary" className="bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20">
@@ -233,7 +233,7 @@ export default function CollectionDetailPage({
             
             {/* Botão de ação */}
             <div className="mt-2">
-              <Button className="cyber-button bg-[#A20131] text-white hover:bg-[#A20131]/80 border-[#A20131] w-full md:w-auto">
+              <Button className="cyber-button bg-[#FF0052] text-white hover:bg-[#FF0052]/80 border-[#FF0052] w-full md:w-auto">
                 {isCustomCollection ? 'Ver Coleção Completa' : 'Explorar NFTs'}
               </Button>
             </div>
@@ -277,25 +277,25 @@ export default function CollectionDetailPage({
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                  <div className="text-2xl font-bold text-[#FF0052] mb-1">
                     {collectionData?.totalSupply || '--'}
                   </div>
                   <div className="text-[#FDFDFD]/70">Total Supply</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                  <div className="text-2xl font-bold text-[#FF0052] mb-1">
                     {collectionData?.stats?.totalMinted || '--'}
                   </div>
                   <div className="text-[#FDFDFD]/70">Mintados</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-[#A20131] mb-1">
+                  <div className="text-2xl font-bold text-[#FF0052] mb-1">
                     {collectionData?.activity?.transactions || 0}
                   </div>
                   <div className="text-[#FDFDFD]/70">Transações</div>
                 </div>
               </div>
-              <Button className="cyber-button bg-[#A20131] text-white hover:bg-[#A20131]/80 border-[#A20131] mt-6">
+              <Button className="cyber-button bg-[#FF0052] text-white hover:bg-[#FF0052]/80 border-[#FF0052] mt-6">
                 Ver NFTs no Marketplace
               </Button>
             </div>
@@ -311,7 +311,7 @@ export default function CollectionDetailPage({
               </CardHeader>
               <CardContent className="p-4 pt-0">
                 <div className="flex flex-wrap gap-2">
-                  <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30 rounded-full px-2 py-0.5 text-xs">
+                  <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/30 rounded-full px-2 py-0.5 text-xs">
                     {collectionData.category}
                   </Badge>
                   {isCustomCollection && (

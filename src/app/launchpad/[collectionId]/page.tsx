@@ -230,7 +230,7 @@ export default function CollectionMintPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF0052] mx-auto mb-4"></div>
           <h1 className="text-xl font-bold text-white">Loading collection...</h1>
         </div>
       </div>
@@ -783,7 +783,7 @@ export default function CollectionMintPage() {
                         <div key={index} className="flex items-start gap-4">
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                             phase.status === 'completed' ? 'bg-green-500' :
-                            phase.status === 'in-progress' ? 'bg-[#A20131]' : 'bg-gray-600'
+                            phase.status === 'in-progress' ? 'bg-[#FF0052]' : 'bg-gray-600'
                           }`}>
                             {phase.status === 'completed' ? (
                               <CheckCircle className="w-4 h-4 text-white" />
@@ -823,7 +823,7 @@ export default function CollectionMintPage() {
                           />
                           <div>
                             <h4 className="font-semibold text-white">{member.name}</h4>
-                            <p className="text-[#A20131] text-sm font-medium">{member.role}</p>
+                            <p className="text-[#FF0052] text-sm font-medium">{member.role}</p>
                             <p className="text-gray-400 text-sm mt-1">{member.bio}</p>
                           </div>
                         </div>
@@ -873,14 +873,14 @@ export default function CollectionMintPage() {
                       key={stage.id}
                       className={`p-4 rounded-lg border ${
                         stage.status === 'live' 
-                          ? 'border-[#A20131] bg-[#A20131]/10' 
+                          ? 'border-[#FF0052] bg-[#FF0052]/10' 
                           : 'border-gray-600 bg-gray-800/20'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           {stage.status === 'live' ? (
-                            <Unlock className="w-4 h-4 text-[#A20131]" />
+                            <Unlock className="w-4 h-4 text-[#FF0052]" />
                           ) : stage.status === 'ended' ? (
                             <CheckCircle className="w-4 h-4 text-gray-400" />
                           ) : (
@@ -891,7 +891,7 @@ export default function CollectionMintPage() {
                         <Badge 
                           className={`${
                             stage.status === 'live' 
-                              ? 'bg-[#A20131]/20 text-[#A20131] border-[#A20131]/50' 
+                              ? 'bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/50' 
                               : stage.status === 'ended'
                               ? 'bg-gray-500/20 text-gray-400 border-gray-500/50'
                               : 'bg-orange-500/20 text-orange-400 border-orange-500/50'
@@ -1018,7 +1018,7 @@ export default function CollectionMintPage() {
 
                     <Button 
                       onClick={handleMint}
-                      className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                      className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
                       size="lg"
                       disabled={!isConnected || isMinting || isLoadingClaimCondition || !claimCondition || collection.status !== 'active' || maxQuantity <= 0}
                     >

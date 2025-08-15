@@ -161,7 +161,7 @@ export default function ProfessionalStadiumSidebar({
       <div className="flex items-center gap-3">
         <Icon className="h-4 w-4 text-[#ADADAD]" />
         <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
-        {required && <span className="text-[#A20131] text-xs"></span>}
+        {required && <span className="text-[#FF0052] text-xs"></span>}
         {/* Remover badge do SectionHeader */}
         {/* {badge && (
           <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
@@ -403,7 +403,7 @@ export default function ProfessionalStadiumSidebar({
             />
             {expandedSections.vision && (
               <div
-                className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#A20131] hover:bg-[#A20131]/5 transition-colors"
+                className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#FF0052] hover:bg-[#FF0052]/5 transition-colors"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <input
@@ -466,7 +466,7 @@ export default function ProfessionalStadiumSidebar({
               <CardContent className="p-4">
                 <div className="p-2 cyber-select">
                   <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
-                  <div className="text-sm font-medium text-[#A20131]">${generationCost.toFixed(3)}</div>
+                  <div className="text-sm font-medium text-[#FF0052]">${generationCost.toFixed(3)}</div>
                 </div>
               </CardContent>
             </div>

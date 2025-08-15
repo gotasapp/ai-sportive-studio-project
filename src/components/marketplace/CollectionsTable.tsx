@@ -414,7 +414,7 @@ export default function CollectionsTable({
     return (
       <div className="rounded-lg border border-[#FDFDFD]/10 p-6" style={{ backgroundColor: '#14101e' }}>
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-8 h-8 text-[#A20131] animate-spin mr-3" />
+          <Loader2 className="w-8 h-8 text-[#FF0052] animate-spin mr-3" />
           <span className="text-[#FDFDFD]/70">Loading collections...</span>
         </div>
       </div>
@@ -430,7 +430,7 @@ export default function CollectionsTable({
           <p className="text-[#FDFDFD]/70 mb-4">{error}</p>
           <Button 
             onClick={() => window.location.reload()} 
-            className="bg-[#A20131] hover:bg-[#A20131]/90"
+            className="bg-[#FF0052] hover:bg-[#FF0052]/90"
           >
             Retry
           </Button>
@@ -497,7 +497,7 @@ export default function CollectionsTable({
                       <Star 
                         className={`w-4 h-4 ${
                           collection.isWatchlisted 
-                            ? 'text-[#A20131] fill-[#A20131]' 
+                            ? 'text-[#FF0052] fill-[#FF0052]' 
                             : 'text-[#FDFDFD]/50'
                         }`} 
                       />
@@ -511,7 +511,7 @@ export default function CollectionsTable({
                     {/* Collection Image with Navigation - HÍBRIDO */}
                     <div 
                       onClick={() => navigateToItem(collection.originalItem || collection)}
-                      className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#A20131]/50 transition-all cursor-pointer"
+                      className="relative w-12 h-12 rounded-lg overflow-hidden bg-[#FDFDFD]/10 hover:ring-2 hover:ring-[#FF0052]/50 transition-all cursor-pointer"
                     >
                       {collection.imageUrl && 
                        collection.imageUrl !== '' && 
@@ -541,7 +541,7 @@ export default function CollectionsTable({
                       >
                         {collection.name}
                         {collection.category === 'jersey' && (
-                          <Badge variant="secondary" className="bg-[#A20131]/20 text-[#A20131] text-xs">
+                          <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] text-xs">
                             Jersey
                           </Badge>
                         )}
@@ -643,7 +643,7 @@ export default function CollectionsTable({
                   onClick={() => handlePageChange(page)}
                   className={`w-8 h-8 p-0 ${
                     currentPage === page
-                      ? 'bg-[#A20131] text-[#FDFDFD]'
+                      ? 'bg-[#FF0052] text-[#FDFDFD]'
                       : 'bg-transparent border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/10'
                   }`}
                 >

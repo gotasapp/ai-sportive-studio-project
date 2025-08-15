@@ -68,7 +68,7 @@ export default function ImageDebugPage() {
                 <Button
                   onClick={() => testImage(imageUrl)}
                   disabled={loading || !imageUrl}
-                  className="bg-[#A20131] hover:bg-[#A20131]/90"
+                  className="bg-[#FF0052] hover:bg-[#FF0052]/90"
                 >
                   {loading ? <Loader2 className="animate-spin" /> : 'Test'}
                 </Button>
@@ -193,9 +193,9 @@ export default function ImageDebugPage() {
                   
                   {/* Recommendation */}
                   {debugResults.recommendation && (
-                    <div className="p-3 bg-[#A20131]/20 border border-[#A20131]/30 rounded">
+                    <div className="p-3 bg-[#FF0052]/20 border border-[#FF0052]/30 rounded">
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 text-[#A20131] mt-0.5" />
+                        <AlertCircle className="w-5 h-5 text-[#FF0052] mt-0.5" />
                         <div>
                           <p className="text-sm font-semibold text-[#FDFDFD]">Recommendation:</p>
                           <p className="text-sm text-[#FDFDFD]/70">{debugResults.recommendation}</p>

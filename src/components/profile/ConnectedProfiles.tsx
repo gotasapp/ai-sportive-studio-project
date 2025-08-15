@@ -88,7 +88,7 @@ export function ConnectedProfiles() {
     <Card className="cyber-card">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-white">Connected Accounts</CardTitle>
-        <Badge variant="secondary" className="bg-[#A20131] text-white">
+        <Badge variant="secondary" className="bg-[#FF0052] text-white">
           {totalProfiles} connected
         </Badge>
       </CardHeader>
@@ -131,7 +131,7 @@ export function ConnectedProfiles() {
                 <div key={index} className="flex items-center justify-between p-3 rounded-lg cyber-border">
                   <div className="flex items-center space-x-3">
                     <div className="p-2 rounded-lg bg-gray-800">
-                      <IconComponent className="h-4 w-4 text-[#A20131]" />
+                      <IconComponent className="h-4 w-4 text-[#FF0052]" />
                     </div>
                     <div>
                       <p className="text-white text-sm font-medium">{label}</p>

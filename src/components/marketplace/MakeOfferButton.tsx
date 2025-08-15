@@ -195,7 +195,7 @@ export default function MakeOfferButton({
         onClick={() => setIsOpen(true)}
         disabled={!isConnected || disabled || isProcessing || isApproving}
         variant="outline"
-        className={`${className} border-[#A20131] text-[#A20131] hover:bg-[#A20131] hover:text-white`}
+        className={`${className} border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white`}
       >
         {isProcessing ? (
           <>
@@ -261,11 +261,11 @@ export default function MakeOfferButton({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-[#333333] border-[#FDFDFD]/20">
-                  <SelectItem value="1" className="text-[#FDFDFD] hover:bg-[#A20131]">1 day</SelectItem>
-                  <SelectItem value="3" className="text-[#FDFDFD] hover:bg-[#A20131]">3 days</SelectItem>
-                  <SelectItem value="7" className="text-[#FDFDFD] hover:bg-[#A20131]">7 days</SelectItem>
-                  <SelectItem value="14" className="text-[#FDFDFD] hover:bg-[#A20131]">14 days</SelectItem>
-                  <SelectItem value="30" className="text-[#FDFDFD] hover:bg-[#A20131]">30 days</SelectItem>
+                  <SelectItem value="1" className="text-[#FDFDFD] hover:bg-[#FF0052]">1 day</SelectItem>
+                  <SelectItem value="3" className="text-[#FDFDFD] hover:bg-[#FF0052]">3 days</SelectItem>
+                  <SelectItem value="7" className="text-[#FDFDFD] hover:bg-[#FF0052]">7 days</SelectItem>
+                  <SelectItem value="14" className="text-[#FDFDFD] hover:bg-[#FF0052]">14 days</SelectItem>
+                  <SelectItem value="30" className="text-[#FDFDFD] hover:bg-[#FF0052]">30 days</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-[#FDFDFD]/50">
@@ -304,7 +304,7 @@ export default function MakeOfferButton({
                 <Button
                   onClick={handleMakeOffer}
                   disabled={isProcessing || !offerAmount || parseFloat(offerAmount) <= 0}
-                  className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                  className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
                 >
                   {isProcessing ? 'Creating Offer...' : 'Confirm Offer'}
                 </Button>

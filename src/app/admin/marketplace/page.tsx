@@ -133,7 +133,7 @@ export default function AdminMarketplace() {
       <AdminProtection>
         <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] p-6">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin h-8 w-8 border-2 border-[#A20131] border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-8 w-8 border-2 border-[#FF0052] border-t-transparent rounded-full"></div>
           </div>
         </div>
       </AdminProtection>
@@ -148,7 +148,7 @@ export default function AdminMarketplace() {
             <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-[#FDFDFD] mb-2">Erro ao Carregar</h1>
             <p className="text-[#FDFDFD]/70 mb-4">Não foi possível carregar as configurações</p>
-            <Button onClick={loadMarketplaceConfig} className="bg-[#A20131] hover:bg-[#A20131]/90">
+            <Button onClick={loadMarketplaceConfig} className="bg-[#FF0052] hover:bg-[#FF0052]/90">
               <RefreshCw className="h-4 w-4 mr-2" />
               Tentar Novamente
             </Button>
@@ -165,7 +165,7 @@ export default function AdminMarketplace() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-3 mb-2">
-              <Settings className="h-8 w-8 text-[#A20131]" />
+              <Settings className="h-8 w-8 text-[#FF0052]" />
               <h1 className="text-3xl font-bold text-[#FDFDFD]">Configurações do Marketplace</h1>
             </div>
             <p className="text-[#FDFDFD]/70">Configure as funcionalidades e políticas do marketplace</p>
@@ -173,10 +173,10 @@ export default function AdminMarketplace() {
 
           <Tabs defaultValue="general" className="space-y-6">
             <TabsList className="grid w-full grid-cols-4 bg-[#333333]/20">
-              <TabsTrigger value="general" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Geral</TabsTrigger>
-              <TabsTrigger value="trading" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Negociação</TabsTrigger>
-              <TabsTrigger value="fees" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Taxas</TabsTrigger>
-              <TabsTrigger value="contracts" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">Contratos</TabsTrigger>
+              <TabsTrigger value="general" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">Geral</TabsTrigger>
+              <TabsTrigger value="trading" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">Negociação</TabsTrigger>
+              <TabsTrigger value="fees" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">Taxas</TabsTrigger>
+              <TabsTrigger value="contracts" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">Contratos</TabsTrigger>
             </TabsList>
 
             {/* Geral */}
@@ -493,7 +493,7 @@ export default function AdminMarketplace() {
             <Button
               onClick={saveMarketplaceConfig}
               disabled={saving}
-              className="bg-[#A20131] hover:bg-[#A20131]/90 px-8"
+              className="bg-[#FF0052] hover:bg-[#FF0052]/90 px-8"
             >
               {saving ? (
                 <>

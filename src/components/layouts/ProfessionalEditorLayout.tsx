@@ -87,7 +87,7 @@ export default function ProfessionalEditorLayout({
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
             className={cn(
               "absolute -right-3 top-1/2 -translate-y-1/2 z-20 hidden lg:flex",
-              "w-6 h-8 bg-[#333333] hover:bg-[#A20131] border border-[#333333]",
+              "w-6 h-8 bg-[#333333] hover:bg-[#FF0052] border border-[#333333]",
               "text-[#ADADAD] hover:text-[#FDFDFD] rounded-r-md rounded-l-none"
             )}
           >

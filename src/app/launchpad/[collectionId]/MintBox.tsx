@@ -242,7 +242,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
       <div className="space-y-3">
         <div className="text-center">
           <p className="text-lg text-white font-semibold">Preço por NFT</p>
-          <p className="text-2xl font-bold text-[#A20131]">
+          <p className="text-2xl font-bold text-[#FF0052]">
             {formatPrice(claimCondition.pricePerToken)}
           </p>
           {qty > 1 && (
@@ -304,7 +304,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
         <Button 
           onClick={handlePublicMint} 
           disabled={isMinting || !claimCondition || getMaxPerTransaction() <= 0} 
-          className="w-full bg-[#A20131] hover:bg-[#A20131]/80 text-white"
+          className="w-full bg-[#FF0052] hover:bg-[#FF0052]/80 text-white"
         >
           {isMinting ? 'Mintando...' : `Mint ${qty} NFT${qty > 1 ? 's' : ''}`}
         </Button>

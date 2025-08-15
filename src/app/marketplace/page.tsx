@@ -126,7 +126,7 @@ export default function MarketplacePage() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
         <div className="flex flex-col items-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF0052] mx-auto"></div>
           <p className="text-white mt-4">Loading marketplace...</p>
         </div>
       </div>
@@ -423,7 +423,7 @@ export default function MarketplacePage() {
               <button
                 onClick={handleRefresh}
                 disabled={isRefreshing || marketplaceLoading}
-                className="hidden px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+                className="hidden px-4 py-2 bg-[#FF0052] hover:bg-[#FF0052]/80 disabled:bg-[#FF0052]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
                 title="Refresh marketplace data"
               >
                 <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />

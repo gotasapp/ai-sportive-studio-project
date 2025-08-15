@@ -75,7 +75,7 @@ interface MarketplaceStats {
 const chartConfig = {
   price: {
     label: "Price",
-    color: "#A20131",
+    color: "#FF0052",
   },
 } satisfies ChartConfig;
 
@@ -479,8 +479,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Floor Price
               </CardTitle>
-              <div className="p-1 rounded bg-[#A20131]/20">
-                <BarChart3 className="h-3 w-3 text-[#A20131]" />
+              <div className="p-1 rounded bg-[#FF0052]/20">
+                <BarChart3 className="h-3 w-3 text-[#FF0052]" />
               </div>
             </CardHeader>
             <CardContent className="p-2 pt-0">
@@ -498,8 +498,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Total Volume
               </CardTitle>
-              <div className="p-1 rounded bg-[#A20131]/20">
-                <DollarSign className="h-3 w-3 text-[#A20131]" />
+              <div className="p-1 rounded bg-[#FF0052]/20">
+                <DollarSign className="h-3 w-3 text-[#FF0052]" />
               </div>
             </CardHeader>
             <CardContent className="p-2 pt-0">
@@ -517,8 +517,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Total Supply
               </CardTitle>
-              <div className="p-1 rounded bg-[#A20131]/20">
-                <Eye className="h-3 w-3 text-[#A20131]" />
+              <div className="p-1 rounded bg-[#FF0052]/20">
+                <Eye className="h-3 w-3 text-[#FF0052]" />
               </div>
             </CardHeader>
             <CardContent className="p-2 pt-0">
@@ -536,8 +536,8 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
                 Listings
               </CardTitle>
-              <div className="p-1 rounded bg-[#A20131]/20">
-                <Tag className="h-3 w-3 text-[#A20131]" />
+              <div className="p-1 rounded bg-[#FF0052]/20">
+                <Tag className="h-3 w-3 text-[#FF0052]" />
               </div>
             </CardHeader>
             <CardContent className="p-2 pt-0">
@@ -578,7 +578,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 {/* NFT Info - Organizado e compacto */}
                 <div className="mt-3 lg:mt-4 px-2">
                   <div className="flex items-center justify-between mb-3">
-                    <Badge variant="outline" className="text-[#A20131] border-[#A20131] text-xs">
+                    <Badge variant="outline" className="text-[#FF0052] border-[#FF0052] text-xs">
                       {displayData.collection}
                     </Badge>
                     <div className="flex items-center space-x-1">
@@ -614,7 +614,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
             <Card className="cyber-card w-[80%] mx-auto lg:w-full">
               <CardHeader className="p-3 lg:p-4 pb-2">
                 <CardTitle className="text-[#FDFDFD] flex items-center text-sm">
-                  <TrendingUp className="h-4 w-4 mr-2 text-[#A20131]" />
+                  <TrendingUp className="h-4 w-4 mr-2 text-[#FF0052]" />
                   Price History
                 </CardTitle>
               </CardHeader>
@@ -651,12 +651,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                             <linearGradient id="fillPrice" x1="0" y1="0" x2="0" y2="1">
                               <stop
                                 offset="5%"
-                                stopColor="#A20131"
+                                stopColor="#FF0052"
                                 stopOpacity={0.4}
                               />
                               <stop
                                 offset="95%"
-                                stopColor="#A20131"
+                                stopColor="#FF0052"
                                 stopOpacity={0.05}
                               />
                             </linearGradient>
@@ -676,7 +676,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                             tickFormatter={(value) => `${value}`}
                           />
                           <ChartTooltip 
-                            cursor={{ stroke: '#A20131', strokeWidth: 1, strokeOpacity: 0.5 }}
+                            cursor={{ stroke: '#FF0052', strokeWidth: 1, strokeOpacity: 0.5 }}
                             content={<ChartTooltipContent 
                               formatter={(value: any) => [`${parseFloat(value).toFixed(4)} CHZ`, 'Price']}
                               labelFormatter={(label) => `Date: ${label}`}
@@ -685,12 +685,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                           <Area
                             type="monotone"
                             dataKey="price"
-                            stroke="#A20131"
+                            stroke="#FF0052"
                             strokeWidth={2}
                             fillOpacity={1}
                             fill="url(#fillPrice)"
-                            dot={{ fill: '#A20131', strokeWidth: 2, r: 3 }}
-                            activeDot={{ r: 4, fill: '#A20131', strokeWidth: 2, stroke: '#FDFDFD' }}
+                            dot={{ fill: '#FF0052', strokeWidth: 2, r: 3 }}
+                            activeDot={{ r: 4, fill: '#FF0052', strokeWidth: 2, stroke: '#FDFDFD' }}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -732,7 +732,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                         ? 'text-green-400 border-green-400' 
                         : displayData.isAuction 
                         ? 'text-yellow-400 border-yellow-400'
-                        : 'text-[#A20131] border-[#A20131]'
+                        : 'text-[#FF0052] border-[#FF0052]'
                     } text-xs`}
                   >
                     {displayData.isListed ? 'For Sale' : displayData.isAuction ? 'Auction' : 'Owned'}
@@ -764,7 +764,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
             <Card className="cyber-card">
               <CardHeader className="p-2 lg:p-3 pb-1">
                 <CardTitle className="text-[#FDFDFD] flex items-center text-xs">
-                  <Tag className="h-3 w-3 mr-2 text-[#A20131]" />
+                  <Tag className="h-3 w-3 mr-2 text-[#FF0052]" />
                   Traits ({displayData.traits?.length || 0})
                 </CardTitle>
               </CardHeader>
@@ -838,7 +838,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
         <Card className="cyber-card w-[80%] mx-auto lg:w-full">
           <CardHeader className="p-2 pb-1">
             <CardTitle className="text-[#FDFDFD] flex items-center text-xs">
-              <Activity className="h-3 w-3 mr-1 text-[#A20131]" />
+              <Activity className="h-3 w-3 mr-1 text-[#FF0052]" />
               Activity
             </CardTitle>
           </CardHeader>
@@ -848,12 +848,12 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 {activityData.slice(0, 4).map((activity, index) => (
                   <div key={index} className="flex items-center justify-between p-1.5 rounded bg-[#14101e] border border-[#FDFDFD]/10">
                     <div className="flex items-center space-x-1.5">
-                      <div className="p-0.5 rounded bg-[#A20131]/20">
-                        {activity.type === 'sale' && <ShoppingBag className="h-2.5 w-2.5 text-[#A20131]" />}
-                        {activity.type === 'listing' && <Tag className="h-2.5 w-2.5 text-[#A20131]" />}
-                        {activity.type === 'bid' && <TrendingUp className="h-2.5 w-2.5 text-[#A20131]" />}
-                        {activity.type === 'transfer' && <ArrowRight className="h-2.5 w-2.5 text-[#A20131]" />}
-                        {activity.type === 'mint' && <Sparkles className="h-2.5 w-2.5 text-[#A20131]" />}
+                      <div className="p-0.5 rounded bg-[#FF0052]/20">
+                        {activity.type === 'sale' && <ShoppingBag className="h-2.5 w-2.5 text-[#FF0052]" />}
+                        {activity.type === 'listing' && <Tag className="h-2.5 w-2.5 text-[#FF0052]" />}
+                        {activity.type === 'bid' && <TrendingUp className="h-2.5 w-2.5 text-[#FF0052]" />}
+                        {activity.type === 'transfer' && <ArrowRight className="h-2.5 w-2.5 text-[#FF0052]" />}
+                        {activity.type === 'mint' && <Sparkles className="h-2.5 w-2.5 text-[#FF0052]" />}
                       </div>
                       <div>
                         <div className="text-[#FDFDFD] font-medium capitalize text-xs">
@@ -886,7 +886,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 ))}
                 {activityData.length > 4 && (
                   <div className="text-center pt-1">
-                    <Button variant="ghost" size="sm" className="text-[#A20131] hover:text-[#A20131]/80 p-1">
+                    <Button variant="ghost" size="sm" className="text-[#FF0052] hover:text-[#FF0052]/80 p-1">
                       <span className="text-xs">View All</span>
                       <ArrowRight className="ml-1 h-2.5 w-2.5" />
                     </Button>

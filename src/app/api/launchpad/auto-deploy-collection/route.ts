@@ -5,6 +5,7 @@ import { privateKeyToAccount } from 'thirdweb/wallets';
 import { setClaimConditions, lazyMint } from 'thirdweb/extensions/erc721';
 import { sendTransaction } from 'thirdweb';
 import { connectToDatabase } from '@/lib/mongodb';
+import { ACTIVE_NETWORK, getActiveChain } from '@/lib/network-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,16 +16,16 @@ export async function POST(request: NextRequest) {
     const name: string | undefined = body?.name;
     const description: string | undefined = body?.description;
     const image: string | undefined = body?.image;
-    const priceInMatic: number = body?.priceInMatic || 0.2; // Price in MATIC
+    const priceInNative: number = body?.priceInMatic || body?.priceInChz || 0.2; // Price in native currency
     const maxSupply: number | undefined = body?.maxSupply || 100;
 
     console.log('📋 Deploy params received:', { 
       collectionId, 
       name, 
-      priceInMatic: `${priceInMatic} MATIC`, 
+      priceInNative: `${priceInNative} ${ACTIVE_NETWORK.currency}`, 
       maxSupply,
-      priceInMaticType: typeof priceInMatic,
-      priceInMaticValue: priceInMatic
+      network: ACTIVE_NETWORK.name,
+      chainId: ACTIVE_NETWORK.chainId
     });
 
     if (!name || !description || !image || !collectionId) {
@@ -39,18 +40,13 @@ export async function POST(request: NextRequest) {
       secretKey: process.env.THIRDWEB_SECRET_KEY!,
     });
 
-    // Definir chain Amoy
-    const amoyChain = defineChain({
-      id: 80002,
-      name: 'Polygon Amoy Testnet',
-      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-      rpc: 'https://rpc.ankr.com/polygon_amoy/5b2d60918c8135da4798d0d735c2b2d483d3e3d8992ab6cf34c53b0fd81803ef',
-      blockExplorers: [
-        {
-          name: 'PolygonScan',
-          url: 'https://amoy.polygonscan.com',
-        },
-      ],
+    // 🎯 USAR CHAIN ATIVA (CONTROLADA PELO MASTER SWITCH)
+    const activeChain = getActiveChain();
+    
+    console.log('⚙️ Using active chain:', {
+      name: ACTIVE_NETWORK.name,
+      chainId: ACTIVE_NETWORK.chainId,
+      currency: ACTIVE_NETWORK.currency
     });
 
     // Conta do backend (gasless deploy)
@@ -65,7 +61,7 @@ export async function POST(request: NextRequest) {
     // ETAPA 1: Deploy do contrato DropERC721
     const contractAddress = await deployERC721Contract({
       client,
-      chain: amoyChain,
+      chain: activeChain, // 🎯 CHAIN ATIVA (CHZ ou Amoy)
       account: backendAccount, // Backend wallet assina (gasless para usuário)
       type: "DropERC721",
       params: {
@@ -83,13 +79,14 @@ export async function POST(request: NextRequest) {
     
     const contract = getContract({
       client,
-      chain: amoyChain,
+      chain: activeChain, // 🎯 CHAIN ATIVA
       address: contractAddress,
     });
 
     // NO conversion needed! SDK handles wei conversion automatically
     console.log('💰 Price (human format for SDK):', {
-      priceInMatic: priceInMatic,
+      priceInNative: priceInNative,
+      currency: ACTIVE_NETWORK.currency,
       note: 'SDK will convert to wei automatically'
     });
 
@@ -100,7 +97,7 @@ export async function POST(request: NextRequest) {
           startTime: new Date(), // Inicia imediatamente
           maxClaimableSupply: BigInt(maxSupply || 100), // Supply máximo da coleção
           maxClaimablePerWallet: BigInt(10), // Máximo por wallet
-          price: priceInMatic, // Human-readable price, SDK converts to wei automatically
+          price: priceInNative, // Human-readable price, SDK converts to wei automatically
         },
       ],
     });
@@ -144,7 +141,9 @@ export async function POST(request: NextRequest) {
             deployed: true,
             deployedAt: new Date(),
             maxSupply: maxSupply || 100,
-            priceInMatic: priceInMatic,
+            priceInNative: priceInNative,
+            chainId: ACTIVE_NETWORK.chainId,
+            network: ACTIVE_NETWORK.name,
             updatedAt: new Date()
           } 
         }

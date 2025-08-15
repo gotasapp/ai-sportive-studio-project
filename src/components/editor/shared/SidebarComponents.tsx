@@ -66,7 +66,7 @@ export const SidebarLayout = ({
   title,
   subtitle = "Create your NFT",
   icon: Icon,
-  iconColor = "from-[#A20131] to-[#FF1744]",
+  iconColor = "from-[#FF0052] to-[#FF1744]",
   children,
   error,
   onResetError
@@ -134,7 +134,7 @@ export const StyledSelect = ({
     disabled={disabled}
     className={cn(
       "w-full px-3 py-2 text-sm rounded-lg bg-[#242424] border border-[#333333]",
-      "text-white focus:outline-none focus:border-[#A20131] transition-colors",
+      "text-white focus:outline-none focus:border-[#FF0052] transition-colors",
       disabled && "opacity-50 cursor-not-allowed",
       className
     )}
@@ -180,7 +180,7 @@ export const StyledInput = ({
       maxLength={maxLength}
       className={cn(
         "w-full py-2 text-sm rounded-lg bg-[#242424] border border-[#333333]",
-        "text-white placeholder-gray-500 focus:outline-none focus:border-[#A20131] transition-colors",
+        "text-white placeholder-gray-500 focus:outline-none focus:border-[#FF0052] transition-colors",
         Icon ? "pl-10 pr-3" : "px-3",
         className
       )}

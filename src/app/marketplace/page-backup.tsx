@@ -420,7 +420,7 @@ export default function MarketplacePage() {
             <button
               onClick={handleRefresh}
               disabled={isRefreshing || marketplaceLoading}
-              className="ml-4 px-4 py-2 bg-[#A20131] hover:bg-[#A20131]/80 disabled:bg-[#A20131]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
+              className="ml-4 px-4 py-2 bg-[#FF0052] hover:bg-[#FF0052]/80 disabled:bg-[#FF0052]/50 text-white rounded-lg transition-colors flex items-center gap-2 text-sm"
               title="Refresh marketplace data"
             >
               <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />

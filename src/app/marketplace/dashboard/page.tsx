@@ -196,7 +196,7 @@ export default function MarketplaceDashboard() {
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin h-8 w-8 border-2 border-[#A20131] border-t-transparent rounded-full"></div>
+            <div className="animate-spin h-8 w-8 border-2 border-[#FF0052] border-t-transparent rounded-full"></div>
           </div>
         </div>
       </div>
@@ -220,7 +220,7 @@ export default function MarketplaceDashboard() {
             <Card className="cyber-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">Total Earnings</CardTitle>
-                                  <TrendingUp className="h-4 w-4 text-[#A20131]" />
+                                  <TrendingUp className="h-4 w-4 text-[#FF0052]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[#FDFDFD]">{stats.totalEarnings}</div>
@@ -231,7 +231,7 @@ export default function MarketplaceDashboard() {
             <Card className="cyber-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">Total Spent</CardTitle>
-                                  <TrendingDown className="h-4 w-4 text-[#A20131]" />
+                                  <TrendingDown className="h-4 w-4 text-[#FF0052]" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-[#FDFDFD]">{stats.totalSpent}</div>
@@ -242,10 +242,10 @@ export default function MarketplaceDashboard() {
             <Card className="cyber-card">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-[#FDFDFD]/70">Owned NFTs</CardTitle>
-                <Wallet className="h-4 w-4 text-[#A20131]" />
+                <Wallet className="h-4 w-4 text-[#FF0052]" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-[#A20131]">{stats.itemsOwned}</div>
+                <div className="text-2xl font-bold text-[#FF0052]">{stats.itemsOwned}</div>
                 <p className="text-xs text-[#FDFDFD]/50">{stats.itemsListed} listed</p>
               </CardContent>
             </Card>
@@ -254,16 +254,16 @@ export default function MarketplaceDashboard() {
 
         <Tabs defaultValue="nfts" className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 bg-[#333333]/20">
-            <TabsTrigger value="nfts" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="nfts" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               My NFTs
             </TabsTrigger>
-            <TabsTrigger value="activity" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="activity" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               Activity
             </TabsTrigger>
-            <TabsTrigger value="offers" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="offers" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               Offers
             </TabsTrigger>
-            <TabsTrigger value="bids" className="data-[state=active]:bg-[#A20131] data-[state=active]:text-white">
+            <TabsTrigger value="bids" className="data-[state=active]:bg-[#FF0052] data-[state=active]:text-white">
               Bids
             </TabsTrigger>
           </TabsList>
@@ -294,7 +294,7 @@ export default function MarketplaceDashboard() {
                         <p className="text-xs text-[#FDFDFD]/50">
                           {nft.isListed ? 'Price' : 'Last Sale'}
                         </p>
-                        <p className="text-sm font-medium text-[#A20131]">
+                        <p className="text-sm font-medium text-[#FF0052]">
                           {nft.isListed ? nft.listingPrice : nft.lastSalePrice}
                         </p>
                       </div>
@@ -313,7 +313,7 @@ export default function MarketplaceDashboard() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button size="sm" className="flex-1 bg-[#A20131] hover:bg-[#A20131]/90">
+                      <Button size="sm" className="flex-1 bg-[#FF0052] hover:bg-[#FF0052]/90">
                         {nft.isListed ? 'Edit' : 'List'}
                       </Button>
                       <Button size="sm" variant="outline" className="border-[#FDFDFD]/20">
@@ -358,7 +358,7 @@ export default function MarketplaceDashboard() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium text-[#A20131]">{transaction.price}</p>
+                        <p className="font-medium text-[#FF0052]">{transaction.price}</p>
                         <Button variant="ghost" size="icon" className="h-6 w-6 text-[#FDFDFD]/50">
                           <ExternalLink className="h-3 w-3" />
                         </Button>

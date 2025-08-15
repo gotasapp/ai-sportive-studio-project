@@ -23,7 +23,7 @@
     --popover-foreground: 0 0% 99.2%;
 
     /* Cor primária/destaque definida para o vermelho escuro solicitado */
-    --primary: 343 99% 32%; /* #A20131 */
+    --primary: 343 99% 32%; /* #FF0052 */
     --primary-foreground: 0 0% 99.2%;
 
     --secondary: 0 0% 20%; /* Cinza escuro atualizado */
@@ -33,7 +33,7 @@
     --muted-foreground: 0 0% 68%; /* #ADADAD convertido para HSL */
 
     /* Cor de destaque definida para o vermelho escuro solicitado */
-    --accent: 343 99% 32%; /* #A20131 */
+    --accent: 343 99% 32%; /* #FF0052 */
     --accent-foreground: 0 0% 99.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -50,7 +50,7 @@
     --chart-2: 0 0% 68%; /* #ADADAD */
     --chart-3: 0 0% 44%; /* #707070 */
     --chart-4: 0 0% 20%; /* #333333 */
-    --chart-5: 343 99% 32%; /* #A20131 */
+    --chart-5: 343 99% 32%; /* #FF0052 */
   }
 
   .dark {
@@ -64,7 +64,7 @@
     --popover-foreground: 0 0% 99.2%;
 
     /* Cor primária/destaque definida para o vermelho escuro solicitado */
-    --primary: 343 99% 32%; /* #A20131 */
+    --primary: 343 99% 32%; /* #FF0052 */
     --primary-foreground: 0 0% 99.2%;
 
     --secondary: 0 0% 20%; /* Cinza escuro atualizado */
@@ -74,7 +74,7 @@
     --muted-foreground: 0 0% 68%; /* #ADADAD convertido para HSL */
 
     /* Cor de destaque definida para o vermelho escuro solicitado */
-    --accent: 343 99% 32%; /* #A20131 */
+    --accent: 343 99% 32%; /* #FF0052 */
     --accent-foreground: 0 0% 99.2%;
 
     --destructive: 0 84.2% 60.2%;
@@ -513,11 +513,11 @@
 }
 
 .style-button.active svg {
-  color: #A20131;
+  color: #FF0052;
 }
 
 .style-button.active:hover {
-  background: #A20131;
+  background: #FF0052;
   color: #FFFFFF;
 }
 
@@ -819,7 +819,7 @@
     width: 3rem;
     height: 3rem;
     border: 3px solid #333;
-    border-top: 3px solid #A20131;
+    border-top: 3px solid #FF0052;
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }

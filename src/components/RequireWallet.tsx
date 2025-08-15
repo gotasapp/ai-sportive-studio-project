@@ -31,8 +31,8 @@ export function RequireWallet({
       <Card className="bg-[#14101e] border-gray-700 max-w-md w-full">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-[#A20131]/20 p-4 rounded-full">
-              <Wallet className="h-8 w-8 text-[#A20131]" />
+            <div className="bg-[#FF0052]/20 p-4 rounded-full">
+              <Wallet className="h-8 w-8 text-[#FF0052]" />
             </div>
           </div>
           <CardTitle className="text-white text-xl">{title}</CardTitle>
@@ -54,7 +54,7 @@ export function RequireWallet({
             chains={supportedChains}
             theme="dark"
             connectButton={{
-              className: "!bg-[#A20131] hover:!bg-[#8a0129] !text-white !font-medium !px-6 !py-3 !rounded-lg !transition-colors"
+              className: "!bg-[#FF0052] hover:!bg-[#8a0129] !text-white !font-medium !px-6 !py-3 !rounded-lg !transition-colors"
             }}
             connectModal={{
               size: "wide",

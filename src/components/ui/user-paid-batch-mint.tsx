@@ -118,7 +118,7 @@ export function UserPaidBatchMint({
       <DialogContent className="sm:max-w-md bg-black border border-white/20">
                  <DialogHeader>
            <DialogTitle className="text-white flex items-center gap-2">
-             <Hash className="w-5 h-5 text-[#A20131]" />
+             <Hash className="w-5 h-5 text-[#FF0052]" />
              Mint Collection (ERC1155)
            </DialogTitle>
          </DialogHeader>
@@ -137,7 +137,7 @@ export function UserPaidBatchMint({
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <Label className="text-white/80">Quantity</Label>
-              <Badge variant="outline" className="text-[#A20131] border-[#A20131]/30">
+              <Badge variant="outline" className="text-[#FF0052] border-[#FF0052]/30">
                 {quantity} Copies
               </Badge>
             </div>
@@ -228,7 +228,7 @@ export function UserPaidBatchMint({
                <Button
                  onClick={handleMintNFT}
                  disabled={isMinting || isComplete}
-                 className="flex-1 bg-[#A20131] hover:bg-[#A20131]/80 text-white disabled:opacity-50"
+                 className="flex-1 bg-[#FF0052] hover:bg-[#FF0052]/80 text-white disabled:opacity-50"
                >
                  {isMinting ? (
                    <div className="flex items-center gap-2">
@@ -242,7 +242,7 @@ export function UserPaidBatchMint({
                  )}
                </Button>
              ) : (
-               <Button disabled className="flex-1 bg-[#A20131]/50 text-white/50">
+               <Button disabled className="flex-1 bg-[#FF0052]/50 text-white/50">
                  {!isConnected 
                    ? 'Connect Wallet' 
                    : !isOnCorrectChain 

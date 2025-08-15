@@ -220,7 +220,7 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                   Back
                 </Button>
             <Button 
-              className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
+              className="flex-1 bg-[#FF0052] hover:bg-[#8a0129]"
                   onClick={handleSendVerification}
                   disabled={isLinking || !email}
                 >
@@ -274,7 +274,7 @@ export function AccountLinkingModal({ isOpen, onClose, onAccountLinked }: Accoun
                   Back
                 </Button>
                 <Button 
-                  className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
+                  className="flex-1 bg-[#FF0052] hover:bg-[#8a0129]"
                   onClick={handleVerifyCode}
                   disabled={isLinking || !verificationCode}
                 >

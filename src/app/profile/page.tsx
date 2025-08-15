@@ -471,7 +471,7 @@ export default function ProfilePage() {
       <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518] p-4">
         <div className="max-w-7xl mx-auto">
           <div className="text-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#A20131] mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF0052] mx-auto"></div>
             <p className="text-white mt-4">Loading profile...</p>
           </div>
         </div>
@@ -507,7 +507,7 @@ export default function ProfilePage() {
         <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-between gap-4 md:gap-0">
           <div className="flex flex-col items-center gap-2 md:flex-row md:items-center md:gap-6">
             <div className="relative">
-              <Avatar className="h-24 w-24 border-2 border-[#A20131]">
+              <Avatar className="h-24 w-24 border-2 border-[#FF0052]">
                 <AvatarImage src={userProfile?.avatar} />
                 <AvatarFallback className="bg-[#14101e] text-white text-lg">
                   {userProfile?.username?.charAt(0) || 'U'}
@@ -522,7 +522,7 @@ export default function ProfilePage() {
               >
                 <Settings className="h-6 w-6 text-white" />
               </button>
-              <label className="absolute bottom-0 right-0 bg-[#A20131] rounded-full p-2 cursor-pointer hover:bg-[#8a0129] transition-colors">
+              <label className="absolute bottom-0 right-0 bg-[#FF0052] rounded-full p-2 cursor-pointer hover:bg-[#8a0129] transition-colors">
                 <Upload className="h-3 w-3 text-white" />
                 <input
                   type="file"
@@ -662,14 +662,14 @@ export default function ProfilePage() {
           <CardContent>
             <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as any)} defaultValue="all" className="w-full">
               <TabsList className="grid w-full grid-cols-3 bg-[#0b0518] rounded-lg overflow-hidden">
-                <TabsTrigger value="all" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">All ({userNFTs.length})</TabsTrigger>
-                <TabsTrigger value="listed" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">Listed ({listedNFTs.length})</TabsTrigger>
-                <TabsTrigger value="created" className="text-white data-[state=active]:bg-[#A20131] text-base py-3 md:py-2">Created ({createdNFTs.length})</TabsTrigger>
+                <TabsTrigger value="all" className="text-white data-[state=active]:bg-[#FF0052] text-base py-3 md:py-2">All ({userNFTs.length})</TabsTrigger>
+                <TabsTrigger value="listed" className="text-white data-[state=active]:bg-[#FF0052] text-base py-3 md:py-2">Listed ({listedNFTs.length})</TabsTrigger>
+                <TabsTrigger value="created" className="text-white data-[state=active]:bg-[#FF0052] text-base py-3 md:py-2">Created ({createdNFTs.length})</TabsTrigger>
               </TabsList>
               <TabsContent value="all" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A20131]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
                     <div className="text-white">Loading your NFTs...</div>
                     <div className="text-gray-400 text-sm">
                       {dataSource === 'loading' && 'Connecting to blockchain...'}
@@ -703,7 +703,7 @@ export default function ProfilePage() {
               <TabsContent value="listed" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A20131]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
                     <div className="text-white">Loading your NFTs...</div>
                     <div className="text-gray-400 text-sm">
                       {dataSource === 'loading' && 'Connecting to blockchain...'}
@@ -737,7 +737,7 @@ export default function ProfilePage() {
               <TabsContent value="created" className="mt-6">
                 {nftsLoading ? (
                   <div className="flex flex-col items-center justify-center h-64 space-y-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#A20131]"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
                     <div className="text-white">Loading your NFTs...</div>
                     <div className="text-gray-400 text-sm">
                       {dataSource === 'loading' && 'Connecting to blockchain...'}
@@ -845,7 +845,7 @@ export default function ProfilePage() {
                   Cancel
                 </Button>
                 <Button 
-                  className="flex-1 bg-[#A20131] hover:bg-[#8a0129]"
+                  className="flex-1 bg-[#FF0052] hover:bg-[#8a0129]"
                   onClick={() => {
                     // TODO: Save settings
                     console.log('Save settings');
@@ -952,7 +952,7 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
         {currentNFTs.map((nft) => (
         <Card 
           key={nft.id} 
-          className="bg-[#0b0518] border-gray-600 hover:border-[#A20131] transition-colors cursor-pointer"
+          className="bg-[#0b0518] border-gray-600 hover:border-[#FF0052] transition-colors cursor-pointer"
           onClick={() => onNFTClick?.(nft)}
         >
           <div className="aspect-square relative overflow-hidden rounded-t-lg">
@@ -979,7 +979,7 @@ function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
             <div className="flex items-center justify-between text-sm text-gray-400">
               <span className="capitalize">{nft.collection}</span>
               {nft.price && (
-                <span className="text-[#A20131] font-medium">{nft.price} CHZ</span>
+                <span className="text-[#FF0052] font-medium">{nft.price} CHZ</span>
               )}
             </div>
           </CardContent>

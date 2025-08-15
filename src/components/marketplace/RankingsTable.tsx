@@ -133,7 +133,7 @@ export default function RankingsTable() {
   const renderChange = (change: number) => {
     const isPositive = change > 0;
     return (
-      <span className={`flex items-center ${isPositive ? 'text-[#A20131]' : 'text-[#FDFDFD]/70'}`}>
+      <span className={`flex items-center ${isPositive ? 'text-[#FF0052]' : 'text-[#FDFDFD]/70'}`}>
         {isPositive ? <ArrowUpRight className="w-4 h-4 mr-1" /> : <ArrowDownRight className="w-4 h-4 mr-1" />}
         {Math.abs(change).toFixed(1)}%
       </span>

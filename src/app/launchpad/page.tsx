@@ -130,7 +130,7 @@ function FeaturedLaunchpadCarousel() {
             
             {/* Featured Badge */}
             <div className="absolute top-6 left-8 md:left-16 lg:left-24 z-10">
-              <div className="bg-[#A20131]/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
+              <div className="bg-[#FF0052]/90 backdrop-blur-sm px-4 py-2 rounded-full flex items-center space-x-2">
                 <Star className="w-4 h-4 text-white" />
                 <span className="text-white text-sm font-medium">Featured</span>
               </div>
@@ -142,8 +142,8 @@ function FeaturedLaunchpadCarousel() {
               
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 bg-[#A20131]/20 rounded-full flex items-center justify-center border border-[#A20131]/30">
-                    <span className="text-[#A20131] font-bold text-sm">
+                  <div className="w-10 h-10 bg-[#FF0052]/20 rounded-full flex items-center justify-center border border-[#FF0052]/30">
+                    <span className="text-[#FF0052] font-bold text-sm">
                       {collection.collection.charAt(0).toUpperCase()}
                     </span>
                   </div>
@@ -178,28 +178,28 @@ function LaunchpadStats({ stats }: { stats: any }) {
       title: "Collections",
       value: stats.totalCollections,
       description: "Total",
-      icon: <Tag className="h-3 w-3 text-[#A20131]" />,
+      icon: <Tag className="h-3 w-3 text-[#FF0052]" />,
       color: "text-blue-400"
     },
     {
       title: "Live", 
       value: stats.liveCollections,
       description: "Active",
-      icon: <Zap className="h-3 w-3 text-[#A20131]" />,
+      icon: <Zap className="h-3 w-3 text-[#FF0052]" />,
       color: "text-green-400"
     },
     {
       title: "Upcoming",
       value: stats.upcomingCollections,
       description: "Soon",
-      icon: <Clock className="h-3 w-3 text-[#A20131]" />,
+      icon: <Clock className="h-3 w-3 text-[#FF0052]" />,
       color: "text-orange-400"
     },
     {
       title: "Volume",
       value: stats.totalVolume,
       description: "Total",
-      icon: <DollarSign className="h-3 w-3 text-[#A20131]" />,
+      icon: <DollarSign className="h-3 w-3 text-[#FF0052]" />,
       color: "text-purple-400"
     }
   ];
@@ -212,7 +212,7 @@ function LaunchpadStats({ stats }: { stats: any }) {
             <CardTitle className="text-xs font-medium text-[#FDFDFD]/70">
               {stat.title}
             </CardTitle>
-            <div className="p-1 rounded bg-[#A20131]/20">
+            <div className="p-1 rounded bg-[#FF0052]/20">
               {stat.icon}
             </div>
           </CardHeader>
@@ -296,7 +296,7 @@ function LaunchpadCollectionCard({
   };
   
   return (
-    <Card className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
+    <Card className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#FF0052]/10">
       <div className="relative aspect-square">
         <Image 
           src={collection.image} 
@@ -423,7 +423,7 @@ function LaunchpadCollectionCard({
               <Button
                 size="sm"
                 onClick={handleStatusUpdate}
-                className="bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
               >
                 <CheckCircle className="w-3 h-3 mr-1" />
                 Update
@@ -452,7 +452,7 @@ function LaunchpadCollectionCard({
         )}
 
         <div>
-          <h3 className="font-semibold text-[#FDFDFD] text-lg mb-1 group-hover:text-[#A20131] transition-colors">
+          <h3 className="font-semibold text-[#FDFDFD] text-lg mb-1 group-hover:text-[#FF0052] transition-colors">
             {collection.name}
           </h3>
           <p className="text-[#FDFDFD]/70 text-sm line-clamp-2">
@@ -478,7 +478,7 @@ function LaunchpadCollectionCard({
               size="sm" 
               className={`${
                 collection.status === 'active' 
-                  ? 'bg-[#A20131] hover:bg-[#A20131]/90 text-white'
+                  ? 'bg-[#FF0052] hover:bg-[#FF0052]/90 text-white'
                   : 'bg-gray-600 hover:bg-gray-500 text-white'
               }`}
             >
@@ -1562,7 +1562,7 @@ export default function LaunchpadPage() {
                       Use the &quot;Send to Launchpad&quot; button in the jersey generation page to add collections for approval.
                     </p>
                     <Link href="/jerseys">
-                      <Button size="sm" className="bg-[#A20131] hover:bg-[#A20131]/90 text-white">
+                      <Button size="sm" className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white">
                         Go to Jersey Generator
                       </Button>
                     </Link>
@@ -1650,7 +1650,7 @@ export default function LaunchpadPage() {
                      id="approval-status"
                      value={approvalForm.status}
                      onChange={(e) => updateApprovalForm('status', e.target.value)}
-                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#FF0052]"
                    >
                      <option value="upcoming">Upcoming</option>
                      <option value="active">Active</option>
@@ -1665,7 +1665,7 @@ export default function LaunchpadPage() {
                      id="approval-launchDate"
                      value={approvalLaunchDate}
                      onChange={(e) => setApprovalLaunchDate(e.target.value)}
-                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                     className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#FF0052]"
                      min={new Date().toISOString().slice(0, 16)}
                    />
                    <p className="text-xs text-gray-400 mt-1">
@@ -2227,7 +2227,7 @@ export default function LaunchpadPage() {
                        id="private-wallet-stage"
                        value={privateWalletStage}
                        onChange={(e) => setPrivateWalletStage(e.target.value)}
-                       className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                       className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#FF0052]"
                      >
                        <option value="vip">VIP (Earliest Access)</option>
                        <option value="whitelist">Whitelist (Early Access)</option>
@@ -2376,7 +2376,7 @@ export default function LaunchpadPage() {
                      <Button
                        size="sm"
                        onClick={() => addArrayItem('utility', '')}
-                       className="bg-[#A20131] hover:bg-[#A20131]/90"
+                       className="bg-[#FF0052] hover:bg-[#FF0052]/90"
                      >
                        <Plus className="w-4 h-4" />
                      </Button>
@@ -2408,7 +2408,7 @@ export default function LaunchpadPage() {
                      <Button
                        size="sm"
                        onClick={() => addArrayItem('team', { name: '', role: '', avatar: '', bio: '' })}
-                       className="bg-[#A20131] hover:bg-[#A20131]/90"
+                       className="bg-[#FF0052] hover:bg-[#FF0052]/90"
                      >
                        <Plus className="w-4 h-4" />
                      </Button>
@@ -2467,7 +2467,7 @@ export default function LaunchpadPage() {
                        <Button
                          size="sm"
                          onClick={addPrivateWallet}
-                         className="bg-[#A20131] hover:bg-[#A20131]/90"
+                         className="bg-[#FF0052] hover:bg-[#FF0052]/90"
                        >
                          <Plus className="w-4 h-4" />
                        </Button>
@@ -2498,7 +2498,7 @@ export default function LaunchpadPage() {
                          id="edit-private-wallet-stage"
                          value={privateWalletStage}
                          onChange={(e) => setPrivateWalletStage(e.target.value)}
-                         className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#A20131]"
+                         className="mt-1 w-full bg-gray-800 border border-gray-600 text-white rounded px-3 py-2 focus:outline-none focus:border-[#FF0052]"
                        >
                          <option value="vip">VIP (Earliest Access)</option>
                          <option value="whitelist">Whitelist (Early Access)</option>
@@ -2527,7 +2527,7 @@ export default function LaunchpadPage() {
                </Button>
                <Button
                  onClick={saveCollectionEdit}
-                 className="flex-1 bg-[#A20131] hover:bg-[#A20131]/90 text-white"
+                 className="flex-1 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
                >
                  <CheckCircle className="w-4 h-4 mr-2" />
                  Save Changes

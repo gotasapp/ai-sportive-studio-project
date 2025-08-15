@@ -15,7 +15,7 @@ export default function AdminRedirect() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] flex items-center justify-center">
       <div className="flex flex-col items-center">
-        <Loader2 className="w-8 h-8 text-[#A20131] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#FF0052] animate-spin" />
         <p className="text-white mt-4">Redirecting to Admin Panel...</p>
       </div>
     </div>

@@ -187,7 +187,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
           variant="outline" 
           onClick={() => setIsModalOpen(true)}
           disabled={!imageBlob || !account}
-          className="h-12 px-6 text-base font-medium transition-all duration-200 bg-[#A20131]/10 border-[#A20131]/30 text-[#A20131] hover:bg-[#A20131]/20 disabled:opacity-50 disabled:cursor-not-allowed max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
+          className="h-12 px-6 text-base font-medium transition-all duration-200 bg-[#FF0052]/10 border-[#FF0052]/30 text-[#FF0052] hover:bg-[#FF0052]/20 disabled:opacity-50 disabled:cursor-not-allowed max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
         >
           <div className="flex items-center gap-2 max-lg:gap-1.5">
             <Users className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
@@ -223,7 +223,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
               <Button 
                 onClick={handleMint}
                 disabled={!account || !imageBlob}
-                className="w-full bg-[#A20131] hover:bg-[#8a0129]"
+                className="w-full bg-[#FF0052] hover:bg-[#8a0129]"
               >
                 Mint {quantity} NFT{quantity > 1 ? 's' : ''}
               </Button>
@@ -232,7 +232,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
 
           {(step === 'uploading' || step === 'minting') && (
             <div className="text-center space-y-2">
-              <div className="animate-spin h-8 w-8 border-b-2 border-[#A20131] mx-auto"></div>
+              <div className="animate-spin h-8 w-8 border-b-2 border-[#FF0052] mx-auto"></div>
               <p className="text-sm text-white">{getStepText()}</p>
             </div>
           )}
@@ -260,7 +260,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
                   View on Explorer →
                 </a>
               )}
-              <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
+              <Button onClick={handleClose} className="w-full bg-[#FF0052] hover:bg-[#8a0129]">
                 Close
               </Button>
             </div>
@@ -281,7 +281,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
                 <Button onClick={handleMint} variant="outline" className="w-full border-gray-600">
                   Try Again
                 </Button>
-                <Button onClick={handleClose} className="w-full bg-[#A20131] hover:bg-[#8a0129]">
+                <Button onClick={handleClose} className="w-full bg-[#FF0052] hover:bg-[#8a0129]">
                   Close
                 </Button>
               </div>

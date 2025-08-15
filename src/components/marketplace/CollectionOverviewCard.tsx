@@ -36,8 +36,8 @@ const categoryColors = {
   jersey: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
   stadium: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
   badge: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20',
-  custom_collection: 'bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30',
-  launchpad_collection: 'bg-[#A20131]/20 text-[#A20131] border-[#A20131]/30',
+  custom_collection: 'bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/30',
+  launchpad_collection: 'bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/30',
   default: 'bg-[#FDFDFD]/10 text-[#FDFDFD] border-[#FDFDFD]/20'
 };
 
@@ -84,7 +84,7 @@ export default function CollectionOverviewCard({
   const href = hrefOverride || collectionUrl;
 
   return (
-    <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#A20131]/10">
+    <div className="cyber-card rounded-xl overflow-hidden group transition-all hover:border-[#FDFDFD]/20 hover:shadow-lg hover:shadow-[#FF0052]/10">
       {/* Collection Image with Link */}
       <Link href={href} prefetch={false} legacyBehavior>
         <a className="block relative aspect-square focus:outline-none">
@@ -140,7 +140,7 @@ export default function CollectionOverviewCard({
             onClick={() => setIsLiked(!isLiked)}
             className="p-1 rounded-full hover:bg-[#FDFDFD]/10 transition-colors"
           >
-            <Heart className={`h-4 w-4 ${isLiked ? 'fill-[#A20131] text-[#A20131]' : 'text-[#FDFDFD]/50'}`} />
+            <Heart className={`h-4 w-4 ${isLiked ? 'fill-[#FF0052] text-[#FF0052]' : 'text-[#FDFDFD]/50'}`} />
           </button>
         </div>
         
@@ -148,7 +148,7 @@ export default function CollectionOverviewCard({
         <div className="grid grid-cols-2 gap-3 mb-4">
           <div>
             <p className="text-xs text-[#FDFDFD]/70">Floor Price</p>
-            <p className="text-sm font-medium text-[#A20131]">
+            <p className="text-sm font-medium text-[#FF0052]">
               {formatPriceSafe(floorPrice)}
             </p>
           </div>
@@ -169,7 +169,7 @@ export default function CollectionOverviewCard({
             </div>
             <div className="w-full bg-[#FDFDFD]/10 rounded-full h-2">
               <div 
-                className="bg-[#A20131] h-2 rounded-full transition-all duration-300" 
+                className="bg-[#FF0052] h-2 rounded-full transition-all duration-300" 
                 style={{ width: `${mintProgress}%` }}
               ></div>
             </div>
@@ -180,7 +180,7 @@ export default function CollectionOverviewCard({
         <div className="space-y-2">
           <Link href={href} legacyBehavior>
             <a className="w-full">
-              <Button className="w-full bg-[#A20131] hover:bg-[#A20131]/90 text-white">
+              <Button className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white">
                 <Eye className="mr-2 h-4 w-4" />
                 View Collection
               </Button>

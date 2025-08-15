@@ -115,8 +115,8 @@ export default function ProfessionalBadgeCanvas({
     <div className="flex-1 flex items-center justify-center">
       <div className="text-center">
         <div className="w-16 h-16 mx-auto mb-4 relative">
-          <Loader2 className="w-16 h-16 text-[#A20131] animate-spin" />
-          <div className="absolute inset-0 w-16 h-16 border-2 border-[#A20131]/20 rounded-full"></div>
+          <Loader2 className="w-16 h-16 text-[#FF0052] animate-spin" />
+          <div className="absolute inset-0 w-16 h-16 border-2 border-[#FF0052]/20 rounded-full"></div>
         </div>
         <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">
           {isAnalyzing ? 'Analyzing Badge Reference...' : 'Generating Badge...'}
@@ -129,9 +129,9 @@ export default function ProfessionalBadgeCanvas({
               : 'Creating your custom badge design...'}
         </p>
         <div className="flex items-center justify-center gap-2">
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse"></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
-          <div className="w-2 h-2 bg-[#A20131] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse"></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse" style={{ animationDelay: '0.2s' }}></div>
+          <div className="w-2 h-2 bg-[#FF0052] rounded-full animate-pulse" style={{ animationDelay: '0.4s' }}></div>
         </div>
       </div>
     </div>
@@ -173,7 +173,7 @@ export default function ProfessionalBadgeCanvas({
             {badgeName} • {selectedStyle} • {quality.toUpperCase()}
           </span>
           {isVisionMode && (
-            <Badge variant="outline" className="bg-[#A20131]/10 text-[#A20131] border-[#A20131]/30">
+            <Badge variant="outline" className="bg-[#FF0052]/10 text-[#FF0052] border-[#FF0052]/30">
               Vision Enhanced
             </Badge>
           )}
@@ -256,7 +256,7 @@ export default function ProfessionalBadgeCanvas({
               alt="Reference"
               width={400}
               height={600}
-              className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#A20131]/50 rounded-lg"
+              className="max-w-full max-h-full object-contain opacity-30 border-2 border-[#FF0052]/50 rounded-lg"
             />
           </div>
         )}
