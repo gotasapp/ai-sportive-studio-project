@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639'
     ];
     
-    const foundCollections = [];
+    const foundCollections: any[] = [];
     
     // Buscar em ambas as tabelas por esses contratos
     for (const contract of oldContracts) {
