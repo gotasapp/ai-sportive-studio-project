@@ -2,6 +2,7 @@
 
 import JerseyEditor from '@/components/JerseyEditor';
 import Header from '@/components/Header';
+import Footer from '@/components/layout/Footer';
 
 export default function JerseysPage() {
   return (
@@ -10,6 +11,7 @@ export default function JerseysPage() {
       <div className="flex-1 w-full">
         <JerseyEditor />
       </div>
+      <Footer />
     </div>
   );
 } 

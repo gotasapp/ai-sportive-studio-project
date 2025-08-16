@@ -2,6 +2,7 @@
 
 import StadiumEditor from '@/components/StadiumEditor';
 import Header from '@/components/Header';
+import Footer from '@/components/layout/Footer';
 
 export default function StadiumsPage() {
   // No more authentication checks - let everyone see the page
@@ -13,6 +14,7 @@ export default function StadiumsPage() {
       <div className="flex-1 w-full">
         <StadiumEditor />
       </div>
+      <Footer />
     </div>
   );
 } 

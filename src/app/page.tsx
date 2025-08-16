@@ -2,6 +2,7 @@
 
 import Header from '@/components/Header';
 import { CommerceHero } from '@/components/commerce-hero';
+import Footer from '@/components/layout/Footer';
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <div className="flex-1 w-full overflow-x-hidden">
         <CommerceHero />
       </div>
+      <Footer />
     </div>
   );
 }
