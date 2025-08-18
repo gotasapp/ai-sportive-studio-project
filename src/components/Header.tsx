@@ -45,19 +45,19 @@ export default function Header() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [mobileMenuOpen]);
 
-  // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
+  // Check if user is admin (including async verification for InApp wallets)
   useEffect(() => {
     const checkAdminStatus = async () => {
       console.log('---');
-      console.time('Admin Check'); // Inicia o cronômetro
+              console.time('Admin Check'); // Start the timer
       console.log('🔍 Iniciando verificação de status de admin...');
 
       if (!account) {
         setUserIsAdmin(false);
         setAdminCheckLoading(false);
         localStorage.removeItem('admin_status_cache');
-        console.log('✅ Verificação concluída: Usuário não conectado.');
-        console.timeEnd('Admin Check'); // Para o cronômetro
+        console.log('✅ Verification completed: User not connected.');
+        console.timeEnd('Admin Check'); // Stop the timer
         console.log('---');
         return;
       }
@@ -65,35 +65,35 @@ export default function Header() {
       const accountKey = account.address || 'unknown';
       const cacheKey = `admin_status_${accountKey}`;
       
-      // Verificar cache primeiro (para evitar re-verificações desnecessárias)
+      // Check cache first (to avoid unnecessary re-verifications)
       const cachedStatus = localStorage.getItem(cacheKey);
       if (cachedStatus !== null) {
         const isAdminCached = cachedStatus === 'true';
         setUserIsAdmin(isAdminCached);
         setAdminCheckLoading(false);
         
-        // Ainda faz verificação em background para atualizar cache se necessário
+        // Still performs background verification to update cache if necessary
         setTimeout(() => {
           performAdminCheck(accountKey, cacheKey);
         }, 100);
         
-        console.log('✅ Verificação concluída: Cache encontrado.');
-        console.timeEnd('Admin Check'); // Para o cronômetro
+        console.log('✅ Verification completed: Cache found.');
+        console.timeEnd('Admin Check'); // Stop the timer
         console.log('---');
         return;
       }
 
-      // Se não há cache, faz verificação completa
+      // If there's no cache, performs complete verification
       setAdminCheckLoading(true);
       await performAdminCheck(accountKey, cacheKey);
-      console.log('✅ Verificação completa via performAdminCheck concluída.');
-      console.timeEnd('Admin Check'); // Para o cronômetro
+      console.log('✅ Complete verification via performAdminCheck completed.');
+      console.timeEnd('Admin Check'); // Stop the timer
       console.log('---');
     };
 
     const performAdminCheck = async (accountKey: string, cacheKey: string) => {
       try {
-        // Primeiro, tenta verificação rápida (wallet address)
+        // First, try quick verification (wallet address)
         const quickCheck = isAdmin(account);
         if (quickCheck) {
           setUserIsAdmin(true);
@@ -103,7 +103,7 @@ export default function Header() {
           return;
         }
 
-        // Para InApp wallets, faz verificação async do email
+        // For InApp wallets, performs async email verification
         console.log('⏳ Tentando verificação assíncrona (pode ser lento)...');
         const asyncCheck = await isAdminAsync(account, wallet);
         setUserIsAdmin(asyncCheck);

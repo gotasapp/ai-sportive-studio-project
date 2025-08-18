@@ -156,7 +156,7 @@ export default function ProfessionalCanvas({
   )
 
   const renderError = () => {
-    // Detectar se é erro de rate limit
+    // Detect if it's a rate limit error
     const isRateLimit = error?.toLowerCase().includes('rate limit') || 
                        error?.toLowerCase().includes('too many requests') ||
                        error?.includes('429');

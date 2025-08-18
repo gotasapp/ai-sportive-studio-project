@@ -1,6 +1,6 @@
 // ================================================
 // ApprovalModal Component
-// Modal para aprovação de coleções no Launchpad
+// Modal for collection approval in Launchpad
 // ================================================
 
 import React from 'react'

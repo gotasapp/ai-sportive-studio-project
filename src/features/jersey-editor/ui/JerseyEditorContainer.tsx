@@ -1,6 +1,6 @@
 // ================================================
 // JerseyEditorContainer
-// Mantém funcionalidade original com estrutura refatorada disponível
+// Maintains original functionality with refactored structure available
 // ================================================
 
 import React, { useState, useEffect, useRef } from 'react'

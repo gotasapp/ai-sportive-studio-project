@@ -1,6 +1,6 @@
 // ================================================
 // StylePicker Component
-// UI Pura para seleção de estilos
+// Pure UI for style selection
 // ================================================
 
 import React from 'react'

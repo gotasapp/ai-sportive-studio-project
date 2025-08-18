@@ -94,7 +94,7 @@ export default function CollectionMintPage() {
   const [gaslessMintError, setGaslessMintError] = useState<string | null>(null);
   const [gaslessMintSuccess, setGaslessMintSuccess] = useState<string | null>(null);
 
-  // Buscar dados da coleção do banco de dados
+  // Fetch collection data from database
   useEffect(() => {
     const fetchCollection = async () => {
       try {
@@ -178,7 +178,7 @@ export default function CollectionMintPage() {
     console.log(`🎯 Created collection-specific functions for contract: ${collection.contractAddress}`);
   }, [collection, account]);
 
-  // Carregar claim conditions quando a collection estiver disponível
+  // Load claim conditions when collection is available
   useEffect(() => {
     const loadClaimConditions = async () => {
       if (!collection || !collectionClaimFunctions.getLaunchpadClaimCondition) return;

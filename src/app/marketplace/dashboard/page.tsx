@@ -74,7 +74,7 @@ export default function MarketplaceDashboard() {
     
     try {
       // TODO: Implementar chamadas reais para APIs
-      // Mock data para demonstração
+      // Mock data for demonstration
       const mockStats: DashboardStats = {
         totalEarnings: '2.4 CHZ',
         totalSpent: '1.8 CHZ',

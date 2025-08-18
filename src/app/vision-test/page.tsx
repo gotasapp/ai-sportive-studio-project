@@ -420,7 +420,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
     }
   }
 
-  // NOVA FUNÇÃO: Complete Vision Flow - testa nosso endpoint /complete-vision-flow
+  // NEW FUNCTION: Complete Vision Flow - tests our endpoint /complete-vision-flow
   const runCompleteVisionFlow = async () => {
     if (!imageBlob) {
       setError('Please upload an image first')

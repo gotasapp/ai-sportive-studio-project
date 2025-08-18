@@ -1,6 +1,6 @@
 // ================================================
 // GenerationPanel Component
-// UI Pura para controle de geração
+// Pure UI for generation control
 // ================================================
 
 import React from 'react'

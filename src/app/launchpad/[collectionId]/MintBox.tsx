@@ -28,7 +28,7 @@ interface ClaimCondition {
 }
 
 export default function LaunchpadMintBox({ contractAddress, collectionId }: Props) {
-  // Hooks do Web3 para mint público
+  // Web3 hooks for public mint
   const { 
     isConnected, 
     address, 
@@ -49,7 +49,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
   const [isLoadingCondition, setIsLoadingCondition] = useState(true);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
 
-  // Carregar claim condition na inicialização
+  // Load claim condition on initialization
   useEffect(() => {
     loadClaimCondition();
     checkAdminStatus();
@@ -69,14 +69,14 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
   };
 
   const checkAdminStatus = () => {
-    // Simples verificação de admin - pode ser expandida
+    // Simple admin verification - can be expanded
     const adminAddresses = [
       '0x742d35Cc6634C0532925a3b8d98bf4f3fb0b1C4F', // Adicione endereços de admin aqui
     ];
     setIsUserAdmin(adminAddresses.includes(address || ''));
   };
 
-  // Mint público usando claim conditions
+  // Public mint using claim conditions
   const handlePublicMint = async () => {
     if (!isConnected) {
       toast.error('Conecte a carteira');
@@ -95,15 +95,15 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
       setMintStatus('success');
       toast.success(`Mint successful`);
 
-      // Salvar NFTs individuais no banco (igual ao page.tsx)
+      // Save individual NFTs to database (same as page.tsx)
       try {
-        // Buscar dados atuais da coleção para obter o contador correto
+        // Fetch current collection data to get correct counter
         const collectionResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
         const collectionData = await collectionResponse.json();
         
         if (collectionData.success) {
           const currentMinted = collectionData.collection.minted || 0;
-          const startTokenId = Math.max(0, currentMinted - qty); // Token ID começando do mint anterior
+          const startTokenId = Math.max(0, currentMinted - qty); // Token ID starting from previous mint
           
           for (let i = 0; i < qty; i++) {
             const tokenId = startTokenId + i;
@@ -122,7 +122,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
           
           console.log(`✅ Saved ${qty} individual NFTs to database from MintBox`);
           
-          // Atualizar contador da coleção
+          // Update collection counter
           await fetch(`/api/launchpad/collections/${collectionId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -137,7 +137,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
         console.warn('⚠️ Failed to save individual NFTs from MintBox:', saveError);
       }
 
-      // Atualizar claim condition após mint
+      // Update claim condition after mint
       await loadClaimCondition();
 
     } catch (err: any) {
@@ -150,7 +150,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     }
   };
 
-  // Mint gasless para admin
+  // Gasless mint for admin
   const handleGaslessMint = async () => {
     if (!isConnected) {
       toast.error('Conecte a carteira');
@@ -162,7 +162,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     setMintError(null);
     
     try {
-      // Para mint gasless, precisamos gerar metadata URI para cada NFT
+      // For gasless mint, we need to generate metadata URI for each NFT
       const metadataUri = `ipfs://QmYourMetadataHash/metadata.json`; // Placeholder - deveria ser gerado dinamicamente
       
       const result = await mintGasless({
@@ -177,9 +177,9 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
       setMintStatus('success');
       toast.success(`Gasless mint successful`);
 
-      // Salvar NFTs individuais no banco (igual aos outros fluxos)
+      // Save individual NFTs to database (same as other flows)
       try {
-        // Buscar dados atuais da coleção
+        // Fetch current collection data
         const collectionResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
         const collectionData = await collectionResponse.json();
         

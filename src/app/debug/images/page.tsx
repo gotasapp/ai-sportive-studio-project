@@ -12,7 +12,7 @@ export default function ImageDebugPage() {
   const [debugResults, setDebugResults] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   
-  // NFTs problemáticas mencionadas
+  // Problematic NFTs mentioned
   const problematicNFTs = [
     { id: '6870f6b15bdc094f3de4c18b', name: 'Token ID #6870f6b15bdc094f3de4c18b' },
     { id: 'Vasco DINAMITE #24', name: 'Vasco DINAMITE #24' },

@@ -1,6 +1,6 @@
 // ================================================
 // Pagination Component
-// UI Pura para controle de páginas
+// Pure UI for page control
 // ================================================
 
 import React from 'react'

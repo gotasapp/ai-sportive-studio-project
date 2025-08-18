@@ -1,6 +1,6 @@
 // ================================================
 // TeamPicker Component
-// UI Pura para seleção de times
+// Pure UI for team selection
 // ================================================
 
 import React from 'react'

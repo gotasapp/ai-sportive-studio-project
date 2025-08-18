@@ -1,6 +1,6 @@
 // ================================================
 // SportPicker Component
-// UI Pura para seleção de esportes
+// Pure UI for sport selection
 // ================================================
 
 import React from 'react'

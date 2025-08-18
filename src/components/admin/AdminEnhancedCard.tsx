@@ -138,7 +138,7 @@ export function AdminEnhancedCard({
   );
 }
 
-// Componente de métricas com glass effect
+// Metrics component with glass effect
 export function GlassMetricsCard({ 
   title, 
   value, 

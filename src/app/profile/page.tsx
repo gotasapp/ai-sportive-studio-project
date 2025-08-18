@@ -134,7 +134,7 @@ export default function ProfilePage() {
   const [selectedNFT, setSelectedNFT] = useState<NFTItem | null>(null)
   const [showNFTModal, setShowNFTModal] = useState(false)
 
-  // Adicionar estados de paginação
+  // Add pagination states
   const isMobile = useIsMobile();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = isMobile ? 5 : userNFTs.length || 1; // 5 para mobile, tudo para desktop
@@ -145,7 +145,7 @@ export default function ProfilePage() {
   // Resetar currentPage ao trocar de tab
   useEffect(() => { setCurrentPage(1); }, [activeTab]);
 
-  // Função para obter NFTs paginados por tab
+  // Function to get paginated NFTs by tab
   const getPaginatedNFTs = (nfts: NFTItem[]) => {
     const totalPages = isMobile ? Math.ceil(nfts.length / itemsPerPage) || 1 : 1;
     const paginatedNFTs = isMobile
@@ -173,7 +173,7 @@ export default function ProfilePage() {
           setEditedUsername(profileData.username || '')
         } else {
           console.warn('⚠️ Profile API returned error, using default')
-          // Usar perfil padrão se API falhar
+          // Use default profile if API fails
           const defaultProfile: UserProfile = {
             id: account.address,
             username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
@@ -190,7 +190,7 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error('❌ Error loading profile:', error)
-        // Sempre usar perfil padrão em caso de erro
+        // Always use default profile in case of error
         const defaultProfile: UserProfile = {
           id: account.address,
           username: account.address.slice(0, 6) + '...' + account.address.slice(-4),
@@ -234,7 +234,7 @@ export default function ProfilePage() {
         const DISABLE_HIDDEN = process.env.NEXT_PUBLIC_DISABLE_HIDDEN_NFTS === 'true';
         // === BUSCAR BLACKLIST DO BACKEND (somente se habilitado) ===
         let hiddenIds: string[] = [];
-        // Blacklist local de segurança (aplicada somente se habilitado)
+        // Local security blacklist (applied only if enabled)
         const HARDCODED_BLACKLIST = new Set(
           DISABLE_HIDDEN
             ? []
@@ -286,7 +286,7 @@ export default function ProfilePage() {
         console.error('❌ Error fetching user NFTs:', error)
         setNftsError(error instanceof Error ? error.message : 'Failed to fetch NFTs')
         setDataSource('error')
-        // Não quebrar a página - manter NFTs vazios
+        // Don't break the page - keep NFTs empty
         setUserNFTs([])
       } finally {
         setNftsLoading(false)
@@ -295,7 +295,7 @@ export default function ProfilePage() {
     fetchUserNFTs()
   }, [account?.address])
 
-  // REMOVER - Dados estáticos temporários (não precisamos mais)
+  // REMOVE - Temporary static data (we don't need it anymore)
   /*
   useEffect(() => {
     if (account?.address) {
@@ -880,9 +880,9 @@ interface NFTGridProps {
 
 function NFTGrid({ nfts, onNFTClick }: NFTGridProps) {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12; // 12 NFTs por página (3x4 grid)
+  const itemsPerPage = 12; // 12 NFTs per page (3x4 grid)
   
-  // Calcular paginação
+  // Calculate pagination
   const totalPages = Math.ceil(nfts.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;

@@ -11,7 +11,7 @@ export function ThirdwebProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Exportar configurações para usar nos componentes
+// Export configurations to use in components
 import { createThirdwebClient } from 'thirdweb';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { defineChain } from 'thirdweb/chains';
