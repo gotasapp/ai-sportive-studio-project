@@ -92,10 +92,10 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
         // 4) Compôr a lista final incrementalmente
         const featured: FeaturedNFT[] = [];
 
-        // Se encontramos um NFT mais votado, adicionar no início
+        // If we found a most voted NFT, add it at the beginning
         if (mostVotedNFT) {
           featured.push({
-            name: `🏆 ${mostVotedNFT.name}`, // Adicionar emoji de troféu
+            name: `🏆 ${mostVotedNFT.name}`, // Add trophy emoji
             collection: `Most Voted • ${mostVotedNFT.votes} votes`,
             imageUrl: mostVotedNFT.imageUrl,
             category: mostVotedNFT.category || 'featured',
@@ -103,7 +103,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           });
         }
 
-        // Se encontramos coleção mais votada, adicionar também como destaque extra
+        // If we found most voted collection, also add as extra highlight
         if (mostVotedCollection) {
           featured.push({
             name: `🏆 ${mostVotedCollection.name}`,
@@ -114,12 +114,12 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           });
         }
 
-        // Agora adicionar outros NFTs do marketplace (excluindo o mais votado se já foi incluído)
+        // Now add other NFTs from marketplace (excluding most voted if already included)
         if (marketplaceData.length > 0) {
           const already = featured.length;
           const featuredCount = Math.min(marketplaceData.length, already > 0 ? 5 - already : 5);
           
-          // Filtrar o NFT mais votado para não duplicar
+          // Filter most voted NFT to avoid duplication
           const otherNFTs = mostVotedNFT 
             ? marketplaceData.filter(nft => nft._id !== mostVotedNFT._id)
             : marketplaceData;
@@ -167,7 +167,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
     processFeaturedData();
   }, [marketplaceData]);
   
-  // GSAP Timeline para animação suave do carrossel
+  // GSAP Timeline for smooth carousel animation
   useEffect(() => {
     if (featuredNFTs.length <= 1 || !containerRef.current) return;
 
@@ -179,7 +179,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
     // Criar nova timeline
     const tl = gsap.timeline({ repeat: -1 });
     
-    // Para cada slide, criar animação + pausa
+    // For each slide, create animation + pause
     for (let i = 0; i < featuredNFTs.length; i++) {
       const nextIndex = (i + 1) % featuredNFTs.length;
       

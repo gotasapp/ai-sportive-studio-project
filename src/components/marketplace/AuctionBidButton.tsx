@@ -19,7 +19,7 @@ interface AuctionBidButtonProps {
   currency?: string;
   className?: string;
   disabled?: boolean;
-  onBidSuccess?: () => void; // Callback para atualizar dados após bid
+  onBidSuccess?: () => void; // Callback to update data after bid
 }
 
 export default function AuctionBidButton({
@@ -41,10 +41,10 @@ export default function AuctionBidButton({
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
 
-  // Verificar se leilão expirou
+  // Check if auction expired
   const isExpired = new Date() > endTime;
   
-  // Calcular próximo lance mínimo (5% maior que o atual)
+  // Calculate next minimum bid (5% higher than current)
   const nextMinBid = currentBid 
     ? (parseFloat(currentBid.replace(/[^\d.]/g, '')) * 1.05).toFixed(3)
     : parseFloat(minimumBid.replace(/[^\d.]/g, '')).toFixed(3);
@@ -60,7 +60,7 @@ export default function AuctionBidButton({
       return;
     }
 
-    // 🔧 VALIDAÇÃO: Verificar se auctionId é válido
+    // 🔧 VALIDATION: Check if auctionId is valid
     if (!auctionId || auctionId === 'undefined' || auctionId === 'null' || auctionId === 'INVALID_AUCTION_ID') {
       console.error('❌ AuctionBidButton: auctionId inválido:', auctionId);
       toast.error('This auction has technical issues. Please contact support.');
@@ -120,12 +120,12 @@ export default function AuctionBidButton({
       setIsOpen(false);
       setBidAmount('');
       
-      // Chamar callback para atualizar dados do leilão
+      // Call callback to update auction data
       if (onBidSuccess) {
         console.log('🔄 Calling onBidSuccess callback to refresh auction data...');
         onBidSuccess();
       } else {
-        // Fallback: recarregar página se não houver callback
+        // Fallback: reload page if no callback
         setTimeout(() => {
           window.location.reload();
         }, 2000);

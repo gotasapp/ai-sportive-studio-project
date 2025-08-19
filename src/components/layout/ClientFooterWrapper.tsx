@@ -21,9 +21,9 @@ const ClientFooterWrapper = () => {
     return () => window.removeEventListener('resize', checkIfMobile)
   }, [])
 
-  // Não mostrar footer se:
-  // 1. É página admin
-  // 2. É dispositivo mobile
+  // Don't show footer if:
+  // 1. It's admin page
+  // 2. It's mobile device
   const isAdminPage = pathname.startsWith('/admin')
   
   if (isAdminPage || isMobile) {

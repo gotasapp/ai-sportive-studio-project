@@ -96,17 +96,17 @@ export default function JerseysPage() {
   // Estado para controlar linhas expandidas
   const [openRow, setOpenRow] = useState<string | null>(null);
 
-  // PAGINAÇÃO
+  // PAGINATION
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
 
-  // ESTADO DE PAGINAÇÃO PARA TIMES
+  // PAGINATION STATE FOR TEAMS
   const [currentTeamPage, setCurrentTeamPage] = useState(1);
   const teamsPerPage = 8;
   const totalTeamPages = Math.ceil(teamReferences.length / teamsPerPage);
   const paginatedTeams = teamReferences.slice((currentTeamPage - 1) * teamsPerPage, currentTeamPage * teamsPerPage);
 
-  // ESTADO DE PAGINAÇÃO PARA IMAGENS DE REFERÊNCIA
+  // PAGINATION STATE FOR REFERENCE IMAGES
   const [currentImagePage, setCurrentImagePage] = useState(1);
   const imagesPerPage = 12;
   const allReferenceImages = teamReferences.flatMap(team => team.referenceImages.map(img => ({ ...img, teamName: team.teamName })));
@@ -127,7 +127,7 @@ export default function JerseysPage() {
 
   const totalPages = Math.ceil(filteredJerseys.length / itemsPerPage);
 
-  // Atualiza currentPage se filtros mudarem e página ficou inválida
+  // Update currentPage if filters change and page became invalid
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1);
   }, [filteredJerseys.length, totalPages]);
@@ -170,10 +170,10 @@ export default function JerseysPage() {
     fetchTeamReferences();
   }, []);
 
-  // Jerseys da página atual
+  // Jerseys from current page
   const paginatedJerseys = filteredJerseys.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Funções para Team References
+  // Functions for Team References
   const handleCreateTeam = async () => {
     if (!newTeamName.trim() || !newTeamPrompt.trim()) {
       alert('Please fill in all fields');

@@ -52,7 +52,7 @@ export default function MidjourneyLayout({
   );
 }
 
-// Componente de seção do sidebar
+// Sidebar section component
 interface SidebarSectionProps {
   title: string;
   icon?: React.ComponentType<{ className?: string }>;
@@ -99,7 +99,7 @@ export function SidebarSection({
   );
 }
 
-// Componente para grid de seleção compacto
+// Component for compact selection grid
 interface CompactGridProps {
   items: Array<{
     id: string;
@@ -184,7 +184,7 @@ export function CompactInput({
   );
 }
 
-// Botão compacto para upload
+// Compact upload button
 interface CompactUploadProps {
   onUpload: (file: File) => void;
   accept?: string;

@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import React from 'react'; // Import React para React.Fragment
 
-// Interfaces (reutilizáveis)
+// Interfaces (reusable)
 interface ReferenceImage {
   id: string;
   url: string;
@@ -75,12 +75,12 @@ export default function BadgesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
 
-  // ESTADO DE PAGINAÇÃO PARA BADGE MANAGEMENT
+  // PAGINATION STATE FOR BADGE MANAGEMENT
   const [currentRefPage, setCurrentRefPage] = useState(1);
   const refsPerPage = 8;
   const totalRefPages = Math.ceil(references.length / refsPerPage);
   const paginatedRefs = references.slice((currentRefPage - 1) * refsPerPage, currentRefPage * refsPerPage);
-  // ESTADO DE PAGINAÇÃO PARA BADGES CRIADAS
+  // PAGINATION STATE FOR CREATED BADGES
   const [currentBadgePage, setCurrentBadgePage] = useState(1);
   const badgesPerPage = 8;
   // Filtro de busca e status para badges geradas
@@ -91,7 +91,7 @@ export default function BadgesPage() {
   });
   const totalBadgePages = Math.ceil(filteredBadges.length / badgesPerPage);
   const paginatedBadges = filteredBadges.slice((currentBadgePage - 1) * badgesPerPage, currentBadgePage * badgesPerPage);
-  // ESTADO DE PAGINAÇÃO PARA IMAGENS DE BADGE
+  // PAGINATION STATE FOR BADGE IMAGES
   const [currentImgPage, setCurrentImgPage] = useState(1);
   const imgsPerPage = 12;
   const allRefImages = references.flatMap(item => item.referenceImages.map(img => ({ ...img, teamName: item.teamName })));

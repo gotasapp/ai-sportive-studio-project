@@ -110,7 +110,7 @@ export default function AdminMarketplace() {
     
     setSaving(true);
     try {
-      // TODO: Implementar API real para salvar configuração
+      // TODO: Implement real API to save configuration
       await new Promise(resolve => setTimeout(resolve, 1000)); // Mock delay
       
       toast.success('Configurações do marketplace atualizadas!');

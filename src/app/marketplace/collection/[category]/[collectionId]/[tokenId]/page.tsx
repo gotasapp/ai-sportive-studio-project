@@ -84,14 +84,14 @@ function generateRealisticPriceHistory(nftData: any): PriceData[] {
   const now = new Date();
   const historyData: PriceData[] = [];
   
-  // Usar preço real do NFT como base, ou fallback para valor padrão
+  // Use real NFT price as base, or fallback to default value
   const basePrice = nftData?.price || nftData?.metadata?.price || 0.05;
   
   for (let i = 6; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i * 5);
     
-    // Variação realista baseada no preço real (±15%)
+    // Realistic variation based on real price (±15%)
     const variation = (Math.random() - 0.5) * (basePrice * 0.3);
     const price = Math.max(basePrice * 0.7, basePrice + variation);
     
@@ -124,12 +124,12 @@ interface ActivityItem {
 export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const account = useActiveAccount();
   
-  // 🔍 DETECÇÃO AUTOMÁTICA: Verificar tipo de coleção (CORRIGIDA)
+  // 🔍 AUTOMATIC DETECTION: Check collection type (FIXED)
   const isObjectIdToken = /^[0-9a-fA-F]{24}$/.test(params.tokenId);
   const isLaunchpadCollection = params.tokenId === 'collection';
   const isNumericToken = !isNaN(Number(params.tokenId));
   
-  // 🎯 DETECÇÃO CORRETA: Legacy NFTs podem ter ObjectId também!
+  // 🎯 CORRECT DETECTION: Legacy NFTs can also have ObjectId!
   const isLegacyNFT = (params.category === 'jersey' && params.collectionId === 'jersey') ||
                       (params.category === 'stadium' && params.collectionId === 'stadium') ||
                       (params.category === 'badge' && params.collectionId === 'badge');
@@ -155,7 +155,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     route: detectionRoute
   });
   
-  // 🎯 LÓGICA CORRETA: Chamar todos os hooks sempre, depois selecionar
+  // 🎯 CORRECT LOGIC: Call all hooks always, then select
   const legacyNFTData = useNFTData(params.tokenId);
   
   const customCollectionQuery = useQuery({
@@ -196,7 +196,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
       const data = await response.json();
       console.log('🚀 MARKETPLACE DATA:', data);
       
-      // Buscar a coleção específica do launchpad
+      // Fetch specific launchpad collection
       const launchpadCollection = data.data.find((item: any) => 
         item.type === 'launchpad_collection' && 
         item.marketplace?.category === params.category
@@ -232,7 +232,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     enabled: !!params.tokenId && isLaunchpadCollection
   });
 
-  // Selecionar qual resultado usar
+  // Select which result to use
   const { data: nftResponse, isLoading: nftLoading, error: nftError } = 
     isLegacyNFT
       ? legacyNFTData
@@ -271,25 +271,25 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   });
   const [statsLoading, setStatsLoading] = useState(true);
 
-  // Buscar dados específicos do marketplace e vendas
+  // Fetch specific marketplace and sales data
   useEffect(() => {
     async function fetchMarketplaceData() {
       try {
         setStatsLoading(true);
 
-        // Buscar stats da coleção usando collectionId que agora é o nome da coleção (jersey, stadium, etc.)
-        const collectionParam = params.collectionId; // collectionId é agora o nome da coleção
+        // Fetch collection stats using collectionId which is now the collection name (jersey, stadium, etc.)
+        const collectionParam = params.collectionId; // collectionId is now the collection name
         const statsResponse = await fetch(`/api/marketplace/nft-collection/stats?collection=${collectionParam}`);
         if (statsResponse.ok) {
           const statsResult = await statsResponse.json();
           if (statsResult.success !== false) {
-            // Calcular floor price baseado em dados disponíveis
+            // Calculate floor price based on available data
             let floorPrice = "-- CHZ";
             if (numericPrice && numericPrice > 0) {
               floorPrice = `${numericPrice.toFixed(3)} CHZ`;
             } else if (statsResult.activity?.salesVolume && statsResult.activity?.transactions > 0) {
               const avgPrice = statsResult.activity.salesVolume / statsResult.activity.transactions;
-              floorPrice = `${(avgPrice * 0.8).toFixed(3)} CHZ`; // Floor é ~80% do preço médio
+              floorPrice = `${(avgPrice * 0.8).toFixed(3)} CHZ`; // Floor is ~80% of average price
             }
             
             setMarketplaceStats(prev => ({
@@ -304,7 +304,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
           }
         }
 
-        // Buscar dados de vendas específicas deste NFT
+        // Fetch specific sales data for this NFT
         const salesResponse = await fetch(`/api/marketplace/sales?collection=${collectionParam}&tokenId=${params.tokenId}`);
         if (salesResponse.ok) {
           const salesResult = await salesResponse.json();
@@ -322,7 +322,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
               txHash: sale.transactionHash
             }));
 
-            // Adicionar atividades baseadas em dados reais se não houver dados suficientes
+            // Add activities based on real data if there's not enough data
             if (enhancedActivity.length < 3) {
               const basePrice = numericPrice || 0.05;
               const owner = displayData?.owner || nftData?.owner || 'Unknown';
@@ -336,7 +336,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 }
               ];
               
-              // Adicionar atividade de listing se há preço
+              // Add listing activity if there's a price
               if (basePrice > 0) {
                 realisticActivity.push({
                   type: 'listing',
@@ -353,7 +353,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
             
             // Gerar price history baseado em vendas reais ou dados mock melhorados
             if (salesResult.data.length > 0) {
-              // Organizar dados reais por data e calcular médias de preço
+              // Organize real data by date and calculate average prices
               const salesByDate = salesResult.data.reduce((acc: any, sale: any) => {
                 const dateKey = new Date(sale.timestamp || sale.date).toLocaleDateString('en-US', { 
                   month: 'short', 
@@ -373,15 +373,15 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
                 volume: data.volumes.reduce((sum: number, vol: number) => sum + vol, 0)
               })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-              // Se tem dados reais, usar eles
+              // If there's real data, use it
               if (realPriceHistory.length > 0) {
                 setPriceHistory(realPriceHistory);
               } else {
-                // Gerar histórico baseado em dados reais do NFT
+                // Generate history based on real NFT data
                 setPriceHistory(generateRealisticPriceHistory(displayData));
               }
             } else {
-              // Gerar histórico baseado em dados reais do NFT
+              // Generate history based on real NFT data
               setPriceHistory(generateRealisticPriceHistory(displayData));
             }
           }

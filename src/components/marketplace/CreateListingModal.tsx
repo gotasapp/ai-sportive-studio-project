@@ -45,10 +45,10 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
   });
 
   const handleSubmit = async () => {
-    // Verificar se está numa rede Polygon suportada (Mainnet ou Amoy)
+    // Check if on a supported Polygon network (Mainnet or Amoy)
     const supportedPolygonChains = [137, 80002]; // Polygon Mainnet e Amoy Testnet
     
-    // Por enquanto, forçar uso do Polygon Amoy onde o marketplace está deployado
+    // For now, force use of Polygon Amoy where the marketplace is deployed
     if (chain?.id !== 80002) {
       toast.error(`Você está na ${chain?.name || 'rede desconhecida'}. O marketplace está deployado apenas no Polygon Amoy Testnet. Por favor, troque para Polygon Amoy (Chain ID: 80002) na sua carteira.`);
       return;
@@ -104,7 +104,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
       // Reset form
       setPrice('');
       
-      // NOTA: Não recarregar automaticamente para ver logs
+      // NOTE: Don't reload automatically to see logs
       
     } catch (error: any) {
       console.error('❌ Error creating listing:', error);

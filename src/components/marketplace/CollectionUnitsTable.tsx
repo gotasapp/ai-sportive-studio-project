@@ -61,7 +61,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
   const getContractByCategory = (category: string): string => {
     const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
     const contractAddress = NFT_CONTRACTS[chainId];
-    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
+    // If no contract found for current network, use fallback for Polygon Amoy
     if (!contractAddress) {
       return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
     }
@@ -74,7 +74,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
   const [showCreateAuction, setShowCreateAuction] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<CollectionUnit | null>(null);
 
-  // Buscar unidades da coleção
+  // Fetch collection units
   useEffect(() => {
     async function fetchUnits() {
       try {
@@ -140,7 +140,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     return () => clearInterval(interval);
   }, [collectionId, category]);
 
-  // Refresh após ações de trading
+  // Refresh after trading actions
   const refreshUnits = async () => {
     try {
       console.log('🔄 Manual refresh: Recarregando dados após trading...');
@@ -178,7 +178,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       refreshInterval: 30
     });
 
-    // Usar bid em tempo real se disponível
+    // Use real-time bid if available
     const displayCurrentBid = auctionData.hasValidBid ? auctionData.currentBid : unit.marketplace?.price;
     
     // Verificar se auction expirou
@@ -217,7 +217,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     );
   };
 
-  // Determinar se é criador do auction (NOVA FUNÇÃO)
+  // Determine if is auction creator (NEW FUNCTION)
   const isAuctionCreator = (unit: CollectionUnit) => {
     if (!account?.address) return false;
     // Para auctions, verificar se existe thirdwebAuctionData com creatorAddress
@@ -225,19 +225,19 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     return auctionCreator?.toLowerCase() === account.address.toLowerCase();
   };
 
-  // Renderizar botões de ação (MESMA LÓGICA DO BACKUP)
+  // Render action buttons (SAME LOGIC AS BACKUP)
   const renderActionButtons = (unit: CollectionUnit) => {
     const isUserOwner = isOwner(unit);
     const { isListed, isAuction, listingId, auctionId, auctionEndTime } = unit.marketplace;
     
-    // Determinar estado e ações disponíveis
+    // Determine state and available actions
     
     if (isListed && listingId) {
       // 🛒 NFT LISTADO - DESIGN PROFISSIONAL
       const isPriceValid = isValidPrice(unit.marketplace.price);
       
       if (isUserOwner) {
-        // Proprietário: Gerenciar listagem
+        // Owner: Manage listing
         return (
           <div className="flex items-center gap-2">
             <Button
@@ -289,7 +289,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       const isAuctionEnded = auctionEndTime ? new Date() > auctionEndTime : false;
       
       if (isUserOwner) {
-        // Criador do leilão
+        // Auction creator
         return (
           <div className="flex items-center gap-2">
             {!isAuctionEnded ? (
@@ -308,7 +308,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           </div>
         );
       } else {
-        // Participante do leilão
+        // Auction participant
         return (
           <div className="flex items-center gap-2">
             {!isAuctionEnded ? (
@@ -343,7 +343,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     } else {
       // 💎 NFT DISPONÍVEL - DESIGN PROFISSIONAL
       if (isUserOwner) {
-        // Proprietário: Listar ou leiloar
+        // Owner: List or auction
         return (
           <div className="flex items-center gap-2">
             <Button

@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-// Tipos para a configuração
+// Types for configuration
 interface TeamTemplate {
   colors: string[];
   elements: string[];

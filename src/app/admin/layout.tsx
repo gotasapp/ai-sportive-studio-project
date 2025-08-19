@@ -65,7 +65,7 @@ const navigation = [
   }
 ]
 
-// Principais páginas para navegação bottom mobile
+// Main pages for bottom mobile navigation
 const bottomNavigation = [
   {
     name: 'Jerseys',
@@ -96,7 +96,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
   const closeMobileMenu = () => setMobileMenuOpen(false)
 
-  // Função para alternar o modo claro/escuro
+  // Function to toggle light/dark mode
   const handleThemeSwitch = () => {
     setLightMode((prev) => {
       const next = !prev

@@ -37,7 +37,7 @@ export default function MakeOfferButton({
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
 
-  // Verificar se precisa de aprovação quando o valor muda
+  // Check if approval is needed when value changes
   useEffect(() => {
     const checkApproval = async () => {
       if (!account || !chain || !offerAmount || isNaN(Number(offerAmount))) {
@@ -46,14 +46,14 @@ export default function MakeOfferButton({
       }
 
       try {
-        // Verificar se está usando token nativo (modo teste)
+        // Check if using native token (test mode)
         const { getOfferCurrency, NATIVE_TOKEN_ADDRESS } = await import('@/lib/marketplace-config');
         const offerCurrency = getOfferCurrency(chain.id);
         
         if (offerCurrency === NATIVE_TOKEN_ADDRESS) {
-          // Token nativo não precisa de aprovação
+          // Native token doesn't need approval
           setNeedsApproval(false);
-          console.log('🪙 Usando token nativo - não precisa de aprovação');
+          console.log('🪙 Using native token - no approval needed');
           return;
         }
 
@@ -65,7 +65,7 @@ export default function MakeOfferButton({
         setNeedsApproval(!isApproved);
       } catch (error) {
         console.log('Erro ao verificar aprovação:', error);
-        setNeedsApproval(false); // Assumir que não precisa de aprovação em caso de erro
+        setNeedsApproval(false); // Assume no approval needed in case of error
       }
     };
 
@@ -106,15 +106,15 @@ export default function MakeOfferButton({
       return;
     }
 
-    // Verificar aprovação uma última vez
+    // Check approval one last time
     try {
       const { getOfferCurrency, NATIVE_TOKEN_ADDRESS } = await import('@/lib/marketplace-config');
       const offerCurrency = getOfferCurrency(chain.id);
       
       if (offerCurrency === NATIVE_TOKEN_ADDRESS) {
-        // Token nativo não precisa de aprovação
+        // Native token doesn't need approval
         setNeedsApproval(false);
-        console.log('🪙 Usando token nativo - não precisa de aprovação');
+                  console.log('🪙 Using native token - no approval needed');
       } else {
         const { isApproved } = await MarketplaceService.checkOfferTokenAllowance(
           account,
@@ -166,7 +166,7 @@ export default function MakeOfferButton({
       setExpiryDays('7');
       setNeedsApproval(false);
       
-      // REMOVIDO: reload automático para poder ver os logs
+      // REMOVED: automatic reload to see logs
       // setTimeout(() => {
       //   window.location.reload();
       // }, 2000);
