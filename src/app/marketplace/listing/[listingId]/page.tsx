@@ -9,7 +9,7 @@ import { Loader2 } from 'lucide-react';
 import ListingControls from '@/components/marketplace/ListingControls';
 import { MarketplaceService, DirectListing } from '@/lib/services/marketplace-service';
 
-// Definindo um tipo básico para os detalhes do NFT que vem do nosso DB
+// Defining a basic type for NFT details that comes from our DB
 interface NftDetails {
   _id: string;
   name: string;
@@ -59,7 +59,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
       if (!listing) return;
       setIsLoadingDetails(true);
       try {
-        // Tenta buscar de múltiplos endpoints até encontrar o correto
+        // Try to fetch from multiple endpoints until finding the correct one
         const endpoints = ['jerseys', 'stadiums', 'badges'];
         let data: NftDetails | null = null;
         for (const endpoint of endpoints) {
@@ -70,7 +70,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
               break; 
             }
           } catch (e) {
-            // Ignora erros individuais e tenta o próximo
+            // Ignore individual errors and try the next one
           }
         }
 
@@ -104,7 +104,7 @@ export default function ListingPage({ params }: { params: { listingId: string } 
     notFound();
   }
 
-  const isAuction = false; // Marketplace V3 Direct Listings não são leilões
+  const isAuction = false; // Marketplace V3 Direct Listings are not auctions
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-white">

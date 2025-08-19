@@ -258,7 +258,7 @@ export default function CollectionMintPage() {
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
   
-  // Helper para formatar preço das claim conditions
+  // Helper to format price from claim conditions
   const formatPrice = (priceWei: bigint | string | number) => {
     let priceValue: bigint;
     
@@ -286,12 +286,12 @@ export default function CollectionMintPage() {
     }
   };
   
-  // Usar claim conditions para determinar preço e limites
+  // Use claim conditions to determine price and limits
   const currentPrice = claimCondition ? formatPrice(claimCondition.pricePerToken) : (collection.price || '0 MATIC');
   const maxQuantity = claimCondition ? Math.min(
     Number(claimCondition.quantityLimitPerWallet),
     Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed),
-    10 // Máximo absoluto
+    10 // Absolute maximum
   ) : 1;
 
   const handleQuantityChange = (change: number) => {
@@ -342,7 +342,7 @@ export default function CollectionMintPage() {
         totalCost: (claimCondition.pricePerToken * BigInt(mintQuantity)).toString()
       });
       
-      // Mint público usando claim conditions (usuário paga gas + preço)
+      // Public mint using claim conditions (user pays gas + price)
       if (!collectionClaimFunctions.claimLaunchpadNFT) {
         throw new Error('Collection-specific claim function not available');
       }
@@ -350,7 +350,7 @@ export default function CollectionMintPage() {
       
       console.log('✅ Public mint successful:', result);
       
-      // Atualizar claim conditions após o mint
+      // Update claim conditions after mint
       try {
         if (collectionClaimFunctions.getLaunchpadClaimCondition) {
           const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
@@ -360,11 +360,11 @@ export default function CollectionMintPage() {
         console.warn('Failed to refresh claim conditions:', error);
       }
       
-      // ✅ Coleção aparecerá automaticamente no marketplace
-      // baseado no contador 'minted' que será atualizado abaixo
+      // ✅ Collection will automatically appear in marketplace
+      // based on the 'minted' counter that will be updated below
       console.log('✅ Collection will appear in marketplace automatically');
 
-      // Atualizar dados da coleção no banco (launchpad_collections)
+      // Update collection data in database (launchpad_collections)
       if (collection._id) {
         fetch(`/api/launchpad/collections/${collection._id}`, {
           method: 'PUT',

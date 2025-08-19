@@ -65,12 +65,12 @@ export default function NFTDetailPage() {
     setError(null);
 
     try {
-      // TODO: Implementar chamada real para API que busca dados do NFT + marketplace
-      // Por enquanto, dados mock para demonstração
+      // TODO: Implement real API call that fetches NFT + marketplace data
+      // For now, mock data for demonstration
       const mockNFT: NFTDetails = {
         id: `${contractAddress}-${tokenId}`,
         name: `Jersey #${tokenId}`,
-        description: 'Um jersey único gerado por IA com design exclusivo e características especiais para verdadeiros fãs de esporte.',
+        description: 'A unique AI-generated jersey with exclusive design and special characteristics for true sports fans.',
         imageUrl: 'https://res.cloudinary.com/dpilz4p6g/image/upload/v1750636634/bafybeigp26rpbhumy7ijx7uaoe5gdraun6xusrz7ma2nwoyxwg5qirz54q_vxs13v.png',
         tokenId,
         contractAddress,
@@ -124,7 +124,7 @@ export default function NFTDetailPage() {
         console.log('Compartilhamento cancelado');
       }
     } else {
-      // Fallback para cópia do link
+      // Fallback for link copy
       await navigator.clipboard.writeText(window.location.href);
       toast.success('Link copied to clipboard!');
     }
@@ -132,7 +132,7 @@ export default function NFTDetailPage() {
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked);
-    // TODO: Implementar API de likes
+    // TODO: Implement likes API
     toast.success(isLiked ? 'Removed from favorites' : 'Added to favorites');
   };
 

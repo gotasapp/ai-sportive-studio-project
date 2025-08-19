@@ -230,7 +230,7 @@ function LaunchpadStats({ stats }: { stats: any }) {
   );
 }
 
-// Componente do Card da Coleção (exatamente igual ao marketplace)
+// Collection Card Component (exactly like marketplace)
 function LaunchpadCollectionCard({ 
   collection, 
   isAdmin = false, 
@@ -583,7 +583,7 @@ export default function LaunchpadPage() {
   const [privateWallets, setPrivateWallets] = useState<string[]>(['']);
   const [privateWalletStage, setPrivateWalletStage] = useState('vip');
 
-  // Estados para modal de edição de coleção
+  // States for collection edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<any>(null);
   const [editForm, setEditForm] = useState({
@@ -682,7 +682,7 @@ export default function LaunchpadPage() {
       if (!isUserAdmin) return;
       
       try {
-        // ✅ CORRIGIDO: Usar funções utilitárias UTC
+        // ✅ FIXED: Use UTC utility functions
         console.log('🔄 Verificando status em (local):', getCurrentLocalFormatted())
         console.log('🔄 Verificando status em (UTC):', getCurrentUTC().toISOString())
         
@@ -700,7 +700,7 @@ export default function LaunchpadPage() {
           console.log('🔄 Auto-updating status for', collectionsToUpdate.length, 'collections');
           
           for (const collection of collectionsToUpdate) {
-            // ✅ CORRIGIDO: Usar _id em vez de id
+            // ✅ FIXED: Use _id instead of id
             const collectionId = collection._id;
             if (collectionId) {
               await updateCollectionStatus(collectionId, 'active');
@@ -746,7 +746,7 @@ export default function LaunchpadPage() {
       if (data.success) {
         toast.success(`Collection ${newStatus} successfully`);
         
-        // Update local state - ✅ CORRIGIDO: Usar _id em vez de id
+        // Update local state - ✅ FIXED: Use _id instead of id
         setCollections(prev => prev.map(collection => {
           const currentId = collection._id;
           return currentId === collectionId 
@@ -816,7 +816,7 @@ export default function LaunchpadPage() {
   const openApprovalModal = (image: any) => {
     setSelectedPendingImage(image);
     
-    // ✅ CORRIGIDO: Usar funções utilitárias UTC
+    // ✅ FIXED: Use UTC utility functions
     const defaultDate = addDaysToUTC(7);
     setApprovalLaunchDate(defaultDate.toISOString().slice(0, 16)); // Default 7 days from now
     
@@ -1050,7 +1050,7 @@ export default function LaunchpadPage() {
           toast.error(`${data.problematicCollections.length} coleções com problemas encontradas`);
         }
         
-        // Mostrar estatísticas
+        // Show statistics
         console.log('📊 Estatísticas:', data.stats);
       } else {
         toast.error('Failed to investigate collections');
@@ -1073,7 +1073,7 @@ export default function LaunchpadPage() {
       
       if (data.success) {
         toast.success(`Cleaned ${data.deletedCount} problematic collections`);
-        // Recarregar coleções
+        // Reload collections
         window.location.reload();
       } else {
         toast.error('Failed to clean problematic collections');
@@ -1173,7 +1173,7 @@ export default function LaunchpadPage() {
     }
   };
 
-  // Funções para modal de edição
+  // Functions for edit modal
   const openEditModal = (collection: any) => {
     setSelectedCollection(collection);
     setEditForm({
@@ -1305,7 +1305,7 @@ export default function LaunchpadPage() {
     const matchesStatus = statusFilter === 'all' || collection.status === statusFilter;
     const matchesCategory = categoryFilter === 'all' || collection.category === categoryFilter;
     
-    // Para usuários não-admin, não mostrar coleções pending_launchpad, hidden ou ended
+    // For non-admin users, don't show pending_launchpad, hidden or ended collections
     const isVisibleForUser = isUserAdmin || 
       (collection.status !== 'pending_launchpad' && 
        collection.status !== 'hidden' && 

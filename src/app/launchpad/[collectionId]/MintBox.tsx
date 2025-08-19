@@ -71,7 +71,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
   const checkAdminStatus = () => {
     // Simple admin verification - can be expanded
     const adminAddresses = [
-      '0x742d35Cc6634C0532925a3b8d98bf4f3fb0b1C4F', // Adicione endereços de admin aqui
+      '0x742d35Cc6634C0532925a3b8d98bf4f3fb0b1C4F', // Add admin addresses here
     ];
     setIsUserAdmin(adminAddresses.includes(address || ''));
   };
@@ -204,7 +204,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
           
           console.log(`✅ Saved ${qty} individual NFTs to database from gasless mint`);
           
-          // Atualizar contador da coleção
+          // Update collection counter
           await fetch(`/api/launchpad/collections/${collectionId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -219,7 +219,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
         console.warn('⚠️ Failed to save individual NFTs from gasless mint:', saveError);
       }
 
-      // Atualizar claim condition após mint
+      // Update claim condition after mint
       await loadClaimCondition();
 
     } catch (err: any) {
@@ -234,7 +234,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
 
 
 
-  // Helper para formatar preço
+  // Helper to format price
   const formatPrice = (priceWei: bigint | string | number) => {
     let priceValue: bigint;
     
@@ -249,7 +249,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     
     if (priceValue === BigInt(0)) return '0 MATIC';
     
-    // Converter de wei para MATIC (18 decimais)
+    // Convert from wei to MATIC (18 decimals)
     const priceInMatic = Number(priceValue) / Math.pow(10, 18);
     
     // Format with appropriate decimal places
@@ -262,14 +262,14 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     }
   };
 
-  // Helper para calcular limite máximo por transação
+  // Helper to calculate maximum limit per transaction
   const getMaxPerTransaction = () => {
     if (!claimCondition) return 1;
     
     const limitPerWallet = Number(claimCondition.quantityLimitPerWallet);
     const remaining = Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed);
     
-    return Math.min(limitPerWallet, remaining, 10); // Máximo de 10 por transação
+    return Math.min(limitPerWallet, remaining, 10); // Maximum of 10 per transaction
   };
 
   // Elemento de status de rede
@@ -292,7 +292,7 @@ export default function LaunchpadMintBox({ contractAddress, collectionId }: Prop
     );
   };
 
-  // Elemento de informações das claim conditions
+  // Claim conditions information element
   const ClaimConditionInfo = () => {
     if (isLoadingCondition) {
       return (
