@@ -2,7 +2,6 @@
 
 import BadgeEditor from '@/components/BadgeEditor';
 import Header from '@/components/Header';
-import Footer from '@/components/layout/Footer';
 
 export default function BadgesPage() {
   // No more authentication checks - let everyone see the page
@@ -14,7 +13,6 @@ export default function BadgesPage() {
       <div className="flex-1 w-full">
         <BadgeEditor />
       </div>
-      <Footer />
     </div>
   );
 } 
