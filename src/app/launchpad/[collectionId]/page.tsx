@@ -44,7 +44,7 @@ import { isAdmin } from '@/lib/admin-config';
 import { useIsMobile } from '@/hooks/useIsMobile';
 import CollectionMintMobileLayout from '@/components/launchpad/CollectionMintMobileLayout';
 
-// Remover dados mockados - agora vamos buscar do banco de dados
+// Remove mocked data - now we will fetch from the database
 
 export default function CollectionMintPage() {
   const params = useParams();
@@ -273,7 +273,7 @@ export default function CollectionMintPage() {
     
     if (priceValue === BigInt(0)) return '0 MATIC';
     
-    // Converter de wei para MATIC (18 decimais)
+          // Convert from wei to MATIC (18 decimals)
     const priceInMatic = Number(priceValue) / Math.pow(10, 18);
     
     // Format with appropriate decimal places
@@ -487,7 +487,7 @@ export default function CollectionMintPage() {
       const imageResponse = await fetch(imageUrl);
       const imageBlob = await imageResponse.blob();
       
-      // Criar metadados simplificados
+      // Create simplified metadata
       const metadata = {
         name: nftName,
         description: nftDescription,

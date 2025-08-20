@@ -1,6 +1,6 @@
 // ================================================
 // MintPanel Component
-// UI Pura para controles de minting
+// Pure UI for minting controls
 // ================================================
 
 import React from 'react'

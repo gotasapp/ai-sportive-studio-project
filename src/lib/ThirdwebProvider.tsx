@@ -17,13 +17,13 @@ import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { defineChain } from 'thirdweb/chains';
 import { createWallet, inAppWallet } from 'thirdweb/wallets';
 
-// Verificar se o clientId existe
+  // Check if clientId exists
 const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID;
 if (!clientId) {
   throw new Error('NEXT_PUBLIC_THIRDWEB_CLIENT_ID is required');
 }
 
-// Criar o cliente Thirdweb
+  // Create Thirdweb client
 export const client = createThirdwebClient({
   clientId,
 });
@@ -51,7 +51,7 @@ export const chzMainnet = defineChain({
 
 export const supportedChains = [polygon, polygonAmoy, chzMainnet];
 
-// Configurar wallets suportadas
+  // Configure supported wallets
 export const wallets = [
   createWallet("io.metamask"),
   createWallet("com.coinbase.wallet"),

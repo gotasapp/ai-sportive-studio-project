@@ -8,7 +8,7 @@ export default function VisionTestPage() {
   const [selectedSport, setSelectedSport] = useState('soccer')
   const [selectedView, setSelectedView] = useState('back')
   
-  // PROMPTS JSON ESTRUTURADOS ORIGINAIS QUE FUNCIONAVAM PERFEITAMENTE
+  // ORIGINAL STRUCTURED JSON PROMPTS THAT WORKED PERFECTLY
   const ORIGINAL_JSON_PROMPTS = {
     "soccer": {
       "back": `You are a specialist in technical design of sports uniforms. Analyze the image of a soccer jersey (back view). Describe with maximum precision all visual elements present.
@@ -452,7 +452,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
       console.log('  - Name length:', playerName.length)
       console.log('  - Number length:', playerNumber.length)
       
-      // Preparar dados para o endpoint
+      // Prepare data for endpoint
       const requestData = {
         image_base64: base64,
         sport: selectedSport,
@@ -468,7 +468,7 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
       console.log('  - sport:', requestData.sport)
       console.log('  - view:', requestData.view)
 
-      // Chamar nosso novo endpoint /complete-vision-flow
+      // Call our new endpoint /complete-vision-flow
       const response = await fetch('http://localhost:8000/complete-vision-flow', {
         method: 'POST',
         headers: {
@@ -490,12 +490,12 @@ ${colorInfo}Design based on analysis: ${typeof finalAnalysis === 'object' ? JSON
 
       console.log('✅ [COMPLETE-VISION-FLOW] Fluxo completo realizado com sucesso!', result)
       
-      // Atualizar estados com os resultados
+      // Update states with results
       setAnalysisResult(result.analysis || 'Análise textual completada')
       setGenerationPrompt(result.prompt || 'Prompt gerado automaticamente')
       setGeneratedImage(result.image_url || null)
 
-      // Log dos resultados detalhados
+      // Log of detailed results
       console.log('📝 Analysis:', result.analysis)
       console.log('💭 Prompt used:', result.prompt)
       console.log('🖼️ Image URL:', result.image_url)
