@@ -1,6 +1,6 @@
 // ================================================
 // NameNumberRow Component
-// UI Pura - recebe dados por props, sem hooks
+// Pure UI - receives data via props, no hooks
 // ================================================
 
 import React from 'react'

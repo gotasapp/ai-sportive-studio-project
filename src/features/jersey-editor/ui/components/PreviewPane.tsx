@@ -1,6 +1,6 @@
 // ================================================
 // PreviewPane Component
-// UI Pura para preview de imagens
+// Pure UI for image preview
 // ================================================
 
 import React from 'react'
