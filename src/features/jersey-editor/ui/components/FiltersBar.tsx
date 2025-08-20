@@ -1,6 +1,6 @@
 // ================================================
 // FiltersBar Component
-// UI Pura para filtros de busca
+// Pure UI for search filters
 // ================================================
 
 import React from 'react'
