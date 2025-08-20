@@ -114,7 +114,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
     }
   }, [collectionId, category]);
 
-  // 🔄 AUTO-REFRESH: Atualizar dados a cada 30 segundos (COPIANDO LÓGICA LEGACY)
+  // 🔄 AUTO-REFRESH: Update data every 30 seconds (COPYING LEGACY LOGIC)
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -135,7 +135,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
       } catch (error) {
         console.warn('⚠️ Auto-refresh failed:', error);
       }
-    }, 10000); // 10 segundos (mais rápido)
+    }, 10000); // 10 seconds (faster)
 
     return () => clearInterval(interval);
   }, [collectionId, category]);
@@ -285,7 +285,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         );
       }
     } else if (isAuction && auctionId) {
-      // 🔨 NFT EM LEILÃO - DESIGN PROFISSIONAL
+      // 🔨 NFT IN AUCTION - PROFESSIONAL DESIGN
       const isAuctionEnded = auctionEndTime ? new Date() > auctionEndTime : false;
       
       if (isUserOwner) {
@@ -341,7 +341,7 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
         );
       }
     } else {
-      // 💎 NFT DISPONÍVEL - DESIGN PROFISSIONAL
+      // 💎 NFT AVAILABLE - PROFESSIONAL DESIGN
       if (isUserOwner) {
         // Owner: List or auction
         return (

@@ -37,7 +37,7 @@ export function ClearAndSyncButton({ onSyncComplete, className }: ClearAndSyncBu
           onSyncComplete();
         }
         
-        // Forçar recarregamento da página para garantir que os dados sejam atualizados
+        // Force page reload to ensure data is updated
         setTimeout(() => {
           window.location.reload();
         }, 1500);

@@ -64,7 +64,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
       });
       console.log('✅ Metadata uploaded:', metadataUri);
 
-      // Armazenar metadataUri para uso posterior
+      // Store metadataUri for later use
       const currentMetadataUri = metadataUri;
 
       setStep('minting');
@@ -85,11 +85,11 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
           console.log('✅ Batch mint successful:', result.transactionHash);
           setTxHash(result.transactionHash);
           
-          // Após mint bem-sucedido, fazer uploads seguindo padrão dos outros editores
+          // After successful mint, do uploads following pattern from other editors
           try {
             console.log('📤 Starting post-mint uploads...');
             
-            // 1. Upload para Cloudinary (mesmo fluxo do Jersey)
+            // 1. Upload to Cloudinary (same flow as Jersey)
             const formData = new FormData();
             formData.append('file', imageBlob, `${metadata.name.replace(/\s+/g, '_')}.png`);
             formData.append('fileName', `public_mint_${Date.now()}`);

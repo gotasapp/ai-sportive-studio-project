@@ -91,7 +91,7 @@ export default function MarketplaceCardMobile({
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
 
-  // 🔄 HOOK PARA DADOS DO LEILÃO EM TEMPO REAL
+  // 🔄 HOOK FOR REAL-TIME AUCTION DATA
   const auctionData = useAuctionData({
     auctionId,
     isAuction,
@@ -213,8 +213,8 @@ export default function MarketplaceCardMobile({
             />
           </div>
         );
-      } else {
-        // Botões para compradores
+              } else {
+        // Buttons for buyers
         return (
           <div className="space-y-2">
             {isPriceValid ? (
@@ -276,7 +276,7 @@ export default function MarketplaceCardMobile({
           </div>
         );
       } else {
-        // Botões para compradores
+        // Buttons for buyers
         return (
           <div className="space-y-2">
             {!isAuctionEnded ? (
@@ -317,7 +317,7 @@ export default function MarketplaceCardMobile({
         );
       }
     } else {
-      // NFT não está listado nem em leilão
+      // NFT is not listed or auctioned
       return (
         <div className="space-y-2">
           {isOwner ? (
@@ -350,7 +350,7 @@ export default function MarketplaceCardMobile({
     }
   };
 
-  // Renderização baseada no tipo de view
+  // Rendering based on view type
   if (viewType === 'compact') {
     return (
       <>

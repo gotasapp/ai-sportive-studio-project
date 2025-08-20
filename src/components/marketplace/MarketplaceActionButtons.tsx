@@ -57,7 +57,7 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
     if (!assetContract) return;
     setShowCreateListing(true);
   };
-  // Renderização dos botões (idêntica ao desktop, mas classes mobile-friendly)
+  // Button rendering (identical to desktop, but mobile-friendly classes)
   if (isListed && listingId) {
     if (isOwner) {
       return <>

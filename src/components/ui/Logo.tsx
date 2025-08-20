@@ -18,7 +18,7 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
   const [isLoading, setIsLoading] = useState(true)
   const [allFailed, setAllFailed] = useState(false)
 
-  // URLs do logo (ordem de prioridade)
+  // Logo URLs (priority order)
   const logoUrls = [
     'https://res.cloudinary.com/dpilz4p6g/image/upload/v1751896717/Chiliz_Logo_p07cwf.png',
     'https://cryptologos.cc/logos/chiliz-chz-logo.png', // Fallback oficial
@@ -29,11 +29,11 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
     console.warn(`❌ Logo URL ${currentUrlIndex + 1} failed to load`)
     
     if (currentUrlIndex < logoUrls.length - 1) {
-      // Tenta próxima URL
+      // Try next URL
       setCurrentUrlIndex(prev => prev + 1)
       setIsLoading(true)
     } else {
-      // Todas as URLs falharam
+      // All URLs failed
       console.error('❌ All logo URLs failed, showing text fallback')
       setAllFailed(true)
       setIsLoading(false)
@@ -45,7 +45,7 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
     setIsLoading(false)
   }
 
-  // Se todas as imagens falharem, mostra logo de texto
+  // If all images fail, show text logo
   if (allFailed) {
     return (
       <div 
@@ -85,14 +85,14 @@ export function Logo({ width = 180, height = 48, className, priority = true }: L
         priority={priority}
         onError={handleImageError}
         onLoad={handleImageLoad}
-        unoptimized // Para evitar problemas com URLs externas
+        unoptimized // To avoid issues with external URLs
         key={currentUrlIndex} // Force re-render when URL changes
       />
     </div>
   )
 }
 
-// Componente específico para o Header com tamanhos responsivos
+// Specific component for Header with responsive sizes
 export function HeaderLogo() {
   const isMobile = useIsMobile()
   

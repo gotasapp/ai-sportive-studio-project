@@ -59,7 +59,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           setFeaturedNFTs(base);
         }
 
-        // 2) Buscar em paralelo o NFT mais votado (mantém comportamento atual)
+        // 2) Fetch most voted NFT in parallel (maintains current behavior)
         let mostVotedNFT: any = null;
         try {
           const mostVotedResponse = await fetch('/api/nft/most-voted');
@@ -74,7 +74,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           console.log('⚠️ Could not fetch most voted NFT, continuing with regular carousel');
         }
 
-        // 3) Buscar em paralelo a coleção mais votada (nova lógica) sem bloquear render
+        // 3) Fetch most voted collection in parallel (new logic) without blocking render
         let mostVotedCollection: any = null;
         try {
           const r = await fetch('/api/collections/most-voted');
@@ -89,7 +89,7 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
           console.log('⚠️ Could not fetch most voted Collection');
         }
 
-        // 4) Compôr a lista final incrementalmente
+        // 4) Compose final list incrementally
         const featured: FeaturedNFT[] = [];
 
         // If we found a most voted NFT, add it at the beginning

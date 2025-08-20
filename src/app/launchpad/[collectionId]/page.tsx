@@ -387,9 +387,9 @@ export default function CollectionMintPage() {
         }).catch(console.warn);
       }
 
-      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      // Save individual NFTs to database to display in "Individual Units" section
       try {
-        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        const startTokenId = (collection.minted || 0); // Token ID starting from current value
         for (let i = 0; i < mintQuantity; i++) {
           const tokenId = startTokenId + i;
           await fetch('/api/launchpad/save-individual-nft', {
@@ -407,7 +407,7 @@ export default function CollectionMintPage() {
         console.log(`✅ Saved ${mintQuantity} individual NFTs to database`);
       } catch (saveError) {
         console.warn('⚠️ Failed to save individual NFTs:', saveError);
-        // Não falhar o mint por causa disso
+        // Don't fail the mint because of this
       }
       
       setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
@@ -522,7 +522,7 @@ export default function CollectionMintPage() {
       console.log('✅ Gasless mint enqueued:', result);
       setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT(s)! Queue ID: ${result.queueId}`);
       
-      // Atualizar claim conditions após o mint
+      // Update claim conditions after mint
       try {
         if (collectionClaimFunctions.getLaunchpadClaimCondition) {
           const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
@@ -550,9 +550,9 @@ export default function CollectionMintPage() {
         }
       }
 
-      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      // Save individual NFTs to database to display in "Individual Units" section
       try {
-        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        const startTokenId = (collection.minted || 0); // Token ID starting from current value
         for (let i = 0; i < mintQuantity; i++) {
           const tokenId = startTokenId + i;
           await fetch('/api/launchpad/save-individual-nft', {
@@ -570,7 +570,7 @@ export default function CollectionMintPage() {
         console.log(`✅ Saved ${mintQuantity} individual gasless NFTs to database`);
       } catch (saveError) {
         console.warn('⚠️ Failed to save individual gasless NFTs:', saveError);
-        // Não falhar o mint por causa disso
+        // Don't fail the mint because of this
       }
       
       setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}! Queue ID: ${result.queueId}`);

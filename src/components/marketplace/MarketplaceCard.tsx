@@ -85,7 +85,7 @@ export default function MarketplaceCard({
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
 
-  // 🔄 HOOK PARA DADOS DO LEILÃO EM TEMPO REAL
+  // 🔄 HOOK FOR REAL-TIME AUCTION DATA
   const auctionData = useAuctionData({
     auctionId,
     isAuction,
@@ -191,7 +191,7 @@ export default function MarketplaceCard({
           </div>
         );
       } else {
-        // Botões para compradores
+        // Buttons for buyers
         return (
           <div className="space-y-2">
             {isPriceValid ? (

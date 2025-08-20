@@ -58,7 +58,7 @@ export function BatchMintDialog({
     console.log('🎯 SMART MINT called with:', { to, metadataUri, quantity, collection, isUserAdmin });
     
     try {
-      // CORREÇÃO: SEMPRE criar novo contrato DropERC721 (gasless para admin, pago para user)
+      // CORRECTION: ALWAYS create new DropERC721 contract (gasless for admin, paid for user)
       console.log(`🚀 Creating new DropERC721 contract for ${quantity} NFT(s) - ${isUserAdmin ? 'GASLESS ADMIN' : 'PAID USER'}`);
       await handleDeployAndMintCollection();
       console.log('✅ New contract deployment completed successfully');
@@ -99,7 +99,7 @@ export function BatchMintDialog({
           description: `AI Collection of ${quantity} NFTs with shared metadata`,
           quantity: quantity,
           imageUri: 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle',
-          userWallet: account.address, // Wallet do usuário para royalties
+          userWallet: account.address, // User wallet for royalties
         }),
       });
 
@@ -136,7 +136,7 @@ export function BatchMintDialog({
       // Aguardar um pouco para o backend terminar setup
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // ETAPA 2: Claim NFTs - GASLESS para admin, PAGO para usuário
+      // STEP 2: Claim NFTs - GASLESS for admin, PAID for user
       let mintResult: any;
       
       if (isUserAdmin) {
@@ -172,7 +172,7 @@ export function BatchMintDialog({
       } else {
         console.log('🔄 ETAPA 2: User claiming NFTs (paid)...');
         
-        // Usuário comum: Claim pago normal
+        // Regular user: Normal paid claim
         const { getContract, sendTransaction } = await import('thirdweb');
         const { claimTo } = await import('thirdweb/extensions/erc721');
         
@@ -210,7 +210,7 @@ export function BatchMintDialog({
           console.log(`❌ Claim attempt ${claimAttempts} failed:`, claimError.message);
           
           if (claimAttempts >= maxAttempts) {
-            throw claimError; // Último attempt falhou
+            throw claimError; // Last attempt failed
           }
           
           console.log('⏳ Waiting before retry...');
@@ -315,7 +315,7 @@ export function BatchMintDialog({
           const saveResult = await saveResponse.json();
           console.log('✅ Collection saved to database:', saveResult);
 
-          // 4. Salvar coleção e NFTs individuais no banco (para marketplace)
+          // 4. Save collection and individual NFTs to database (for marketplace)
           console.log('💾 Saving custom collection and individual NFTs to database...');
           try {
             // Primeiro criar a custom collection
@@ -362,7 +362,7 @@ export function BatchMintDialog({
             }
           } catch (nftSaveError) {
             console.error('❌ Error saving custom collection/NFTs:', nftSaveError);
-            // Não falhar a operação por isso
+            // Don't fail the operation because of this
           }
         } else {
           const errorText = await saveResponse.text();
@@ -370,7 +370,7 @@ export function BatchMintDialog({
         }
       } catch (saveError) {
         console.error('❌ Error uploading/saving collection:', saveError);
-        // Não falhar o mint por isso
+                    // Don't fail the mint because of this
       }
       
       setDeployStep('completed');

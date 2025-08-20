@@ -23,7 +23,7 @@ export type MarketplaceMobileLayoutProps = {
   sales24h: string;
   salesChange: number;
   launchpadItems: LaunchpadItem[];
-  // ...outros handlers e props necessários
+  // ...other handlers and necessary props
 };
 
 const FILTERS = [
@@ -46,7 +46,7 @@ export default function MarketplaceMobileLayout({
   salesChange,
   launchpadItems,
 }: MarketplaceMobileLayoutProps) {
-  // Estado do tipo de grid
+  // Grid type state
   const [viewTypeMobile, setViewTypeMobile] = useState<'large' | 'medium' | 'compact'>('large');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
@@ -54,9 +54,9 @@ export default function MarketplaceMobileLayout({
   const paginatedNFTs = nfts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const [activeFilter, setActiveFilter] = useState('All');
 
-  // Renderização dos cards conforme o tipo de grid
+  // Card rendering according to grid type
   const renderNFTGrid = () => {
-    // Debug: log dos dados dos NFTs
+          // Debug: log NFT data
     console.log('🔧 MarketplaceMobileLayout - NFTs data:', {
       totalNFTs: nfts.length,
       firstNFT: nfts[0],
@@ -74,11 +74,11 @@ export default function MarketplaceMobileLayout({
     }
     
     if (viewTypeMobile === 'large') {
-      // Grid 2 colunas, cards grandes
+              // Grid 2 columns, large cards
       return (
         <div className="grid grid-cols-2 gap-3">
           {paginatedNFTs.map(nft => {
-            // Debug específico para cada NFT
+            // Specific debug for each NFT
             const nftId = nft._id || nft.id;
             console.log('🔧 Rendering NFT:', {
               name: nft.name,
@@ -110,10 +110,10 @@ export default function MarketplaceMobileLayout({
               activeOffers={nft.activeOffers || 0}
               viewType="large"
               onBuy={onBuy}
-              // Sistema de voting
+              // Voting system
               nftId={nft._id || nft.id}
               votes={nft.votes || 0}
-              userVoted={false} // TODO: implementar verificação de usuário
+              userVoted={false} // TODO: implement user verification
             />
             );
           })}
@@ -122,7 +122,7 @@ export default function MarketplaceMobileLayout({
     }
     
     if (viewTypeMobile === 'medium') {
-      // Grid 3 colunas, cards médios
+      // Grid 3 columns, medium cards
       return (
         <div className="grid grid-cols-3 gap-2">
           {paginatedNFTs.map(nft => (
@@ -147,17 +147,17 @@ export default function MarketplaceMobileLayout({
               activeOffers={nft.activeOffers || 0}
               viewType="medium"
               onBuy={onBuy}
-              // Sistema de voting
+              // Voting system
               nftId={nft._id || nft.id}
               votes={nft.votes || 0}
-              userVoted={false} // TODO: implementar verificação de usuário
+              userVoted={false} // TODO: implement user verification
             />
           ))}
         </div>
       );
     }
     
-    // Compact: lista vertical
+    // Compact: vertical list
     return (
       <div className="flex flex-col gap-2">
         {paginatedNFTs.map(nft => (
@@ -181,11 +181,11 @@ export default function MarketplaceMobileLayout({
             endTime={nft.endTime}
             activeOffers={nft.activeOffers || 0}
             viewType="compact"
-            onBuy={onBuy}
-            // Sistema de voting
-            nftId={nft._id || nft.id}
-            votes={nft.votes || 0}
-            userVoted={false} // TODO: implementar verificação de usuário
+                          onBuy={onBuy}
+              // Voting system
+              nftId={nft._id || nft.id}
+              votes={nft.votes || 0}
+              userVoted={false} // TODO: implement user verification
           />
         ))}
       </div>

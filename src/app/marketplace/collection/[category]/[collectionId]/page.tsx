@@ -70,7 +70,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       if (!res.ok) return null;
       const data = await res.json();
       
-      // Transformar dados de standard collection para formato compatível
+      // Transform standard collection data to compatible format
       if (data.success) {
         return {
           type: 'standard',

@@ -21,7 +21,7 @@ interface CollectionTraitsProps {
 export default function CollectionTraits({ traits = [], totalSupply = 0, collectionData }: CollectionTraitsProps) {
   const [expandedTraits, setExpandedTraits] = useState<string[]>(['all']);
 
-  // Usar traits reais da coleção
+  // Use real collection traits
   const processedTraits: Trait[] = [];
   
   // Adicionar os traits reais da API

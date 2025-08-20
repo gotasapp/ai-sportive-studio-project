@@ -53,7 +53,7 @@ export function UpdateListingModal({
       return;
     }
 
-    // Verificar se está na rede correta
+    // Check if on correct network
     if (chain.id !== 80002) {
       toast.error('Please switch to Polygon Amoy Testnet to update listings.');
       return;
@@ -70,7 +70,7 @@ export function UpdateListingModal({
       console.log('📋 Account:', account.address);
       console.log('📋 Chain:', chain.id);
       
-      // 🔧 FIX: Usar função nativa updateListing do Thirdweb 
+      // 🔧 FIX: Use native Thirdweb updateListing function
       console.log('🔄 USANDO FUNÇÃO NATIVA THIRDWEB updateListing...');
       
       const marketplaceContract = getContract({
@@ -79,10 +79,10 @@ export function UpdateListingModal({
         address: MARKETPLACE_CONTRACT_ADDRESS,
       });
       
-      // Converter preço para Wei
+      // Convert price to Wei
       const priceInWei = (parseFloat(newPrice) * Math.pow(10, 18)).toString();
       
-      console.log('📋 Parâmetros para updateListing:', {
+      console.log('📋 Parameters for updateListing:', {
         listingId: BigInt(listingId),
         pricePerTokenWei: priceInWei,
         newPriceEther: newPrice

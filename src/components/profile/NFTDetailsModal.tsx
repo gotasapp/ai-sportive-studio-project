@@ -95,8 +95,8 @@ export function NFTDetailsModal({
         // Mapear campos de imagem da API para o formato esperado pelo modal
         let imageUrl = result.data.imageHttp || result.data.image || result.data.imageUrl || ''
         
-        // USAR A MESMA LÓGICA DO MARKETPLACE: sempre usar o imageUrl diretamente
-        // O marketplace funciona, então vamos usar a mesma estratégia
+        // USE THE SAME LOGIC AS MARKETPLACE: always use imageUrl directly
+        // The marketplace works, so let's use the same strategy
         
         const mappedData = {
           ...result.data,
@@ -113,7 +113,7 @@ export function NFTDetailsModal({
         return
       }
 
-      // Fallback: se a API falhar, criar dados básicos do NFT que já temos
+      // Fallback: if API fails, create basic data for the NFT we already have
       console.log(`⚠️ API failed, using fallback data for token ${tokenId}`)
       
       const fallbackData: NFTData = {
@@ -137,7 +137,7 @@ export function NFTDetailsModal({
     } catch (error: any) {
       console.error('❌ Error loading NFT data:', error)
       
-      // Último fallback: sempre mostrar algo
+      // Last fallback: always show something
       const emergencyFallback: NFTData = {
         tokenId,
         name: nft?.name || `NFT #${tokenId}`,
@@ -285,11 +285,11 @@ export function NFTDetailsModal({
                     key={displayData?.imageUrl || nftData?.imageUrl || ''}
                     src={(() => {
                       const imageUrl = displayData?.imageUrl || nftData?.imageUrl || '';
-                      // Se já é URL do Cloudinary, usar diretamente
+                      // If already Cloudinary URL, use directly
                       if (imageUrl.includes('cloudinary.com')) {
                         return imageUrl;
                       }
-                      // Caso contrário, normalizar IPFS com gateways múltiplos
+                      // Otherwise, normalize IPFS with multiple gateways
                       return convertIpfsToHttp(imageUrl);
                     })()}
                     alt={displayData?.name || `NFT #${tokenId}`}
@@ -297,7 +297,7 @@ export function NFTDetailsModal({
                     height={400}
                     className="w-full h-full object-cover"
                     onError={e => { 
-                      // Fallback para placeholder inline SVG (não causa loop)
+                      // Fallback to inline SVG placeholder (doesn't cause loop)
                       e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTQxMDFlIi8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzY2NjY2NiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPk5GVCBJbWFnZTwvdGV4dD48L3N2Zz4='; 
                     }}
                   />

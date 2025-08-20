@@ -122,7 +122,7 @@ export default function MarketplaceDebug() {
       const totalListings = await MarketplaceService.getTotalListings(activeChain.id);
       console.log('📊 Total de listagens no contrato:', totalListings.toString());
       
-      // 2. Buscar todas as listagens válidas
+      // 2. Fetch all valid listings
       const validListings = await MarketplaceService.getAllValidListings(activeChain.id);
       console.log('📋 Listagens válidas encontradas:', validListings.length);
       
@@ -145,7 +145,7 @@ export default function MarketplaceDebug() {
         console.log('📭 Nenhuma listagem válida encontrada no blockchain');
       }
       
-      // 4. Se há total mas não há válidas, investigar listagens específicas
+      // 4. If there's total but no valid ones, investigate specific listings
       if (Number(totalListings) > 0 && validListings.length === 0) {
         console.log('🔍 INVESTIGANDO LISTAGENS INDIVIDUAIS...');
         for (let i = 0; i < Math.min(Number(totalListings), 5); i++) {

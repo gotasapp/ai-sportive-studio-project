@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-// Lista de gateways IPFS com prioridade
+// List of IPFS gateways with priority
 const IPFS_GATEWAYS = [
   'https://ipfs.io/ipfs',
   'https://cloudflare-ipfs.com/ipfs',
@@ -30,14 +30,14 @@ interface ImageWithFallbackProps {
 export function normalizeImageUrl(url: string): string {
   if (!url) return '/api/placeholder/400/400';
   
-  // Se já é Cloudinary, retornar direto
+  // If already Cloudinary, return directly
   if (url.includes('cloudinary.com')) {
     return url;
   }
   
-  // Se já é HTTP/HTTPS válido (não IPFS gateway), retornar
+  // If already valid HTTP/HTTPS (not IPFS gateway), return
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    // Verificar se não é um gateway IPFS conhecido
+    // Check if it's not a known IPFS gateway
     const isIPFSGateway = IPFS_GATEWAYS.some(gateway => 
       url.includes(gateway.replace('https://', '').replace('/ipfs', ''))
     );
@@ -46,7 +46,7 @@ export function normalizeImageUrl(url: string): string {
     }
   }
   
-  // Extrair hash IPFS de várias formas
+  // Extract IPFS hash from various forms
   let ipfsHash = '';
   
   if (url.startsWith('ipfs://')) {
@@ -57,12 +57,12 @@ export function normalizeImageUrl(url: string): string {
     ipfsHash = url;
   }
   
-  // Se conseguimos extrair um hash IPFS, usar o primeiro gateway
+  // If we can extract an IPFS hash, use the first gateway
   if (ipfsHash) {
     return `${IPFS_GATEWAYS[0]}/${ipfsHash}`;
   }
   
-  // Fallback para URL original ou placeholder
+  // Fallback to original URL or placeholder
   return url || '/api/placeholder/400/400';
 }
 
@@ -96,7 +96,7 @@ export default function ImageWithFallback({
     };
   }, []);
 
-  // Resetar quando src mudar
+  // Reset when src changes
   useEffect(() => {
     if (src !== currentSrc) {
       setCurrentSrc(normalizeImageUrl(src));
@@ -112,7 +112,7 @@ export default function ImageWithFallback({
     
     const ipfsHash = extractIPFSHash(src);
     if (!ipfsHash) {
-      // Não é IPFS, usar fallback
+      // Not IPFS, use fallback
       setCurrentSrc(fallbackSrc);
       setHasError(true);
       return;
@@ -125,7 +125,7 @@ export default function ImageWithFallback({
       setCurrentSrc(`${IPFS_GATEWAYS[nextIndex]}/${ipfsHash}`);
       setAttemptCount(prev => prev + 1);
     } else {
-      // Todos os gateways falharam, usar fallback
+      // All gateways failed, use fallback
       console.error(`❌ Todos os gateways IPFS falharam para: ${src}`);
       setCurrentSrc(fallbackSrc);
       setHasError(true);
@@ -175,7 +175,7 @@ export default function ImageWithFallback({
       setHasError(true);
       onError?.();
       
-      // Última tentativa com fallback
+      // Last attempt with fallback
       if (currentSrc !== fallbackSrc) {
         setCurrentSrc(fallbackSrc);
         setHasError(false);
@@ -184,7 +184,7 @@ export default function ImageWithFallback({
     }
   };
 
-  // Timeout para imagens que demoram muito
+  // Timeout for images that take too long
   useEffect(() => {
     if (isLoading && !hasError) {
       loadTimeoutRef.current = setTimeout(() => {
@@ -243,7 +243,7 @@ export default function ImageWithFallback({
   );
 }
 
-// Componente específico para grid de NFTs
+// Specific component for NFT grid
 export function NFTGridImage({ src, alt, className = '', ...props }: Omit<ImageWithFallbackProps, 'width' | 'height'>) {
   return (
     <ImageWithFallback
@@ -259,7 +259,7 @@ export function NFTGridImage({ src, alt, className = '', ...props }: Omit<ImageW
   );
 }
 
-// Componente específico para thumbnails
+// Specific component for thumbnails
 export function NFTThumbnail({ src, alt, size = 48, className = '', ...props }: Omit<ImageWithFallbackProps, 'width' | 'height'> & { size?: number }) {
   return (
     <ImageWithFallback

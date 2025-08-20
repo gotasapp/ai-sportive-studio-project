@@ -397,7 +397,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     fetchMarketplaceData();
   }, [params.tokenId, params.collectionId]);
 
-  // Calcular stats dinâmicos baseados nos dados do marketplace
+  // Calculate dynamic stats based on marketplace data
   useEffect(() => {
     if (!marketplaceLoading && marketplaceNFTs.length > 0) {
       const listings = marketplaceNFTs.filter(nft => nft.isListed);
@@ -422,7 +422,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
   const nftData = nftResponse?.data;
   const loading = nftLoading || statsLoading;
 
-  // Encontrar NFT específico no marketplace para dados de listing/auction
+  // Find specific NFT in marketplace for listing/auction data
   const currentMarketplaceNFT = marketplaceNFTs.find(
     nft => nft.tokenId === params.tokenId
   );
@@ -442,14 +442,14 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     return notFound();
   }
 
-  // Preparar dados para exibição
+  // Prepare data for display
   const displayData = {
     id: nftData.tokenId,
     name: nftData.name || `NFT #${params.tokenId}`,
     description: nftData.description || '',
     imageUrl: convertIpfsToHttp(nftData.imageHttp || nftData.image || ''),
     tokenId: params.tokenId,
-    collection: params.collectionId, // Nome da coleção (jersey, stadium, badge)
+    collection: params.collectionId, // Collection name (jersey, stadium, badge)
     creator: nftData.metadata?.creator || '',
     owner: nftData.owner || '',
     price: currentMarketplaceNFT?.price || '0.047',
@@ -464,7 +464,7 @@ export default function NFTDetailPage({ params }: NFTDetailPageProps) {
     isAuction: currentMarketplaceNFT?.isAuction || false
   };
 
-  // Calcular preço numérico para uso em cálculos
+  // Calculate numeric price for use in calculations
   const numericPrice = typeof displayData?.price === 'string' ? parseFloat(displayData.price) : displayData?.price;
 
   return (

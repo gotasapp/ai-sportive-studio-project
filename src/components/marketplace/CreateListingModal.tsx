@@ -76,7 +76,7 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
     toast.info('Creating direct listing... Approve the transaction in your wallet.');
     
     try {
-      // 🔍 DEBUG: Logs detalhados antes da criação
+      // 🔍 DEBUG: Detailed logs before creation
       console.log('🔍 DEBUG - Parâmetros da listagem:');
       console.log('📋 NFT Object:', nft);
       console.log('📋 Asset Contract:', nft.assetContractAddress);

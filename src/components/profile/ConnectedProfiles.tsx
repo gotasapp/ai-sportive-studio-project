@@ -46,7 +46,7 @@ export function ConnectedProfiles() {
   const [isLinkingModalOpen, setIsLinkingModalOpen] = useState(false);
 
   const handleAccountLinked = () => {
-    // Recarregar perfis após linking
+    // Reload profiles after linking
     if (refetch) {
       refetch();
     }
