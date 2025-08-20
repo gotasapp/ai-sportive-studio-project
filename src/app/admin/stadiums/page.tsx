@@ -21,7 +21,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import React from 'react';
 
-// Interfaces para Team References (reutilizáveis)
+// Interfaces for Team References (reusable)
 interface ReferenceImage {
   id: string;
   url: string;
@@ -43,7 +43,7 @@ interface TeamReference {
   updatedAt: Date;
 }
 
-// Adaptação para uma lista de Stadiums genérica, pode ser expandido depois
+// Adaptation for a generic Stadiums list, can be expanded later
 interface Stadium {
   id: string;
   name: string;
@@ -81,7 +81,7 @@ export default function StadiumsPage() {
   const [editingItem, setEditingItem] = useState<TeamReference | null>(null);
   const [editedPrompt, setEditedPrompt] = useState('');
 
-  // ESTADO DE BUSCA E PAGINAÇÃO PARA STADIUMS
+  // SEARCH AND PAGINATION STATE FOR STADIUMS
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
@@ -96,12 +96,12 @@ export default function StadiumsPage() {
   const totalPages = Math.ceil(filteredStadiums.length / itemsPerPage);
   const paginatedStadiums = filteredStadiums.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // ESTADO DE PAGINAÇÃO PARA REFERÊNCIAS DE STADIUMS
+  // PAGINATION STATE FOR STADIUM REFERENCES
   const [currentRefPage, setCurrentRefPage] = useState(1);
   const refsPerPage = 8;
   const totalRefPages = Math.ceil(teamReferences.length / refsPerPage);
   const paginatedRefs = teamReferences.slice((currentRefPage - 1) * refsPerPage, currentRefPage * refsPerPage);
-  // ESTADO DE PAGINAÇÃO PARA IMAGENS DE REFERÊNCIA
+  // PAGINATION STATE FOR REFERENCE IMAGES
   const [currentImgPage, setCurrentImgPage] = useState(1);
   const imgsPerPage = 12;
   const allRefImages = teamReferences.flatMap(team => team.referenceImages.map(img => ({ ...img, teamName: team.teamName })));

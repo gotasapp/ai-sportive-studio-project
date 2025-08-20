@@ -12,7 +12,7 @@ import {
   Link, Zap, Database, TrendingUp
 } from 'lucide-react'
 
-// Definindo o tipo de usuário com base na API real (MongoDB + Blockchain + Profile)
+// Defining user type based on real API (MongoDB + Blockchain + Profile)
 interface User {
   _id: string;
   wallet?: string;
@@ -27,7 +27,7 @@ interface User {
   hasLinkedAccounts: boolean;
   joinedAt: string;
   
-  // 📋 DADOS DO PERFIL EDITADO PELO USUÁRIO
+  // 📋 USER-EDITED PROFILE DATA
   profileData?: {
     username: string;
     bio: string;
@@ -69,7 +69,7 @@ interface UserStats {
   totalNFTsCreated: number;
   newUsers: number;
   
-  // 🔗 ESTATÍSTICAS DA BLOCKCHAIN
+  // 🔗 BLOCKCHAIN STATISTICS
   usersWithOnChainNFTs: number;
   totalOnChainNFTs: number;
   totalContractInteractions: number;
@@ -131,7 +131,7 @@ export default function UsersPage() {
   const filteredUsers = users.filter(user => {
     if (!user) return false;
     
-    // Use os campos já processados pela API
+    // Use the fields already processed by the API
     const userName = user.displayName;
     const userEmail = user.linkedAccounts?.email || '';
     const userWallet = user.wallet || '';

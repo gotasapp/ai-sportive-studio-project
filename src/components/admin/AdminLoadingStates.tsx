@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 
-// Loading para métricas
+// Loading for metrics
 export function MetricsLoadingSkeleton() {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -28,7 +28,7 @@ export function MetricsLoadingSkeleton() {
   );
 }
 
-// Loading para gráficos
+// Loading for charts
 export function ChartLoadingSkeleton() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -84,7 +84,7 @@ export function TableLoadingSkeleton() {
   );
 }
 
-// Loading state genérico com progress
+// Generic loading state with progress
 export function ProgressLoadingState({ 
   title, 
   message, 

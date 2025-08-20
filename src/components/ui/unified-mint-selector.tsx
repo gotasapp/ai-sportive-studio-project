@@ -91,7 +91,7 @@ export function UnifiedMintSelector({
   const canMint = imageBlob && metadata.name && isConnected
   const maxQuantity = 100
 
-  // Determinar qual contrato será usado
+  // Determine which contract will be used
   const getContractInfo = () => {
     if (mintType === 'gasless') {
       return {

@@ -37,17 +37,17 @@ export function SyncMarketplaceButton({ onSyncComplete, className }: SyncMarketp
         toast.success(`Sincronização completa! ${result.stats.updatedNFTs} NFTs atualizados.`);
         console.log('📊 Resultado da sincronização:', result);
         
-        // Mostrar contratos encontrados
+        // Show found contracts
         if (result.contracts && result.contracts.length > 0) {
           console.log('📋 Contratos sincronizados:', result.contracts);
         }
 
-        // Chamar callback se fornecido
+        // Call callback if provided
         if (onSyncComplete) {
           onSyncComplete();
         }
         
-        // Forçar recarregamento da página para garantir que os dados sejam atualizados
+        // Force page reload to ensure data is updated
         setTimeout(() => {
           window.location.reload();
         }, 1000);

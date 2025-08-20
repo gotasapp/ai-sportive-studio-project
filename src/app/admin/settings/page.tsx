@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 
-// Tipos para a configuração
+// Types for configuration
 interface Settings {
   siteName: string;
   maintenanceMode: boolean;
@@ -70,7 +70,7 @@ export default function SettingsPage() {
         console.error('Settings fetch error:', err);
         setError(err.message);
         
-        // Fallback para dados iniciais em caso de erro
+        // Fallback for initial data in case of error
         const fallbackSettings: Settings = {
           siteName: 'CHZ Fantoken Studio',
           maintenanceMode: false,

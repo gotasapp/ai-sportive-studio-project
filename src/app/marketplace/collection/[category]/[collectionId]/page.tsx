@@ -15,14 +15,14 @@ async function fetchCollectionData(collectionId: string, category: string) {
   try {
     console.log('🔍 Fetching collection data for:', { collectionId, category });
     
-    // 🎯 DETECÇÃO INTELIGENTE: Verificar se category é na verdade um collectionId direto
+    // 🎯 INTELLIGENT DETECTION: Check if category is actually a direct collectionId
     const categoryIsObjectId = /^[0-9a-fA-F]{24}$/.test(category);
     const collectionIsObjectId = /^[0-9a-fA-F]{24}$/.test(collectionId);
     
-    // Se category é um ObjectId, então estamos na rota antiga: /collection/[objectId]/[tokenId]
+    // If category is an ObjectId, then we're on the old route: /collection/[objectId]/[tokenId]
     if (categoryIsObjectId && !collectionIsObjectId) {
       console.log('🔄 Detected legacy route pattern, treating category as collectionId');
-      // Swap: category vira collectionId, collectionId vira tokenId
+      // Swap: category becomes collectionId, collectionId becomes tokenId
       const actualCollectionId = category;
       const actualTokenId = collectionId;
       
@@ -35,7 +35,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       return data.success ? { ...data.collection, type: 'custom', detectedTokenId: actualTokenId } : null;
     }
     
-    // Verificar se é um ObjectId (24 caracteres hex) = Custom/Launchpad Collection
+    // Check if it's an ObjectId (24 hex characters) = Custom/Launchpad Collection
     const isObjectId = collectionIsObjectId;
     
     if (isObjectId) {
@@ -47,7 +47,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
           const lpData = await lpRes.json();
           if (lpData && (lpData.success || lpData.collection)) {
             const coll = lpData.collection || lpData.data || lpData;
-            // Tratamos launchpad como "custom-like" para reutilizar layout de coleção
+            // We treat launchpad as "custom-like" to reuse collection layout
             return { ...coll, type: 'custom' };
           }
         }
@@ -61,7 +61,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
       const data = await res.json();
       return data.success ? { ...data.collection, type: 'custom' } : null;
     } else {
-      // É uma Standard Collection (jerseys, stadiums, badges)
+      // It's a Standard Collection (jerseys, stadiums, badges)
       console.log('⚽ Detected Standard Collection, using /api/marketplace/nft-collection/stats');
       const res = await fetch(
         `/api/marketplace/nft-collection/stats?collection=${category}`,
@@ -70,13 +70,13 @@ async function fetchCollectionData(collectionId: string, category: string) {
       if (!res.ok) return null;
       const data = await res.json();
       
-      // Transformar dados de standard collection para formato compatível
+      // Transform standard collection data to compatible format
       if (data.success) {
         return {
           type: 'standard',
           name: `${category.charAt(0).toUpperCase()}${category.slice(1)} Collection`,
           description: `Official ${category} collection`,
-          image: '', // Será definido depois
+          image: '', // Will be defined later
           category: category,
           totalSupply: data.totalSupply || 0,
           stats: {
@@ -84,7 +84,7 @@ async function fetchCollectionData(collectionId: string, category: string) {
             uniqueOwners: 1, // Para standard collections
             contractsUsed: 1
           },
-          mintedNFTs: [], // Standard collections não mostram NFTs individuais aqui
+          mintedNFTs: [], // Standard collections don't show individual NFTs here
           activity: data.activity || { salesVolume: 0, transactions: 0 }
         };
       }
@@ -105,12 +105,12 @@ export default function CollectionDetailPage({
   const [collectionData, setCollectionData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // 🚨 DETECÇÃO DE URL INCORRETA: Verificar se há um tokenId na URL que deveria ir para página individual
+  // 🚨 INCORRECT URL DETECTION: Check if there's a tokenId in the URL that should go to individual page
   useEffect(() => {
     const currentPath = window.location.pathname;
     const pathParts = currentPath.split('/');
     
-    // Se a URL tem 6 partes: ['', 'marketplace', 'collection', category, collectionId, tokenId]
+    // If the URL has 6 parts: ['', 'marketplace', 'collection', category, collectionId, tokenId]
     if (pathParts.length === 6 && pathParts[5]) {
       const tokenId = pathParts[5];
       console.log('🔄 Detected tokenId in collection URL, redirecting to NFT page:', tokenId);
@@ -127,7 +127,7 @@ export default function CollectionDetailPage({
           setCollectionData(data);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados da coleção:', error);
+        console.error('Error loading collection data:', error);
       } finally {
         setLoading(false);
       }
@@ -160,7 +160,7 @@ export default function CollectionDetailPage({
     return notFound();
   }
 
-  // Detectar tipo de coleção
+  // Detect collection type
   const isCustomCollection = collectionData?.type === 'custom';
 
   return (

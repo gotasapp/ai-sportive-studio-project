@@ -50,7 +50,7 @@ export type JerseyMobileLayoutProps = {
   hasGeneratedImage: boolean;
   metadataUri: string | null;
   collection: 'jerseys' | 'stadiums' | 'badges';
-  // ...outros props necessários
+  // ...other necessary props
 };
 
 export default function JerseyMobileLayout({
@@ -93,7 +93,7 @@ export default function JerseyMobileLayout({
   hasGeneratedImage,
   metadataUri,
   collection,
-  // ...outros props
+  // ...other props
 }: JerseyMobileLayoutProps) {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col items-center px-2 py-4">

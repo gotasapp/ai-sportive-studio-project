@@ -78,10 +78,10 @@ export default function ModerationPage() {
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(12); // Mostrar 12 itens por página
+  const [itemsPerPage] = useState(12); // Show 12 items per page
   const [totalItems, setTotalItems] = useState(0);
 
-  // Novo estado para edição inline de custom prompts
+  // New state for inline editing of custom prompts
   const [editingPromptIndex, setEditingPromptIndex] = useState<number | null>(null);
   const [editingPromptValue, setEditingPromptValue] = useState('');
 
@@ -119,7 +119,7 @@ export default function ModerationPage() {
   };
 
   const fetchItems = useCallback(async (force = false) => {
-    // Cache simples - evita recarregar se já tem dados e não é forçado
+    // Simple cache - avoids reloading if data already exists and is not forced
     if (!force && items.length > 0) {
       return;
     }
@@ -192,7 +192,7 @@ export default function ModerationPage() {
     }
   }, []);
 
-  // Lazy loading - só carrega quando necessário
+  // Lazy loading - only loads when necessary
   const [activeTab, setActiveTab] = useState('queue');
   const [hasLoadedFilters, setHasLoadedFilters] = useState(false);
   const [hasLoadedSettings, setHasLoadedSettings] = useState(false);
@@ -242,7 +242,7 @@ export default function ModerationPage() {
       console.log(`✅ Item ${itemId} has been ${decision}.`);
     } catch (error) {
       console.error('Error moderating item:', error);
-      // Aqui você pode adicionar um toast de erro
+      // Here you can add an error toast
     }
   };
 

@@ -66,7 +66,7 @@ export default function CollectionOverviewCard({
   // Calculate progress percentage for minting
   const mintProgress = totalUnits > 0 ? Math.round((mintedUnits / totalUnits) * 100) : 0;
   
-  // Normalização de categoria (NÃO normalizar launchpad para jersey!)
+  // Category normalization (DO NOT normalize launchpad to jersey!)
   const normalizedCategory = (() => {
     const c = (category || '').toLowerCase();
     if (c === 'launchpad' || c === 'launchpad_collection') return 'launchpad';

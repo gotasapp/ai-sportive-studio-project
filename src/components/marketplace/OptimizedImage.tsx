@@ -45,7 +45,7 @@ export default function OptimizedImage({
   const [isInView, setIsInView] = useState(!lazy || priority);
   const imgRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer para lazy loading
+  // Intersection Observer for lazy loading
   useEffect(() => {
     if (!lazy || priority || isInView) return;
 

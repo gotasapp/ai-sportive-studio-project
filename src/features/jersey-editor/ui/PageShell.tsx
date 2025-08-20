@@ -1,6 +1,6 @@
 // ================================================
 // PageShell Component
-// Layout reutilizável com main/aside
+// Reusable layout with main/aside
 // ================================================
 
 import React from 'react'

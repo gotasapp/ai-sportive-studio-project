@@ -28,7 +28,7 @@ interface CreateAuctionModalProps {
 
 const CURRENCY_OPTIONS = [
   { value: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE', label: 'MATIC (Polygon Amoy)', symbol: 'MATIC' },
-  // Removendo USDC por enquanto até configurarmos o endereço correto
+  // Removing USDC for now until we configure the correct address
   // { value: '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582', label: 'USDC (Amoy)', symbol: 'USDC' },
 ];
 
@@ -89,7 +89,7 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
       chainName: chain.name 
     });
 
-    // Verificar se está na rede correta
+    // Check if on the correct network
     if (chain.id !== 80002) {
       console.log('❌ Wrong network:', { currentChainId: chain.id, expectedChainId: 80002 });
       toast.error(`You are on ${chain.name}. The marketplace is deployed only on Polygon Amoy Testnet. Please switch to Polygon Amoy (Chain ID: 80002) in your wallet.`);
@@ -163,11 +163,11 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
       
       onOpenChange(false);
       
-      // Chamar callback de sucesso
+      // Call success callback
       if (onSuccess) {
         setTimeout(() => {
           onSuccess();
-        }, 1000); // Aguardar 1 segundo para garantir que a transação foi confirmada
+        }, 1000); // Wait 1 second to ensure transaction was confirmed
       }
 
     } catch (error: any) {

@@ -664,7 +664,7 @@ export default function JerseyEditor() {
               throw new Error('No analysis prompt received from API')
             }
 
-            // Send to Vision API (usar endpoint interno do Next.js)
+            // Send to Vision API (use internal Next.js endpoint)
             const visionAnalysisUrl = '/api/vision-test'
             
             console.log('🌐 [VISION ANALYSIS] Making request to:', visionAnalysisUrl)
@@ -950,7 +950,7 @@ Design based on analysis: ${analysisText}`
           const imageDataUrl = `data:image/png;base64,${visionResult.image_base64}`
           setGeneratedImage(imageDataUrl)
           
-          // Convert base64 to blob for saving - GARANTIR QUE FUNCIONE
+          // Convert base64 to blob for saving - ENSURE IT WORKS
           try {
             // Method 1: Try fetch conversion
             console.log('🔄 [VISION GENERATION] Converting base64 to blob...')
@@ -1077,7 +1077,7 @@ Design based on analysis: ${analysisText}`
         
       } else {
         // ==================================================================
-        // AQUI ESTÁ A MUDANÇA: USAR A NOVA API DE REFERÊNCIA
+        // HERE IS THE CHANGE: USE THE NEW REFERENCE API
         // ==================================================================
         console.log('✅ [STANDARD FLOW] Starting standard generation using an existing team reference...');
         
@@ -1086,7 +1086,7 @@ Design based on analysis: ${analysisText}`
           player_name: playerName,
           player_number: playerNumber,
           quality: quality,
-          // Corrigido: sport deve ser 'jersey' para o backend aceitar
+          // Fixed: sport must be 'jersey' for the backend to accept
           sport: 'jersey',
           view: 'back'
         };
@@ -1097,10 +1097,10 @@ Design based on analysis: ${analysisText}`
           body: JSON.stringify(requestBody),
         });
 
-        // Leia o corpo da resposta APENAS UMA VEZ.
+        // Read the response body ONLY ONCE.
         const data = await response.json();
 
-        // Agora verifique se a resposta está OK e se os dados são de sucesso.
+        // Now check if the response is OK and if the data is successful.
         if (!response.ok || !data.success) {
           const errorMessage = data.detail || data.error || 'An unknown error occurred.';
           console.error('❌ Generation Error from backend:', errorMessage);
@@ -1109,17 +1109,17 @@ Design based on analysis: ${analysisText}`
         
         console.log('[STANDARD FLOW] Base64 image data received.');
           
-        // ADICIONADO: Validação robusta e limpeza do dado base64
+        // ADDED: Robust validation and cleaning of base64 data
         if (typeof data.image_base64 !== 'string' || data.image_base64.trim() === '') {
           console.error('❌ [DATA VALIDATION] `image_base64` is not a valid string or is empty.', { received: data.image_base64 });
           console.log('🔬 [DATA VALIDATION] Full response object for debugging:', data);
           throw new Error('Invalid image data received from server. Generation failed.');
         }
 
-        // LIMPEZA: Remover qualquer prefixo de data URL que possa ter sido adicionado por engano
+        // CLEANUP: Remove any data URL prefix that may have been added by mistake
         const pureBase64 = data.image_base64.split(',').pop();
 
-        if (!pureBase64) { // Checagem extra de segurança
+        if (!pureBase64) { // Extra security check
           throw new Error('Base64 data is empty after trying to clean it.');
         }
 
@@ -1154,7 +1154,7 @@ Design based on analysis: ${analysisText}`
     try {
       console.log('💾 Saving jersey to database...');
       
-      // 1. Primeiro, fazer upload da imagem para Cloudinary via nossa API
+      // 1. First, upload the image to Cloudinary via our API
       console.log('📤 Uploading image to Cloudinary...');
       if (!imageBlob) {
         throw new Error('No image blob available for upload');
@@ -1176,11 +1176,11 @@ Design based on analysis: ${analysisText}`
       const uploadResult = await uploadResponse.json();
       console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
 
-      // 2. Agora salvar no banco com a URL do Cloudinary (não o base64)
+      // 2. Now save to database with Cloudinary URL (not base64)
       const jerseyDataWithCloudinaryUrl = {
         ...jerseyData,
-        imageUrl: uploadResult.url, // URL do Cloudinary
-        cloudinaryPublicId: uploadResult.publicId, // Para deletar depois se necessário
+                  imageUrl: uploadResult.url, // Cloudinary URL
+        cloudinaryPublicId: uploadResult.publicId, // To delete later if necessary
       };
 
       const response = await fetch('/api/jerseys', {
@@ -1281,7 +1281,7 @@ Design based on analysis: ${analysisText}`
   useEffect(() => {
     const loadTeams = async () => {
       try {
-        // CORREÇÃO: Chamar a nova API de referências do banco de dados
+        // CORRECTION: Call the new database references API
         console.log('🔄 Loading teams from new reference API...');
         const response = await fetch('/api/admin/jerseys/references');
         if (!response.ok) {
@@ -1289,8 +1289,8 @@ Design based on analysis: ${analysisText}`
         }
         const data = await response.json();
 
-        // A API retorna { success: true, data: [...] }
-        // Extrair apenas os nomes dos times do array 'data'
+                  // The API returns { success: true, data: [...] }
+          // Extract only team names from the 'data' array
         if (data.success && Array.isArray(data.data)) {
           const teamNames = data.data.map((team: any) => team.teamName);
           console.log(`✅ Loaded ${teamNames.length} teams from DB references.`);
@@ -1300,7 +1300,7 @@ Design based on analysis: ${analysisText}`
         }
       } catch (err: any) {
         console.error('❌ Error loading teams from new API:', err);
-        // Manter o fallback em caso de erro na API
+                  // Keep fallback in case of API error
         const defaultTeams = ['Flamengo', 'Palmeiras', 'Vasco da Gama', 'Corinthians', 'São Paulo'];
         setAvailableTeams(defaultTeams);
         setSelectedTeam(defaultTeams[0]);

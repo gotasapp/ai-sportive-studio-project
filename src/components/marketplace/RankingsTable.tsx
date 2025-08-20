@@ -39,7 +39,7 @@ export default function RankingsTable() {
       setError(null);
       
       try {
-        // Buscar dados reais de todas as APIs
+        // Fetch real data from all APIs
         const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
           fetch('/api/jerseys'),
           fetch('/api/stadiums'), 
@@ -56,7 +56,7 @@ export default function RankingsTable() {
 
         console.log('📊 Raw data:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
 
-        // Agrupar por categoria e calcular estatísticas reais
+        // Group by category and calculate real statistics
         const collectionStats: CollectionStat[] = [];
 
         // Jersey Collection

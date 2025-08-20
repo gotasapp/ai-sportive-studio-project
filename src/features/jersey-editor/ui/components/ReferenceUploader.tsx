@@ -1,6 +1,6 @@
 // ================================================
 // ReferenceUploader Component
-// UI Pura para upload de imagem de referência
+// Pure UI for reference image upload
 // ================================================
 
 import React, { useRef } from 'react'

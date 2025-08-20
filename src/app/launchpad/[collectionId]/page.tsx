@@ -94,7 +94,7 @@ export default function CollectionMintPage() {
   const [gaslessMintError, setGaslessMintError] = useState<string | null>(null);
   const [gaslessMintSuccess, setGaslessMintSuccess] = useState<string | null>(null);
 
-  // Buscar dados da coleção do banco de dados
+  // Fetch collection data from database
   useEffect(() => {
     const fetchCollection = async () => {
       try {
@@ -178,7 +178,7 @@ export default function CollectionMintPage() {
     console.log(`🎯 Created collection-specific functions for contract: ${collection.contractAddress}`);
   }, [collection, account]);
 
-  // Carregar claim conditions quando a collection estiver disponível
+  // Load claim conditions when collection is available
   useEffect(() => {
     const loadClaimConditions = async () => {
       if (!collection || !collectionClaimFunctions.getLaunchpadClaimCondition) return;
@@ -258,7 +258,7 @@ export default function CollectionMintPage() {
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
   
-  // Helper para formatar preço das claim conditions
+  // Helper to format price from claim conditions
   const formatPrice = (priceWei: bigint | string | number) => {
     let priceValue: bigint;
     
@@ -286,12 +286,12 @@ export default function CollectionMintPage() {
     }
   };
   
-  // Usar claim conditions para determinar preço e limites
+  // Use claim conditions to determine price and limits
   const currentPrice = claimCondition ? formatPrice(claimCondition.pricePerToken) : (collection.price || '0 MATIC');
   const maxQuantity = claimCondition ? Math.min(
     Number(claimCondition.quantityLimitPerWallet),
     Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed),
-    10 // Máximo absoluto
+    10 // Absolute maximum
   ) : 1;
 
   const handleQuantityChange = (change: number) => {
@@ -342,7 +342,7 @@ export default function CollectionMintPage() {
         totalCost: (claimCondition.pricePerToken * BigInt(mintQuantity)).toString()
       });
       
-      // Mint público usando claim conditions (usuário paga gas + preço)
+      // Public mint using claim conditions (user pays gas + price)
       if (!collectionClaimFunctions.claimLaunchpadNFT) {
         throw new Error('Collection-specific claim function not available');
       }
@@ -350,7 +350,7 @@ export default function CollectionMintPage() {
       
       console.log('✅ Public mint successful:', result);
       
-      // Atualizar claim conditions após o mint
+      // Update claim conditions after mint
       try {
         if (collectionClaimFunctions.getLaunchpadClaimCondition) {
           const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
@@ -360,11 +360,11 @@ export default function CollectionMintPage() {
         console.warn('Failed to refresh claim conditions:', error);
       }
       
-      // ✅ Coleção aparecerá automaticamente no marketplace
-      // baseado no contador 'minted' que será atualizado abaixo
+      // ✅ Collection will automatically appear in marketplace
+      // based on the 'minted' counter that will be updated below
       console.log('✅ Collection will appear in marketplace automatically');
 
-      // Atualizar dados da coleção no banco (launchpad_collections)
+      // Update collection data in database (launchpad_collections)
       if (collection._id) {
         fetch(`/api/launchpad/collections/${collection._id}`, {
           method: 'PUT',
@@ -387,9 +387,9 @@ export default function CollectionMintPage() {
         }).catch(console.warn);
       }
 
-      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      // Save individual NFTs to database to display in "Individual Units" section
       try {
-        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        const startTokenId = (collection.minted || 0); // Token ID starting from current value
         for (let i = 0; i < mintQuantity; i++) {
           const tokenId = startTokenId + i;
           await fetch('/api/launchpad/save-individual-nft', {
@@ -407,7 +407,7 @@ export default function CollectionMintPage() {
         console.log(`✅ Saved ${mintQuantity} individual NFTs to database`);
       } catch (saveError) {
         console.warn('⚠️ Failed to save individual NFTs:', saveError);
-        // Não falhar o mint por causa disso
+        // Don't fail the mint because of this
       }
       
       setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
@@ -522,7 +522,7 @@ export default function CollectionMintPage() {
       console.log('✅ Gasless mint enqueued:', result);
       setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT(s)! Queue ID: ${result.queueId}`);
       
-      // Atualizar claim conditions após o mint
+      // Update claim conditions after mint
       try {
         if (collectionClaimFunctions.getLaunchpadClaimCondition) {
           const updatedCondition = await collectionClaimFunctions.getLaunchpadClaimCondition();
@@ -550,9 +550,9 @@ export default function CollectionMintPage() {
         }
       }
 
-      // Salvar NFTs individuais no banco para exibir na seção "Individual Units"
+      // Save individual NFTs to database to display in "Individual Units" section
       try {
-        const startTokenId = (collection.minted || 0); // Token ID começando do valor atual
+        const startTokenId = (collection.minted || 0); // Token ID starting from current value
         for (let i = 0; i < mintQuantity; i++) {
           const tokenId = startTokenId + i;
           await fetch('/api/launchpad/save-individual-nft', {
@@ -570,7 +570,7 @@ export default function CollectionMintPage() {
         console.log(`✅ Saved ${mintQuantity} individual gasless NFTs to database`);
       } catch (saveError) {
         console.warn('⚠️ Failed to save individual gasless NFTs:', saveError);
-        // Não falhar o mint por causa disso
+        // Don't fail the mint because of this
       }
       
       setGaslessMintSuccess(`🎉 Successfully gasless minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}! Queue ID: ${result.queueId}`);

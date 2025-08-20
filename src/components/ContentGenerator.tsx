@@ -31,7 +31,7 @@ const JERSEY_STYLE_FILTERS = [
   { id: 'classic', label: 'Classic', icon: Crown }
 ]
 
-// Filtros para estádios
+// Filters for stadiums
 const STADIUM_STYLE_FILTERS = [
   { id: 'realistic', label: 'Realistic', icon: Eye },
   { id: 'cinematic', label: 'Cinematic', icon: Camera },
@@ -152,7 +152,7 @@ export default function ContentGenerator() {
 
   // Generate content based on type
   const generateContent = async () => {
-    // 🔒 VALIDAÇÃO DE SEGURANÇA: Wallet obrigatória
+    // 🔒 SECURITY VALIDATION: Wallet required
     if (!isConnected) {
       setError('🔒 Please connect your wallet to generate content')
       return

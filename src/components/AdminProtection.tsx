@@ -46,21 +46,21 @@ export default function AdminProtection({ children, fallback }: AdminProtectionP
   const [status, setStatus] = useState<'loading' | 'allowed' | 'denied'>('loading');
 
   useEffect(() => {
-    // Se o usuário não está conectado, ele não está nem negado nem permitido ainda.
-    // A UI principal (Header) deve solicitar a conexão.
-    // Mantemos 'loading' para que a tela de admin não mostre 'negado' prematuramente.
+    // If the user is not connected, they are neither denied nor allowed yet.
+    // The main UI (Header) should request the connection.
+    // We keep 'loading' so the admin screen doesn't show 'denied' prematurely.
     if (!account?.address) {
       setStatus('loading'); 
       return;
     }
 
-    // Assim que a conta estiver disponível, verificamos o acesso.
+    // Once the account is available, we verify access.
     const verifyAccess = () => {
         const isAdminUser = isAdmin(account);
         setStatus(isAdminUser ? 'allowed' : 'denied');
     };
     
-    // Pequeno delay para garantir que a UI se estabilize após a conexão.
+    // Small delay to ensure the UI stabilizes after connection.
     const timer = setTimeout(verifyAccess, 100);
 
     return () => clearTimeout(timer);

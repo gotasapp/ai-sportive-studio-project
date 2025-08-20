@@ -15,7 +15,7 @@ export default function MobileBottomNav() {
   const [userIsAdmin, setUserIsAdmin] = useState(false);
   const { scrollDirection, isAtTop } = useScrollDirection();
   
-  // Verificar se o usuário é admin (incluindo verificação async para InApp wallets)
+  // Check if user is admin (including async verification for InApp wallets)
   useEffect(() => {
     const checkAdminStatus = async () => {
       if (!account) {
@@ -24,14 +24,14 @@ export default function MobileBottomNav() {
       }
 
       try {
-        // Primeiro, tenta verificação rápida (wallet address)
+        // First, try quick verification (wallet address)
         const quickCheck = isAdmin(account);
         if (quickCheck) {
           setUserIsAdmin(true);
           return;
         }
 
-        // Para InApp wallets, faz verificação async do email
+        // For InApp wallets, do async email verification
         const asyncCheck = await isAdminAsync(account, wallet);
         setUserIsAdmin(asyncCheck);
       } catch (error) {
@@ -48,7 +48,7 @@ export default function MobileBottomNav() {
     return null;
   }
 
-  // Determina se deve mostrar a barra (aparece quando rola para cima ou no topo da página)
+  // Determines if should show the bar (appears when scrolling up or at top of page)
   const shouldShow = scrollDirection === 'up' || isAtTop;
 
   const navItems = [

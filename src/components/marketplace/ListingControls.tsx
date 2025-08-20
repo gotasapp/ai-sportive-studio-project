@@ -16,7 +16,7 @@ export default function ListingControls({ listing }: ListingControlsProps) {
   const connectionStatus = useActiveWalletConnectionStatus();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Para Marketplace V3, Direct Listings não são leilões
+  // For Marketplace V3, Direct Listings are not auctions
   const isAuction = false;
   
   const handleBuyNow = async () => {
@@ -41,7 +41,7 @@ export default function ListingControls({ listing }: ListingControlsProps) {
     }
   };
 
-  // Marketplace V3 Direct Listing (sem leilões)
+  // Marketplace V3 Direct Listing (no auctions)
   return (
     <div>
         <p className="text-secondary">Price</p>

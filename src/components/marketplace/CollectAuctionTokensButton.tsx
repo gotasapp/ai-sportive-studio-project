@@ -58,7 +58,7 @@ export function CollectAuctionTokensButton({
         onSuccess();
       }
 
-      // Recarregar a página após sucesso para atualizar dados
+      // Reload page after success to update data
       setTimeout(() => {
         window.location.reload();
       }, 2000);
@@ -66,7 +66,7 @@ export function CollectAuctionTokensButton({
     } catch (error: any) {
       console.error('❌ Erro na coleta de NFT:', error);
       
-      // O toast de erro já é mostrado no MarketplaceService
+      // Error toast is already shown in MarketplaceService
       // Apenas log adicional aqui
     } finally {
       setIsLoading(false);

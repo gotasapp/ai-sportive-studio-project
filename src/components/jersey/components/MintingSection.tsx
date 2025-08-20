@@ -31,7 +31,7 @@ interface MintingSectionProps {
   mintStatus: 'idle' | 'pending' | 'success' | 'error'
   setMintStatus: (status: 'idle' | 'pending' | 'success' | 'error') => void
   
-  // Funções dos hooks
+  // Hook functions
   setClaimConditions: () => Promise<any>
   mintGasless: (params: { to: string; metadataUri: string; chainId: number }) => Promise<any>
   mintNFTWithMetadata: (name: string, description: string, imageBlob: Blob, attributes: any) => Promise<any>

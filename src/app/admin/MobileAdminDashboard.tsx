@@ -1,7 +1,7 @@
 import React from 'react';
 import Header from '@/components/Header';
 // Importe o menu/sidebar Oreo usado no marketplace mobile
-// import OreoSidebar from '@/components/marketplace/OreoSidebar'; // ajuste o caminho se necessário
+// import OreoSidebar from '@/components/marketplace/OreoSidebar'; // adjust the path if necessary
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
@@ -9,12 +9,12 @@ import MobileBottomNav from '@/components/MobileBottomNav';
 import Link from 'next/link';
 import { Shirt, Award, Building2, Shield, BarChart3, Users, Settings } from 'lucide-react';
 
-// Adapte os props conforme necessário para receber dados/handlers do dashboard desktop
+// Adapt props as necessary to receive data/handlers from desktop dashboard
 export default function MobileAdminDashboard(props: any) {
-  // Exemplo de props esperados: métricas, logs, handlers, etc.
+  // Example of expected props: metrics, logs, handlers, etc.
   // const { stats, logs, onSearch, searchTerm, ... } = props;
 
-  // Array de navegação (igual ao layout do admin, sem Dashboard)
+  // Navigation array (same as admin layout, without Dashboard)
   const navigation = [
     { name: 'Jerseys', href: '/admin/jerseys', icon: Shirt },
     { name: 'Stadiums', href: '/admin/stadiums', icon: Building2 },

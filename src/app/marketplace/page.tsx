@@ -82,7 +82,7 @@ export default function MarketplacePage() {
       );
     }
     
-    // Filtro temporário de blacklist
+    // Temporary blacklist filter
     if (blacklist.length > 0) {
       filtered = filtered.filter(item => !blacklist.includes(String(item.tokenId)));
     }
@@ -103,14 +103,14 @@ export default function MarketplacePage() {
   const getContractByCategory = (category: string): string => {
     const chainId = chain?.id || 80002; // Default para Polygon Amoy (testnet)
     const contractAddress = NFT_CONTRACTS[chainId];
-    // Se não encontrou contrato para a rede atual, usar fallback para Polygon Amoy
+    // If contract not found for current network, use fallback for Polygon Amoy
     if (!contractAddress) {
       return NFT_CONTRACTS[80002] || '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
     }
     return contractAddress;
   };
 
-  // Buscar blacklist temporária do backend
+  // Fetch temporary blacklist from backend
   useEffect(() => {
     fetch('/api/marketplace/hidden-nfts')
       .then((res) => res.json())
@@ -121,7 +121,7 @@ export default function MarketplacePage() {
       });
   }, []);
 
-  // Só depois dos hooks, o return condicional do loader global
+  // Only after hooks, the conditional return of global loader
   if (showGlobalLoader) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
@@ -149,7 +149,7 @@ export default function MarketplacePage() {
 
 
 
-  // Função para forçar refresh dos dados
+  // Function to force refresh data
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
@@ -181,7 +181,7 @@ export default function MarketplacePage() {
 
 
   const renderContent = () => {
-    // Usar loading do marketplace se disponível
+    // Use marketplace loading if available
     const isLoading = marketplaceLoading;
     const currentError = marketplaceError;
 
@@ -222,8 +222,8 @@ export default function MarketplacePage() {
       );
     }
 
-    // Grid/List views para NFTs individuais - sempre usar dados do marketplace
-    const itemsToShow = filteredNfts; // Dados já filtrados do marketplace
+    // Grid/List views for individual NFTs - always use marketplace data
+    const itemsToShow = filteredNfts; // Data already filtered from marketplace
     if (itemsToShow.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -256,13 +256,13 @@ export default function MarketplacePage() {
   // Handler de busca para o mobile layout
   const handleMobileSearch = (term: string) => setSearchTerm(term);
 
-  // Handler de compra (placeholder, adapte conforme sua lógica)
+  // Purchase handler (placeholder, adapt according to your logic)
   const handleMobileBuy = (nft: any) => {
-    // Aqui você pode abrir modal, navegar para detalhes, etc.
+    // Here you can open modal, navigate to details, etc.
     alert(`Comprar NFT: ${nft.name}`);
   };
 
-  // Dados mock do launchpad (copiados do launchpad/page.tsx)
+  // Mock data from launchpad (copied from launchpad/page.tsx)
   const launchpadCollections = [
     {
       id: 'flamengo-heritage',
@@ -345,16 +345,16 @@ export default function MarketplacePage() {
               totalVolume={(() => {
                 const totalVol = marketplaceItems?.reduce((sum, item) => {
                   if (item.isListed || item.isAuction) {
-                    // Limpar o preço e converter corretamente
+                    // Clean the price and convert correctly
                     let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
                     
-                    // Se o preço contém 'e+' ou é muito grande, pode estar em Wei
+                    // If the price contains 'e+' or is very large, it might be in Wei
                     const price = parseFloat(priceStr);
                     
-                    // Se o preço é maior que 1 milhão, provavelmente está em Wei - converter
+                    // If the price is greater than 1 million, it's probably in Wei - convert
                     const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
                     
-                    // Debug para números suspeitos
+                    // Debug for suspicious numbers
                     if (price > 1000000) {
                       console.log('🔍 Large price detected:', {
                         item: item.name,
@@ -376,11 +376,11 @@ export default function MarketplacePage() {
                 ) || [];
                 if (listedItems.length === 0) return '0 MATIC';
                 const prices = listedItems.map(item => {
-                  // Limpar o preço
+                  // Clean the price
                   let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
                   const price = parseFloat(priceStr);
                   
-                  // Converter de Wei se necessário
+                  // Convert from Wei if necessary
                   const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
                   
                   return isNaN(finalPrice) ? 0 : finalPrice;

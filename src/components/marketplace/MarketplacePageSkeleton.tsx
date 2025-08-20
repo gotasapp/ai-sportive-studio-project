@@ -95,7 +95,7 @@ export default function MarketplacePageSkeleton({
   );
 }
 
-// Componente específico para o carrossel
+// Specific component for carousel
 export function CarouselSkeleton() {
   return <MarketplacePageSkeleton showCarousel={true} showStats={false} showGrid={false} />;
 }

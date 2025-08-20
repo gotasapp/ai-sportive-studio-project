@@ -26,23 +26,23 @@ interface MarketplaceCardMobileProps {
   price: string;
   collection: string;
   category?: 'jersey' | 'stadium' | 'badge' | string;
-  // Informações do NFT para funcionalidades
+  // NFT information for functionalities
   tokenId?: string;
   assetContract?: string;
   listingId?: string;
   isListed?: boolean;
   owner?: string;
-  // Para Custom Collections
+  // For Custom Collections
   collectionId?: string;
   isCustomCollection?: boolean;
-  // Informações de leilão (se aplicável)
+  // Auction information (if applicable)
   isAuction?: boolean;
   auctionId?: string;
   currentBid?: string;
   endTime?: Date;
-  // Informações de ofertas
+  // Offer information
   activeOffers?: number;
-  // Props específicas para mobile
+  // Props specific for mobile
   viewType?: 'large' | 'medium' | 'compact';
   onBuy?: (nft: any) => void;
   // Sistema de voting
@@ -91,7 +91,7 @@ export default function MarketplaceCardMobile({
   const account = useActiveAccount();
   const isOwner = account?.address?.toLowerCase() === owner?.toLowerCase();
 
-  // 🔄 HOOK PARA DADOS DO LEILÃO EM TEMPO REAL
+  // 🔄 HOOK FOR REAL-TIME AUCTION DATA
   const auctionData = useAuctionData({
     auctionId,
     isAuction,
@@ -99,7 +99,7 @@ export default function MarketplaceCardMobile({
     refreshInterval: 30
   });
 
-  // Usar bid em tempo real se disponível, senão usar o valor inicial
+  // Use real-time bid if available, otherwise use initial value
   const displayCurrentBid = isAuction 
     ? (auctionData.hasValidBid ? auctionData.currentBid : currentBid)
     : currentBid;
@@ -112,7 +112,7 @@ export default function MarketplaceCardMobile({
 
   const handleToggleLike = () => {
     setIsLiked(!isLiked);
-    // TODO: Implementar funcionalidade de favoritos
+    // TODO: Implement favorites functionality
   };
 
   const handleListButtonClick = () => {
@@ -190,9 +190,9 @@ export default function MarketplaceCardMobile({
 
   const renderActionButtons = () => {
     if (isListed && listingId) {
-      // NFT está listado para venda direta
+      // NFT is listed for direct sale
       if (isOwner) {
-        // Botões para o dono da listagem
+        // Buttons for listing owner
         return (
           <div className="space-y-2">
             <Button
@@ -213,8 +213,8 @@ export default function MarketplaceCardMobile({
             />
           </div>
         );
-      } else {
-        // Botões para compradores
+              } else {
+        // Buttons for buyers
         return (
           <div className="space-y-2">
             {isPriceValid ? (
@@ -246,12 +246,12 @@ export default function MarketplaceCardMobile({
           </div>
         );
       }
-    } else if (isAuction && auctionId) {
-      // NFT está em leilão
+          } else if (isAuction && auctionId) {
+        // NFT is in auction
       const isAuctionEnded = endTime ? new Date() > endTime : false;
       
       if (isOwner) {
-        // Botões para o dono do leilão
+        // Buttons for auction owner
         return (
           <div className="space-y-2">
             {!isAuctionEnded ? (
@@ -276,7 +276,7 @@ export default function MarketplaceCardMobile({
           </div>
         );
       } else {
-        // Botões para compradores
+        // Buttons for buyers
         return (
           <div className="space-y-2">
             {!isAuctionEnded ? (
@@ -317,7 +317,7 @@ export default function MarketplaceCardMobile({
         );
       }
     } else {
-      // NFT não está listado nem em leilão
+      // NFT is not listed or auctioned
       return (
         <div className="space-y-2">
           {isOwner ? (
@@ -350,7 +350,7 @@ export default function MarketplaceCardMobile({
     }
   };
 
-  // Renderização baseada no tipo de view
+  // Rendering based on view type
   if (viewType === 'compact') {
     return (
       <>

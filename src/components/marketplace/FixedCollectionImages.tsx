@@ -16,7 +16,7 @@ export function getCollectionImage(collectionNameOrCategory: string, originalIma
     return FIXED_COLLECTION_IMAGES[collectionNameOrCategory as keyof typeof FIXED_COLLECTION_IMAGES];
   }
   
-  // Para outras collections, usar imagem original se disponível
+  // For other collections, use original image if available
   if (originalImage && originalImage !== '' && !originalImage.includes('undefined')) {
     return originalImage;
   }

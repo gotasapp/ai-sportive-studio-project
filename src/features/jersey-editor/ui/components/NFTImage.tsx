@@ -1,6 +1,6 @@
 // ================================================
 // NFTImage Component
-// Imagem com fallback automático para IPFS gateways
+// Image with automatic fallback for IPFS gateways
 // ================================================
 
 import React, { useEffect, useState } from 'react'
