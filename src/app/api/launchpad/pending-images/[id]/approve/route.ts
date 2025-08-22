@@ -91,6 +91,9 @@ export async function POST(
       roadmap: data.roadmap,
       mintStages: data.mintStages,
       
+      // 🎯 DEPLOYMENT STATUS
+      deployed: data.contractAddress ? true : false, // Se já tem contrato, já está deployada
+      
       createdAt: nowUTC,
       updatedAt: nowUTC
     };

@@ -43,6 +43,8 @@ export async function POST() {
       creator: parisInOldTable.creator || { name: 'Admin', wallet: '0xEf381c5fB1697b0f21F99c7A7b546821cF481B56' },
       createdAt: parisInOldTable.createdAt || new Date(),
       updatedAt: new Date(),
+      // 🎯 DEPLOYMENT STATUS
+      deployed: true, // Coleção já tem contrato, então está deployada
       // Campos específicos do launchpad
       price: '0.001 MATIC',
       category: 'jersey',
