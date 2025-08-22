@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { createThirdwebClient, getContract } from 'thirdweb';
-import { polygonAmoy } from 'thirdweb/chains';
+import { defineChain } from 'thirdweb/chains';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 
 const DB_NAME = 'chz-app-db';
@@ -11,7 +11,7 @@ const client = createThirdwebClient({
   secretKey: process.env.THIRDWEB_SECRET_KEY!,
 });
 
-const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+
 
 /**
  * @swagger
@@ -114,7 +114,7 @@ async function getThirdwebMarketplaceData() {
     const marketplaceContract = getContract({
       client,
       chain: chzChain,
-      address: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || MARKETPLACE_CONTRACT_ADDRESS,
+      address: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '0x2403863b192b649448793dfbB6926Cdd0d7A14Ad',
     });
 
     // Search for BOTH listings and auctions in parallel
