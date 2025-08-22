@@ -108,7 +108,8 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = page > 1;
     
     // Separar coleções por tipo e status
-    let launchpadCollections, marketplaceCollections;
+    let launchpadCollections: any[] = [];
+    let marketplaceCollections: any[] = [];
     
     if (type === 'launchpad') {
       // Se estamos buscando launchpad, todas as coleções são do launchpad
