@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createThirdwebClient, getContract } from 'thirdweb';
-import { polygonAmoy } from 'thirdweb/chains';
+import { defineChain } from 'thirdweb/chains';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 import clientPromise from '@/lib/mongodb';
 
 const DB_NAME = 'chz-app-db';
-const MARKETPLACE_CONTRACT_ADDRESS = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+
 
 /**
  * @swagger
@@ -119,10 +119,19 @@ export async function GET(request: NextRequest) {
       secretKey: process.env.THIRDWEB_SECRET_KEY!,
     });
 
+    // Usar CHZ Mainnet ao invés de Polygon Amoy
+    const chzChain = defineChain({
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+      rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+      blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+    });
+
     const marketplaceContract = getContract({
       client,
-      chain: polygonAmoy,
-      address: MARKETPLACE_CONTRACT_ADDRESS,
+      chain: chzChain,
+      address: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '0x2403863b192b649448793dfbB6926Cdd0d7A14Ad',
     });
 
     // Buscar listings e auctions em paralelo
@@ -307,13 +316,13 @@ export async function GET(request: NextRequest) {
         const bidInWei = auction.minimumBidAmount;
         const bidInMatic = bidInWei ? (Number(bidInWei) / 1e18).toFixed(4) : '0';
         price = `${bidInMatic} (Bid)`;
-        displayPrice = `${bidInMatic} MATIC (Bid)`;
+        displayPrice = `${bidInMatic} CHZ (Bid)`;
       } else if (listing) {
-        // Converter Wei para MATIC
+        // Converter Wei para CHZ
         const priceInWei = listing.pricePerToken || listing.currencyValuePerToken?.value;
-        const priceInMatic = priceInWei ? (Number(priceInWei) / 1e18).toFixed(4) : '0';
-        price = priceInMatic;
-        displayPrice = `${priceInMatic} MATIC`;
+        const priceInChz = priceInWei ? (Number(priceInWei) / 1e18).toFixed(4) : '0';
+        price = priceInChz;
+        displayPrice = `${priceInChz} CHZ`;
         
         // Debug de preço
         console.log('💰 PREÇO DEBUG:', {
@@ -342,7 +351,7 @@ export async function GET(request: NextRequest) {
           // Dados do listing
           listingId: listing?.id?.toString(),
           listingPrice: listing?.pricePerToken?.toString(),
-          listingCurrency: listing?.currencyValuePerToken?.symbol || 'MATIC',
+          listingCurrency: listing?.currencyValuePerToken?.symbol || 'CHZ',
           listingEndTime: listing?.endTimeInSeconds ? new Date(Number(listing.endTimeInSeconds) * 1000) : null,
           
           // Dados do auction
@@ -356,7 +365,7 @@ export async function GET(request: NextRequest) {
           thirdwebData: listing ? {
             listingId: listing.id.toString(),
             price: listing.pricePerToken?.toString(),
-            currency: listing.currencyValuePerToken?.symbol || 'MATIC',
+            currency: listing.currencyValuePerToken?.symbol || 'CHZ',
             endTime: listing.endTimeInSeconds ? listing.endTimeInSeconds.toString() : null
           } : null,
           
@@ -364,7 +373,7 @@ export async function GET(request: NextRequest) {
             auctionId: auction.id?.toString() || auction.auctionId?.toString(),
             minimumBidAmount: auction.minimumBidAmount?.toString(),
             buyoutBidAmount: auction.buyoutBidAmount?.toString(),
-            currency: 'MATIC',
+            currency: 'CHZ',
             endTime: auction.endTimestamp ? auction.endTimestamp.toString() : null,
             startTime: auction.startTimestamp ? auction.startTimestamp.toString() : null,
             creatorAddress: auction.creatorAddress || auction.creator

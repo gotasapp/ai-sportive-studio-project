@@ -187,6 +187,12 @@ export default function MarketplaceCard({
               tokenId={tokenId}
               className="w-full"
               variant="outline"
+              onSuccess={() => {
+                // Recarregar a página para atualizar os dados
+                setTimeout(() => {
+                  window.location.reload();
+                }, 2000);
+              }}
             />
           </div>
         );
@@ -431,6 +437,13 @@ export default function MarketplaceCard({
             name,
             imageUrl,
           }}
+          onSuccess={() => {
+            setShowCreateListing(false);
+            // Recarregar a página para atualizar os dados
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }}
         />
       )}
 
@@ -443,6 +456,13 @@ export default function MarketplaceCard({
           currentPrice={price}
           nftName={name}
           tokenId={tokenId}
+          onSuccess={() => {
+            setShowUpdateListing(false);
+            // Recarregar a página para atualizar os dados
+            setTimeout(() => {
+              window.location.reload();
+            }, 2000);
+          }}
         />
       )}
 

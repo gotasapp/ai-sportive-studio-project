@@ -11,7 +11,7 @@ const client = createThirdwebClient({
   clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '',
 });
 
-const MARKETPLACE_CONTRACT_ADDRESS = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+
 
 interface BuyNowButtonProps {
   listingId: string;
@@ -49,7 +49,7 @@ export default function BuyNowButton({
 
   return (
     <BuyDirectListingButton
-      contractAddress={MARKETPLACE_CONTRACT_ADDRESS}
+      contractAddress={process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '0x2403863b192b649448793dfbB6926Cdd0d7A14Ad'}
       chain={chain}
       client={client}
       listingId={BigInt(listingId)}
@@ -69,7 +69,7 @@ export default function BuyNowButton({
       onTransactionConfirmed={(result) => {
         console.log('✅ Transaction confirmed:', result.transactionHash);
         toast.success('Purchase completed successfully! 🎉');
-        console.log('🔗 View on explorer:', `https://amoy.polygonscan.com/tx/${result.transactionHash}`);
+        console.log('🔗 View on explorer:', `https://scan.chiliz.com/tx/${result.transactionHash}`);
         
         // Reload page to see updated ownership
         setTimeout(() => {

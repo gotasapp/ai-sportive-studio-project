@@ -256,6 +256,9 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               tokenId={unit.tokenId}
               variant="outline"
               className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
+              onSuccess={() => {
+                refreshUnits();
+              }}
             />
           </div>
         );
@@ -547,6 +550,10 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               name: selectedUnit.name,
               imageUrl: selectedUnit.imageUrl
             }}
+            onSuccess={() => {
+              setShowCreateListing(false);
+              refreshUnits();
+            }}
           />
         </>
       )}
@@ -559,6 +566,10 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
           currentPrice={selectedUnit.marketplace?.price || '0'}
           nftName={selectedUnit.name}
           tokenId={selectedUnit.tokenId}
+          onSuccess={() => {
+            setShowUpdateListing(false);
+            refreshUnits();
+          }}
         />
       )}
 

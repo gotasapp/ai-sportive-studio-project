@@ -26,6 +26,7 @@ interface UpdateListingModalProps {
   currentPrice: string;
   nftName?: string;
   tokenId?: string;
+  onSuccess?: () => void;
 }
 
 export function UpdateListingModal({ 
@@ -34,7 +35,8 @@ export function UpdateListingModal({
   listingId, 
   currentPrice, 
   nftName,
-  tokenId 
+  tokenId,
+  onSuccess
 }: UpdateListingModalProps) {
   const [newPrice, setNewPrice] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -106,10 +108,13 @@ export function UpdateListingModal({
       // Reset form
       setNewPrice('');
       
-      // Reload page to see updated price
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // ✅ CHAMAR CALLBACK DE SUCESSO EM VEZ DE RELOAD
+      if (onSuccess) {
+        console.log('🔄 Chamando onSuccess callback...');
+        setTimeout(() => {
+          onSuccess();
+        }, 2000);
+      }
 
     } catch (error: any) {
       console.error('❌ Error updating listing:', error);

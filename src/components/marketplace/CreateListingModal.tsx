@@ -21,9 +21,10 @@ interface CreateListingModalProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
   nft: NFT;
+  onSuccess?: () => void;
 }
 
-export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingModalProps) {
+export function CreateListingModal({ isOpen, onOpenChange, nft, onSuccess }: CreateListingModalProps) {
   const [price, setPrice] = useState('');
   const [minBid, setMinBid] = useState('');
   const [buyoutPrice, setBuyoutPrice] = useState('');
@@ -104,7 +105,13 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
       // Reset form
       setPrice('');
       
-      // NOTE: Don't reload automatically to see logs
+      // ✅ CHAMAR CALLBACK DE SUCESSO PARA ATUALIZAR DADOS
+      if (onSuccess) {
+        console.log('🔄 Chamando onSuccess callback...');
+        setTimeout(() => {
+          onSuccess();
+        }, 2000); // Aguardar 2 segundos para a transação ser confirmada
+      }
       
     } catch (error: any) {
       console.error('❌ Error creating listing:', error);
