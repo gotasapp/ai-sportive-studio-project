@@ -9,7 +9,7 @@
  */
 
 // 🔥 MASTER SWITCH - CHANGE HERE TO SWITCH EVERYTHING
-export const USE_CHZ_MAINNET = true; // true = CHZ | false = Amoy
+export const USE_CHZ_MAINNET = process.env.NEXT_PUBLIC_USE_CHZ_MAINNET === 'true'; // true = CHZ | false = Amoy
 
 // ⚙️ AUTOMATIC CONFIGURATIONS BASED ON SWITCH
 export const ACTIVE_NETWORK = USE_CHZ_MAINNET ? {

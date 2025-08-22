@@ -332,7 +332,7 @@ This description will be used to generate a new version of the stadium with slig
         const result = await mintGasless({
           to: address,
           metadataUri: ipfsResult.metadataUrl,
-          chainId: chainId || 80002, // Adding chainId with fallback
+          chainId: chainId || 88888, // CHZ Mainnet with fallback
         });
 
         setMintStatus('pending');

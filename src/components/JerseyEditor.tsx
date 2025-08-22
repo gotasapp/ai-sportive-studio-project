@@ -498,7 +498,7 @@ export default function JerseyEditor() {
             transactionHash: result.transactionHash,
             tokenId: null, // Legacy mint doesn't return tokenId immediately
             status: 'minted',
-            chainId: 80002, // Polygon Amoy
+            chainId: 88888, // CHZ Mainnet
             blockNumber: null
           })
         });
@@ -1241,7 +1241,7 @@ Design based on analysis: ${analysisText}`
                   tokenId: tokenId || null,
                   queueId: mintedTokenId,
                   status: 'minted',
-                  chainId: 80002, // Polygon Amoy
+                  chainId: 88888, // CHZ Mainnet
                   blockNumber: blockNumber || null
                 })
               });

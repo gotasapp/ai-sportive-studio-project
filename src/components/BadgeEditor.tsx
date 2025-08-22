@@ -126,7 +126,7 @@ export default function BadgeEditor() {
         const result = await mintGasless({
             to: address,
             metadataUri: ipfsResult.metadataUrl,
-            chainId: chainId || 80002, // Adding chainId with fallback
+            chainId: chainId || 88888, // CHZ Mainnet with fallback
         });
 
         setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
