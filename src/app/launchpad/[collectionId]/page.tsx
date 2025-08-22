@@ -133,16 +133,16 @@ export default function CollectionMintPage() {
       clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '' 
     });
     
-    const amoy = defineChain({
-              id: 88888,
-      name: 'Polygon Amoy Testnet',
-      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-      rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology/',
+    const chzChain = defineChain({
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+      rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
     });
     
     const collectionContract = getContract({
       client,
-      chain: amoy,
+      chain: chzChain,
       address: collection.contractAddress,
     });
     
