@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
     
     // Construir filtro base - buscar coleções deployadas
     const filter: any = {
-      deployed: true
+      // deployed: true // 🎯 TEMPORARIAMENTE REMOVIDO - NENHUMA COLEÇÃO TEM ESSE CAMPO AINDA
     };
     
     // Filtrar por status
