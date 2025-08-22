@@ -90,13 +90,13 @@ export function CreateAuctionModal({ isOpen, onOpenChange, nft, onSuccess }: Cre
     });
 
     // Check if on the correct network
-    if (chain.id !== 80002) {
-      console.log('❌ Wrong network:', { currentChainId: chain.id, expectedChainId: 80002 });
-      toast.error(`You are on ${chain.name}. The marketplace is deployed only on Polygon Amoy Testnet. Please switch to Polygon Amoy (Chain ID: 80002) in your wallet.`);
+    if (chain.id !== 88888) {
+      console.log('❌ Wrong network:', { currentChainId: chain.id, expectedChainId: 88888 });
+      toast.error(`You are on ${chain.name}. The marketplace is deployed only on CHZ Mainnet. Please switch to CHZ Mainnet (Chain ID: 88888) in your wallet.`);
       return;
     }
 
-    console.log('✅ Network OK: Polygon Amoy');
+    console.log('✅ Network OK: CHZ Mainnet');
 
     const validationError = validateForm();
     if (validationError) {

@@ -134,7 +134,7 @@ export default function CollectionMintPage() {
     });
     
     const amoy = defineChain({
-      id: 80002,
+              id: 88888,
       name: 'Polygon Amoy Testnet',
       nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
       rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology/',

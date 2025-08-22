@@ -37,20 +37,20 @@ export function CreateListingModal({ isOpen, onOpenChange, nft }: CreateListingM
   console.log('🔍 DEBUG - Rede atual:', {
     chainId: chain?.id,
     chainName: chain?.name,
-    isPolygonAmoy: chain?.id === 80002,
+    isPolygonAmoy: chain?.id === 88888,
     isPolygonMainnet: chain?.id === 137,
-    needsNetworkSwitch: chain?.id !== 80002,
-    marketplaceNetwork: 'Polygon Amoy (80002)',
+    needsNetworkSwitch: chain?.id !== 88888,
+    marketplaceNetwork: 'CHZ Mainnet (88888)',
     currentNetwork: `${chain?.name} (${chain?.id})`
   });
 
   const handleSubmit = async () => {
-    // Check if on a supported Polygon network (Mainnet or Amoy)
-    const supportedPolygonChains = [137, 80002]; // Polygon Mainnet e Amoy Testnet
+    // Check if on a supported network (CHZ Mainnet)
+    const supportedChains = [88888]; // CHZ Mainnet
     
-    // For now, force use of Polygon Amoy where the marketplace is deployed
-    if (chain?.id !== 80002) {
-      toast.error(`Você está na ${chain?.name || 'rede desconhecida'}. O marketplace está deployado apenas no Polygon Amoy Testnet. Por favor, troque para Polygon Amoy (Chain ID: 80002) na sua carteira.`);
+    // Force use of CHZ Mainnet where the marketplace is deployed
+    if (chain?.id !== 88888) {
+      toast.error(`Você está na ${chain?.name || 'rede desconhecida'}. O marketplace está deployado apenas no CHZ Mainnet. Por favor, troque para CHZ Mainnet (Chain ID: 88888) na sua carteira.`);
       return;
     }
 

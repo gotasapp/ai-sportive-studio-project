@@ -7,10 +7,18 @@ import { defineChain } from 'thirdweb/chains';
 import { generateMintSignature, mintWithSignature } from 'thirdweb/extensions/erc721';
 import { sendTransaction } from 'thirdweb';
 
-// Define a chain Amoy com RPC dedicado
-const amoy = defineChain({
-  id: 80002,
-  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
+// Define CHZ Mainnet chain
+const chzMainnet = defineChain({
+  id: 88888,
+  name: 'Chiliz Chain',
+  nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+  rpc: 'https://rpc.ankr.com/chiliz',
+  blockExplorers: [
+    {
+      name: 'ChilizScan',
+      url: 'https://scan.chiliz.com',
+    },
+  ],
 });
 
 // Tipos para comunicação Frontend <-> API
@@ -99,7 +107,7 @@ export function useLaunchpadContract() {
         throw new Error('Account is required for mint signature generation');
       }
       
-      const contract = getContract({ client, chain: amoy, address: contractAddress });
+      const contract = getContract({ client, chain: chzMainnet, address: contractAddress });
       
       // Gerar signature para mint
       const { payload, signature } = await generateMintSignature({
@@ -142,7 +150,7 @@ export function useLaunchpadContract() {
         throw new Error('Account is required for transaction execution');
       }
       
-      const contract = getContract({ client, chain: amoy, address: contractAddress });
+      const contract = getContract({ client, chain: chzMainnet, address: contractAddress });
       
       const transaction = mintWithSignature({
         contract,

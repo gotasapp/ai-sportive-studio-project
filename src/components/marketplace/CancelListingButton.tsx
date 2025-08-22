@@ -51,7 +51,7 @@ export function CancelListingButton({
     }
 
     // Check if on correct network
-    if (chain.id !== 80002) {
+    if (chain.id !== 88888) {
       toast.error('Please switch to Polygon Amoy Testnet to cancel listings.');
       return;
     }
