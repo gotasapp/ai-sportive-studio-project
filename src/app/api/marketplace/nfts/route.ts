@@ -102,10 +102,19 @@ async function getThirdwebMarketplaceData() {
   try {
     console.log('🔍 Searching for listings AND auctions on Thirdweb marketplace...');
     
+    // Usar CHZ Mainnet ao invés de Polygon Amoy
+    const chzChain = defineChain({
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+      rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+      blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+    });
+    
     const marketplaceContract = getContract({
       client,
-      chain: polygonAmoy,
-      address: MARKETPLACE_CONTRACT_ADDRESS,
+      chain: chzChain,
+      address: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || MARKETPLACE_CONTRACT_ADDRESS,
     });
 
     // Search for BOTH listings and auctions in parallel

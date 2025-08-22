@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { createThirdwebClient, getContract } from 'thirdweb';
-import { polygonAmoy } from 'thirdweb/chains';
+import { defineChain } from 'thirdweb/chains';
 import { getNFTs } from 'thirdweb/extensions/erc721';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 import { ownerOf } from 'thirdweb/extensions/erc721';
@@ -106,15 +106,24 @@ export function useMarketplaceDataRobust() {
       setTimeout(() => reject(new Error('Thirdweb timeout')), 5000); // 5s timeout
     });
 
+    // Usar CHZ Mainnet ao invés de Polygon Amoy
+    const chzChain = defineChain({
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+      rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+      blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+    });
+
     const contract = getContract({
       client,
-      chain: polygonAmoy,
+      chain: chzChain,
       address: NFT_CONTRACT_ADDRESS,
     });
 
     const marketplaceContract = getContract({
       client,
-      chain: polygonAmoy,
+      chain: chzChain,
       address: MARKETPLACE_CONTRACT_ADDRESS,
     });
 

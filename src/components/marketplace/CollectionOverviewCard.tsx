@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { formatPriceSafe } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
 import Link from 'next/link';
+import { NETWORK_CURRENCY } from '@/lib/network-config';
 
 interface CollectionOverviewCardProps {
   name: string;
@@ -52,8 +53,8 @@ export default function CollectionOverviewCard({
   mintedUnits = 0,
   totalUnits = 0,
   availableUnits = 0,
-  floorPrice = '0 MATIC',
-  totalVolume = '0 MATIC',
+  floorPrice = `0 ${NETWORK_CURRENCY}`,
+  totalVolume = `0 ${NETWORK_CURRENCY}`,
   uniqueOwners = 0,
   listedCount = 0,
   auctionCount = 0

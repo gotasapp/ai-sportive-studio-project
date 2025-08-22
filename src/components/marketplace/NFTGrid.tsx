@@ -6,6 +6,7 @@ import MarketplaceCard from './MarketplaceCard';
 import CollectionOverviewCard from './CollectionOverviewCard';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { NETWORK_CURRENCY } from '@/lib/network-config';
 
 interface NFTGridProps {
   items: any[];
@@ -90,8 +91,8 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
               mintedUnits={item.mintedUnits || 0}
               totalUnits={item.totalUnits || 0}
               availableUnits={item.availableUnits || 0}
-              floorPrice={item.price || '0 MATIC'}
-              totalVolume="0 MATIC" // TODO: Calculate from historical data
+              floorPrice={item.price || `0 ${NETWORK_CURRENCY}`}
+              totalVolume={`0 ${NETWORK_CURRENCY}`} // TODO: Calculate from historical data
               uniqueOwners={item.uniqueOwners || 0}
               listedCount={item.listedCount || 0}
               auctionCount={item.auctionCount || 0}

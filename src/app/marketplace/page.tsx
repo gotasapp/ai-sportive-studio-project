@@ -19,6 +19,7 @@ import { AlertCircle, Loader2, Grid3X3, RefreshCw, ChevronLeft, ChevronRight } f
 import { useActiveWalletChain } from 'thirdweb/react';
 import { NFT_CONTRACTS, getNFTContract } from '@/lib/marketplace-config';
 import { useMarketplaceData } from '@/hooks/useMarketplaceData';
+import { NETWORK_CURRENCY } from '@/lib/network-config';
 
 import MarketplaceStats from '@/components/marketplace/MarketplaceStats';
 import MarketplaceLoading, { MarketplaceStatsLoading } from '@/components/marketplace/MarketplaceLoading';
@@ -346,7 +347,7 @@ export default function MarketplacePage() {
                 const totalVol = marketplaceItems?.reduce((sum, item) => {
                   if (item.isListed || item.isAuction) {
                     // Clean the price and convert correctly
-                    let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
+                    let priceStr = item.price?.replace(` ${NETWORK_CURRENCY}`, '').replace(NETWORK_CURRENCY, '').trim() || '0';
                     
                     // If the price contains 'e+' or is very large, it might be in Wei
                     const price = parseFloat(priceStr);
@@ -368,16 +369,16 @@ export default function MarketplacePage() {
                   }
                   return sum;
                 }, 0) || 0;
-                return `${totalVol.toFixed(4)} MATIC`;
+                return `${totalVol.toFixed(4)} ${NETWORK_CURRENCY}`;
               })()}
               floorPrice={(() => {
                 const listedItems = marketplaceItems?.filter(item => 
                   (item.isListed || item.isAuction) && item.price && item.price !== 'Not for sale'
                 ) || [];
-                if (listedItems.length === 0) return '0 MATIC';
+                if (listedItems.length === 0) return `0 ${NETWORK_CURRENCY}`;
                 const prices = listedItems.map(item => {
                   // Clean the price
-                  let priceStr = item.price?.replace(' MATIC', '').replace('MATIC', '').trim() || '0';
+                  let priceStr = item.price?.replace(` ${NETWORK_CURRENCY}`, '').replace(NETWORK_CURRENCY, '').trim() || '0';
                   const price = parseFloat(priceStr);
                   
                   // Convert from Wei if necessary
@@ -385,9 +386,9 @@ export default function MarketplacePage() {
                   
                   return isNaN(finalPrice) ? 0 : finalPrice;
                 }).filter(price => price > 0);
-                if (prices.length === 0) return '0 MATIC';
+                if (prices.length === 0) return `0 ${NETWORK_CURRENCY}`;
                 const minPrice = Math.min(...prices);
-                return `${minPrice.toFixed(6)} MATIC`;
+                return `${minPrice.toFixed(6)} ${NETWORK_CURRENCY}`;
               })()}
             />
           )}

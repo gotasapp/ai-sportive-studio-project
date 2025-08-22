@@ -6,7 +6,7 @@ import { convertIpfsToHttp } from '@/lib/utils';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { getContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
-import { polygon, polygonAmoy } from 'thirdweb/chains';
+import { polygon, defineChain } from 'thirdweb/chains';
 import { ownerOf } from 'thirdweb/extensions/erc721';
 import { balanceOf as balanceOfERC1155 } from 'thirdweb/extensions/erc1155';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
@@ -167,7 +167,16 @@ export function useMarketplaceData() {
 
           // Fetch real owner from blockchain
           try {
-            const contract = getContract({ client, chain: polygonAmoy, address: contractAddress });
+            // Usar CHZ Mainnet ao invés de Polygon Amoy
+            const chzChain = defineChain({
+              id: 88888,
+              name: 'Chiliz Chain',
+              nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+              rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+              blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+            });
+            
+            const contract = getContract({ client, chain: chzChain, address: contractAddress });
             const realOwner = await ownerOf({ contract, tokenId: BigInt(tokenId) });
             if (realOwner) {
               nftOwner = realOwner;

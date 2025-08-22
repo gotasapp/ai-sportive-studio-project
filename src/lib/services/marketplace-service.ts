@@ -1,7 +1,7 @@
 import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract, getRpcClient } from 'thirdweb';
 import { getAllValidListings } from 'thirdweb/extensions/marketplace';
 import { Account } from 'thirdweb/wallets';
-import { polygonAmoy } from 'thirdweb/chains';
+import { polygonAmoy, defineChain } from 'thirdweb/chains';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
 
@@ -1482,7 +1482,14 @@ export class MarketplaceService {
         secretKey: process.env.THIRDWEB_SECRET_KEY!,
       });
 
-      const chain = chainId === 80002 ? polygonAmoy : polygonAmoy; // Usar Polygon Amoy como padrão
+      // Definir a chain correta baseada no chainId
+      const chain = chainId === 88888 ? defineChain({
+        id: 88888,
+        name: 'Chiliz Chain',
+        nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+        rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+        blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+      }) : polygonAmoy;
       
       // Buscar receipt da transação
       const receipt = await getRpcClient({ client, chain }).request({
