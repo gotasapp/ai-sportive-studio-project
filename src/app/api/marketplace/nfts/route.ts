@@ -363,13 +363,12 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
  */
 async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
   try {
-    // Search for active launchpad collections with minted NFTs
-    console.log('🔍 Buscando launchpad_collections com minted > 0...');
+    // Search for active launchpad collections (both networks)
+    console.log('🔍 Buscando launchpad_collections ativas (todas as redes)...');
     const launchpadCollections = await db.collection('launchpad_collections').find({
-      status: { $in: ['active', 'upcoming', 'approved'] },
-      minted: { $gt: 0 }
+      status: { $in: ['active', 'upcoming', 'approved'] }
     }).toArray();
-    console.log(`📋 Encontradas ${launchpadCollections.length} coleções launchpad com minted > 0:`, 
+    console.log(`📋 Encontradas ${launchpadCollections.length} coleções launchpad:`, 
       launchpadCollections.map((c: any) => ({ name: c.name, minted: c.minted, status: c.status, _id: c._id })));
 
     const launchpadNFTs = [];
@@ -377,6 +376,13 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
     for (const collection of launchpadCollections) {
       // Filter by owner if specified (for creator collections)
       if (owner && collection.creator?.wallet !== owner) continue;
+
+      // 🔍 Buscar NFTs mintadas desta coleção por contractAddress
+      const mintedNFTs = await db.collection('launchpad_collection_mints').find({
+        contractAddress: collection.contractAddress
+      }).toArray();
+      
+      console.log(`🔍 NFTs mintadas para ${collection.name}:`, mintedNFTs.length);
 
       // ✅ CREATE ONLY ONE ENTRY PER COLLECTION (not per minted unit)
       const collectionNFT = {
@@ -414,15 +420,15 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
           collection: collection.name,
           category: 'launchpad_collection',
           isCollection: true, // ✨ NOVO: Marca como entrada de coleção
-          mintedUnits: collection.minted || 0, // ✨ NOVO: Quantidade de unidades mintadas
+          mintedUnits: mintedNFTs.length, // ✨ NOVO: Quantidade real de unidades mintadas
           totalUnits: collection.totalSupply || 0, // ✨ NOVO: Total de unidades disponíveis
-          availableUnits: (collection.totalSupply || 0) - (collection.minted || 0) // ✨ NOVO: Unidades disponíveis
+          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length // ✨ NOVO: Unidades disponíveis
         },
         
         // ⛓️ DADOS DA BLOCKCHAIN
         blockchain: {
-          chainId: 80002, // Polygon Amoy
-          network: 'Polygon Amoy',
+          chainId: collection.chainId || 88888, // Use collection chainId or default to CHZ
+          network: (collection.chainId || 88888) === 88888 ? 'Chiliz Chain' : 'Polygon Amoy',
           transactionHash: null,
           explorerUrl: null,
           mintedAt: collection.createdAt
@@ -433,8 +439,8 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
           views: 0,
           likes: 0,
           sales: 0,
-          totalMints: collection.minted || 0, // ✨ NOVO: Total de mints da coleção
-          uniqueOwners: 1 // Em produção, seria calculado dos eventos do contrato
+          totalMints: mintedNFTs.length, // ✨ NOVO: Total real de mints da coleção
+          uniqueOwners: Array.from(new Set(mintedNFTs.map((nft: any) => nft.owner || nft.minterAddress))).length // ✨ NOVO: Calcula owners únicos
         },
         
         // 🗂️ IDENTIFICADORES
@@ -469,7 +475,7 @@ export async function GET(request: NextRequest) {
     console.log('🏪 GET Marketplace NFTs - Formato Thirdweb V3');
     
     const owner = request.nextUrl.searchParams.get('owner');
-    const chainId = request.nextUrl.searchParams.get('chainId') || '80002'; // Default: Polygon Amoy
+    const chainId = request.nextUrl.searchParams.get('chainId') || 'all'; // Default: all networks
     const type = request.nextUrl.searchParams.get('type'); // jersey, stadium, badge
     const limit = parseInt(request.nextUrl.searchParams.get('limit') || '50');
     
@@ -536,7 +542,7 @@ export async function GET(request: NextRequest) {
           // 🔑 DADOS OBRIGATÓRIOS PARA THIRDWEB MARKETPLACE V3
           tokenId: tokenId,
           contractAddress: chainId === '80002' 
-            ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET 
+            ? process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON_TESTNET 
             : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ,
           owner: nft.creator?.wallet || nft.creatorWallet,
           
@@ -631,11 +637,11 @@ export async function GET(request: NextRequest) {
         launchpad_total_units: finalNFTs.filter(n => n.type === 'launchpad_collection').reduce((total, nft) => total + ((nft.marketplace as any)?.mintedUnits || 0), 0),
         custom_total_units: finalNFTs.filter(n => n.type === 'custom_collection').reduce((total, nft) => total + ((nft.marketplace as any)?.mintedUnits || 0), 0)
       },
-      chainId: parseInt(chainId),
-      network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain',
-      contractAddress: chainId === '80002' 
-        ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET 
-        : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
+             chainId: parseInt(chainId),
+       network: chainId === '80002' ? 'Polygon Amoy' : 'CHZ Chain',
+               contractAddress: chainId === '80002' 
+          ? process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_POLYGON_TESTNET 
+          : process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ
     };
 
     return NextResponse.json({
@@ -649,12 +655,14 @@ export async function GET(request: NextRequest) {
         onlyMinted: true,
         limit
       },
-      thirdweb: {
-        contractAddress: stats.contractAddress,
-        chainId: parseInt(chainId),
-        marketplaceContract: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET,
-        ready: true
-      }
+             thirdweb: {
+         contractAddress: stats.contractAddress,
+         chainId: parseInt(chainId),
+         marketplaceContract: chainId === '80002' 
+           ? process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET 
+           : process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ,
+         ready: true
+       }
     });
 
   } catch (error) {

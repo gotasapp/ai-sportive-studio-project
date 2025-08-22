@@ -258,36 +258,36 @@ export default function CollectionMintPage() {
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
   
-  // Helper to format price from claim conditions
-  const formatPrice = (priceWei: bigint | string | number) => {
-    let priceValue: bigint;
-    
-    // Handle different input types
-    if (typeof priceWei === 'string') {
-      priceValue = BigInt(priceWei);
-    } else if (typeof priceWei === 'number') {
-      priceValue = BigInt(priceWei);
-    } else {
-      priceValue = priceWei;
-    }
-    
-    if (priceValue === BigInt(0)) return '0 MATIC';
-    
-          // Convert from wei to MATIC (18 decimals)
-    const priceInMatic = Number(priceValue) / Math.pow(10, 18);
-    
-    // Format with appropriate decimal places
-    if (priceInMatic < 0.0001) {
-      return `${priceInMatic.toFixed(6)} MATIC`;
-    } else if (priceInMatic < 1) {
-      return `${priceInMatic.toFixed(4)} MATIC`;
-    } else {
-      return `${priceInMatic.toFixed(2)} MATIC`;
-    }
-  };
+     // Helper to format price from claim conditions
+   const formatPrice = (priceWei: bigint | string | number) => {
+     let priceValue: bigint;
+     
+     // Handle different input types
+     if (typeof priceWei === 'string') {
+       priceValue = BigInt(priceWei);
+     } else if (typeof priceWei === 'number') {
+       priceValue = BigInt(priceWei);
+     } else {
+       priceValue = priceWei;
+     }
+     
+     if (priceValue === BigInt(0)) return '0 CHZ';
+     
+     // Convert from wei to CHZ (18 decimals)
+     const priceInChz = Number(priceValue) / Math.pow(10, 18);
+     
+     // Format with appropriate decimal places
+     if (priceInChz < 0.0001) {
+       return `${priceInChz.toFixed(6)} CHZ`;
+     } else if (priceInChz < 1) {
+       return `${priceInChz.toFixed(4)} CHZ`;
+     } else {
+       return `${priceInChz.toFixed(2)} CHZ`;
+     }
+   };
   
-  // Use claim conditions to determine price and limits
-  const currentPrice = claimCondition ? formatPrice(claimCondition.pricePerToken) : (collection.price || '0 MATIC');
+     // Use claim conditions to determine price and limits
+   const currentPrice = claimCondition ? formatPrice(claimCondition.pricePerToken) : (collection.price || '0 CHZ');
   const maxQuantity = claimCondition ? Math.min(
     Number(claimCondition.quantityLimitPerWallet),
     Number(claimCondition.maxClaimableSupply - claimCondition.supplyClaimed),
@@ -413,12 +413,27 @@ export default function CollectionMintPage() {
       setMintSuccess(`🎉 Successfully minted ${mintQuantity} NFT${mintQuantity > 1 ? 's' : ''}!`);
       toast.success(`Mint successful`);
       
-    } catch (error: any) {
-      console.error('❌ Public mint failed:', error);
-      const errorMessage = error?.reason || error?.message || 'Mint failed';
-      setMintError(errorMessage);
-      toast.error(errorMessage);
-    } finally {
+         } catch (error: any) {
+       console.error('❌ Public mint failed:', error);
+       
+       // Handle specific error cases with user-friendly messages
+       let errorMessage = 'Mint failed';
+       
+       if (error?.message?.includes('insufficient funds')) {
+         errorMessage = 'Saldo insuficiente na wallet. Você precisa ter CHZ suficiente para pagar o mint + taxas de gas.';
+       } else if (error?.message?.includes('user rejected')) {
+         errorMessage = 'Transação cancelada pelo usuário.';
+       } else if (error?.message?.includes('network')) {
+         errorMessage = 'Erro de rede. Verifique sua conexão e tente novamente.';
+       } else if (error?.reason) {
+         errorMessage = error.reason;
+       } else if (error?.message) {
+         errorMessage = error.message;
+       }
+       
+       setMintError(errorMessage);
+       toast.error(errorMessage);
+     } finally {
       setIsMinting(false);
     }
   };
