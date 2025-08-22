@@ -104,6 +104,9 @@ export async function GET(request: NextRequest) {
   try {
     const collectionId = request.nextUrl.searchParams.get('collectionId');
     const category = request.nextUrl.searchParams.get('category');
+    const forceRefresh = request.nextUrl.searchParams.get('forceRefresh') === 'true';
+    
+    console.log('🎯 Collection Units API chamada:', { collectionId, category, forceRefresh });
     
     if (!collectionId) {
       return NextResponse.json({

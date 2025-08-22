@@ -144,18 +144,29 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
   const refreshUnits = async () => {
     try {
       console.log('🔄 Manual refresh: Recarregando dados após trading...');
+      console.log('📋 Parâmetros:', { collectionId, category });
       
       const response = await fetch(
-        `/api/marketplace/collection-units?collectionId=${collectionId}&category=${category || ''}&_t=${Date.now()}`
+        `/api/marketplace/collection-units?collectionId=${collectionId}&category=${category || ''}&_t=${Date.now()}&forceRefresh=true`
       );
+      
+      console.log('📋 Response status:', response.status);
       
       if (response.ok) {
         const result = await response.json();
+        console.log('📋 API Response:', result);
+        
         if (result.success) {
+          console.log('📋 Unidades antes do update:', units.length);
           setUnits(result.data);
           setStats(result.stats);
-          console.log('✅ Manual refresh: Dados atualizados');
+          console.log('📋 Unidades após update:', result.data?.length);
+          console.log('✅ Manual refresh: Dados atualizados com sucesso');
+        } else {
+          console.error('❌ API retornou success: false:', result.error);
         }
+      } else {
+        console.error('❌ Response não ok:', response.status, response.statusText);
       }
     } catch (error) {
       console.error('❌ Manual refresh failed:', error);
@@ -257,7 +268,12 @@ export default function CollectionUnitsTable({ collectionId, category }: Collect
               variant="outline"
               className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
               onSuccess={() => {
-                refreshUnits();
+                console.log('🔄 CancelListingButton onSuccess chamado!');
+                // Aguardar um pouco para a transação ser confirmada na blockchain
+                setTimeout(() => {
+                  console.log('🔄 Executando refreshUnits após delay...');
+                  refreshUnits();
+                }, 3000); // 3 segundos de delay
               }}
             />
           </div>
