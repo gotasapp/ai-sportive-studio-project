@@ -99,7 +99,7 @@ export function UpdateListingModal({
         account,
       });
 
-      toast.success(`Price updated to ${newPrice} MATIC! 🎉`);
+      toast.success(`Price updated to ${newPrice} CHZ! 🎉`);
       console.log('✅ Listing updated:', result.transactionHash);
       onOpenChange(false);
       
