@@ -42,7 +42,7 @@ export function EngineMintButton({
       const result = await mintGasless({
         to: address,
         metadataUri: metadataUri,
-        chainId: 80002 // Polygon Amoy
+        chainId: 88888 // CHZ Mainnet
       });
 
       console.log('✅ ENGINE: Mint successful!', result);

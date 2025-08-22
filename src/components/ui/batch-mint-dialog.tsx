@@ -78,8 +78,33 @@ export function BatchMintDialog({
     setContractAddress(null);
 
     try {
-      // ETAPA 1: Deploy novo contrato DropERC721
-      console.log('🔄 ETAPA 1: Deploying new DropERC721 contract...');
+      // ETAPA 1: Upload para IPFS PRIMEIRO
+      console.log('📤 ETAPA 1: Uploading to IPFS...');
+      let ipfsImageUrl = 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle';
+      let ipfsMetadataUrl = 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle';
+
+      if (generatedImageBlob) {
+        console.log('📤 Uploading image to IPFS...');
+        const collectionName = nftName;
+        const collectionDescription = `AI Generated ${collection} collection with ${quantity} NFTs. Each NFT shares the same metadata and artwork.`;
+        
+        const ipfsResult = await IPFSService.uploadComplete(
+          generatedImageBlob,
+          collectionName,
+          collectionDescription,
+          collection || 'AI Collection',
+          'DropERC721',
+          'Collection',
+          quantity.toString()
+        );
+
+        ipfsImageUrl = ipfsResult.imageUrl;
+        ipfsMetadataUrl = ipfsResult.metadataUrl;
+        console.log('✅ IPFS upload completed:', ipfsMetadataUrl);
+      }
+
+      // ETAPA 2: Deploy novo contrato DropERC721
+      console.log('🔄 ETAPA 2: Deploying new DropERC721 contract...');
       console.log('📋 Account address:', account.address);
       console.log('📋 Collection:', collection, 'Quantity:', quantity);
       
@@ -88,17 +113,17 @@ export function BatchMintDialog({
       });
 
       setDeployStep('signing-deploy');
-      console.log('🔄 ETAPA 1: Backend deploying contract...');
+      console.log('🔄 ETAPA 2: Backend deploying contract...');
 
       // Deploy via backend (sua wallet)
       const deployResponse = await fetch('/api/collection/backend-deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
+          name: nftName, // ✅ USAR O NOME DA NFT
           description: `AI Collection of ${quantity} NFTs with shared metadata`,
           quantity: quantity,
-          imageUri: 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle',
+          imageUri: ipfsImageUrl, // ✅ USAR A IMAGEM IPFS CORRETA
           userWallet: account.address, // User wallet for royalties
         }),
       });
@@ -115,32 +140,23 @@ export function BatchMintDialog({
 
       const newContractAddress = deployResult.contractAddress;
       setContractAddress(newContractAddress);
-      console.log('✅ ETAPA 1 completed - Contract deployed by backend:', newContractAddress);
+      console.log('✅ ETAPA 2 completed - Contract deployed by backend:', newContractAddress);
       
-      // Define Polygon Amoy chain para usar no frontend
-      const amoyChain = defineChain({
-        id: 80002,
-        name: 'Polygon Amoy Testnet',
-        nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-        rpc: 'https://rpc.ankr.com/polygon_amoy/5b2d60918c8135da4798d0d735c2b2d483d3e3d8992ab6cf34c53b0fd81803ef',
-        blockExplorers: [
-          {
-            name: 'PolygonScan',
-            url: 'https://amoy.polygonscan.com',
-          },
-        ],
-      });
+      // Use active chain configuration
+      const { getActiveChain } = await import('@/lib/network-config');
+      const activeChain = getActiveChain();
 
       setDeployStep('signing-mint');
       
-      // Aguardar um pouco para o backend terminar setup
-      await new Promise(resolve => setTimeout(resolve, 3000));
+      // Aguardar mais tempo para o backend terminar setup das claim conditions
+      console.log('⏳ Waiting for backend to finish claim conditions setup...');
+      await new Promise(resolve => setTimeout(resolve, 8000));
       
-      // STEP 2: Claim NFTs - GASLESS for admin, PAID for user
+      // ETAPA 3: Claim NFTs - GASLESS for admin, PAID for user
       let mintResult: any;
       
       if (isUserAdmin) {
-        console.log('🔄 ETAPA 2: Admin gasless claiming NFTs...');
+        console.log('🔄 ETAPA 3: Admin gasless claiming NFTs...');
         
         // Admin: Usar backend gasless claim
         const adminClaimResponse = await fetch('/api/collection/admin-claim', {
@@ -170,7 +186,7 @@ export function BatchMintDialog({
         mintResult = { transactionHash: adminClaimResult.transactionHash };
         
       } else {
-        console.log('🔄 ETAPA 2: User claiming NFTs (paid)...');
+        console.log('🔄 ETAPA 3: User claiming NFTs (paid)...');
         
         // Regular user: Normal paid claim
         const { getContract, sendTransaction } = await import('thirdweb');
@@ -178,7 +194,7 @@ export function BatchMintDialog({
         
         const contract = getContract({
           client,
-          chain: amoyChain,
+          chain: activeChain,
           address: newContractAddress,
         });
         
@@ -221,7 +237,7 @@ export function BatchMintDialog({
 
       console.log('✅ ETAPA 3 completed - NFTs claimed:', mintResult?.transactionHash || 'No transaction hash');
       
-      // ETAPA 4: Upload para IPFS + Cloudinary + Salvar no banco
+      // ETAPA 4: Upload para Cloudinary + Salvar no banco
       console.log('💾 Uploading and saving collection...');
       try {
         let cloudinaryUrl = 'https://gateway.pinata.cloud/ipfs/bafybeibxbyvdvl7te72lh3hxgfhkrjnaji3mgazyvks5nekalotqhr7cle';
@@ -246,25 +262,6 @@ export function BatchMintDialog({
             cloudinaryUrl = uploadResult.url;
             cloudinaryPublicId = uploadResult.publicId;
             console.log('✅ Image uploaded to Cloudinary:', cloudinaryUrl);
-
-            // 2. Upload para IPFS
-            console.log('📤 Uploading to IPFS...');
-            const collectionName = `${collection?.toUpperCase()} Collection #${Date.now()}`;
-            const collectionDescription = `AI Generated ${collection} collection with ${quantity} NFTs. Each NFT shares the same metadata and artwork.`;
-            
-            const ipfsResult = await IPFSService.uploadComplete(
-              generatedImageBlob,
-              collectionName,
-              collectionDescription,
-              collection || 'AI Collection',
-              'DropERC721',
-              'Collection',
-              quantity.toString()
-            );
-
-            ipfsImageUrl = ipfsResult.imageUrl;
-            ipfsMetadataUrl = ipfsResult.metadataUrl;
-            console.log('✅ IPFS upload completed:', ipfsMetadataUrl);
           }
         }
 
@@ -274,7 +271,7 @@ export function BatchMintDialog({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
+            name: nftName,
             description: `AI Generated ${collection} collection with ${quantity} NFTs`,
             imageUrl: cloudinaryUrl, // Cloudinary URL for database
             cloudinaryPublicId: cloudinaryPublicId,
@@ -299,7 +296,7 @@ export function BatchMintDialog({
             metadata: {
               generationMode: 'batch_collection',
               quantity: quantity,
-              chainId: 80002,
+              chainId: 88888,
               contractAddress: newContractAddress,
               tokenId: 0, // Collection usa token ID 0
               collectionType: 'DropERC721',
@@ -323,8 +320,8 @@ export function BatchMintDialog({
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
-                name: `${collection?.toUpperCase()} Collection #${Date.now()}`,
-                description: `AI Generated ${collection} collection with ${quantity} NFTs`,
+                                 name: nftName,
+                 description: `AI Generated ${collection} collection with ${quantity} NFTs`,
                 imageUrl: cloudinaryUrl,
                 category: collection || 'jersey', // jersey, stadium, badge
                 contractAddress: newContractAddress,

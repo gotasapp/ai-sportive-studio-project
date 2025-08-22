@@ -9,8 +9,8 @@ import { Rocket, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 
-// Define Polygon Amoy
-const amoy = defineChain(80002);
+// Use active chain configuration
+import { getActiveChain } from '@/lib/network-config';
 
 interface GaslessMintButtonProps {
   address: string;
@@ -38,7 +38,7 @@ export function GaslessMintButton({
 
   const contract = getContract({
     client,
-    chain: amoy,
+    chain: getActiveChain(),
     address: process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || '',
   });
 

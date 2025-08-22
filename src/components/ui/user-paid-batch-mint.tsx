@@ -37,7 +37,7 @@ export function UserPaidBatchMint({
   const { mintEditionWithMetadata } = useWeb3()
 
   const isConnected = !!account
-  const isOnCorrectChain = chain?.id === 80002 // Polygon Amoy
+  const isOnCorrectChain = chain?.id === 88888 // CHZ Mainnet
 
     const handleClose = () => {
     setOpen(false)
@@ -56,7 +56,7 @@ export function UserPaidBatchMint({
     }
 
     if (!isOnCorrectChain) {
-      setMintError('Please switch to Polygon Amoy network')
+      setMintError('Please switch to CHZ Mainnet network')
       return
     }
 

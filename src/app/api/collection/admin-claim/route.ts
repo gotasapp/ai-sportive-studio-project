@@ -4,10 +4,18 @@ import { defineChain } from 'thirdweb/chains';
 import { claimTo } from 'thirdweb/extensions/erc721';
 import { privateKeyToAccount } from 'thirdweb/wallets';
 
-// Define a chain Amoy
-const amoy = defineChain({
-  id: 80002,
-  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
+// Define CHZ Mainnet
+const chzChain = defineChain({
+  id: 88888,
+  name: 'Chiliz Chain',
+  nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+  rpc: 'https://rpc.ankr.com/chiliz',
+  blockExplorers: [
+    {
+      name: 'ChilizScan',
+      url: 'https://scan.chiliz.com',
+    },
+  ],
 });
 
 // Environment Variables
@@ -61,7 +69,7 @@ export async function POST(request: NextRequest) {
     
     const contract = getContract({ 
       client: thirdwebClient, 
-      chain: amoy, 
+      chain: chzChain, 
       address: contractAddress 
     });
 

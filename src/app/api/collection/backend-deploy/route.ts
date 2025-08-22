@@ -4,6 +4,7 @@ import { createThirdwebClient, defineChain } from 'thirdweb';
 import { privateKeyToAccount } from 'thirdweb/wallets';
 import { setClaimConditions, lazyMint } from 'thirdweb/extensions/erc721';
 import { getContract, sendTransaction } from 'thirdweb';
+import { getActiveChain } from '@/lib/network-config';
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,16 +46,16 @@ export async function POST(request: NextRequest) {
       secretKey: process.env.THIRDWEB_SECRET_KEY!,
     });
 
-    // Definir chain Amoy com RPC atualizado
-    const amoyChain = defineChain({
-      id: 80002,
-      name: 'Polygon Amoy Testnet',
-      nativeCurrency: { name: 'MATIC', symbol: 'MATIC', decimals: 18 },
-      rpc: 'https://rpc.ankr.com/polygon_amoy/5b2d60918c8135da4798d0d735c2b2d483d3e3d8992ab6cf34c53b0fd81803ef',
+    // Definir chain CHZ Mainnet
+    const chzChain = defineChain({
+      id: 88888,
+      name: 'Chiliz Chain',
+      nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+      rpc: 'https://rpc.ankr.com/chiliz',
       blockExplorers: [
         {
-          name: 'PolygonScan',
-          url: 'https://amoy.polygonscan.com',
+          name: 'ChilizScan',
+          url: 'https://scan.chiliz.com',
         },
       ],
     });
@@ -71,7 +72,7 @@ export async function POST(request: NextRequest) {
     // ETAPA 1: Deploy do contrato DropERC721
     const contractAddress = await deployERC721Contract({
       client,
-      chain: amoyChain,
+      chain: chzChain,
       account: backendAccount, // Sua wallet assina
       type: "DropERC721",
       params: {
@@ -90,7 +91,7 @@ export async function POST(request: NextRequest) {
     
     const contract = getContract({
       client,
-      chain: amoyChain,
+      chain: chzChain,
       address: contractAddress,
     });
 

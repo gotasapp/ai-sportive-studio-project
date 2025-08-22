@@ -121,7 +121,7 @@ export function PublicMint({ imageBlob, metadata }: PublicMintProps) {
               metadata: {
                 generationMode: 'public_mint',
                 quantity: quantity,
-                chainId: 80002,
+                chainId: 88888,
                 contractAddress: contract.address,
                 tokenId: 0 // Edition Drop usa token ID 0
               }
