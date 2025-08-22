@@ -68,21 +68,39 @@ export async function GET(request: NextRequest) {
       ];
     }
     
-    // Buscar coleções
-    const collections = await db.collection('collections')
-      .find(filter)
-      .sort({ 
-        // Ordenar por: tipo, status, data de criação
-        type: 1,
-        status: 1,
-        createdAt: -1 
-      })
-      .skip(skip)
-      .limit(limit)
-      .toArray();
+    // Buscar coleções - usar launchpad_collections para launchpad
+    let collections;
+    let total;
     
-    // Contar total para paginação
-    const total = await db.collection('collections').countDocuments(filter);
+    if (type === 'launchpad') {
+      // Para launchpad, buscar na collection launchpad_collections
+      collections = await db.collection('launchpad_collections')
+        .find(filter)
+        .sort({ 
+          status: 1,
+          launchDate: 1,
+          createdAt: -1 
+        })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      
+      total = await db.collection('launchpad_collections').countDocuments(filter);
+    } else {
+      // Para outros tipos, buscar na collection collections
+      collections = await db.collection('collections')
+        .find(filter)
+        .sort({ 
+          type: 1,
+          status: 1,
+          createdAt: -1 
+        })
+        .skip(skip)
+        .limit(limit)
+        .toArray();
+      
+      total = await db.collection('collections').countDocuments(filter);
+    }
     
     // Calcular metadados de paginação
     const totalPages = Math.ceil(total / limit);
@@ -90,8 +108,17 @@ export async function GET(request: NextRequest) {
     const hasPrevPage = page > 1;
     
     // Separar coleções por tipo e status
-    const launchpadCollections = collections.filter(c => c.type === 'launchpad');
-    const marketplaceCollections = collections.filter(c => c.type === 'marketplace');
+    let launchpadCollections, marketplaceCollections;
+    
+    if (type === 'launchpad') {
+      // Se estamos buscando launchpad, todas as coleções são do launchpad
+      launchpadCollections = collections;
+      marketplaceCollections = [];
+    } else {
+      // Para outros tipos, filtrar por tipo
+      launchpadCollections = collections.filter(c => c.type === 'launchpad');
+      marketplaceCollections = collections.filter(c => c.type === 'marketplace');
+    }
     
     // Estatísticas por status
     const statusStats = collections.reduce((acc, collection) => {
@@ -100,10 +127,12 @@ export async function GET(request: NextRequest) {
     }, {} as Record<string, number>);
     
     // Estatísticas por tipo
-    const typeStats = collections.reduce((acc, collection) => {
-      acc[collection.type] = (acc[collection.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const typeStats = type === 'launchpad' 
+      ? { launchpad: collections.length }
+      : collections.reduce((acc, collection) => {
+          acc[collection.type] = (acc[collection.type] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>);
     
     console.log(`✅ Admin found ${collections.length} collections (${launchpadCollections.length} launchpad, ${marketplaceCollections.length} marketplace)`);
     
