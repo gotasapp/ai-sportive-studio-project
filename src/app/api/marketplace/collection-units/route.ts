@@ -328,7 +328,7 @@ export async function GET(request: NextRequest) {
         console.log('💰 PREÇO DEBUG:', {
           tokenId,
           priceInWei: priceInWei?.toString(),
-          priceInMatic,
+          priceInChz,
           displayValue: listing.currencyValuePerToken?.displayValue
         });
       }
