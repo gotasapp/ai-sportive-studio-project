@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useActiveAccount, useActiveWalletChain, useSwitchActiveWalletChain } from 'thirdweb/react';
-import { polygonAmoy } from 'thirdweb/chains';
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,17 +23,9 @@ import { useRouter } from 'next/navigation'
 export default function MarketplaceDebug() {
   const account = useActiveAccount();
   const activeChain = useActiveWalletChain();
-  const switchChain = useSwitchActiveWalletChain();
   const router = useRouter()
 
-  const handleSwitchToAmoy = async () => {
-    try {
-      await switchChain(polygonAmoy);
-      console.log('✅ Network switched to Polygon Amoy');
-    } catch (error) {
-      console.error('❌ Error switching network:', error);
-    }
-  };
+  // Removed network switching - only CHZ Mainnet supported
 
   const chainId = activeChain?.id || 0;
   const marketplaceContract = MARKETPLACE_CONTRACTS[chainId];
@@ -671,21 +662,12 @@ export default function MarketplaceDebug() {
                 size="sm" 
                 variant="outline"
                 className="border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/5"
-                onClick={() => window.open('https://faucet.polygon.technology/', '_blank')}
+                onClick={() => window.open('https://faucet.chiliz.com/', '_blank')}
               >
-                MATIC Faucet
+                CHZ Faucet
               </Button>
 
-              {activeChain?.id !== polygonAmoy.id && account && (
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-[#FDFDFD]/20 text-[#FDFDFD] hover:bg-[#FDFDFD]/5"
-                  onClick={handleSwitchToAmoy}
-                >
-                  Switch to Amoy
-                </Button>
-              )}
+              {/* Network switching removed - only CHZ Mainnet supported */}
             </div>
           </div>
         </CardContent>

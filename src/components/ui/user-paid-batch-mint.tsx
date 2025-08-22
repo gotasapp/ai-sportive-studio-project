@@ -174,7 +174,7 @@ export function UserPaidBatchMint({
                 <span className="text-sm font-medium">Wrong Network</span>
               </div>
               <p className="text-red-300/80 text-xs mt-1">
-                Please switch to Polygon Amoy Testnet
+                Please switch to CHZ Mainnet
               </p>
             </div>
           )}
@@ -190,7 +190,7 @@ export function UserPaidBatchMint({
                  {quantity} copies minted successfully
                </p>
                <a
-                 href={`https://amoy.polygonscan.com/tx/${txHash}`}
+                 href={`https://scan.chiliz.com/tx/${txHash}`}
                  target="_blank"
                  rel="noopener noreferrer"
                  className="inline-flex items-center gap-1 text-green-400 hover:text-green-300 text-xs mt-2"
@@ -256,8 +256,8 @@ export function UserPaidBatchMint({
                      {/* Info Footer */}
            <div className="text-xs text-white/60 space-y-1">
              <p>• User pays gas fees directly (no backend wallet)</p>
-             <p>• Network: Polygon Amoy Testnet</p>
-             <p>• Contract: {process.env.NEXT_PUBLIC_EDITION_AMOY_TESTNET?.slice(0, 8)}... (Edition ERC1155)</p>
+             <p>• Network: CHZ Mainnet</p>
+             <p>• Contract: {process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ?.slice(0, 8)}... (Edition ERC1155)</p>
              <p className="text-orange-400">• Note: This mints {quantity} copies of the same edition</p>
            </div>
         </div>

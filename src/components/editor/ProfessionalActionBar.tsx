@@ -383,7 +383,7 @@ export default function ProfessionalActionBar({
         <div className="flex items-center justify-center gap-2 p-3 bg-red-500/10 border border-red-500/30 rounded-lg max-lg:flex-col max-lg:gap-1 max-lg:text-center">
           <AlertCircle className="w-4 h-4 text-red-400" />
           <span className="text-sm text-red-400 font-medium max-lg:text-xs">
-            Please switch to a supported network (CHZ, Polygon, Amoy)
+            Please switch to CHZ Mainnet
           </span>
         </div>
       )}

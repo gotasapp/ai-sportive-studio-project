@@ -13,7 +13,7 @@ export function ThirdwebProvider({ children }: { children: ReactNode }) {
 
 // Export configurations to use in components
 import { createThirdwebClient } from 'thirdweb';
-import { polygon, polygonAmoy } from 'thirdweb/chains';
+
 import { defineChain } from 'thirdweb/chains';
 import { createWallet, inAppWallet } from 'thirdweb/wallets';
 
@@ -49,7 +49,7 @@ export const chzMainnet = defineChain({
   },
 });
 
-export const supportedChains = [polygon, polygonAmoy, chzMainnet];
+export const supportedChains = [chzMainnet]; // Only CHZ Mainnet
 
   // Configure supported wallets
 export const wallets = [

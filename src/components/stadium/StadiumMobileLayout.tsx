@@ -150,7 +150,7 @@ export default function StadiumMobileLayout({
       {!isOnSupportedChain && isConnected && (
         <div className="w-full max-w-sm mb-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-xl flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-yellow-400" />
-          <span className="text-yellow-400 text-sm">Switch to a supported network</span>
+          <span className="text-yellow-400 text-sm">Switch to CHZ Mainnet</span>
         </div>
       )}
 
