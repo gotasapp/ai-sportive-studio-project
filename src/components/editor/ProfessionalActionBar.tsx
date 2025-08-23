@@ -28,8 +28,6 @@ interface ProfessionalActionBarProps {
   // Minting
   onMintGasless: () => void
   canMintGasless: boolean
-  onMintLegacy: () => void
-  canMintLegacy: boolean
   isMinting: boolean
   mintStatus: 'idle' | 'pending' | 'success' | 'error'
   mintSuccess: string | null
@@ -73,8 +71,6 @@ export default function ProfessionalActionBar({
   generationCost,
   onMintGasless,
   canMintGasless,
-  onMintLegacy,
-  canMintLegacy,
   isMinting,
   mintStatus,
   mintSuccess,
@@ -133,36 +129,6 @@ export default function ProfessionalActionBar({
 
   const renderMintButtons = () => (
     <div className="flex items-center gap-3 max-lg:flex-col max-lg:gap-2 max-lg:w-full">
-      {/* Legacy Mint - Para todos os usuários conectados */}
-      {canMintLegacy && (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                onClick={onMintLegacy}
-                disabled={!canMintLegacy || isMinting}
-                variant="outline"
-                className={cn(
-                  "h-12 px-6 text-base font-medium transition-all duration-200",
-                  "bg-blue-500/10 border-blue-500/30 text-blue-500 hover:bg-blue-500/20",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                  // Mobile responsiveness
-                  "max-lg:h-10 max-lg:px-4 max-lg:text-sm max-lg:w-full"
-                )}
-              >
-                <div className="flex items-center gap-2 max-lg:gap-1.5">
-                  <Wallet className="w-5 h-5 max-lg:w-4 max-lg:h-4" />
-                  <span>Legacy</span>
-                </div>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>Legacy mint using your wallet (requires gas)</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      )}
-
       {/* Gasless Mint - Somente para Admin */}
       {isUserAdmin && canMintGasless && (
         <TooltipProvider>

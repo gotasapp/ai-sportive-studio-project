@@ -34,14 +34,12 @@ export type JerseyMobileLayoutProps = {
   isConnected: boolean;
   isOnSupportedChain: boolean;
   isUserAdmin: boolean;
-  canMintLegacy: boolean;
   canMintGasless: boolean;
   isMinting: boolean;
   mintStatus: 'idle' | 'pending' | 'success' | 'error';
   mintSuccess: string | null;
   mintError: string | null;
   transactionHash: string | null;
-  onMintLegacy: () => void;
   onMintGasless: () => void;
   generationCost: number | null;
   availableTeams: string[];
@@ -77,14 +75,12 @@ export default function JerseyMobileLayout({
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,
   mintSuccess,
   mintError,
   transactionHash,
-  onMintLegacy,
   onMintGasless,
   generationCost,
   availableTeams,
