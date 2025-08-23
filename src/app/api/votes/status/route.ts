@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
 
     const client = await clientPromise;
     const db = client.db('chz-app-db');
-    const votes = db.collection('votes');
+    const votesCollection = db.collection('votes');
 
-    const doc = await votes.findOne({ itemId, itemType }, { projection: { votes: 1, votedBy: 1 } });
+    const doc = await votesCollection.findOne({ itemId, itemType }, { projection: { votes: 1, votedBy: 1 } });
     if (!doc) {
       console.log('❌ Vote record not found:', { itemId, itemType });
       return NextResponse.json({ 
@@ -34,14 +34,14 @@ export async function GET(request: NextRequest) {
 
     const votedBy: string[] = Array.isArray(doc.votedBy) ? doc.votedBy : [];
     const userVoted = votedBy.some((w) => String(w).toLowerCase() === walletAddress.toLowerCase());
-    const votes = typeof doc.votes === 'number' ? doc.votes : 0;
+    const voteCount = typeof doc.votes === 'number' ? doc.votes : 0;
 
-    console.log('✅ Vote status result:', { itemId, itemType, userVoted, votes, votedBy });
+    console.log('✅ Vote status result:', { itemId, itemType, userVoted, voteCount, votedBy });
 
     return NextResponse.json({ 
       success: true, 
       userVoted, 
-      votes 
+      votes: voteCount
     });
   } catch (error: any) {
     console.error('❌ Vote status error:', error);
