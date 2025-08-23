@@ -77,16 +77,16 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
         // 3) Fetch most voted collection in parallel (new logic) without blocking render
         let mostVotedCollection: any = null;
         try {
-          const r = await fetch('/api/collections/most-voted');
+          const r = await fetch('/api/votes/most-voted');
           if (r.ok) {
             const d = await r.json();
-            if (d.success && d.collection) {
-              mostVotedCollection = d.collection;
-              console.log('🏆 Most voted Collection found:', mostVotedCollection.name, 'with', mostVotedCollection.votes, 'votes');
+            if (d.success && d.data) {
+              mostVotedCollection = d.data;
+              console.log('🏆 Most voted item found:', mostVotedCollection.itemName, 'with', mostVotedCollection.votes, 'votes');
             }
           }
         } catch (err) {
-          console.log('⚠️ Could not fetch most voted Collection');
+          console.log('⚠️ Could not fetch most voted item');
         }
 
         // 4) Compose final list incrementally
@@ -106,10 +106,10 @@ export default function FeaturedCarousel({ marketplaceData = [], loading = false
         // If we found most voted collection, also add as extra highlight
         if (mostVotedCollection) {
           featured.push({
-            name: `🏆 ${mostVotedCollection.name}`,
-            collection: `Most Voted Collection • ${mostVotedCollection.votes} votes`,
-            imageUrl: mostVotedCollection.imageUrl || base[0]?.imageUrl || '',
-            category: mostVotedCollection.category || 'collection',
+            name: `🏆 ${mostVotedCollection.itemName}`,
+            collection: `Most Voted • ${mostVotedCollection.votes} votes`,
+            imageUrl: base[0]?.imageUrl || '/placeholder-nft.jpg', // TODO: buscar imagem do item
+            category: mostVotedCollection.itemType || 'collection',
             createdAt: new Date().toISOString()
           });
         }

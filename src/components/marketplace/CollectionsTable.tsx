@@ -360,35 +360,47 @@ export default function CollectionsTable({
     )
   }
 
-  const handleWatchlistToggle = async (collectionName: string) => {
+  const handleWatchlistToggle = async (collection: any) => {
     try {
-      const target = collections.find(c => c.name === collectionName);
-      const nextStarred = !target?.isWatchlisted;
+      const nextStarred = !collection?.isWatchlisted;
       const action = nextStarred ? 'upvote' : 'remove';
 
-      console.log('🔄 Toggling vote for:', collectionName, 'action:', action, 'wallet:', account?.address);
+      // Determinar o tipo de item baseado na coleção
+      const itemType = collection.type === 'launchpad' ? 'launchpad_collection' : 
+                      collection.isCustomCollection ? 'custom_collection' : 
+                      'individual_nft';
+      
+      const itemId = collection.id || collection.collectionId || collection.name;
+
+      console.log('🔄 Toggling vote for:', collection.name, 'action:', action, 'wallet:', account?.address, 'itemType:', itemType);
 
       // Update local visual state immediately (optimistic update)
       setCollections(prev => prev.map(c => 
-        c.name === collectionName 
+        c.name === collection.name 
           ? { ...c, isWatchlisted: nextStarred }
           : c
       ));
 
-      // Persist vote in backend (same logic as like, applied to collection)
-      const resp = await fetch('/api/collections/vote', {
+      // Persist vote in backend usando novo sistema
+      const resp = await fetch('/api/votes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ collectionName, action, walletAddress: account?.address || 'guest' })
+        body: JSON.stringify({ 
+          itemId, 
+          itemType, 
+          itemName: collection.name,
+          action, 
+          walletAddress: account?.address || 'guest' 
+        })
       });
       
       // Don't block UI if API fails, but log for debug
       if (!resp.ok) {
         const errorText = await resp.text();
-        console.warn('❌ Collections vote API failed', resp.status, errorText);
+        console.warn('❌ Votes API failed', resp.status, errorText);
         // Revert optimistic update on error
         setCollections(prev => prev.map(c => 
-          c.name === collectionName 
+          c.name === collection.name 
             ? { ...c, isWatchlisted: !nextStarred }
             : c
         ));
@@ -398,13 +410,13 @@ export default function CollectionsTable({
       }
 
       if (onToggleWatchlist) {
-        onToggleWatchlist(collectionName)
+        onToggleWatchlist(collection.name)
       }
     } catch (e) {
       console.error('Failed to toggle collection vote:', e);
       // Revert optimistic update on error
       setCollections(prev => prev.map(c => 
-        c.name === collectionName 
+        c.name === collection.name 
           ? { ...c, isWatchlisted: !nextStarred }
           : c
       ));
@@ -418,7 +430,14 @@ export default function CollectionsTable({
       console.log('🔄 Syncing user votes for wallet:', account.address, 'collections:', collections.length);
       try {
         const updated = await Promise.all(collections.map(async (c) => {
-          const res = await fetch(`/api/collections/vote/status?collectionName=${encodeURIComponent(c.name)}&walletAddress=${account.address}`);
+          // Determinar o tipo de item baseado na coleção
+          const itemType = c.type === 'launchpad' ? 'launchpad_collection' : 
+                          c.isCustomCollection ? 'custom_collection' : 
+                          'individual_nft';
+          
+          const itemId = c.id || c.collectionId || c.name;
+
+          const res = await fetch(`/api/votes/status?itemId=${encodeURIComponent(itemId)}&itemType=${encodeURIComponent(itemType)}&walletAddress=${account.address}`);
           if (!res.ok) {
             console.warn('❌ Vote status API failed for:', c.name, res.status);
             return c;
@@ -524,7 +543,7 @@ export default function CollectionsTable({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleWatchlistToggle(collection.name)}
+                      onClick={() => handleWatchlistToggle(collection)}
                       className="p-0 h-6 w-6 hover:bg-[#FDFDFD]/10"
                     >
                       <Star 
