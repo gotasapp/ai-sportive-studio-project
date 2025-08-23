@@ -35,26 +35,44 @@ export async function POST(request: NextRequest) {
           itemType: 'custom_collection' 
         });
 
-        if (!existing) {
-          await votesCollection.insertOne({
-            itemId: vote.name,
-            itemType: 'custom_collection',
-            itemName: vote.name,
-            votes: vote.votes || 0,
-            votedBy: vote.votedBy || [],
-            lastVoteUpdate: vote.lastVoteUpdate || new Date(),
-            createdAt: vote.createdAt || new Date()
-          });
+        // Usar upsert para evitar duplicatas
+        const result = await votesCollection.updateOne(
+          { itemId: vote.name, itemType: 'custom_collection' },
+          {
+            $set: {
+              itemName: vote.name,
+              votes: vote.votes || 0,
+              votedBy: vote.votedBy || [],
+              lastVoteUpdate: vote.lastVoteUpdate || new Date(),
+              createdAt: vote.createdAt || new Date()
+            }
+          },
+          { upsert: true }
+        );
+        
+        if (result.upsertedCount > 0 || result.modifiedCount > 0) {
           migratedCount++;
         }
       }
     }
 
-    // 3. Criar índices para performance
+    // 3. Criar índices para performance (com upsert para evitar erros)
     console.log('📊 Criando índices...');
-    await votesCollection.createIndex({ itemId: 1, itemType: 1 }, { unique: true });
-    await votesCollection.createIndex({ votes: -1, lastVoteUpdate: -1 });
-    await votesCollection.createIndex({ votedBy: 1 });
+    try {
+      await votesCollection.createIndex({ itemId: 1, itemType: 1 }, { unique: true });
+    } catch (error) {
+      console.log('⚠️ Índice único já existe, continuando...');
+    }
+    try {
+      await votesCollection.createIndex({ votes: -1, lastVoteUpdate: -1 });
+    } catch (error) {
+      console.log('⚠️ Índice de votos já existe, continuando...');
+    }
+    try {
+      await votesCollection.createIndex({ votedBy: 1 });
+    } catch (error) {
+      console.log('⚠️ Índice votedBy já existe, continuando...');
+    }
 
     // 4. Estatísticas
     const totalVotes = await votesCollection.countDocuments();
