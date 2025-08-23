@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 6. 📋 ORGANIZAR POR CONTRATO PARA FACILITAR A DELEÇÃO
-    const organizedByContract = {};
+    const organizedByContract: { [key: string]: { collections: any[]; mints: any[] } } = {};
     
     INCORRECT_METADATA_CONTRACTS.forEach(contract => {
       organizedByContract[contract] = {
