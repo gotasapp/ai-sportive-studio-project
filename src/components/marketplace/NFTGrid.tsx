@@ -88,13 +88,13 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
               hrefOverride={hrefOverride}
               
               // Collection stats from marketplace data
-              mintedUnits={item.mintedUnits || 0}
-              totalUnits={item.totalUnits || 0}
-              availableUnits={item.availableUnits || 0}
-              floorPrice={item.price || `0 ${NETWORK_CURRENCY}`}
-              uniqueOwners={item.uniqueOwners || 0}
-              listedCount={item.listedCount || 0}
-              auctionCount={item.auctionCount || 0}
+              mintedUnits={item.marketplace?.mintedUnits || item.mintedUnits || 0}
+              totalUnits={item.marketplace?.totalUnits || item.totalUnits || 0}
+              availableUnits={item.marketplace?.availableUnits || item.availableUnits || 0}
+              floorPrice={item.marketplace?.thirdwebData?.price ? `${item.marketplace.thirdwebData.price} ${NETWORK_CURRENCY}` : (item.price || `0 ${NETWORK_CURRENCY}`)}
+              uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
+              listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
+              auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
             />
           );
         }

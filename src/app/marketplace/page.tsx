@@ -344,53 +344,24 @@ export default function MarketplacePage() {
             <MarketplaceStatsLoading />
           ) : (
             <MarketplaceStats
-              totalListings={sourceItems?.filter(item => item.isListed && !item.isAuction)?.length || 0}
-              totalAuctions={sourceItems?.filter(item => item.isAuction)?.length || 0}
+              totalListings={sourceItems?.reduce((sum, item) => sum + (item.marketplace?.thirdwebListedCount || 0), 0) || 0}
+              totalAuctions={sourceItems?.reduce((sum, item) => sum + (item.marketplace?.thirdwebAuctionCount || 0), 0) || 0}
               totalVolume={(() => {
                 const totalVol = sourceItems?.reduce((sum, item) => {
-                  if (item.isListed || item.isAuction) {
-                    // Clean the price and convert correctly
-                    let priceStr = item.price?.replace(` ${NETWORK_CURRENCY}`, '').replace(NETWORK_CURRENCY, '').trim() || '0';
-                    
-                    // If the price contains 'e+' or is very large, it might be in Wei
-                    const price = parseFloat(priceStr);
-                    
-                    // If the price is greater than 1 million, it's probably in Wei - convert
-                    const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
-                    
-                    // Debug for suspicious numbers
-                    if (price > 1000000) {
-                      console.log('🔍 Large price detected:', {
-                        item: item.name,
-                        originalPrice: item.price,
-                        parsedPrice: price,
-                        convertedPrice: finalPrice
-                      });
-                    }
-                    
-                    return sum + (isNaN(finalPrice) ? 0 : finalPrice);
-                  }
-                  return sum;
+                  const price = item.marketplace?.thirdwebData?.price ? parseFloat(item.marketplace.thirdwebData.price) : 0;
+                  const units = item.marketplace?.mintedUnits || 1;
+                  return sum + (price * units);
                 }, 0) || 0;
                 return `${totalVol.toFixed(4)} ${NETWORK_CURRENCY}`;
               })()}
               floorPrice={(() => {
-                const listedItems = sourceItems?.filter(item => 
-                  (item.isListed || item.isAuction) && item.price && item.price !== 'Not for sale'
-                ) || [];
-                if (listedItems.length === 0) return `0 ${NETWORK_CURRENCY}`;
-                const prices = listedItems.map(item => {
-                  // Clean the price
-                  let priceStr = item.price?.replace(` ${NETWORK_CURRENCY}`, '').replace(NETWORK_CURRENCY, '').trim() || '0';
-                  const price = parseFloat(priceStr);
-                  
-                  // Convert from Wei if necessary
-                  const finalPrice = price > 1000000 ? price / Math.pow(10, 18) : price;
-                  
-                  return isNaN(finalPrice) ? 0 : finalPrice;
-                }).filter(price => price > 0);
-                if (prices.length === 0) return `0 ${NETWORK_CURRENCY}`;
-                const minPrice = Math.min(...prices);
+                const floorPrices = sourceItems?.map(item => {
+                  const price = item.marketplace?.thirdwebData?.price ? parseFloat(item.marketplace.thirdwebData.price) : 0;
+                  return price;
+                }).filter(price => price > 0) || [];
+                
+                if (floorPrices.length === 0) return `0 ${NETWORK_CURRENCY}`;
+                const minPrice = Math.min(...floorPrices);
                 return `${minPrice.toFixed(6)} ${NETWORK_CURRENCY}`;
               })()}
             />

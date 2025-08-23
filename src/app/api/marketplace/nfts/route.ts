@@ -475,6 +475,8 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
   }
 }
 
+
+
 /**
  * GET handler para buscar todos os NFTs mintados em formato compatível com Thirdweb Marketplace V3
  * Retorna tokenId, contractAddress, owner, metadata, etc.

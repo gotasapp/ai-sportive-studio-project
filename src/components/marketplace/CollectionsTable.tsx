@@ -179,9 +179,12 @@ export default function CollectionsTable({
         // 🎯 NEW STRATEGY: Transform each marketplace item into a table row
         const tableData: CollectionStat[] = marketplaceData.map((item, index) => {
           
-          // Calculate statistics based on item
-          const price = item.price ? parseFloat(item.price.toString().replace(/[^\d.-]/g, '')) || 0 : 0;
-          const floorPrice = price;
+          // 🎯 USAR DADOS REAIS DA THIRDWEB
+          const floorPrice = item.marketplace?.thirdwebData?.price ? parseFloat(item.marketplace.thirdwebData.price) : 0;
+          const volume24h = item.marketplace?.thirdwebData?.price ? parseFloat(item.marketplace.thirdwebData.price) * (item.marketplace?.mintedUnits || 1) : 0;
+          const sales24h = item.marketplace?.mintedUnits || 0;
+          const listingsCount = item.marketplace?.thirdwebListedCount || 0;
+          const auctionsCount = item.marketplace?.thirdwebAuctionCount || 0;
           
           // Supply based on item type
           let supply = 1; // Default for individual NFT
@@ -199,19 +202,16 @@ export default function CollectionsTable({
             owners = Math.max(1, Math.floor(supply * 0.7)); // Estimate
           }
           
-          // Sales based on listings
-          const sales24h = item.marketplace?.mintedUnits || (item.isListed ? 1 : 0);
-          
           return {
             rank: index + 1,
             name: item.name || `Item #${index + 1}`,
             imageUrl: item.imageUrl || item.image || '/fallback.svg',
             floorPrice,
-            floorPriceChange: 0, // Mocked
-            volume24h: floorPrice * sales24h,
-            volumeChange: 0, // Mocked
+            floorPriceChange: 0, // Mocked for now
+            volume24h,
+            volumeChange: 0, // Mocked for now
             sales24h,
-            salesChange: 0, // Mocked
+            salesChange: 0, // Mocked for now
             supply,
             owners,
             category: item.category || 'jersey',
