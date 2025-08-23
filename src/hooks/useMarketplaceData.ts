@@ -121,51 +121,58 @@ export function useMarketplaceData() {
         network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY'
       });
       
-      // 2. Process API data (launchpad collections)
-      const apiNFTs = apiResponse.success ? apiResponse.data.map((nft: any) => ({
-        id: nft._id || nft.tokenId,
-        tokenId: nft.tokenId,
-        name: nft.metadata?.name || nft.name || 'Untitled',
-        description: nft.metadata?.description || nft.description || '',
-        image: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
-        imageUrl: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
-        price: nft.marketplace?.isListed ? (nft.marketplace?.price || 'Listed') : 'Not for sale',
-        currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
-        owner: nft.owner || 'Unknown',
-        creator: nft.creator || nft.owner || 'Unknown',
-        category: nft.marketplace?.category || nft.category || nft.type || 'nft',
-        type: nft.type || 'ERC721',
-        attributes: nft.metadata?.attributes || [],
-        isListed: nft.marketplace?.isListed || false,
-        isVerified: nft.marketplace?.verified || true,
-        blockchain: {
-          verified: true,
-          tokenId: nft.tokenId,
-          owner: nft.owner,
-          contractType: nft.type || 'ERC721',
-        },
-        contractAddress: nft.contractAddress,
-        isAuction: nft.marketplace?.isAuction || false,
-        activeOffers: 0,
-        listingId: nft.marketplace?.thirdwebData?.listingId || nft.marketplace?.listingId,
-        auctionId: nft.marketplace?.thirdwebAuctionData?.auctionId,
-        currentBid: nft.marketplace?.thirdwebAuctionData?.minimumBidAmount,
-        endTime: nft.marketplace?.thirdwebAuctionData?.endTime ? new Date(Number(nft.marketplace.thirdwebAuctionData.endTime) * 1000) : undefined,
-        source: 'api',
-        
-        // 🎯 Collection identification
-        isCollection: nft.marketplace?.isCollection || false,
-        isCustomCollection: nft.marketplace?.isCustomCollection || false,
-        collectionId: nft.mongoId || nft._id,
-        
-        // 🎯 Collection stats for overview
-        mintedUnits: nft.marketplace?.mintedUnits || 0,
-        totalUnits: nft.marketplace?.totalUnits || 0,
-        availableUnits: nft.marketplace?.availableUnits || 0,
-        uniqueOwners: nft.stats?.uniqueOwners || 0,
-        listedCount: nft.marketplace?.thirdwebListedCount || 0,
-        auctionCount: nft.marketplace?.thirdwebAuctionCount || 0
-      })) : [];
+      // 2. Process API data (collections only – exclude minted NFTs)
+      const apiNFTs = apiResponse.success
+        ? apiResponse.data
+            .filter((nft: any) => {
+              const type = nft.type?.toLowerCase?.();
+              return type !== 'custom_collection_mint' && type !== 'launchpad_collections_mint';
+            })
+            .map((nft: any) => ({
+              id: nft._id || nft.tokenId,
+              tokenId: nft.tokenId,
+              name: nft.metadata?.name || nft.name || 'Untitled',
+              description: nft.metadata?.description || nft.description || '',
+              image: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
+              imageUrl: convertIpfsToHttp(nft.metadata?.image || nft.image || nft.imageUrl || ''),
+              price: nft.marketplace?.isListed ? (nft.marketplace?.price || 'Listed') : 'Not for sale',
+              currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
+              owner: nft.owner || 'Unknown',
+              creator: nft.creator || nft.owner || 'Unknown',
+              category: nft.marketplace?.category || nft.category || nft.type || 'nft',
+              type: nft.type || 'ERC721',
+              attributes: nft.metadata?.attributes || [],
+              isListed: nft.marketplace?.isListed || false,
+              isVerified: nft.marketplace?.verified || true,
+              blockchain: {
+                verified: true,
+                tokenId: nft.tokenId,
+                owner: nft.owner,
+                contractType: nft.type || 'ERC721',
+              },
+              contractAddress: nft.contractAddress,
+              isAuction: nft.marketplace?.isAuction || false,
+              activeOffers: 0,
+              listingId: nft.marketplace?.thirdwebData?.listingId || nft.marketplace?.listingId,
+              auctionId: nft.marketplace?.thirdwebAuctionData?.auctionId,
+              currentBid: nft.marketplace?.thirdwebAuctionData?.minimumBidAmount,
+              endTime: nft.marketplace?.thirdwebAuctionData?.endTime ? new Date(Number(nft.marketplace.thirdwebAuctionData.endTime) * 1000) : undefined,
+              source: 'api',
+              
+              // 🎯 Collection identification
+              isCollection: nft.marketplace?.isCollection || false,
+              isCustomCollection: nft.marketplace?.isCustomCollection || false,
+              collectionId: nft.mongoId || nft._id,
+
+              // 🎯 Collection stats for overview
+              mintedUnits: nft.marketplace?.mintedUnits || 0,
+              totalUnits: nft.marketplace?.totalUnits || 0,
+              availableUnits: nft.marketplace?.availableUnits || 0,
+              uniqueOwners: nft.stats?.uniqueOwners || 0,
+              listedCount: nft.marketplace?.thirdwebListedCount || 0,
+              auctionCount: nft.marketplace?.thirdwebAuctionCount || 0
+            }))
+        : [];
 
       // 3. Process Thirdweb data (normal NFTs)
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
