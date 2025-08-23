@@ -41,7 +41,7 @@ export function useAuctionData({
 
   // Função para buscar dados do leilão
   const fetchAuctionData = useCallback(async () => {
-    if (!auctionId || !isAuction) {
+    if (!auctionId || !isAuction || !chain) {
       return;
     }
 
