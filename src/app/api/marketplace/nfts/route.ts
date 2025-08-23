@@ -322,30 +322,31 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             thirdwebListedCount: thirdwebListedNFTs.length,
             thirdwebAuctionCount: thirdwebAuctionNFTs.length,
             
-            // Price from listing or auction (prioritize auction then Thirdweb)
-            price: thirdwebAuction ? 
-              `${thirdwebAuction.minimumBidAmount?.toString()} (Bid)` :
-              (thirdwebListing ? 
-                thirdwebListing.currencyValuePerToken?.displayValue || thirdwebListing.pricePerToken?.toString() :
-                (firstListedNFT?.marketplace?.priceFormatted || 'Not listed')),
+                         // Price from listing or auction (prioritize auction then Thirdweb) - CONVERTER DE WEI PARA CHZ
+             price: thirdwebAuction ? 
+               `${(Number(thirdwebAuction.minimumBidAmount) / Math.pow(10, 18)).toFixed(6)} (Bid)` :
+               (thirdwebListing ? 
+                 (thirdwebListing.currencyValuePerToken?.displayValue || 
+                  (Number(thirdwebListing.pricePerToken) / Math.pow(10, 18)).toFixed(6)) :
+                 (firstListedNFT?.marketplace?.priceFormatted || 'Not listed')),
             
-            // Additional Thirdweb data (listing)
-            thirdwebData: thirdwebListing ? {
-              listingId: thirdwebListing.id.toString(),
-              price: thirdwebListing.pricePerToken?.toString(),
-              currency: thirdwebListing.currencyValuePerToken?.symbol || 'MATIC',
-              endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
-            } : null,
+                         // Additional Thirdweb data (listing) - CONVERTER DE WEI PARA CHZ
+             thirdwebData: thirdwebListing ? {
+               listingId: thirdwebListing.id.toString(),
+               price: (Number(thirdwebListing.pricePerToken) / Math.pow(10, 18)).toFixed(6),
+               currency: thirdwebListing.currencyValuePerToken?.symbol || 'CHZ',
+               endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
+             } : null,
 
-            // Additional Thirdweb data (auction)
-            thirdwebAuctionData: thirdwebAuction ? {
-              auctionId: thirdwebAuction.auctionId?.toString(),
-              minimumBidAmount: thirdwebAuction.minimumBidAmount?.toString(),
-              buyoutBidAmount: thirdwebAuction.buyoutBidAmount?.toString(),
-              currency: thirdwebAuction.currencyContractAddress || 'MATIC',
-              endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
-              startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
-            } : null
+             // Additional Thirdweb data (auction) - CONVERTER DE WEI PARA CHZ
+             thirdwebAuctionData: thirdwebAuction ? {
+               auctionId: thirdwebAuction.auctionId?.toString(),
+               minimumBidAmount: (Number(thirdwebAuction.minimumBidAmount) / Math.pow(10, 18)).toFixed(6),
+               buyoutBidAmount: thirdwebAuction.buyoutBidAmount ? (Number(thirdwebAuction.buyoutBidAmount) / Math.pow(10, 18)).toFixed(6) : null,
+               currency: thirdwebAuction.currencyContractAddress || 'CHZ',
+               endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
+               startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
+             } : null
           };
         })(),
         
@@ -498,33 +499,34 @@ async function getLaunchpadNFTs(db: any, marketplaceData: { listingsByKey: Map<s
             totalUnits: collection.totalSupply || 0, // ✨ NOVO: Total de unidades disponíveis
             availableUnits: (collection.totalSupply || 0) - mintedNFTs.length, // ✨ NOVO: Unidades disponíveis
             
-            // 🎯 DADOS DE PREÇO DA THIRDWEB
-            price: thirdwebAuction ? 
-              `${thirdwebAuction.minimumBidAmount?.toString()} (Bid)` :
-              (thirdwebListing ? 
-                thirdwebListing.currencyValuePerToken?.displayValue || thirdwebListing.pricePerToken?.toString() :
-                'Not listed'),
+                         // 🎯 DADOS DE PREÇO DA THIRDWEB (CONVERTER DE WEI PARA CHZ)
+             price: thirdwebAuction ? 
+               `${(Number(thirdwebAuction.minimumBidAmount) / Math.pow(10, 18)).toFixed(6)} (Bid)` :
+               (thirdwebListing ? 
+                 (thirdwebListing.currencyValuePerToken?.displayValue || 
+                  (Number(thirdwebListing.pricePerToken) / Math.pow(10, 18)).toFixed(6)) :
+                 'Not listed'),
             
             // 🎯 CONTADORES DA THIRDWEB
             thirdwebListedCount: thirdwebListedNFTs.length,
             thirdwebAuctionCount: thirdwebAuctionNFTs.length,
             
-            // 🎯 DADOS ADICIONAIS DA THIRDWEB
-            thirdwebData: thirdwebListing ? {
-              listingId: thirdwebListing.id.toString(),
-              price: thirdwebListing.pricePerToken?.toString(),
-              currency: thirdwebListing.currencyValuePerToken?.symbol || 'CHZ',
-              endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
-            } : null,
+                         // 🎯 DADOS ADICIONAIS DA THIRDWEB (CONVERTER DE WEI PARA CHZ)
+             thirdwebData: thirdwebListing ? {
+               listingId: thirdwebListing.id.toString(),
+               price: (Number(thirdwebListing.pricePerToken) / Math.pow(10, 18)).toFixed(6),
+               currency: thirdwebListing.currencyValuePerToken?.symbol || 'CHZ',
+               endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
+             } : null,
 
-            thirdwebAuctionData: thirdwebAuction ? {
-              auctionId: thirdwebAuction.auctionId?.toString(),
-              minimumBidAmount: thirdwebAuction.minimumBidAmount?.toString(),
-              buyoutBidAmount: thirdwebAuction.buyoutBidAmount?.toString(),
-              currency: thirdwebAuction.currencyContractAddress || 'CHZ',
-              endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
-              startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
-            } : null
+             thirdwebAuctionData: thirdwebAuction ? {
+               auctionId: thirdwebAuction.auctionId?.toString(),
+               minimumBidAmount: (Number(thirdwebAuction.minimumBidAmount) / Math.pow(10, 18)).toFixed(6),
+               buyoutBidAmount: thirdwebAuction.buyoutBidAmount ? (Number(thirdwebAuction.buyoutBidAmount) / Math.pow(10, 18)).toFixed(6) : null,
+               currency: thirdwebAuction.currencyContractAddress || 'CHZ',
+               endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
+               startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
+             } : null
           };
         })(),
         
