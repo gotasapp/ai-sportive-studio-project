@@ -25,7 +25,6 @@ interface CollectionOverviewCardProps {
   totalUnits?: number;
   availableUnits?: number;
   floorPrice?: string;
-  totalVolume?: string;
   
   // Collection stats
   uniqueOwners?: number;
@@ -54,7 +53,6 @@ export default function CollectionOverviewCard({
   totalUnits = 0,
   availableUnits = 0,
   floorPrice = `0 ${NETWORK_CURRENCY}`,
-  totalVolume = `0 ${NETWORK_CURRENCY}`,
   uniqueOwners = 0,
   listedCount = 0,
   auctionCount = 0
@@ -151,12 +149,6 @@ export default function CollectionOverviewCard({
             <p className="text-xs text-[#FDFDFD]/70">Floor Price</p>
             <p className="text-sm font-medium text-[#FF0052]">
               {formatPriceSafe(floorPrice)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-[#FDFDFD]/70">Volume</p>
-            <p className="text-sm font-medium text-[#FDFDFD]">
-              {formatPriceSafe(totalVolume)}
             </p>
           </div>
         </div>

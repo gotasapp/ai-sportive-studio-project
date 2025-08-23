@@ -66,6 +66,15 @@ interface MarketplaceData {
 
 export function useMarketplaceData() {
   const chain = useActiveWalletChain();
+  
+  // 🎯 LOG INICIAL PARA CONFIRMAR QUE O HOOK ESTÁ SENDO CHAMADO
+  console.log('🚀 [HOOK] useMarketplaceData iniciado!', {
+    timestamp: new Date().toISOString(),
+    USE_CHZ_MAINNET,
+    ACTIVE_CHAIN_ID,
+    NETWORK_NAME
+  });
+  
   const [data, setData] = useState<MarketplaceData>({
     nfts: [],
     loading: true,

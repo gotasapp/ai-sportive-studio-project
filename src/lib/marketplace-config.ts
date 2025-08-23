@@ -3,7 +3,7 @@ import { defineChain } from 'thirdweb/chains';
 import { polygon, polygonAmoy } from 'thirdweb/chains';
 import { client } from './ThirdwebProvider';
 import { getAllSupportedContractsUnified, isAnyContractValid } from './dynamic-contract-registry';
-import { ACTIVE_NETWORK, ACTIVE_CHAIN_ID, ACTIVE_CONTRACTS, isChzNetwork } from './network-config';
+import { ACTIVE_NETWORK, ACTIVE_CHAIN_ID, ACTIVE_CONTRACTS, isChzNetwork, NETWORK_CURRENCY, USE_CHZ_MAINNET } from './network-config';
 
 // Define CHZ Chain
 export const chzMainnet = defineChain({
@@ -454,7 +454,10 @@ function preValidatePrice(input: bigint | string): { isValid: boolean; cleanValu
 /**
  * Format price for safe display
  */
-export function formatPriceSafe(priceWei: bigint | string, currency: string = 'MATIC'): string {
+export function formatPriceSafe(priceWei: bigint | string, currency?: string): string {
+  // 🎯 USAR MOEDA DA REDE ATIVA
+  const activeCurrency = currency || NETWORK_CURRENCY;
+  
   try {
     // Pre-validate input
     const preCheck = preValidatePrice(priceWei);
@@ -463,21 +466,21 @@ export function formatPriceSafe(priceWei: bigint | string, currency: string = 'M
       if (process.env.NODE_ENV !== 'production') {
         console.warn('⚠️ Invalid price input detected, using fallback:', priceWei);
       }
-      return `0.001 ${currency}`;
+      return `0.001 ${activeCurrency}`;
     }
     
     const validation = validateAndFixPrice(preCheck.cleanValue);
     
     if (validation.isValid) {
-      return `${validation.originalEther.toFixed(6)} ${currency}`;
+      return `${validation.originalEther.toFixed(6)} ${activeCurrency}`;
     } else {
-      return `${validation.correctedEther.toFixed(6)} ${currency} (fixed)`;
+      return `${validation.correctedEther.toFixed(6)} ${activeCurrency} (fixed)`;
     }
   } catch (error) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('❌ Error in formatPriceSafe, using emergency fallback:', error);
     }
-    return `0.001 ${currency}`;
+    return `0.001 ${activeCurrency}`;
   }
 }
 
@@ -489,14 +492,16 @@ export function debugPrice(priceWei: bigint | string, label: string = 'Price'): 
     const wei = typeof priceWei === 'string' ? BigInt(priceWei) : priceWei;
     const ether = Number(wei) / 1e18;
     const isValid = isValidPrice(wei);
+    const activeCurrency = NETWORK_CURRENCY;
     
     console.log(`🔍 ${label} Debug:`, {
       wei: wei.toString(),
       ether: ether,
-      formatted: `${ether.toFixed(6)} MATIC`,
+      formatted: `${ether.toFixed(6)} ${activeCurrency}`,
       isValid,
       isAstronomical: ether > 1000000,
-      isTooSmall: ether < 0.000001
+      isTooSmall: ether < 0.000001,
+      network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY'
     });
   } catch (error) {
     console.error(`❌ Error debugging ${label}:`, error);

@@ -47,9 +47,9 @@ export const ACTIVE_NETWORK = USE_CHZ_MAINNET ? {
   
   // Amoy Contracts (working)
   contracts: {
-    marketplace: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d',
+    marketplace: process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT!,
     nftDrop: process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_POLYGON_TESTNET || '0xfF973a4aFc5A96DEc81366461A461824c4f80254',
-    launchpad: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS || '0xfB233A36196a2a4513DB6b7d70C90ecaD0Eec639',
+    launchpad: process.env.NEXT_PUBLIC_LAUNCHPAD_CONTRACT_ADDRESS!,
   },
   
   // Amoy specific configurations
