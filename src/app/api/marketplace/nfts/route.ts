@@ -227,13 +227,37 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
           const thirdwebListedNFTs = mintedNFTs.filter((nft: any) => {
             if (!nft.tokenId || !nft.contractAddress) return false;
             const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
-            return marketplaceData.listingsByKey.has(key);
+            const hasListing = marketplaceData.listingsByKey.has(key);
+            
+            // 🔍 DEBUG: Log para verificar se a NFT está na Thirdweb
+            if (hasListing) {
+              console.log(`🔍 [DEBUG] NFT encontrada na Thirdweb (listing):`, {
+                collection: collection.name,
+                tokenId: nft.tokenId,
+                contractAddress: nft.contractAddress,
+                key
+              });
+            }
+            
+            return hasListing;
           });
 
           const thirdwebAuctionNFTs = mintedNFTs.filter((nft: any) => {
             if (!nft.tokenId || !nft.contractAddress) return false;
             const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
-            return marketplaceData.auctionsByKey.has(key);
+            const hasAuction = marketplaceData.auctionsByKey.has(key);
+            
+            // 🔍 DEBUG: Log para verificar se a NFT está na Thirdweb
+            if (hasAuction) {
+              console.log(`🔍 [DEBUG] NFT encontrada na Thirdweb (auction):`, {
+                collection: collection.name,
+                tokenId: nft.tokenId,
+                contractAddress: nft.contractAddress,
+                key
+              });
+            }
+            
+            return hasAuction;
           });
           
           // 3. Combine results (if ANY indicates listing/auction, it's active)
@@ -248,8 +272,20 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
             thirdwebListed: thirdwebListedNFTs.length,
             thirdwebAuctions: thirdwebAuctionNFTs.length,
             finalListed: isListedFinal,
-            finalAuction: isAuctionFinal
+            finalAuction: isAuctionFinal,
+            contractAddress: collection.contractAddress,
+            totalMintedNFTs: mintedNFTs.length
           });
+          
+          // 🔍 DEBUG: Log detalhado para NFTs mintadas
+          if (mintedNFTs.length > 0) {
+            console.log(`🔍 [DEBUG] NFTs mintadas para ${collection.name}:`, mintedNFTs.slice(0, 3).map((nft: any) => ({
+              tokenId: nft.tokenId,
+              contractAddress: nft.contractAddress,
+              isListed: nft.marketplace?.isListed,
+              price: nft.marketplace?.price
+            })));
+          }
           
           // 4. Marketplace data based on real verification
           const allListedNFTs = [...mongoListedNFTs, ...thirdwebListedNFTs];

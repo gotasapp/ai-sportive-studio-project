@@ -135,6 +135,17 @@ export function useMarketplaceData() {
           thirdwebAuctions: thirdwebData.auctions.length,
           network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY'
         });
+        
+        // 🔍 DEBUG: Log para verificar dados da API
+        if (apiResponse.success && apiResponse.data.length > 0) {
+          console.log('🔍 [DEBUG] Primeiros 3 itens da API:', apiResponse.data.slice(0, 3).map((item: any) => ({
+            name: item.name,
+            type: item.type,
+            marketplace: item.marketplace,
+            price: item.price,
+            isListed: item.marketplace?.isListed
+          })));
+        }
       
              // 3. Process API data (collections only – exclude minted NFTs)
        const apiNFTs = apiResponse.success
@@ -204,7 +215,17 @@ export function useMarketplaceData() {
               availableUnits: nft.marketplace?.availableUnits || 0,
               uniqueOwners: nft.stats?.uniqueOwners || 0,
               listedCount: nft.marketplace?.thirdwebListedCount || 0,
-              auctionCount: nft.marketplace?.thirdwebAuctionCount || 0
+              auctionCount: nft.marketplace?.thirdwebAuctionCount || 0,
+              
+              // 🎯 Marketplace data from Thirdweb
+              marketplace: {
+                thirdwebListedCount: nft.marketplace?.thirdwebListedCount || 0,
+                thirdwebAuctionCount: nft.marketplace?.thirdwebAuctionCount || 0,
+                thirdwebData: nft.marketplace?.thirdwebData ? {
+                  price: nft.marketplace.thirdwebData.price
+                } : undefined,
+                mintedUnits: nft.marketplace?.mintedUnits || 0
+              }
                          }))
          : [];
 
