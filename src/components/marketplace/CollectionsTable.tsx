@@ -361,8 +361,9 @@ export default function CollectionsTable({
   }
 
   const handleWatchlistToggle = async (collection: any) => {
+    const nextStarred = !collection?.isWatchlisted;
+    
     try {
-      const nextStarred = !collection?.isWatchlisted;
       const action = nextStarred ? 'upvote' : 'remove';
 
       // Determinar o tipo de item baseado na coleção
