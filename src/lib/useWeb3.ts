@@ -26,7 +26,7 @@ export function useWeb3() {
   const chzMainnet = defineChain(88888);
   
   // Simplified configuration - use variables configured directly in Vercel
-  const activeChain = amoy; // Polygon Amoy testnet
+  const activeChain = chzMainnet; // Chiliz Chain mainnet
     
   // Use variable configured directly in Vercel for NFT Collection (ERC721)
   const contractAddress = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS || "0xfF973a4aFc5A96DEc81366461A461824c4f80254";

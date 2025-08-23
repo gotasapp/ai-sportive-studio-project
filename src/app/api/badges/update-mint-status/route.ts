@@ -19,7 +19,7 @@ export async function POST(request: Request) {
       tokenId, 
       queueId, 
       status = 'minted',
-      chainId = 80002,
+      chainId = 88888,
       blockNumber,
       userWallet
     } = body;
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
       isMinted: true,
       blockchain: {
         chainId: parseInt(chainId),
-        network: chainId === 80002 ? 'Polygon Amoy' : 'CHZ Chain',
+        network: chainId === 88888 ? 'CHZ Chain' : 'Polygon Amoy',
         transactionHash,
         tokenId: tokenId || null,
         blockNumber: blockNumber || null,
