@@ -248,26 +248,31 @@ async function fetchUserLegacyNFTs(userAddress: string) {
     for (const collectionName of collections) {
       const collection = db.collection(collectionName);
       
-      // Buscar NFTs criadas pelo usuário que foram mintadas
-      const nfts = await collection
-        .find({
-          'creator.wallet': userAddress,
-          status: 'Approved',
-          $or: [
-            { transactionHash: { $exists: true, $nin: [null, ''] } },
-            { isMinted: true },
-            { mintStatus: 'minted' },
-            { mintStatus: 'success' }
-          ],
-          // Excluir NFTs de custom collections para evitar duplicatas
-          $nor: [
-            { 'metadata.image': { $regex: 'collection_' } },
-            { name: { $regex: 'Collection #' } }
-          ]
-        })
-        .sort({ createdAt: -1 })
-        .limit(50)
-        .toArray();
+             // Buscar NFTs criadas pelo usuário que foram mintadas
+       const nfts = await collection
+         .find({
+           'creator.wallet': userAddress,
+           status: 'Approved',
+           $or: [
+             { transactionHash: { $exists: true, $nin: [null, ''] } },
+             { isMinted: true },
+             { mintStatus: 'minted' },
+             { mintStatus: 'success' }
+           ],
+           // 🎯 EXCLUIR NFTs de custom collections para evitar duplicatas
+           $nor: [
+             { 'metadata.image': { $regex: 'collection_' } },
+             { name: { $regex: 'Collection #' } },
+             { name: { $regex: 'Custom Collection' } },
+             { name: { $regex: 'Batch Mint' } },
+             // Excluir NFTs que fazem parte de coleções
+             { 'metadata.attributes': { $elemMatch: { 'trait_type': 'collection' } } },
+             { 'metadata.attributes': { $elemMatch: { 'trait_type': 'batch' } } }
+           ]
+         })
+         .sort({ createdAt: -1 })
+         .limit(50)
+         .toArray();
       
       for (const nft of nfts) {
         userNFTs.push({
@@ -698,47 +703,62 @@ export async function GET(request: Request) {
         })
       ]);
       
-      // Combinar e deduplificar NFTs de todas as fontes
-      const existingIds = new Set();
-      const allNFTs = [];
-      
-      // Adicionar NFTs legacy (MongoDB) primeiro
-      for (const nft of legacyData.nfts) {
-        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
-        if (!existingIds.has(id)) {
-          existingIds.add(id);
-          allNFTs.push(nft);
-        }
-      }
-      
-      // Adicionar custom collections
-      for (const nft of customData.nfts) {
-        const id = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
-        if (!existingIds.has(id)) {
-          existingIds.add(id);
-          allNFTs.push(nft);
-        }
-      }
-      
-      // Adicionar marketplace collections (custom e launchpad)
-      for (const nft of marketplaceCollectionsData.nfts) {
-        const id = nft.id || `marketplace_${nft.collectionId}`;
-        if (!existingIds.has(id)) {
-          existingIds.add(id);
-          allNFTs.push(nft);
-        }
-      }
-      
-      // Adicionar NFTs do blockchain que não estão no MongoDB
-      for (const nft of blockchainData.nfts) {
-        const id = nft.id || `blockchain_${nft.tokenId}`;
-        if (!existingIds.has(id)) {
-          existingIds.add(id);
-          // Criar novo objeto com propriedade source
-          const nftWithSource = { ...nft, source: 'blockchain_only' };
-          allNFTs.push(nftWithSource);
-        }
-      }
+             // Combinar e deduplificar NFTs de todas as fontes
+       const existingIds = new Set();
+       const existingTokenIds = new Set(); // Para evitar duplicatas por tokenId
+       const allNFTs = [];
+       
+       // 🎯 FUNÇÃO DE DEDUPLICAÇÃO MELHORADA
+       function addNFTIfNotDuplicate(nft: any, source: string) {
+         // Criar IDs únicos baseados em diferentes critérios
+         const id1 = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
+         const id2 = `${nft.contractAddress}_${nft.tokenId}`;
+         const id3 = nft.tokenId ? `token_${nft.tokenId}` : null;
+         
+         // Verificar se já existe por qualquer critério
+         const isDuplicate = existingIds.has(id1) || 
+                           existingIds.has(id2) || 
+                           (id3 && existingTokenIds.has(id3)) ||
+                           // Verificar se é a mesma NFT por nome e categoria
+                           allNFTs.some(existing => 
+                             existing.name === nft.name && 
+                             existing.category === nft.category &&
+                             existing.contractAddress === nft.contractAddress
+                           );
+         
+         if (!isDuplicate) {
+           existingIds.add(id1);
+           existingIds.add(id2);
+           if (id3) existingTokenIds.add(id3);
+           
+           // Adicionar source para debug
+           const nftWithSource = { ...nft, source };
+           allNFTs.push(nftWithSource);
+           console.log(`✅ Added NFT: ${nft.name} (${source})`);
+         } else {
+           console.log(`⚠️ Skipped duplicate: ${nft.name} (${source})`);
+         }
+       }
+       
+       // Adicionar NFTs legacy (MongoDB) primeiro
+       for (const nft of legacyData.nfts) {
+         addNFTIfNotDuplicate(nft, 'legacy');
+       }
+       
+       // Adicionar custom collections
+       for (const nft of customData.nfts) {
+         addNFTIfNotDuplicate(nft, 'custom');
+       }
+       
+       // Adicionar marketplace collections (custom e launchpad)
+       for (const nft of marketplaceCollectionsData.nfts) {
+         addNFTIfNotDuplicate(nft, 'marketplace');
+       }
+       
+       // Adicionar NFTs do blockchain que não estão no MongoDB
+       for (const nft of blockchainData.nfts) {
+         addNFTIfNotDuplicate(nft, 'blockchain');
+       }
       
       const freshData = {
         userAddress,
