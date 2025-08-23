@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useActiveAccount, useChain } from 'thirdweb/react';
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { NETWORK_CURRENCY, USE_CHZ_MAINNET } from '@/lib/network-config';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
 
@@ -29,7 +29,7 @@ export function useAuctionData({
   refreshInterval = 30
 }: UseAuctionDataProps): AuctionData {
   const account = useActiveAccount();
-  const chain = useChain();
+  const chain = useActiveWalletChain();
   
   const [auctionData, setAuctionData] = useState<AuctionDataState>({
     currentBid: initialBid,
