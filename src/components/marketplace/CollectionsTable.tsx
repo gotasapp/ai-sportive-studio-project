@@ -366,15 +366,22 @@ export default function CollectionsTable({
       const nextStarred = !target?.isWatchlisted;
       const action = nextStarred ? 'upvote' : 'remove';
 
+      console.log('🔄 Toggling vote for:', collectionName, 'action:', action, 'wallet:', account?.address);
+
       // Persist vote in backend (same logic as like, applied to collection)
       const resp = await fetch('/api/collections/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ collectionName, action, walletAddress: account?.address || 'guest' })
       });
+      
       // Don't block UI if API fails, but log for debug
       if (!resp.ok) {
-        console.warn('Collections vote API failed', resp.status, await resp.text());
+        const errorText = await resp.text();
+        console.warn('❌ Collections vote API failed', resp.status, errorText);
+      } else {
+        const result = await resp.json();
+        console.log('✅ Vote API response:', result);
       }
 
       if (onToggleWatchlist) {
@@ -395,11 +402,16 @@ export default function CollectionsTable({
   useEffect(() => {
     const syncUserVotes = async () => {
       if (!account?.address || collections.length === 0) return;
+      console.log('🔄 Syncing user votes for wallet:', account.address, 'collections:', collections.length);
       try {
         const updated = await Promise.all(collections.map(async (c) => {
           const res = await fetch(`/api/collections/vote/status?collectionName=${encodeURIComponent(c.name)}&walletAddress=${account.address}`);
-          if (!res.ok) return c;
+          if (!res.ok) {
+            console.warn('❌ Vote status API failed for:', c.name, res.status);
+            return c;
+          }
           const data = await res.json();
+          console.log('✅ Vote status for', c.name, ':', data);
           return { ...c, isWatchlisted: !!data.userVoted };
         }));
         setCollections(updated);
@@ -408,7 +420,7 @@ export default function CollectionsTable({
       }
     };
     syncUserVotes();
-  }, [account?.address]);
+  }, [account?.address, collections.length]);
 
   if (loading) {
     return (

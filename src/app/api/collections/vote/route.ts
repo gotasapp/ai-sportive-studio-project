@@ -6,6 +6,8 @@ export async function POST(request: NextRequest) {
   try {
     const { collectionName, action, walletAddress } = await request.json();
 
+    console.log('🗳️ Vote request:', { collectionName, action, walletAddress });
+
     if (!collectionName || !action || !walletAddress) {
       return NextResponse.json({ success: false, error: 'Missing parameters' }, { status: 400 });
     }
@@ -27,6 +29,7 @@ export async function POST(request: NextRequest) {
 
       const updated = await collections.findOne({ name: collectionName });
       const userVoted = !!updated?.votedBy?.includes?.(walletAddress);
+      console.log('✅ Upvote result:', { collectionName, votes: updated?.votes, userVoted, result });
       if (result.matchedCount > 0 || result.upsertedCount > 0) {
         return NextResponse.json({ success: true, message: 'Vote added!', votes: updated?.votes || 1, userVoted });
       }
@@ -43,6 +46,7 @@ export async function POST(request: NextRequest) {
 
       const updated = await collections.findOne({ name: collectionName });
       const userVoted = !!updated?.votedBy?.includes?.(walletAddress);
+      console.log('❌ Remove vote result:', { collectionName, votes: updated?.votes, userVoted, result });
       if (result.matchedCount > 0) {
         return NextResponse.json({ success: true, message: 'Vote removed!', votes: updated?.votes || 0, userVoted });
       }

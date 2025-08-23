@@ -8,6 +8,8 @@ export async function GET(request: NextRequest) {
     const collectionName = searchParams.get('collectionName');
     const walletAddress = searchParams.get('walletAddress');
 
+    console.log('🔍 Vote status request:', { collectionName, walletAddress });
+
     if (!collectionName || !walletAddress) {
       return NextResponse.json({ success: false, error: 'collectionName and walletAddress are required' }, { status: 400 });
     }
@@ -18,12 +20,15 @@ export async function GET(request: NextRequest) {
 
     const doc = await collections.findOne({ name: collectionName }, { projection: { votes: 1, votedBy: 1 } });
     if (!doc) {
+      console.log('❌ Collection not found in DB:', collectionName);
       return NextResponse.json({ success: false, error: 'Collection not found' }, { status: 404 });
     }
 
     const votedBy: string[] = Array.isArray(doc.votedBy) ? doc.votedBy : [];
     const userVoted = votedBy.some((w) => String(w).toLowerCase() === walletAddress.toLowerCase());
     const votes = typeof doc.votes === 'number' ? doc.votes : 0;
+
+    console.log('✅ Vote status result:', { collectionName, userVoted, votes, votedBy });
 
     return NextResponse.json({ success: true, userVoted, votes });
   } catch (error: any) {
