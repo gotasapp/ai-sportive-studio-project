@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useActiveAccount } from 'thirdweb/react';
+import { useActiveAccount, useChain } from 'thirdweb/react';
 import { NETWORK_CURRENCY, USE_CHZ_MAINNET } from '@/lib/network-config';
+import { MarketplaceService } from '@/lib/services/marketplace-service';
 
 interface UseAuctionDataProps {
   auctionId?: string;
@@ -28,6 +29,7 @@ export function useAuctionData({
   refreshInterval = 30
 }: UseAuctionDataProps): AuctionData {
   const account = useActiveAccount();
+  const chain = useChain();
   
   const [auctionData, setAuctionData] = useState<AuctionDataState>({
     currentBid: initialBid,
@@ -56,7 +58,6 @@ export function useAuctionData({
       
       setAuctionData({
         currentBid: winningBid.hasValidBid ? winningBid.bidAmountFormatted : initialBid,
-        currentBidder: winningBid.bidder,
         hasValidBid: winningBid.hasValidBid,
         isLoading: false,
         error: null,
