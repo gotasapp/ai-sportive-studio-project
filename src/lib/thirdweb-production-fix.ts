@@ -9,6 +9,7 @@ import { createThirdwebClient, getContract } from 'thirdweb';
 import { polygonAmoy } from 'thirdweb/chains';
 import { getNFTs } from 'thirdweb/extensions/erc721';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
+import { ACTIVE_CHAIN_ID, ACTIVE_CONTRACTS, USE_CHZ_MAINNET } from './network-config';
 
 // Cliente Thirdweb otimizado para produção
 const client = createThirdwebClient({
@@ -16,8 +17,28 @@ const client = createThirdwebClient({
   secretKey: process.env.THIRDWEB_SECRET_KEY,
 });
 
-const NFT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS!;
-const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+// 🎯 USAR CONTRATOS DA REDE ATIVA (CHZ ou AMOY)
+const NFT_CONTRACT_ADDRESS = USE_CHZ_MAINNET 
+  ? process.env.NEXT_PUBLIC_NFT_DROP_CONTRACT_CHZ!
+  : process.env.NEXT_PUBLIC_NFT_COLLECTION_CONTRACT_ADDRESS!;
+
+const MARKETPLACE_CONTRACT_ADDRESS = USE_CHZ_MAINNET
+  ? process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ!
+  : (process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d');
+
+// 🎯 CONFIGURAÇÃO DA REDE CHZ
+const chzChain = {
+  id: 88888,
+  name: 'Chiliz Chain',
+  nativeCurrency: { name: 'Chiliz', symbol: 'CHZ', decimals: 18 },
+  rpc: 'https://rpc.ankr.com/chiliz',
+  blockExplorers: [
+    {
+      name: 'ChilizScan',
+      url: 'https://scan.chiliz.com',
+    },
+  ],
+};
 
 interface ThirdwebDataCache {
   nfts: any[];
@@ -43,6 +64,8 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
   try {
     console.log('🎯 Fetching fresh Thirdweb data...');
     console.log('🔧 Environment:', process.env.NODE_ENV);
+    console.log('🔧 Network:', USE_CHZ_MAINNET ? 'CHZ Mainnet' : 'Polygon Amoy');
+    console.log('🔧 Chain ID:', ACTIVE_CHAIN_ID);
     console.log('🔧 Client ID:', process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID ? 'configured' : 'missing');
     console.log('🔧 NFT Contract:', NFT_CONTRACT_ADDRESS);
     console.log('🔧 Marketplace Contract:', MARKETPLACE_CONTRACT_ADDRESS);
@@ -52,15 +75,18 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
       setTimeout(() => reject(new Error('Thirdweb timeout in production')), 8000); // 8s timeout
     });
 
+    // 🎯 USAR REDE CORRETA (CHZ ou AMOY)
+    const activeChain = USE_CHZ_MAINNET ? chzChain : polygonAmoy;
+
     const nftContract = getContract({
       client,
-      chain: polygonAmoy,
+      chain: activeChain,
       address: NFT_CONTRACT_ADDRESS,
     });
 
     const marketplaceContract = getContract({
       client,
-      chain: polygonAmoy,
+      chain: activeChain,
       address: MARKETPLACE_CONTRACT_ADDRESS,
     });
 
@@ -83,6 +109,7 @@ export async function getThirdwebDataWithFallback(): Promise<ThirdwebDataCache> 
     };
 
     console.log('🚀 THIRDWEB SUCCESS! Real blockchain data:', {
+      network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY',
       nfts: nfts.length,
       listings: listings.length,
       auctions: auctions.length,
