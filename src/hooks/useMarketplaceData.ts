@@ -115,24 +115,16 @@ export function useMarketplaceData() {
          getThirdwebDataWithFallback()
        ]);
 
-              // 2. Fetch individual minted NFTs from specific APIs
-       const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.allSettled([
-         fetch('/api/jerseys/minted?_t=' + Date.now()).then(res => res.json()),
-         fetch('/api/stadiums/minted?_t=' + Date.now()).then(res => res.json()),
-         fetch('/api/badges/minted?_t=' + Date.now()).then(res => res.json())
-       ]);
-
-       // Initialize individual minted NFTs array
-       const individualMintedNFTs: any[] = [];
+                             // 2. Fetch individual minted NFTs from specific APIs (REMOVIDO)
+        // ❌ Não buscamos mais NFTs individuais pois elas duplicam as coleções custom
        
-       console.log('✅ [V2] Data sources loaded:', {
-         apiItems: apiResponse.success ? apiResponse.data.length : 0,
-         individualMintedNFTs: individualMintedNFTs.length,
-         thirdwebNFTs: thirdwebData.nfts.length,
-         thirdwebListings: thirdwebData.listings.length,
-         thirdwebAuctions: thirdwebData.auctions.length,
-         network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY'
-       });
+               console.log('✅ [V2] Data sources loaded:', {
+          apiItems: apiResponse.success ? apiResponse.data.length : 0,
+          thirdwebNFTs: thirdwebData.nfts.length,
+          thirdwebListings: thirdwebData.listings.length,
+          thirdwebAuctions: thirdwebData.auctions.length,
+          network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY'
+        });
       
              // 3. Process API data (collections only – exclude minted NFTs)
        const apiNFTs = apiResponse.success
@@ -206,106 +198,8 @@ export function useMarketplaceData() {
                          }))
          : [];
 
-       // 4. Process individual minted NFTs
-       
-       // Process jerseys
-       if (jerseysResponse.status === 'fulfilled' && jerseysResponse.value.success) {
-         const jerseys = jerseysResponse.value.data.map((jersey: any) => ({
-           id: jersey._id || jersey.tokenId,
-           tokenId: jersey.tokenId,
-           name: jersey.name || 'Untitled Jersey',
-           description: jersey.description || '',
-           image: convertIpfsToHttp(jersey.imageUrl || jersey.image || ''),
-           imageUrl: convertIpfsToHttp(jersey.imageUrl || jersey.image || ''),
-           price: 'Not for sale',
-           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
-           owner: jersey.owner || jersey.creator?.wallet || 'Unknown',
-           creator: jersey.creator?.name || jersey.creator?.wallet || 'Unknown',
-           category: 'jersey',
-           type: 'ERC721',
-           attributes: jersey.attributes || [],
-           isListed: false,
-           isVerified: true,
-           blockchain: {
-             verified: true,
-             tokenId: jersey.tokenId,
-             owner: jersey.owner || jersey.creator?.wallet || 'Unknown',
-             contractType: 'ERC721',
-           },
-           contractAddress: jersey.contractAddress || '',
-           isAuction: false,
-           activeOffers: 0,
-           source: 'api',
-           isIndividualMinted: true // ✅ Flag para identificar NFTs individuais mintadas
-         }));
-         individualMintedNFTs.push(...jerseys);
-       }
-
-       // Process stadiums
-       if (stadiumsResponse.status === 'fulfilled' && stadiumsResponse.value.success) {
-         const stadiums = stadiumsResponse.value.data.map((stadium: any) => ({
-           id: stadium._id || stadium.tokenId,
-           tokenId: stadium.tokenId,
-           name: stadium.name || 'Untitled Stadium',
-           description: stadium.description || '',
-           image: convertIpfsToHttp(stadium.imageUrl || stadium.image || ''),
-           imageUrl: convertIpfsToHttp(stadium.imageUrl || stadium.image || ''),
-           price: 'Not for sale',
-           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
-           owner: stadium.owner || stadium.creator?.wallet || 'Unknown',
-           creator: stadium.creator?.name || stadium.creator?.wallet || 'Unknown',
-           category: 'stadium',
-           type: 'ERC721',
-           attributes: stadium.attributes || [],
-           isListed: false,
-           isVerified: true,
-           blockchain: {
-             verified: true,
-             tokenId: stadium.tokenId,
-             owner: stadium.owner || stadium.creator?.wallet || 'Unknown',
-             contractType: 'ERC721',
-           },
-           contractAddress: stadium.contractAddress || '',
-           isAuction: false,
-           activeOffers: 0,
-           source: 'api',
-           isIndividualMinted: true // ✅ Flag para identificar NFTs individuais mintadas
-         }));
-         individualMintedNFTs.push(...stadiums);
-       }
-
-       // Process badges
-       if (badgesResponse.status === 'fulfilled' && badgesResponse.value.success) {
-         const badges = badgesResponse.value.data.map((badge: any) => ({
-           id: badge._id || badge.tokenId,
-           tokenId: badge.tokenId,
-           name: badge.name || 'Untitled Badge',
-           description: badge.description || '',
-           image: convertIpfsToHttp(badge.imageUrl || badge.image || ''),
-           imageUrl: convertIpfsToHttp(badge.imageUrl || badge.image || ''),
-           price: 'Not for sale',
-           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
-           owner: badge.owner || badge.creator?.wallet || 'Unknown',
-           creator: badge.creator?.name || badge.creator?.wallet || 'Unknown',
-           category: 'badge',
-           type: 'ERC721',
-           attributes: badge.attributes || [],
-           isListed: false,
-           isVerified: true,
-           blockchain: {
-             verified: true,
-             tokenId: badge.tokenId,
-             owner: badge.owner || badge.creator?.wallet || 'Unknown',
-             contractType: 'ERC721',
-           },
-           contractAddress: badge.contractAddress || '',
-           isAuction: false,
-           activeOffers: 0,
-           source: 'api',
-           isIndividualMinted: true // ✅ Flag para identificar NFTs individuais mintadas
-         }));
-         individualMintedNFTs.push(...badges);
-       }
+       // 4. Process individual minted NFTs (REMOVIDO - não devem aparecer no marketplace)
+       // ❌ NFTs individuais são duplicadas das coleções custom, então não as incluímos no marketplace
 
        // 5. Process Thirdweb data (normal NFTs)
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
@@ -444,7 +338,7 @@ export function useMarketplaceData() {
         };
       });
 
-             // Coleções + NFTs individuais mintadas (NUNCA incluir Thirdweb aqui)
+             // Coleções apenas (NUNCA incluir Thirdweb aqui)
        const collectionsOnly = [
          ...apiNFTs.filter((item: any) => {
            const isLaunchpad =
@@ -452,9 +346,22 @@ export function useMarketplaceData() {
              item.collectionType === 'launchpad' ||
              item.marketplace?.isLaunchpadCollection;
 
-           return item.isCollection || item.isCustomCollection || isLaunchpad;
-         }),
-         ...individualMintedNFTs // ✅ Incluir NFTs individuais mintadas
+           const isCollection = item.isCollection || item.isCustomCollection || isLaunchpad;
+           
+           // 🔍 DEBUG: Log para verificar se a nova coleção está sendo incluída
+           if (item.type === 'custom_collection') {
+             console.log('🔍 [DEBUG] Custom Collection encontrada:', {
+               name: item.name,
+               type: item.type,
+               isCollection,
+               isCustomCollection: item.isCustomCollection,
+               marketplace: item.marketplace
+             });
+           }
+
+           return isCollection;
+         })
+         // ❌ REMOVIDO: ...individualMintedNFTs - NFTs individuais não devem aparecer no marketplace
        ];
 
        // Combine all data
@@ -464,7 +371,6 @@ export function useMarketplaceData() {
        console.log('🎯 [MARKETPLACE DATA] Dados processados:', {
          totalNFTs: allNFTs.length,
          apiNFTs: apiNFTs.length,
-         individualMintedNFTs: individualMintedNFTs.length,
          collectionsOnly: collectionsOnly.length,
          thirdwebNFTs: processedThirdwebNFTs.length,
          listings: processedListings.length,
