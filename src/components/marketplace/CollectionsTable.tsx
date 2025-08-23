@@ -367,11 +367,11 @@ export default function CollectionsTable({
       const action = nextStarred ? 'upvote' : 'remove';
 
       // Determinar o tipo de item baseado na coleção
-      const itemType = collection.type === 'launchpad' ? 'launchpad_collection' : 
+      const itemType = collection.contractType === 'launchpad' ? 'launchpad_collection' : 
                       collection.isCustomCollection ? 'custom_collection' : 
                       'individual_nft';
       
-      const itemId = collection.id || collection.collectionId || collection.name;
+      const itemId = collection.collectionId || collection.name;
 
       console.log('🔄 Toggling vote for:', collection.name, 'action:', action, 'wallet:', account?.address, 'itemType:', itemType);
 
@@ -432,11 +432,11 @@ export default function CollectionsTable({
       try {
         const updated = await Promise.all(collections.map(async (c) => {
           // Determinar o tipo de item baseado na coleção
-          const itemType = c.type === 'launchpad' ? 'launchpad_collection' : 
+          const itemType = c.contractType === 'launchpad' ? 'launchpad_collection' : 
                           c.isCustomCollection ? 'custom_collection' : 
                           'individual_nft';
           
-          const itemId = c.id || c.collectionId || c.name;
+          const itemId = c.collectionId || c.name;
 
           const res = await fetch(`/api/votes/status?itemId=${encodeURIComponent(itemId)}&itemType=${encodeURIComponent(itemType)}&walletAddress=${account.address}`);
           if (!res.ok) {
