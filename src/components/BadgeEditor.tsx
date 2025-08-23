@@ -726,14 +726,12 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
         isConnected={isConnected}
         isOnSupportedChain={isOnSupportedChain}
         isUserAdmin={isUserAdmin}
-        canMintLegacy={!!canMintLegacy}
         canMintGasless={!!canMintGasless}
         isMinting={isMinting}
         mintStatus={mintStatus}
         mintSuccess={mintSuccess}
         mintError={mintError}
         transactionHash={transactionHash}
-        onMintLegacy={handleMintNFT}
         onMintGasless={handleEngineNormalMint}
         walletAddress={address || ''}
         nftName={badgeName}
@@ -793,9 +791,7 @@ QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio 
           onGenerate={generateContent}
           isLoading={isLoading || isAnalyzing}
           canGenerate={!!badgeName.trim()}
-          onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
-          canMintLegacy={!!canMintLegacy}
           canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}

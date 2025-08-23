@@ -17,9 +17,7 @@ interface ProfessionalStadiumActionBarProps {
   isLoading: boolean
   canGenerate: boolean
   generationCost: number | null
-  onMintLegacy: () => void
   onMintGasless: () => void
-  canMintLegacy: boolean
   canMintGasless: boolean
   isMinting: boolean
   mintStatus: 'idle' | 'pending' | 'success' | 'error'
@@ -44,9 +42,7 @@ export default function ProfessionalStadiumActionBar({
   isLoading,
   canGenerate,
   generationCost,
-  onMintLegacy,
   onMintGasless,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,

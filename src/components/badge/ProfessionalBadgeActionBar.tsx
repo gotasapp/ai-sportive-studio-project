@@ -15,9 +15,7 @@ interface ProfessionalBadgeActionBarProps {
   onGenerate: () => void
   isLoading: boolean
   canGenerate: boolean
-  onMintLegacy: () => void
   onMintGasless: () => void
-  canMintLegacy: boolean
   canMintGasless: boolean
   isMinting: boolean
   mintStatus: 'idle' | 'pending' | 'success' | 'error'
@@ -41,9 +39,7 @@ export default function ProfessionalBadgeActionBar({
   onGenerate,
   isLoading,
   canGenerate,
-  onMintLegacy,
   onMintGasless,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,

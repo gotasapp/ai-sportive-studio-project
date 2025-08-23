@@ -453,14 +453,12 @@ This description will be used to generate a new version of the stadium with slig
         isConnected={isConnected}
         isOnSupportedChain={isOnSupportedChain}
         isUserAdmin={isUserAdmin}
-        canMintLegacy={!!canMintLegacy}
         canMintGasless={!!canMintGasless}
         isMinting={isMinting}
         mintStatus={mintStatus}
         mintSuccess={mintSuccess}
         mintError={mintError}
         transactionHash={transactionHash}
-        onMintLegacy={() => handleMintNFT(false)}
         onMintGasless={() => handleMintNFT(true)}
         walletAddress={address || ""}
         nftName={selectedStadium !== 'custom_only' ? selectedStadium.replace(/_/g, ' ') : 'Custom Stadium'}
@@ -530,9 +528,7 @@ This description will be used to generate a new version of the stadium with slig
           isLoading={isGenerating}
           canGenerate={!!((selectedStadium && selectedStadium !== 'custom_only') || customPrompt.trim() || isVisionMode)}
           generationCost={generationCost}
-          onMintLegacy={() => handleMintNFT(false)}
           onMintGasless={() => handleMintNFT(true)}
-          canMintLegacy={!!canMintLegacy}
           canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}

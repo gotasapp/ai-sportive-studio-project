@@ -10,10 +10,10 @@ interface BatchMintApiRequest {
   collection?: 'jerseys' | 'stadiums' | 'badges';
 }
 
-// Define Chiliz Chain
-const chzMainnet = defineChain({
-  id: 88888,
-  rpc: process.env.NEXT_PUBLIC_CHILIZ_RPC_URL || 'https://rpc.chiliz.com'
+// Define a chain Amoy
+const amoy = defineChain({
+  id: 80002,
+  rpc: process.env.NEXT_PUBLIC_POLYGON_AMOY_RPC_URL || 'https://rpc-amoy.polygon.technology'
 });
 
 // Environment Variables (seguindo padrão do Launchpad)
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
     
     const contract = getContract({ 
       client: thirdwebClient, 
-      chain: chzMainnet, 
+      chain: amoy, 
       address: CONTRACT_ADDRESS 
     });
 

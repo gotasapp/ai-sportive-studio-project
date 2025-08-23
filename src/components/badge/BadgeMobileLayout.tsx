@@ -37,7 +37,6 @@ export type BadgeMobileLayoutProps = {
   mintSuccess: string | null;
   mintError: string | null;
   transactionHash: string | null;
-  onMintLegacy: () => void;
   onMintGasless: () => void;
   walletAddress: string;
   nftName: string;
@@ -69,14 +68,12 @@ export default function BadgeMobileLayout({
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,
   mintSuccess,
   mintError,
   transactionHash,
-  onMintLegacy,
   onMintGasless,
   walletAddress,
   nftName,

@@ -47,7 +47,6 @@ export type StadiumMobileLayoutProps = {
   mintSuccess: string | null;
   mintError: string | null;
   transactionHash: string | null;
-  onMintLegacy: () => void;
   onMintGasless: () => void;
   walletAddress: string;
   nftName: string;
@@ -89,14 +88,12 @@ export default function StadiumMobileLayout({
   isConnected,
   isOnSupportedChain,
   isUserAdmin,
-  canMintLegacy,
   canMintGasless,
   isMinting,
   mintStatus,
   mintSuccess,
   mintError,
   transactionHash,
-  onMintLegacy,
   onMintGasless,
   walletAddress,
   nftName,
