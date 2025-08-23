@@ -27,7 +27,17 @@ export async function GET(request: NextRequest) {
     const client = await clientPromise;
     const db = client.db(DB_NAME);
     
-    const results = {
+    const results: {
+      launchpadCollections: any[];
+      launchpadMints: any[];
+      customCollections: any[];
+      customMints: any[];
+      summary: {
+        totalCollections: number;
+        totalMints: number;
+        totalItems: number;
+      };
+    } = {
       launchpadCollections: [],
       launchpadMints: [],
       customCollections: [],
