@@ -20,10 +20,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar quantity
-    if (quantity < 2 || quantity > 100) {
+    if (quantity < 1 || quantity > 100) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Quantity must be between 2 and 100' 
+        error: 'Quantity must be between 1 and 100' 
       }, { status: 400 });
     }
 
