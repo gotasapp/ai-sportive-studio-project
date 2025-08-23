@@ -30,7 +30,6 @@ export type BadgeMobileLayoutProps = {
   isConnected: boolean;
   isOnSupportedChain: boolean;
   isUserAdmin: boolean;
-  canMintLegacy: boolean;
   canMintGasless: boolean;
   isMinting: boolean;
   mintStatus: 'idle' | 'pending' | 'success' | 'error';

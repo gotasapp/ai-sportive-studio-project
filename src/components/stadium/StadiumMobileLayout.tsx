@@ -40,7 +40,6 @@ export type StadiumMobileLayoutProps = {
   isConnected: boolean;
   isOnSupportedChain: boolean;
   isUserAdmin: boolean;
-  canMintLegacy: boolean;
   canMintGasless: boolean;
   isMinting: boolean;
   mintStatus: 'idle' | 'pending' | 'success' | 'error';
