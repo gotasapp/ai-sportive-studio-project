@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       });
 
           // Tentar encontrar o NFT em todas as coleções (priorizar custom collections)
-    const collections = ['custom_collection_mints', 'jerseys', 'stadiums', 'badges'];
+    const collections = ['jerseys', 'stadiums', 'badges']; // 🚫 Removido custom_collection_mints - NFTs de coleções não devem aparecer no marketplace
       let found = false;
 
       for (const collectionName of collections) {

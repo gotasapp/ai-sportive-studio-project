@@ -523,11 +523,18 @@ export async function GET(request: NextRequest) {
           { mintStatus: 'minted' },
           { mintStatus: 'success' }
         ],
-        // 🚫 EXCLUIR NFTs que pertencem a Custom Collections (evitar duplicatas)
-        // Verificar se a imagem não é de uma custom collection
+        // 🚫 EXCLUIR NFTs que pertencem a Custom Collections e Launchpad Collections (evitar duplicatas)
         $nor: [
           { 'metadata.image': { $regex: 'collection_jerseys' } },
-          { name: { $regex: 'Collection #' } }
+          { name: { $regex: 'Collection #' } },
+          // 🎯 EXCLUIR NFTs que pertencem a custom collections
+          { customCollectionId: { $exists: true } },
+          { 'metadata.name': { $regex: 'Collection #' } },
+          // 🎯 EXCLUIR NFTs que pertencem a launchpad collections
+          { launchpadCollectionId: { $exists: true } },
+          // 🎯 EXCLUIR NFTs que têm nome igual a coleções do launchpad
+          { name: { $regex: 'Jersey for Launchpad' } },
+          { 'metadata.name': { $regex: 'Jersey for Launchpad' } }
         ]
       };
 

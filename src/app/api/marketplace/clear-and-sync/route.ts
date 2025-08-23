@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     // 3. LIMPAR DADOS ANTIGOS DO MARKETPLACE EM TODAS AS COLEÇÕES
     console.log('🧹 Limpando dados antigos do marketplace...');
     
-    const collections = ['jerseys', 'stadiums', 'badges', 'custom_collection_mints'];
+    const collections = ['jerseys', 'stadiums', 'badges']; // 🚫 Removido custom_collection_mints - NFTs de coleções não devem aparecer no marketplace
     let cleanedItems = 0;
     
     for (const collectionName of collections) {
