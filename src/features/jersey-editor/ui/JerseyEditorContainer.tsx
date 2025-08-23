@@ -784,9 +784,7 @@ Design based on analysis: ${analysisText}`
           isLoading={isLoading}
           canGenerate={!!((selectedTeam && playerName && playerNumber) || isVisionMode)}
           generationCost={generationCost}
-          onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
-          canMintLegacy={Boolean(canMintLegacy)}
           canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}
