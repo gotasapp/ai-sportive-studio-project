@@ -6,6 +6,28 @@ import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 import { convertIpfsToHttp } from '@/lib/utils';
 import { USE_CHZ_MAINNET, ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
 
+function determineNFTCategoryFromMetadata(metadata: any): string {
+  if (!metadata) return 'nft';
+
+  const name = metadata.name?.toLowerCase() || '';
+  const description = metadata.description?.toLowerCase() || '';
+  const attributes = metadata.attributes || [];
+
+  const typeAttribute = attributes.find((attr: any) => attr.trait_type?.toLowerCase() === 'type');
+  if (typeAttribute) {
+    const value = typeAttribute.value?.toLowerCase();
+    if (['jersey', 'stadium', 'badge'].includes(value)) {
+      return value;
+    }
+  }
+
+  if (name.includes('jersey') || description.includes('jersey')) return 'jersey';
+  if (name.includes('stadium') || description.includes('stadium')) return 'stadium';
+  if (name.includes('badge') || description.includes('badge')) return 'badge';
+
+  return 'nft';
+}
+
 interface MarketplaceNFT {
   id: string;
   tokenId: string;
@@ -232,7 +254,7 @@ export function useMarketplaceData() {
        // 4. Process individual minted NFTs (REMOVIDO - não devem aparecer no marketplace)
        // ❌ NFTs individuais são duplicadas das coleções custom, então não as incluímos no marketplace
 
-       // 5. Process Thirdweb data (normal NFTs)
+       // 5. Process Thirdweb data (normal NFTs) - COMO ERA ANTES!
       const { nfts: thirdwebNFTs, listings, auctions } = thirdwebData;
       
       // Global toggle to disable blacklist
@@ -267,39 +289,71 @@ export function useMarketplaceData() {
       const filteredThirdwebNFTs = thirdwebNFTs.filter((nft: any) => {
         if (DISABLE_HIDDEN) return true;
         const idStr = nft.id?.toString?.() || '';
-        const nameStr = nft.metadata?.name || '';
-        const isHidden = hiddenIds.includes(idStr) || HARDCODED_BLACKLIST.has(nameStr);
-        return !isHidden;
+        const tokenStr = nft.tokenId?.toString?.() || '';
+        const nameStr = (nft.name || nft.metadata?.name || '').trim();
+        if (hiddenIds.includes(idStr) || (tokenStr && hiddenIds.includes(tokenStr))) return false;
+        if (HARDCODED_BLACKLIST.has(idStr) || HARDCODED_BLACKLIST.has(tokenStr) || HARDCODED_BLACKLIST.has(nameStr)) return false;
+        return true;
       });
 
-      // Process Thirdweb NFTs
-      const processedThirdwebNFTs = filteredThirdwebNFTs.map((nft: any) => ({
-        id: nft.id?.toString() || '',
-        tokenId: nft.id?.toString() || '',
-        name: nft.metadata?.name || 'Untitled',
-        description: nft.metadata?.description || '',
-        image: convertIpfsToHttp(nft.metadata?.image || ''),
-        imageUrl: convertIpfsToHttp(nft.metadata?.image || ''),
-        price: 'Not for sale',
-        currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
-        owner: nft.owner || 'Unknown',
-        creator: nft.creator || nft.owner || 'Unknown',
-        category: 'nft',
-        type: 'ERC721',
-        attributes: nft.metadata?.attributes || [],
-        isListed: false,
-        isVerified: true,
-        blockchain: {
-          verified: true,
-          tokenId: nft.id?.toString() || '',
-          owner: nft.owner || 'Unknown',
-          contractType: 'ERC721',
-        },
-        contractAddress: nft.contractAddress || '',
-        isAuction: false,
-        activeOffers: 0,
-        source: 'thirdweb'
-      }));
+      // 🎯 CRIAR MAPS PARA LOOKUP RÁPIDO (COMO ERA ANTES!)
+      const listingsByTokenId = new Map(listings.map((l: any) => [l.tokenId.toString(), l]));
+      const auctionsByTokenId = new Map(auctions.map((a: any) => [a.tokenId.toString(), a]));
+
+      // 🎯 PROCESSAR NFTs DA THIRDWEB COM DADOS REAIS DE PREÇO
+      const thirdwebProcessedPromises = filteredThirdwebNFTs.map(async (nft: any, index: number) => {
+        try {
+          const tokenId = nft.id.toString();
+          const metadata = nft.metadata || {};
+          const contractAddress = nft.contractAddress || '';
+          const contractType = nft.type || 'ERC721';
+
+          let nftOwner = nft.owner || 'Unknown';
+
+          const listing = listingsByTokenId.get(tokenId);
+          const auction = auctionsByTokenId.get(tokenId);
+          const imageUrlHttp = convertIpfsToHttp(metadata.image || '');
+
+          return {
+            id: tokenId,
+            tokenId: tokenId,
+            name: metadata.name || 'Untitled NFT',
+            description: metadata.description || '',
+            image: imageUrlHttp,
+            imageUrl: imageUrlHttp,
+            price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
+            currency: listing?.currencyValuePerToken?.symbol || (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
+            owner: nftOwner,
+            creator: nftOwner,
+            category: determineNFTCategoryFromMetadata(metadata),
+            type: contractType,
+            attributes: metadata.attributes || [],
+            isListed: !!listing,
+            isVerified: true,
+            blockchain: {
+              verified: true,
+              tokenId: tokenId,
+              owner: nftOwner,
+              contractType: contractType,
+            },
+            contractAddress: contractAddress,
+            isAuction: !!auction,
+            activeOffers: 0,
+            listingId: listing?.id.toString(),
+            auctionId: auction?.id.toString(),
+            currentBid: auction?.minimumBidAmount?.toString(),
+            endTime: auction?.endTimeInSeconds ? new Date(Number(auction.endTimeInSeconds) * 1000) : undefined,
+            source: 'thirdweb'
+          };
+
+        } catch (error) {
+          console.error(`❌ [V2] Failed to process NFT at index ${index} (ID: ${nft.id?.toString()}):`, error);
+          return null;
+        }
+      });
+
+      const thirdwebProcessedResults = await Promise.all(thirdwebProcessedPromises);
+      const processedThirdwebNFTs = thirdwebProcessedResults.filter(Boolean) as MarketplaceNFT[];
 
       // Process listings
       const processedListings = listings.map((listing: any) => {
