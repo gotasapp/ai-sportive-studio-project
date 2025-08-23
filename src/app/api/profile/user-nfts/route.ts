@@ -708,8 +708,8 @@ export async function GET(request: Request) {
        const existingTokenIds = new Set(); // Para evitar duplicatas por tokenId
        const allNFTs: any[] = [];
        
-       // 🎯 FUNÇÃO DE DEDUPLICAÇÃO MELHORADA
-       function addNFTIfNotDuplicate(nft: any, source: string) {
+       // 🎯 FUNÇÃO DE DEDUPLICAÇÃO MELHORADA (arrow function para evitar erro de strict mode)
+       const addNFTIfNotDuplicate = (nft: any, source: string) => {
          // Criar IDs únicos baseados em diferentes critérios
          const id1 = nft.id || `${nft.contractAddress}_${nft.tokenId}`;
          const id2 = `${nft.contractAddress}_${nft.tokenId}`;
@@ -738,7 +738,7 @@ export async function GET(request: Request) {
          } else {
            console.log(`⚠️ Skipped duplicate: ${nft.name} (${source})`);
          }
-       }
+       };
        
        // Adicionar NFTs legacy (MongoDB) primeiro
        for (const nft of legacyData.nfts) {
