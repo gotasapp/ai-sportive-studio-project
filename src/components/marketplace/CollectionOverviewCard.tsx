@@ -1,6 +1,6 @@
 'use client';
 
-import { Heart, ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Eye } from 'lucide-react';
 import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
@@ -57,7 +57,6 @@ export default function CollectionOverviewCard({
   listedCount = 0,
   auctionCount = 0
 }: CollectionOverviewCardProps) {
-  const [isLiked, setIsLiked] = useState(false);
   const account = useActiveAccount();
 
   const color = categoryColors[category as keyof typeof categoryColors] || categoryColors.default;
@@ -131,16 +130,8 @@ export default function CollectionOverviewCard({
       
       {/* Collection Info */}
       <div className="p-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2">
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate">{name}</h3>
-          
-          {/* Like Button */}
-          <button 
-            onClick={() => setIsLiked(!isLiked)}
-            className="p-1 rounded-full hover:bg-[#FDFDFD]/10 transition-colors"
-          >
-            <Heart className={`h-4 w-4 ${isLiked ? 'fill-[#FF0052] text-[#FF0052]' : 'text-[#FDFDFD]/50'}`} />
-          </button>
         </div>
         
         {/* Collection Stats */}

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { MongoClient } from 'mongodb';
 import { getContract } from 'thirdweb';
 import { createThirdwebClient } from 'thirdweb';
-import { polygonAmoy } from 'thirdweb/chains';
+import { defineChain } from 'thirdweb/chains';
 import { getNFTs, ownerOf } from 'thirdweb/extensions/erc721';
 import { getAllValidListings, getAllAuctions } from 'thirdweb/extensions/marketplace';
 import { convertIpfsToHttp } from '@/lib/utils';
@@ -31,8 +31,18 @@ const client = createThirdwebClient({
 
 import { getSupportedContractAddresses } from '@/lib/marketplace-config';
 
+// 🎯 USAR MESMA CONFIGURAÇÃO DO MARKETPLACE (CHZ)
 const NFT_CONTRACT_ADDRESS = '0xfF973a4aFc5A96DEc81366461A461824c4f80254';
-const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_POLYGON_TESTNET || '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+const MARKETPLACE_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_MARKETPLACE_CONTRACT_CHZ || '0x2403863b192b649448793dfbB6926Cdd0d7A14Ad';
+
+// 🎯 CONFIGURAÇÃO CHZ (MESMA DO MARKETPLACE)
+const chzChain = defineChain({
+  id: 88888,
+  name: 'Chiliz Chain',
+  nativeCurrency: { name: 'CHZ', symbol: 'CHZ', decimals: 18 },
+  rpc: process.env.NEXT_PUBLIC_CHZ_RPC_URL || 'https://rpc.ankr.com/chiliz',
+  blockExplorers: [{ name: 'ChilizScan', url: 'https://scan.chiliz.com' }]
+});
 
 // Cache TTL: 5 minutos para NFTs
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
@@ -117,7 +127,7 @@ async function fetchUserNFTsProductionReady(userAddress: string) {
     // Create contract instance for owner lookup (same as marketplace)
     const nftContract = getContract({
       client,
-      chain: polygonAmoy,
+      chain: chzChain,
       address: NFT_CONTRACT_ADDRESS,
     });
 
@@ -160,12 +170,12 @@ async function fetchUserNFTsProductionReady(userAddress: string) {
           if (isListed) {
             status = 'listed';
             price = marketplaceListing.currencyValuePerToken?.displayValue || 'Not for sale';
-          } else if (isAuctioned) {
-            status = 'listed';
-            const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
-            const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
-            price = `${minBidMatic.toFixed(2)} MATIC`;
-          }
+                     } else if (isAuctioned) {
+             status = 'listed';
+             const minBidWei = marketplaceAuction.minimumBidAmount || BigInt(0);
+             const minBidChz = Number(minBidWei) / Math.pow(10, 18);
+             price = `${minBidChz.toFixed(2)} CHZ`;
+           }
 
           // Check if user created this NFT
           const isCreatedByUser = 
@@ -376,6 +386,116 @@ async function fetchUserCustomCollectionNFTs(userAddress: string) {
   }
 }
 
+// NOVA FUNÇÃO: Buscar coleções do marketplace (custom e launchpad)
+async function fetchUserMarketplaceCollections(userAddress: string) {
+  console.log('🔄 Fetching marketplace collections for:', userAddress);
+  
+  try {
+    const client = await connectToDatabase();
+    const db = client.db(DB_NAME);
+    
+    const userCollections = [];
+    
+    // 1. Buscar Custom Collections criadas pelo usuário
+    const customCollections = await db.collection('custom_collections').find({
+      creatorWallet: userAddress,
+      status: 'active'
+    }).toArray();
+    
+    console.log(`🎨 Found ${customCollections.length} custom collections for user`);
+    
+    for (const collection of customCollections) {
+      // Buscar NFTs mintadas desta coleção
+      const mintedNFTs = await db.collection('custom_collection_mints')
+        .find({ customCollectionId: collection._id })
+        .toArray();
+      
+      if (mintedNFTs.length > 0) {
+        userCollections.push({
+          id: `custom_collection_${collection._id}`,
+          name: collection.name,
+          imageUrl: collection.imageUrl,
+          price: '0', // Coleções não têm preço individual
+          contractAddress: collection.contractAddress,
+          tokenId: collection._id.toString(),
+          category: collection.category || 'jersey',
+          status: 'created',
+          mintedAt: collection.createdAt || new Date().toISOString(),
+          collectionName: collection.name,
+          collectionId: collection._id.toString(),
+          owner: userAddress,
+          isCustomCollection: true,
+          isCollection: true,
+          mintedUnits: mintedNFTs.length,
+          totalUnits: collection.totalSupply || 0,
+          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length
+        });
+      }
+    }
+    
+    // 2. Buscar Launchpad Collections criadas pelo usuário
+    const launchpadCollections = await db.collection('launchpad_collections').find({
+      'creator.wallet': userAddress,
+      status: { $in: ['active', 'upcoming', 'approved'] }
+    }).toArray();
+    
+    console.log(`🚀 Found ${launchpadCollections.length} launchpad collections for user`);
+    
+    for (const collection of launchpadCollections) {
+      // Buscar NFTs mintadas desta coleção
+      const mintedNFTs = await db.collection('launchpad_collection_mints')
+        .find({ contractAddress: collection.contractAddress })
+        .toArray();
+      
+      if (mintedNFTs.length > 0) {
+        userCollections.push({
+          id: `launchpad_collection_${collection._id}`,
+          name: collection.name,
+          imageUrl: collection.image || collection.imageUrl,
+          price: '0', // Coleções não têm preço individual
+          contractAddress: collection.contractAddress,
+          tokenId: collection._id.toString(),
+          category: 'launchpad',
+          status: 'created',
+          mintedAt: collection.createdAt || new Date().toISOString(),
+          collectionName: collection.name,
+          collectionId: collection._id.toString(),
+          owner: userAddress,
+          isLaunchpadCollection: true,
+          isCollection: true,
+          mintedUnits: mintedNFTs.length,
+          totalUnits: collection.totalSupply || 0,
+          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length
+        });
+      }
+    }
+    
+    console.log(`✅ Processed ${userCollections.length} marketplace collections`);
+    
+    return {
+      userAddress,
+      nfts: userCollections,
+      totalNFTs: userCollections.length,
+      owned: 0,
+      listed: 0,
+      created: userCollections.length,
+      source: 'marketplace_collections'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error fetching marketplace collections:', error);
+    return {
+      userAddress,
+      nfts: [],
+      totalNFTs: 0,
+      owned: 0,
+      listed: 0,
+      created: 0,
+      source: 'marketplace_collections_error'
+    };
+  }
+}
+
 // Original Thirdweb-only function (kept as fallback)
 async function fetchUserNFTsFromThirdweb(userAddress: string) {
   console.log('🔄 Fetching fresh NFT data from Thirdweb for:', userAddress);
@@ -383,13 +503,13 @@ async function fetchUserNFTsFromThirdweb(userAddress: string) {
   // Create contracts
   const nftContract = getContract({
     client,
-    chain: polygonAmoy,
+    chain: chzChain,
     address: NFT_CONTRACT_ADDRESS,
   });
 
   const marketplaceContract = getContract({
     client,
-    chain: polygonAmoy,
+    chain: chzChain,
     address: MARKETPLACE_CONTRACT_ADDRESS,
   });
 
@@ -467,16 +587,16 @@ async function fetchUserNFTsFromThirdweb(userAddress: string) {
         let status = 'owned';
         let price = undefined;
         
-        if (isListed) {
-          status = 'listed';
-          price = listing.currencyValuePerToken?.displayValue || 
-                 `${(Number(listing.pricePerToken || 0) / 1e18).toFixed(2)} MATIC`;
-        } else if (isAuctioned) {
-          status = 'listed';
-          const minBidWei = auction.minimumBidAmount || BigInt(0);
-          const minBidMatic = Number(minBidWei) / Math.pow(10, 18);
-          price = `${minBidMatic.toFixed(2)} MATIC`;
-        }
+                 if (isListed) {
+           status = 'listed';
+           price = listing.currencyValuePerToken?.displayValue || 
+                  `${(Number(listing.pricePerToken || 0) / 1e18).toFixed(2)} CHZ`;
+         } else if (isAuctioned) {
+           status = 'listed';
+           const minBidWei = auction.minimumBidAmount || BigInt(0);
+           const minBidChz = Number(minBidWei) / Math.pow(10, 18);
+           price = `${minBidChz.toFixed(2)} CHZ`;
+         }
 
         // Check if user created this NFT
         const isCreatedByUser = 
@@ -564,12 +684,13 @@ export async function GET(request: Request) {
     console.log('⚠️ Cache miss - fetching fresh data');
     
     try {
-      // COMBINAR: NFTs Legacy (MongoDB) + Custom Collections + Blockchain Verification
-      console.log('🔄 Fetching from multiple sources: MongoDB legacy + custom collections + blockchain verification');
+      // COMBINAR: NFTs Legacy (MongoDB) + Custom Collections + Marketplace Collections + Blockchain Verification
+      console.log('🔄 Fetching from multiple sources: MongoDB legacy + custom collections + marketplace collections + blockchain verification');
       
-      const [legacyData, customData, blockchainData] = await Promise.all([
+      const [legacyData, customData, marketplaceCollectionsData, blockchainData] = await Promise.all([
         fetchUserLegacyNFTs(userAddress),
         fetchUserCustomCollectionNFTs(userAddress),
+        fetchUserMarketplaceCollections(userAddress),
         // Verificar blockchain para NFTs que podem não estar no MongoDB
         fetchUserNFTsFromThirdweb(userAddress).catch(err => {
           console.warn('⚠️ Blockchain verification failed:', err);
@@ -599,6 +720,15 @@ export async function GET(request: Request) {
         }
       }
       
+      // Adicionar marketplace collections (custom e launchpad)
+      for (const nft of marketplaceCollectionsData.nfts) {
+        const id = nft.id || `marketplace_${nft.collectionId}`;
+        if (!existingIds.has(id)) {
+          existingIds.add(id);
+          allNFTs.push(nft);
+        }
+      }
+      
       // Adicionar NFTs do blockchain que não estão no MongoDB
       for (const nft of blockchainData.nfts) {
         const id = nft.id || `blockchain_${nft.tokenId}`;
@@ -621,13 +751,14 @@ export async function GET(request: Request) {
         breakdown: {
           legacy: { count: legacyData.nfts.length, source: legacyData.source },
           custom: { count: customData.nfts.length, source: customData.source },
+          marketplace_collections: { count: marketplaceCollectionsData.nfts.length, source: marketplaceCollectionsData.source },
           blockchain: { count: blockchainData.nfts.length, source: 'thirdweb_blockchain' },
           blockchainOnly: { count: allNFTs.filter(nft => (nft as any).source === 'blockchain_only').length }
         }
       };
       
       console.log(`✅ Combined ALL sources: ${freshData.totalNFTs} total`);
-      console.log(`📊 Breakdown: ${legacyData.nfts.length} legacy + ${customData.nfts.length} custom + ${blockchainData.nfts.length} blockchain (${allNFTs.filter(nft => (nft as any).source === 'blockchain_only').length} blockchain-only)`);
+      console.log(`📊 Breakdown: ${legacyData.nfts.length} legacy + ${customData.nfts.length} custom + ${marketplaceCollectionsData.nfts.length} marketplace collections + ${blockchainData.nfts.length} blockchain (${allNFTs.filter(nft => (nft as any).source === 'blockchain_only').length} blockchain-only)`);
       
       // Salvar no cache
       const cacheDoc = {
