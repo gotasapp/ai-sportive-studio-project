@@ -124,10 +124,29 @@ export function useMarketplaceData() {
       // 2. Process API data (collections only – exclude minted NFTs)
       const apiNFTs = apiResponse.success
         ? apiResponse.data
-            .filter((nft: any) => {
-              const type = nft.type?.toLowerCase?.();
-              return type !== 'custom_collection_mint' && type !== 'launchpad_collections_mint';
-            })
+                         .filter((nft: any) => {
+               const type = nft.type?.toLowerCase?.() || 'undefined';
+               
+               const shouldInclude = type !== 'custom_collection_mint' && type !== 'launchpad_collections_mint';
+
+               if (!shouldInclude) {
+                 console.log('🚫 NFT MINTADA EXCLUÍDA DO MARKETPLACE:', {
+                   name: nft.name,
+                   tokenId: nft.tokenId,
+                   type,
+                   collectionId: nft.collectionId,
+                 });
+               } else {
+                 console.log('✅ NFT INCLUÍDA NO MARKETPLACE:', {
+                   name: nft.name,
+                   tokenId: nft.tokenId,
+                   type,
+                   collectionId: nft.collectionId,
+                 });
+               }
+
+               return shouldInclude;
+             })
             .map((nft: any) => ({
               id: nft._id || nft.tokenId,
               tokenId: nft.tokenId,
