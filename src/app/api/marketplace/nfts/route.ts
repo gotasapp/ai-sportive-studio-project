@@ -102,7 +102,7 @@ async function getThirdwebMarketplaceData() {
   try {
     console.log('🔍 Searching for listings AND auctions on Thirdweb marketplace...');
     
-    // Usar CHZ Mainnet ao invés de Polygon Amoy
+    // Usar CHZ Mainnet onde os NFTs estão realmente listados
     const chzChain = defineChain({
       id: 88888,
       name: 'Chiliz Chain',
@@ -406,7 +406,7 @@ async function getCustomCollections(db: any, marketplaceData: { listingsByKey: M
 /**
  * Função para buscar NFTs do Launchpad mintados
  */
-async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 50) {
+async function getLaunchpadNFTs(db: any, marketplaceData: { listingsByKey: Map<string, any>, auctionsByKey: Map<string, any> }, owner?: string | null, limit: number = 50) {
   try {
     // Search for active launchpad collections (both networks)
     console.log('🔍 Buscando launchpad_collections ativas (todas as redes)...');
@@ -456,19 +456,77 @@ async function getLaunchpadNFTs(db: any, owner?: string | null, limit: number = 
           ]
         },
         
-        // 🏪 MARKETPLACE DATA (specific for collections)
-        marketplace: {
-          isListed: false, // Coleções não são "listadas" individualmente
-          isListable: false, // Não pode ser listada (é uma coleção, não NFT individual)
-          canTrade: false, // Coleção não é negociável (unidades sim)
-          verified: true,
-          collection: collection.name,
-          category: 'launchpad_collection',
-          isCollection: true, // ✨ NOVO: Marca como entrada de coleção
-          mintedUnits: mintedNFTs.length, // ✨ NOVO: Quantidade real de unidades mintadas
-          totalUnits: collection.totalSupply || 0, // ✨ NOVO: Total de unidades disponíveis
-          availableUnits: (collection.totalSupply || 0) - mintedNFTs.length // ✨ NOVO: Unidades disponíveis
-        },
+        // 🏪 MARKETPLACE DATA (specific for collections) - COM VERIFICAÇÃO THIRDWEB!
+        marketplace: (() => {
+          // 🔍 VERIFICAR SE AS NFTs MINTADAS ESTÃO NA THIRDWEB
+          const thirdwebListedNFTs = mintedNFTs.filter((nft: any) => {
+            if (!nft.tokenId || !nft.contractAddress) return false;
+            const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
+            return marketplaceData.listingsByKey.has(key);
+          });
+
+          const thirdwebAuctionNFTs = mintedNFTs.filter((nft: any) => {
+            if (!nft.tokenId || !nft.contractAddress) return false;
+            const key = `${nft.tokenId}_${nft.contractAddress.toLowerCase()}`;
+            return marketplaceData.auctionsByKey.has(key);
+          });
+
+          const isListedFinal = thirdwebListedNFTs.length > 0;
+          const isAuctionFinal = thirdwebAuctionNFTs.length > 0;
+
+          // 🎯 PEGAR DADOS DE PREÇO DA PRIMEIRA NFT LISTADA
+          const firstListedNFT = thirdwebListedNFTs[0];
+          const firstAuctionNFT = thirdwebAuctionNFTs[0];
+          
+          const thirdwebListing = firstListedNFT ? 
+            marketplaceData.listingsByKey.get(`${firstListedNFT.tokenId}_${firstListedNFT.contractAddress.toLowerCase()}`) : null;
+          
+          const thirdwebAuction = firstAuctionNFT ? 
+            marketplaceData.auctionsByKey.get(`${firstAuctionNFT.tokenId}_${firstAuctionNFT.contractAddress.toLowerCase()}`) : null;
+
+          return {
+            isListed: isListedFinal, // ✅ RESULTADO DA VERIFICAÇÃO THIRDWEB
+            isAuction: isAuctionFinal, // ✅ RESULTADO DA VERIFICAÇÃO THIRDWEB
+            isListable: false, // Não pode ser listada (é uma coleção, não NFT individual)
+            canTrade: false, // Coleção não é negociável (unidades sim)
+            verified: true,
+            collection: collection.name,
+            category: 'launchpad_collection',
+            isCollection: true, // ✨ NOVO: Marca como entrada de coleção
+            isLaunchpadCollection: true, // ✨ EXPLICIT FLAG
+            mintedUnits: mintedNFTs.length, // ✨ NOVO: Quantidade real de unidades mintadas
+            totalUnits: collection.totalSupply || 0, // ✨ NOVO: Total de unidades disponíveis
+            availableUnits: (collection.totalSupply || 0) - mintedNFTs.length, // ✨ NOVO: Unidades disponíveis
+            
+            // 🎯 DADOS DE PREÇO DA THIRDWEB
+            price: thirdwebAuction ? 
+              `${thirdwebAuction.minimumBidAmount?.toString()} (Bid)` :
+              (thirdwebListing ? 
+                thirdwebListing.currencyValuePerToken?.displayValue || thirdwebListing.pricePerToken?.toString() :
+                'Not listed'),
+            
+            // 🎯 CONTADORES DA THIRDWEB
+            thirdwebListedCount: thirdwebListedNFTs.length,
+            thirdwebAuctionCount: thirdwebAuctionNFTs.length,
+            
+            // 🎯 DADOS ADICIONAIS DA THIRDWEB
+            thirdwebData: thirdwebListing ? {
+              listingId: thirdwebListing.id.toString(),
+              price: thirdwebListing.pricePerToken?.toString(),
+              currency: thirdwebListing.currencyValuePerToken?.symbol || 'CHZ',
+              endTime: thirdwebListing.endTimeInSeconds ? thirdwebListing.endTimeInSeconds.toString() : null
+            } : null,
+
+            thirdwebAuctionData: thirdwebAuction ? {
+              auctionId: thirdwebAuction.auctionId?.toString(),
+              minimumBidAmount: thirdwebAuction.minimumBidAmount?.toString(),
+              buyoutBidAmount: thirdwebAuction.buyoutBidAmount?.toString(),
+              currency: thirdwebAuction.currencyContractAddress || 'CHZ',
+              endTime: thirdwebAuction.endTimestamp ? thirdwebAuction.endTimestamp.toString() : null,
+              startTime: thirdwebAuction.startTimestamp ? thirdwebAuction.startTimestamp.toString() : null
+            } : null
+          };
+        })(),
         
         // ⛓️ DADOS DA BLOCKCHAIN
         blockchain: {
@@ -543,7 +601,7 @@ export async function GET(request: NextRequest) {
     const allNFTs = [];
     
     // Adicionar NFTs do launchpad de coleções ativas
-    const launchpadNFTs = await getLaunchpadNFTs(db, owner, limit);
+    const launchpadNFTs = await getLaunchpadNFTs(db, marketplaceData, owner, limit);
     console.log('🚀 Launchpad NFTs encontradas:', launchpadNFTs.length);
 
     for (const collectionName of collections) {

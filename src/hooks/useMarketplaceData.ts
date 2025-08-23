@@ -246,7 +246,14 @@ export function useMarketplaceData() {
                 thirdwebData: nft.marketplace?.thirdwebData ? {
                   price: nft.marketplace.thirdwebData.price
                 } : undefined,
-                mintedUnits: nft.marketplace?.mintedUnits || 0
+                mintedUnits: nft.marketplace?.mintedUnits || 0,
+                // 🎯 ADICIONAR DADOS REAIS DE PREÇO
+                price: nft.marketplace?.price || 'Not listed',
+                isListed: nft.marketplace?.isListed || false,
+                isAuction: nft.marketplace?.isAuction || false,
+                // 🎯 DADOS ESPECÍFICOS PARA LAUNCHPAD
+                isLaunchpadCollection: nft.type === 'launchpad_collection' || nft.marketplace?.isLaunchpadCollection || false,
+                collectionData: nft.collectionData || null
               }
                          }))
          : [];
