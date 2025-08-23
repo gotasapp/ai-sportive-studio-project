@@ -9,12 +9,15 @@ interface UseAuctionDataProps {
   refreshInterval?: number;
 }
 
-interface AuctionData {
+interface AuctionDataState {
   currentBid: string;
   hasValidBid: boolean;
   isLoading: boolean;
   lastUpdated: number | null;
   error: string | null;
+}
+
+interface AuctionData extends AuctionDataState {
   refetch: () => void;
 }
 
@@ -26,7 +29,7 @@ export function useAuctionData({
 }: UseAuctionDataProps): AuctionData {
   const account = useActiveAccount();
   
-  const [auctionData, setAuctionData] = useState<AuctionData>({
+  const [auctionData, setAuctionData] = useState<AuctionDataState>({
     currentBid: initialBid,
     hasValidBid: false,
     isLoading: false,
