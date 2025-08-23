@@ -14,6 +14,7 @@ import { CancelAuctionButton } from './CancelAuctionButton';
 import { CollectAuctionPayoutButton } from './CollectAuctionPayoutButton';
 import { CollectAuctionTokensButton } from './CollectAuctionTokensButton';
 import { isValidPrice } from '@/lib/marketplace-config';
+import { NETWORK_CURRENCY } from '@/lib/network-config';
 
 export interface MarketplaceActionButtonsProps {
   name: string;
@@ -45,7 +46,7 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
   const auctionData = useAuctionData({
     auctionId,
     isAuction,
-    initialBid: currentBid || '1 MATIC',
+    initialBid: currentBid || `1 ${NETWORK_CURRENCY}`,
     refreshInterval: 30
   });
   const displayCurrentBid = isAuction 
@@ -94,7 +95,7 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
     } else {
       return <>
         {!isAuctionEnded ? (
-          <AuctionBidButton auctionId={auctionId} currentBid={displayCurrentBid || '0 MATIC'} minimumBid={currentBid || '0'} endTime={endTime || new Date()} currency="MATIC" className="w-full h-10 text-sm" onBidSuccess={() => auctionData.refetch()} />
+          <AuctionBidButton auctionId={auctionId} currentBid={displayCurrentBid || `0 ${NETWORK_CURRENCY}`} minimumBid={currentBid || '0'} endTime={endTime || new Date()} currency={NETWORK_CURRENCY} className="w-full h-10 text-sm" onBidSuccess={() => auctionData.refetch()} />
         ) : (
           <CollectAuctionTokensButton auctionId={auctionId} nftName={name} className="w-full h-10 text-sm" variant="default" />
         )}

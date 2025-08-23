@@ -15,6 +15,7 @@ interface AuctionData {
   isLoading: boolean;
   lastUpdated: number | null;
   error: string | null;
+  refetch: () => void;
 }
 
 export function useAuctionData({
