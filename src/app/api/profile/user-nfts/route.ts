@@ -706,7 +706,7 @@ export async function GET(request: Request) {
              // Combinar e deduplificar NFTs de todas as fontes
        const existingIds = new Set();
        const existingTokenIds = new Set(); // Para evitar duplicatas por tokenId
-       const allNFTs = [];
+       const allNFTs: any[] = [];
        
        // 🎯 FUNÇÃO DE DEDUPLICAÇÃO MELHORADA
        function addNFTIfNotDuplicate(nft: any, source: string) {
