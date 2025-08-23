@@ -36,7 +36,7 @@ export default function MarketplacePage() {
 
   // Thirdweb hooks
   const chain = useActiveWalletChain();
-  const { nfts: marketplaceItems, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
+  const { nfts: allItems, collections, loading: marketplaceLoading, error: marketplaceError, refetch } = useMarketplaceData();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<CollectionTab>('all');
   const [priceSort, setPriceSort] = useState<PriceSort>('volume-desc');
@@ -60,8 +60,11 @@ export default function MarketplacePage() {
     if (!marketplaceLoading) setShowGlobalLoader(false);
   }, [marketplaceLoading]);
   useEffect(() => {}, []);
+  // Base de dados do marketplace deve ser SOMENTE coleções:
+  const sourceItems = collections || []; // ✅ somente coleções
+
   useEffect(() => {
-    let filtered = marketplaceItems || [];
+    let filtered = sourceItems || [];
     
     // Filtro por tipo de token
     if (tokenType !== 'all') {
@@ -89,16 +92,16 @@ export default function MarketplacePage() {
     }
     
     setFilteredNfts(filtered);
-  }, [marketplaceItems, tokenType, searchTerm, blacklist]);
+  }, [sourceItems, tokenType, searchTerm, blacklist]);
   useEffect(() => {
-    const items = marketplaceItems || [];
+    const items = sourceItems || [];
     const collections = Array.from(new Set(items.map(item => item.category).filter(Boolean)));
     setCounters({
       total: collections.length,
       watchlist: watchlist.length,
       owned: ownedCollections.length
     });
-  }, [marketplaceItems, watchlist.length, ownedCollections.length]);
+  }, [sourceItems, watchlist.length, ownedCollections.length]);
 
   // Helper para obter contrato NFT universal (todos os tipos usam o mesmo)
   const getContractByCategory = (category: string): string => {
@@ -330,7 +333,7 @@ export default function MarketplacePage() {
       <div className="flex-1">
         {/* Featured Carousel */}
         <div className="w-full">
-          <FeaturedCarousel marketplaceData={marketplaceItems || []} loading={marketplaceLoading} />
+          <FeaturedCarousel marketplaceData={sourceItems || []} loading={marketplaceLoading} />
         </div>
 
         {/* Data Source Indicator - Removido temporariamente */}
@@ -341,10 +344,10 @@ export default function MarketplacePage() {
             <MarketplaceStatsLoading />
           ) : (
             <MarketplaceStats
-              totalListings={marketplaceItems?.filter(item => item.isListed && !item.isAuction)?.length || 0}
-              totalAuctions={marketplaceItems?.filter(item => item.isAuction)?.length || 0}
+              totalListings={sourceItems?.filter(item => item.isListed && !item.isAuction)?.length || 0}
+              totalAuctions={sourceItems?.filter(item => item.isAuction)?.length || 0}
               totalVolume={(() => {
-                const totalVol = marketplaceItems?.reduce((sum, item) => {
+                const totalVol = sourceItems?.reduce((sum, item) => {
                   if (item.isListed || item.isAuction) {
                     // Clean the price and convert correctly
                     let priceStr = item.price?.replace(` ${NETWORK_CURRENCY}`, '').replace(NETWORK_CURRENCY, '').trim() || '0';
@@ -372,7 +375,7 @@ export default function MarketplacePage() {
                 return `${totalVol.toFixed(4)} ${NETWORK_CURRENCY}`;
               })()}
               floorPrice={(() => {
-                const listedItems = marketplaceItems?.filter(item => 
+                const listedItems = sourceItems?.filter(item => 
                   (item.isListed || item.isAuction) && item.price && item.price !== 'Not for sale'
                 ) || [];
                 if (listedItems.length === 0) return `0 ${NETWORK_CURRENCY}`;

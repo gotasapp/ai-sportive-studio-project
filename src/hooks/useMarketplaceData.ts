@@ -53,6 +53,7 @@ interface MarketplaceNFT {
 
 interface MarketplaceData {
   nfts: MarketplaceNFT[];
+  collections: MarketplaceNFT[]; // ✅ novo
   loading: boolean;
   error: string | null;
   totalCount: number;
@@ -77,6 +78,7 @@ export function useMarketplaceData() {
   
   const [data, setData] = useState<MarketplaceData>({
     nfts: [],
+    collections: [], // ✅
     loading: true,
     error: null,
     totalCount: 0,
@@ -330,38 +332,50 @@ export function useMarketplaceData() {
         };
       });
 
-      // Combine all data
-      const allNFTs = [...apiNFTs, ...processedThirdwebNFTs, ...processedListings, ...processedAuctions];
-      
-      // 🎯 LOG FINAL DOS DADOS
-      console.log('🎯 [MARKETPLACE DATA] Dados processados:', {
-        totalNFTs: allNFTs.length,
-        apiNFTs: apiNFTs.length,
-        thirdwebNFTs: processedThirdwebNFTs.length,
-        listings: processedListings.length,
-        auctions: processedAuctions.length,
-        network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY',
-        currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'
-      });
+             // Somente coleções (NUNCA incluir Thirdweb aqui)
+       const collectionsOnly = apiNFTs.filter((item: any) => {
+         const isLaunchpad =
+           item.type === 'launchpad' ||
+           item.collectionType === 'launchpad' ||
+           item.marketplace?.isLaunchpadCollection;
 
-      // Categorize NFTs
-      const categorizedNFTs = {
-        jerseys: allNFTs.filter(nft => nft.category === 'jersey' || nft.category === 'jerseys'),
-        stadiums: allNFTs.filter(nft => nft.category === 'stadium' || nft.category === 'stadiums'),
-        badges: allNFTs.filter(nft => nft.category === 'badge' || nft.category === 'badges')
-      };
+         return item.isCollection || item.isCustomCollection || isLaunchpad;
+       });
 
-      // Featured NFTs (first 6)
-      const featuredNFTs = allNFTs.slice(0, 6);
+       // Combine all data
+       const allNFTs = [...apiNFTs, ...processedThirdwebNFTs, ...processedListings, ...processedAuctions];
+       
+       // 🎯 LOG FINAL DOS DADOS
+       console.log('🎯 [MARKETPLACE DATA] Dados processados:', {
+         totalNFTs: allNFTs.length,
+         apiNFTs: apiNFTs.length,
+         collectionsOnly: collectionsOnly.length,
+         thirdwebNFTs: processedThirdwebNFTs.length,
+         listings: processedListings.length,
+         auctions: processedAuctions.length,
+         network: USE_CHZ_MAINNET ? 'CHZ' : 'AMOY',
+         currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'
+       });
 
-      setData({
-        nfts: allNFTs,
-        loading: false,
-        error: null,
-        totalCount: allNFTs.length,
-        categories: categorizedNFTs,
-        featuredNFTs
-      });
+       // Categorize NFTs
+       const categorizedNFTs = {
+         jerseys: allNFTs.filter(nft => nft.category === 'jersey' || nft.category === 'jerseys'),
+         stadiums: allNFTs.filter(nft => nft.category === 'stadium' || nft.category === 'stadiums'),
+         badges: allNFTs.filter(nft => nft.category === 'badge' || nft.category === 'badges')
+       };
+
+       // Featured NFTs (first 6)
+       const featuredNFTs = allNFTs.slice(0, 6);
+
+       setData({
+         nfts: allNFTs,
+         collections: collectionsOnly, // ✅ só coleções
+         loading: false,
+         error: null,
+         totalCount: allNFTs.length,
+         categories: categorizedNFTs,
+         featuredNFTs
+       });
 
     } catch (error) {
       console.error('❌ Error fetching marketplace data:', error);
