@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useActiveWalletChain } from 'thirdweb/react';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
-import { convertIpfsToHttp } from '@/lib/ipfs-utils';
+import { convertIpfsToHttp } from '@/lib/utils';
 import { USE_CHZ_MAINNET, ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
 
 interface MarketplaceNFT {
