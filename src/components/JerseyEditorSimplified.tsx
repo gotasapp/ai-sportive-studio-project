@@ -251,14 +251,12 @@ export default function JerseyEditor() {
         isConnected={isConnected}
         isOnSupportedChain={isOnSupportedChain}
         isUserAdmin={isUserAdmin}
-        canMintLegacy={Boolean(canMintLegacy)}
         canMintGasless={!!canMintGasless}
         isMinting={isMinting}
         mintStatus={mintStatus}
         mintSuccess={mintSuccess}
         mintError={mintError}
         transactionHash={transactionHash}
-        onMintLegacy={handleMintNFT}
         onMintGasless={handleEngineNormalMint}
         generationCost={generationCost}
         availableTeams={availableTeams}
@@ -322,9 +320,7 @@ export default function JerseyEditor() {
           isLoading={isLoading}
           canGenerate={!!((selectedTeam && playerName && playerNumber) || isVisionMode)}      
           generationCost={generationCost}
-          onMintLegacy={handleMintNFT}
           onMintGasless={handleEngineNormalMint}
-          canMintLegacy={Boolean(canMintLegacy)}
           canMintGasless={!!canMintGasless}
           isMinting={isMinting}
           mintStatus={mintStatus}
