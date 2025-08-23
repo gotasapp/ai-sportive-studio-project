@@ -368,6 +368,13 @@ export default function CollectionsTable({
 
       console.log('🔄 Toggling vote for:', collectionName, 'action:', action, 'wallet:', account?.address);
 
+      // Update local visual state immediately (optimistic update)
+      setCollections(prev => prev.map(c => 
+        c.name === collectionName 
+          ? { ...c, isWatchlisted: nextStarred }
+          : c
+      ));
+
       // Persist vote in backend (same logic as like, applied to collection)
       const resp = await fetch('/api/collections/vote', {
         method: 'POST',
@@ -379,6 +386,12 @@ export default function CollectionsTable({
       if (!resp.ok) {
         const errorText = await resp.text();
         console.warn('❌ Collections vote API failed', resp.status, errorText);
+        // Revert optimistic update on error
+        setCollections(prev => prev.map(c => 
+          c.name === collectionName 
+            ? { ...c, isWatchlisted: !nextStarred }
+            : c
+        ));
       } else {
         const result = await resp.json();
         console.log('✅ Vote API response:', result);
@@ -387,14 +400,14 @@ export default function CollectionsTable({
       if (onToggleWatchlist) {
         onToggleWatchlist(collectionName)
       }
-      // Update local visual state (star on/off)
-      setCollections(prev => prev.map(c => 
-        c.name === collectionName 
-          ? { ...c, isWatchlisted: nextStarred }
-          : c
-      ))
     } catch (e) {
       console.error('Failed to toggle collection vote:', e);
+      // Revert optimistic update on error
+      setCollections(prev => prev.map(c => 
+        c.name === collectionName 
+          ? { ...c, isWatchlisted: !nextStarred }
+          : c
+      ));
     }
   }
 
@@ -414,13 +427,21 @@ export default function CollectionsTable({
           console.log('✅ Vote status for', c.name, ':', data);
           return { ...c, isWatchlisted: !!data.userVoted };
         }));
-        setCollections(updated);
+        
+        // Só atualiza se realmente houve mudanças
+        const hasChanges = updated.some((item, index) => item.isWatchlisted !== collections[index]?.isWatchlisted);
+        if (hasChanges) {
+          console.log('🔄 Updating collections with vote status changes');
+          setCollections(updated);
+        } else {
+          console.log('✅ No vote status changes detected');
+        }
       } catch (e) {
         console.warn('Failed to sync user vote status', e);
       }
     };
     syncUserVotes();
-  }, [account?.address, collections.length]);
+  }, [account?.address, collections.length]); // Readicionado collections.length mas com verificação de mudanças
 
   if (loading) {
     return (
