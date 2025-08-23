@@ -49,6 +49,16 @@ interface MarketplaceNFT {
   uniqueOwners?: number;
   listedCount?: number;
   auctionCount?: number;
+  
+  // Marketplace data from Thirdweb
+  marketplace?: {
+    thirdwebListedCount?: number;
+    thirdwebAuctionCount?: number;
+    thirdwebData?: {
+      price?: string;
+    };
+    mintedUnits?: number;
+  };
 }
 
 interface MarketplaceData {
