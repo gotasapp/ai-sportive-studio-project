@@ -101,13 +101,37 @@ export default function CollectionMintPage() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch(`/api/launchpad/collections/${collectionId}`);
-        const data = await response.json();
+        // Buscar dados da coleção
+        const collectionResponse = await fetch(`/api/launchpad/collections/${collectionId}`);
+        const collectionData = await collectionResponse.json();
         
-        if (data.success) {
-          setCollection(data.collection);
+        if (collectionData.success) {
+          // Buscar dados reais das NFTs mintadas
+          const mintsResponse = await fetch(`/api/launchpad/collections/${collectionId}/mints`);
+          const mintsData = await mintsResponse.json();
+          
+          if (mintsData.success) {
+            // Atualizar a coleção com os dados reais das NFTs mintadas
+            const updatedCollection = {
+              ...collectionData.collection,
+              minted: mintsData.data.totalMinted,
+              mintedPercentage: mintsData.data.mintedPercentage
+            };
+            
+            setCollection(updatedCollection);
+            console.log('✅ Collection data updated with real mint data:', {
+              name: updatedCollection.name,
+              minted: updatedCollection.minted,
+              totalSupply: updatedCollection.totalSupply,
+              percentage: updatedCollection.mintedPercentage
+            });
+          } else {
+            // Se não conseguir buscar os mints, usar os dados da coleção
+            setCollection(collectionData.collection);
+            console.log('⚠️ Using collection data without real mint data');
+          }
         } else {
-          setError(data.error || 'Failed to load collection');
+          setError(collectionData.error || 'Failed to load collection');
         }
       } catch (error) {
         console.error('Error fetching collection:', error);
@@ -254,7 +278,8 @@ export default function CollectionMintPage() {
     );
   }
 
-  const progress = collection.minted && collection.totalSupply 
+  // Calculate progress percentage using real mint data
+  const progress = collection && collection.minted !== undefined && collection.totalSupply 
     ? (collection.minted / collection.totalSupply) * 100 
     : 0;
   
