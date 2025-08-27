@@ -9,7 +9,7 @@ import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { toast } from 'sonner';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
 import { Edit3 } from 'lucide-react';
-import { ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
+import { ACTIVE_CHAIN_ID, NETWORK_NAME, ACTIVE_CONTRACTS } from '@/lib/network-config';
 import { clearThirdwebCache } from '@/lib/thirdweb-production-fix';
 
 interface UpdateListingModalProps {
@@ -78,6 +78,31 @@ export function UpdateListingModal({
       
       // 🧹 LIMPAR CACHE DO THIRDWEB PARA FORÇAR ATUALIZAÇÃO
       clearThirdwebCache();
+      
+      // 🔄 SINCRONIZAR DADOS APÓS ATUALIZAÇÃO (usando API existente)
+      try {
+        console.log('🔄 Sincronizando dados após atualização...');
+        const syncResponse = await fetch('/api/marketplace/sync-after-listing', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            transactionHash: result.transactionHash,
+            tokenId: tokenId || '0',
+            assetContract: ACTIVE_CONTRACTS.nftDrop,
+            userWallet: account.address,
+            listingId: listingId,
+            pricePerToken: newPrice
+          })
+        });
+        
+        if (syncResponse.ok) {
+          console.log('✅ Dados sincronizados com sucesso');
+        } else {
+          console.warn('⚠️ Falha na sincronização, mas listing foi atualizada');
+        }
+      } catch (syncError) {
+        console.warn('⚠️ Erro na sincronização:', syncError);
+      }
       
       onOpenChange(false);
       

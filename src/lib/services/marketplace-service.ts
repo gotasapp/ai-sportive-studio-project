@@ -361,7 +361,7 @@ export class MarketplaceService {
   }
 
   /**
-   * Atualizar listagem (principalmente preço)
+   * Atualizar preço de uma listagem existente
    */
   static async updateListing(
     account: Account,
@@ -407,25 +407,15 @@ export class MarketplaceService {
       
       const newPrice = priceToWei(params.newPricePerToken);
       
-      // Usar dados atuais como fallback para campos não especificados
-      const now = new Date();
-      const defaultEnd = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 dias
+      // ✅ CORRETO: Usar apenas updateListing com novo preço
+      console.log('🔄 Usando updateListing do Thirdweb v5...');
       
       const transaction = prepareContractCall({
         contract,
-        method: "function updateListing(uint256 _listingId, (address assetContract, uint256 tokenId, uint256 quantity, address currency, uint256 pricePerToken, uint128 startTimestamp, uint128 endTimestamp, bool reserved) _params)",
+        method: "function updateListing(uint256 _listingId, uint256 _pricePerToken)",
         params: [
           BigInt(params.listingId),
-          {
-            assetContract: params.assetContract || currentListing.assetContractAddress,
-            tokenId: params.tokenId ? BigInt(params.tokenId) : currentListing.tokenId,
-            quantity: params.quantity ? BigInt(params.quantity) : currentListing.quantity,
-            currency: NATIVE_TOKEN_ADDRESS,
-            pricePerToken: newPrice,
-            startTimestamp: BigInt(Math.floor((params.startTimestamp || now).getTime() / 1000)),
-            endTimestamp: BigInt(Math.floor((params.endTimestamp || defaultEnd).getTime() / 1000)),
-            reserved: params.reserved || false,
-          }
+          newPrice
         ]
       });
 
@@ -436,7 +426,7 @@ export class MarketplaceService {
 
       console.log('✅ LISTAGEM ATUALIZADA COM SUCESSO!');
       console.log('📄 Transaction Hash:', result.transactionHash);
-      console.log('💰 Novo preço:', params.newPricePerToken, 'MATIC');
+      console.log('💰 Novo preço:', params.newPricePerToken, 'CHZ');
 
       return { success: true, transactionHash: result.transactionHash };
     } catch (error: any) {
