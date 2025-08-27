@@ -1,5 +1,5 @@
 import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract, getRpcClient } from 'thirdweb';
-import { getAllValidListings } from 'thirdweb/extensions/marketplace';
+import { getAllValidListings, updateListing } from 'thirdweb/extensions/marketplace';
 import { Account } from 'thirdweb/wallets';
 import { polygonAmoy, defineChain } from 'thirdweb/chains';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
@@ -375,34 +375,9 @@ export class MarketplaceService {
     try {
       console.log('🔄 Preparando transação de atualização de listagem:', params);
       
-      // 🔧 FIX: Usar getAllValidListings para obter dados corretos
-      console.log('🔍 Buscando listagem atual via getAllValidListings...');
       const contract = getMarketplaceContract(chainId);
-      
-      const allListings = await getAllValidListings({
-        contract,
-        start: 0,
-        count: BigInt(100)
-      });
-      
-      const currentListing = allListings.find(listing => 
-        listing.id?.toString() === params.listingId
-      );
-      
-      if (!currentListing) {
-        throw new Error(`Listagem ${params.listingId} não encontrada no marketplace`);
-      }
-      
-      console.log('✅ Listagem encontrada:', {
-        id: currentListing.id?.toString(),
-        tokenId: currentListing.tokenId?.toString(),
-        currentPrice: currentListing.currencyValuePerToken?.displayValue,
-        creator: currentListing.creatorAddress
-      });
-      
       const newPrice = priceToWei(params.newPricePerToken);
       
-      // ✅ CORRETO: Preparar transação sem enviar
       console.log('🔄 Preparando transação updateListing...');
       console.log('📋 Parâmetros da transação:', {
         listingId: params.listingId,
@@ -411,13 +386,11 @@ export class MarketplaceService {
         account: account.address
       });
       
-      const transaction = prepareContractCall({
+      // ✅ CORRETO: Usar a função updateListing do Thirdweb extensions
+      const transaction = await updateListing({
         contract,
-        method: "function updateListing(uint256 _listingId, uint256 _pricePerToken)",
-        params: [
-          BigInt(params.listingId),
-          newPrice
-        ]
+        listingId: BigInt(params.listingId),
+        pricePerToken: newPrice.toString()
       });
 
       console.log('📋 Transação preparada:', transaction);
@@ -485,13 +458,10 @@ export class MarketplaceService {
         account: account.address
       });
       
-      const transaction = prepareContractCall({
+      const transaction = await updateListing({
         contract,
-        method: "function updateListing(uint256 _listingId, uint256 _pricePerToken)",
-        params: [
-          BigInt(params.listingId),
-          newPrice
-        ]
+        listingId: BigInt(params.listingId),
+        pricePerToken: newPrice.toString()
       });
 
       console.log('📋 Transação preparada:', transaction);
