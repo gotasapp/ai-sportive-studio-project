@@ -8,16 +8,9 @@ import { Label } from '@/components/ui/label';
 import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
 import { toast } from 'sonner';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
-import { updateListing } from 'thirdweb/extensions/marketplace';
-import { getContract, prepareContractCall, sendTransaction } from 'thirdweb';
-import { createThirdwebClient } from 'thirdweb';
 import { Edit3 } from 'lucide-react';
-
-const client = createThirdwebClient({
-  clientId: process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || '',
-});
-
-const MARKETPLACE_CONTRACT_ADDRESS = '0x723436a84d57150A5109eFC540B2f0b2359Ac76d';
+import { ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
+import { clearThirdwebCache } from '@/lib/thirdweb-production-fix';
 
 interface UpdateListingModalProps {
   isOpen: boolean;
@@ -55,9 +48,9 @@ export function UpdateListingModal({
       return;
     }
 
-    // Check if on correct network
-    if (chain.id !== 88888) {
-      toast.error('Please switch to CHZ Mainnet to update listings.');
+    // Check if on correct network using dynamic configuration
+    if (chain.id !== ACTIVE_CHAIN_ID) {
+      toast.error(`Please switch to ${NETWORK_NAME} to update listings.`);
       return;
     }
 
@@ -72,37 +65,20 @@ export function UpdateListingModal({
       console.log('📋 Account:', account.address);
       console.log('📋 Chain:', chain.id);
       
-      // 🔧 FIX: Use native Thirdweb updateListing function
-      console.log('🔄 USANDO FUNÇÃO NATIVA THIRDWEB updateListing...');
+      // ✅ CORRETO: Usar MarketplaceService.updateListing
+      console.log('🔄 USANDO MARKETPLACE SERVICE updateListing...');
       
-      const marketplaceContract = getContract({
-        client,
-        chain: chain,
-        address: MARKETPLACE_CONTRACT_ADDRESS,
-      });
-      
-      // Convert price to Wei
-      const priceInWei = (parseFloat(newPrice) * Math.pow(10, 18)).toString();
-      
-      console.log('📋 Parameters for updateListing:', {
-        listingId: BigInt(listingId),
-        pricePerTokenWei: priceInWei,
-        newPriceEther: newPrice
-      });
-      
-      const transaction = updateListing({
-        contract: marketplaceContract,
-        listingId: BigInt(listingId),
-        pricePerTokenWei: priceInWei,
-      });
-      
-      const result = await sendTransaction({
-        transaction,
-        account,
+      const result = await MarketplaceService.updateListing(account, chain.id, {
+        listingId: listingId,
+        newPricePerToken: newPrice
       });
 
-      toast.success(`Price updated to ${newPrice} CHZ! 🎉`);
+      toast.success(`Price updated to ${newPrice} ${chain.nativeCurrency?.symbol || 'CHZ'}! 🎉`);
       console.log('✅ Listing updated:', result.transactionHash);
+      
+      // 🧹 LIMPAR CACHE DO THIRDWEB PARA FORÇAR ATUALIZAÇÃO
+      clearThirdwebCache();
+      
       onOpenChange(false);
       
       // Reset form
@@ -118,7 +94,17 @@ export function UpdateListingModal({
 
     } catch (error: any) {
       console.error('❌ Error updating listing:', error);
-      toast.error(error.message || 'Error updating listing price.');
+      
+      // Tratamento de erro mais específico
+      if (error.message.includes('insufficient funds')) {
+        toast.error('Insufficient balance to update listing.');
+      } else if (error.message.includes('not owner')) {
+        toast.error('You are not the owner of this listing.');
+      } else if (error.message.includes('listing not found')) {
+        toast.error('Listing not found or already sold.');
+      } else {
+        toast.error(error.message || 'Error updating listing price.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -155,7 +141,7 @@ export function UpdateListingModal({
 
           <div className="space-y-2">
             <Label htmlFor="newPrice" className="text-[#FDFDFD]">
-              New Price ({chain?.nativeCurrency?.symbol || 'MATIC'})
+              New Price ({chain?.nativeCurrency?.symbol || 'CHZ'})
             </Label>
             <Input
               id="newPrice"
@@ -178,7 +164,7 @@ export function UpdateListingModal({
               <p className="text-sm text-[#FDFDFD]">
                 <span className="text-[#FDFDFD]/70">Price change:</span>{' '}
                 <span className="font-medium">
-                  {currentPrice} → {newPrice} {chain?.nativeCurrency?.symbol || 'MATIC'}
+                  {currentPrice} → {newPrice} {chain?.nativeCurrency?.symbol || 'CHZ'}
                 </span>
               </p>
               {priceChanged && (
