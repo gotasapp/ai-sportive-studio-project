@@ -361,6 +361,75 @@ export class MarketplaceService {
   }
 
   /**
+   * Preparar transação para atualizar preço de uma listagem (sem enviar)
+   * Para ser usada com useSendTransaction hook
+   */
+  static async prepareUpdateListingTransaction(
+    account: Account,
+    chainId: number,
+    params: {
+      listingId: string;
+      newPricePerToken: string;
+    }
+  ) {
+    try {
+      console.log('🔄 Preparando transação de atualização de listagem:', params);
+      
+      // 🔧 FIX: Usar getAllValidListings para obter dados corretos
+      console.log('🔍 Buscando listagem atual via getAllValidListings...');
+      const contract = getMarketplaceContract(chainId);
+      
+      const allListings = await getAllValidListings({
+        contract,
+        start: 0,
+        count: BigInt(100)
+      });
+      
+      const currentListing = allListings.find(listing => 
+        listing.id?.toString() === params.listingId
+      );
+      
+      if (!currentListing) {
+        throw new Error(`Listagem ${params.listingId} não encontrada no marketplace`);
+      }
+      
+      console.log('✅ Listagem encontrada:', {
+        id: currentListing.id?.toString(),
+        tokenId: currentListing.tokenId?.toString(),
+        currentPrice: currentListing.currencyValuePerToken?.displayValue,
+        creator: currentListing.creatorAddress
+      });
+      
+      const newPrice = priceToWei(params.newPricePerToken);
+      
+      // ✅ CORRETO: Preparar transação sem enviar
+      console.log('🔄 Preparando transação updateListing...');
+      console.log('📋 Parâmetros da transação:', {
+        listingId: params.listingId,
+        newPrice: newPrice.toString(),
+        contract: contract.address,
+        account: account.address
+      });
+      
+      const transaction = prepareContractCall({
+        contract,
+        method: "function updateListing(uint256 _listingId, uint256 _pricePerToken)",
+        params: [
+          BigInt(params.listingId),
+          newPrice
+        ]
+      });
+
+      console.log('📋 Transação preparada:', transaction);
+      return transaction;
+
+    } catch (error: any) {
+      console.error('❌ Erro ao preparar transação:', error);
+      throw new Error(error?.reason || error?.message || 'Falha ao preparar transação');
+    }
+  }
+
+  /**
    * Atualizar preço de uma listagem existente
    */
   static async updateListing(
@@ -409,6 +478,12 @@ export class MarketplaceService {
       
       // ✅ CORRETO: Usar apenas updateListing com novo preço
       console.log('🔄 Usando updateListing do Thirdweb v5...');
+      console.log('📋 Parâmetros da transação:', {
+        listingId: params.listingId,
+        newPrice: newPrice.toString(),
+        contract: contract.address,
+        account: account.address
+      });
       
       const transaction = prepareContractCall({
         contract,
@@ -418,6 +493,9 @@ export class MarketplaceService {
           newPrice
         ]
       });
+
+      console.log('📋 Transação preparada:', transaction);
+      console.log('📤 Enviando transação para wallet...');
 
       const result = await sendTransaction({
         transaction,

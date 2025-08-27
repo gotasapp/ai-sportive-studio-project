@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react';
+import { useActiveAccount, useActiveWalletChain, useSendTransaction } from 'thirdweb/react';
 import { toast } from 'sonner';
 import { MarketplaceService } from '@/lib/services/marketplace-service';
 import { Edit3 } from 'lucide-react';
@@ -36,6 +36,7 @@ export function UpdateListingModal({
   
   const account = useActiveAccount();
   const chain = useActiveWalletChain();
+  const { mutate: sendTransaction, isPending } = useSendTransaction();
 
   const handleUpdatePrice = async () => {
     if (!newPrice || isNaN(parseFloat(newPrice)) || parseFloat(newPrice) <= 0) {
@@ -68,68 +69,78 @@ export function UpdateListingModal({
       // ✅ CORRETO: Usar MarketplaceService.updateListing
       console.log('🔄 USANDO MARKETPLACE SERVICE updateListing...');
       
-      const result = await MarketplaceService.updateListing(account, chain.id, {
+      // Preparar a transação usando MarketplaceService
+      const transaction = await MarketplaceService.prepareUpdateListingTransaction(account, chain.id, {
         listingId: listingId,
         newPricePerToken: newPrice
       });
 
-      toast.success(`Price updated to ${newPrice} ${chain.nativeCurrency?.symbol || 'CHZ'}! 🎉`);
-      console.log('✅ Listing updated:', result.transactionHash);
-      
-      // 🧹 LIMPAR CACHE DO THIRDWEB PARA FORÇAR ATUALIZAÇÃO
-      clearThirdwebCache();
-      
-      // 🔄 SINCRONIZAR DADOS APÓS ATUALIZAÇÃO (usando API existente)
-      try {
-        console.log('🔄 Sincronizando dados após atualização...');
-        const syncResponse = await fetch('/api/marketplace/sync-after-listing', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            transactionHash: result.transactionHash,
-            tokenId: tokenId || '0',
-            assetContract: ACTIVE_CONTRACTS.nftDrop,
-            userWallet: account.address,
-            listingId: listingId,
-            pricePerToken: newPrice
-          })
-        });
-        
-        if (syncResponse.ok) {
-          console.log('✅ Dados sincronizados com sucesso');
-        } else {
-          console.warn('⚠️ Falha na sincronização, mas listing foi atualizada');
+      // Usar o hook useSendTransaction para enviar a transação
+      sendTransaction(transaction, {
+        onSuccess: async (result) => {
+          console.log('✅ Listing updated successfully:', result.transactionHash);
+          toast.success(`Price updated to ${newPrice} ${chain.nativeCurrency?.symbol || 'CHZ'}! 🎉`);
+          
+          // 🧹 LIMPAR CACHE DO THIRDWEB PARA FORÇAR ATUALIZAÇÃO
+          clearThirdwebCache();
+          
+          // 🔄 SINCRONIZAR DADOS APÓS ATUALIZAÇÃO (usando API existente)
+          try {
+            console.log('🔄 Sincronizando dados após atualização...');
+            const syncResponse = await fetch('/api/marketplace/sync-after-listing', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                transactionHash: result.transactionHash,
+                tokenId: tokenId || '0',
+                assetContract: ACTIVE_CONTRACTS.nftDrop,
+                userWallet: account.address,
+                listingId: listingId,
+                pricePerToken: newPrice
+              })
+            });
+            
+            if (syncResponse.ok) {
+              console.log('✅ Dados sincronizados com sucesso');
+            } else {
+              console.warn('⚠️ Falha na sincronização, mas listing foi atualizada');
+            }
+          } catch (syncError) {
+            console.warn('⚠️ Erro na sincronização:', syncError);
+          }
+          
+          onOpenChange(false);
+          
+          // Reset form
+          setNewPrice('');
+          
+          // ✅ CHAMAR CALLBACK DE SUCESSO EM VEZ DE RELOAD
+          if (onSuccess) {
+            console.log('🔄 Chamando onSuccess callback...');
+            setTimeout(() => {
+              onSuccess();
+            }, 2000);
+          }
+        },
+        onError: (error) => {
+          console.error('❌ Error updating listing:', error);
+          
+          // Tratamento de erro mais específico
+          if (error.message.includes('insufficient funds')) {
+            toast.error('Insufficient balance to update listing.');
+          } else if (error.message.includes('not owner')) {
+            toast.error('You are not the owner of this listing.');
+          } else if (error.message.includes('listing not found')) {
+            toast.error('Listing not found or already sold.');
+          } else {
+            toast.error(error.message || 'Error updating listing price.');
+          }
         }
-      } catch (syncError) {
-        console.warn('⚠️ Erro na sincronização:', syncError);
-      }
-      
-      onOpenChange(false);
-      
-      // Reset form
-      setNewPrice('');
-      
-      // ✅ CHAMAR CALLBACK DE SUCESSO EM VEZ DE RELOAD
-      if (onSuccess) {
-        console.log('🔄 Chamando onSuccess callback...');
-        setTimeout(() => {
-          onSuccess();
-        }, 2000);
-      }
+      });
 
     } catch (error: any) {
-      console.error('❌ Error updating listing:', error);
-      
-      // Tratamento de erro mais específico
-      if (error.message.includes('insufficient funds')) {
-        toast.error('Insufficient balance to update listing.');
-      } else if (error.message.includes('not owner')) {
-        toast.error('You are not the owner of this listing.');
-      } else if (error.message.includes('listing not found')) {
-        toast.error('Listing not found or already sold.');
-      } else {
-        toast.error(error.message || 'Error updating listing price.');
-      }
+      console.error('❌ Error preparing transaction:', error);
+      toast.error(error.message || 'Error preparing transaction.');
     } finally {
       setIsLoading(false);
     }
@@ -215,13 +226,13 @@ export function UpdateListingModal({
           </Button>
           <Button
             onClick={handleUpdatePrice}
-            disabled={isLoading || !priceChanged}
+            disabled={isLoading || isPending || !priceChanged}
             className="bg-[#FF0052] hover:bg-[#FF0052]/90 text-white"
           >
-            {isLoading ? (
+            {isLoading || isPending ? (
               <>
                 <div className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
-                Updating...
+                {isPending ? 'Waiting for wallet...' : 'Updating...'}
               </>
             ) : (
               <>
