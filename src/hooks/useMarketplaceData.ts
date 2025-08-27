@@ -5,6 +5,7 @@ import { useActiveWalletChain } from 'thirdweb/react';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 import { convertIpfsToHttp } from '@/lib/utils';
 import { USE_CHZ_MAINNET, ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
+import { weiToPrice } from '@/lib/marketplace-config';
 
 function determineNFTCategoryFromMetadata(metadata: any): string {
   if (!metadata) return 'nft';
@@ -328,7 +329,9 @@ export function useMarketplaceData() {
             description: metadata.description || '',
             image: imageUrlHttp,
             imageUrl: imageUrlHttp,
-            price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
+            price: listing?.currencyValuePerToken?.displayValue ? 
+              weiToPrice(BigInt(listing.currencyValuePerToken.displayValue)) : 
+              (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
             currency: listing?.currencyValuePerToken?.symbol || (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
             owner: nftOwner,
             creator: nftOwner,
@@ -372,7 +375,9 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          price: listing.currencyValue?.displayValue + ' ' + listing.currencyValue?.symbol || 'Listed',
+          price: listing.currencyValue?.displayValue ? 
+            weiToPrice(BigInt(listing.currencyValue.displayValue)) + ' ' + listing.currencyValue?.symbol : 
+            'Listed',
           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
           owner: listing.sellerAddress || 'Unknown',
           creator: nft?.creator || listing.sellerAddress || 'Unknown',
