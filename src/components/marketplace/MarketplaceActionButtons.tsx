@@ -52,8 +52,9 @@ export default function MarketplaceActionButtons(props: MarketplaceActionButtons
   const displayCurrentBid = isAuction 
     ? (auctionData.hasValidBid ? auctionData.currentBid : currentBid)
     : currentBid;
-  const isPriceValid = price !== 'Not for sale' && price !== 'N/A' ? isValidPrice(price) : true;
-  const safePrice = price !== 'Not for sale' && price !== 'N/A' && !isPriceValid ? 'Invalid price' : price;
+  // 🚨 SAFE PRICE VALIDATION - REMOVIDO pois preço já vem formatado da Thirdweb
+  const isPriceValid = true; // Sempre válido pois vem formatado da Thirdweb
+  const safePrice = price; // Usar preço diretamente
   const handleListButtonClick = () => {
     if (!assetContract) return;
     setShowCreateListing(true);

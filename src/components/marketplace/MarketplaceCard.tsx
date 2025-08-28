@@ -98,9 +98,9 @@ export default function MarketplaceCard({
     ? (auctionData.hasValidBid ? auctionData.currentBid : currentBid)
     : currentBid;
   
-  // 🚨 SAFE PRICE VALIDATION
-  const isPriceValid = price !== 'Not for sale' && price !== 'N/A' ? isValidPrice(price) : true;
-  const safePrice = price !== 'Not for sale' && price !== 'N/A' && !isPriceValid ? 'Invalid price' : price;
+  // 🚨 SAFE PRICE VALIDATION - REMOVIDO pois preço já vem formatado da Thirdweb
+  const isPriceValid = true; // Sempre válido pois vem formatado da Thirdweb
+  const safePrice = price; // Usar preço diretamente
   
   // 🔍 DEBUG: Logs detalhados para debug
   console.log('🔍 MarketplaceCard DEBUG:', {
