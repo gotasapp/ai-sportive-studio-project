@@ -5,7 +5,6 @@ import { useActiveWalletChain } from 'thirdweb/react';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 import { convertIpfsToHttp } from '@/lib/utils';
 import { USE_CHZ_MAINNET, ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
-import { toTokens } from 'thirdweb/utils';
 
 function determineNFTCategoryFromMetadata(metadata: any): string {
   if (!metadata) return 'nft';
@@ -329,10 +328,14 @@ export function useMarketplaceData() {
             description: metadata.description || '',
             image: imageUrlHttp,
             imageUrl: imageUrlHttp,
-            price: listing?.currencyValuePerToken?.displayValue ? 
-              `${toTokens(BigInt(listing.currencyValuePerToken.displayValue), 18)} CHZ` : 
-              (auction ? `${toTokens(BigInt(auction.minimumBidAmount), 18)} CHZ (Bid)` : 'Not for sale'),
-            currency: listing?.currencyValuePerToken?.symbol || (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
+            price: listing?.currencyValuePerToken
+              ? `${listing.currencyValuePerToken.displayValue} ${listing.currencyValuePerToken.symbol}`
+              : auction?.minimumBidCurrencyValue
+                ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol} (Bid)`
+                : 'Not for sale',
+            currency: listing?.currencyValuePerToken?.symbol 
+              ?? auction?.minimumBidCurrencyValue?.symbol 
+              ?? (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
             owner: nftOwner,
             creator: nftOwner,
             category: determineNFTCategoryFromMetadata(metadata),
@@ -375,10 +378,10 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          price: listing.currencyValue?.displayValue ? 
-            `${toTokens(BigInt(listing.currencyValue.displayValue), 18)} CHZ` : 
-            'Listed',
-          currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
+          price: listing.currencyValue 
+            ? `${listing.currencyValue.displayValue} ${listing.currencyValue.symbol}`
+            : 'Listed',
+          currency: listing.currencyValue?.symbol ?? (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
           owner: listing.sellerAddress || 'Unknown',
           creator: nft?.creator || listing.sellerAddress || 'Unknown',
           category: 'nft',
@@ -410,9 +413,9 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          price: auction.minimumBidCurrencyValue?.displayValue ? 
-            `${toTokens(BigInt(auction.minimumBidCurrencyValue.displayValue), 18)} CHZ` : 
-            'Auction',
+          price: auction.minimumBidCurrencyValue
+            ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
+            : 'Auction',
           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
           owner: auction.creatorAddress || 'Unknown',
           creator: nft?.creator || auction.creatorAddress || 'Unknown',
@@ -431,9 +434,9 @@ export function useMarketplaceData() {
           isAuction: true,
           activeOffers: 0,
           auctionId: auction.id?.toString(),
-          currentBid: auction.minimumBidCurrencyValue?.displayValue ? 
-            `${toTokens(BigInt(auction.minimumBidCurrencyValue.displayValue), 18)} CHZ` : 
-            'No bids',
+          currentBid: auction.minimumBidCurrencyValue
+            ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
+            : undefined,
           endTime: auction.endTime ? new Date(Number(auction.endTime) * 1000) : undefined,
           source: 'thirdweb'
         };
