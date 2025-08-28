@@ -51,6 +51,43 @@ export interface Offer {
 
 export class MarketplaceService {
   
+  // === HELPERS PARA CONVERSÃO DE PREÇOS ===
+  
+  /**
+   * Normaliza string humana para formato canônico
+   */
+  private static canonicalHuman(input: string): string {
+    // troca vírgula por ponto, remove espaços, garante "0.x" quando começa com ponto
+    let s = input.trim().replace(',', '.');
+    if (s.startsWith('.')) s = '0' + s;
+    // remove zeros à esquerda, preservando "0.x"
+    if (s.includes('.')) {
+      const [i, d] = s.split('.');
+      s = `${String(Number(i))}.${d}`;
+    } else {
+      s = String(Number(s));
+    }
+    return s;
+  }
+
+  /**
+   * Converte preço humano para Wei de forma estrita
+   */
+  private static humanToWeiStrict(human: string, decimals = 18): bigint {
+    // usa a função priceToWei existente que entende 18 casas
+    return priceToWei(MarketplaceService.canonicalHuman(human));
+  }
+
+  /**
+   * Converte Wei para preço humano formatado
+   */
+  private static fromWeiToHumanTrim(wei: bigint | string, decimals = 18): string {
+    const s = toTokens(BigInt(wei), decimals); // ex.: "18.000000000000000000"
+    // tira zeros finais e ponto solto
+    const trimmed = s.replace(/(\.\d*?[1-9])0+$/,'$1').replace(/\.0+$/,'').replace(/\.$/, '');
+    return trimmed;
+  }
+  
   // === DIRECT LISTINGS ===
   
   /**
@@ -361,35 +398,6 @@ export class MarketplaceService {
     }
   }
 
-  // 🔐 Helper: garante que sempre passamos "preço humano" para o wrapper updateListing
-  // Se o input vier acidentalmente em wei (número gigante sem ponto), convertemos para humano.
-  private static normalizeHumanPrice(input: string): string {
-    const s = input.trim();
-    
-    // ✅ Se tem ponto/vírgula, tratamos como humano
-    if (/[.,]/.test(s)) return s.replace(',', '.');
-    
-    // ✅ Se é um número pequeno (preço humano), retornar como está
-    const numValue = parseFloat(s);
-    if (!isNaN(numValue) && numValue >= 0 && numValue <= 1000000) {
-      return s; // Preço humano válido (ex.: "18", "1.5", "1000")
-    }
-    
-    // ✅ Se parece inteiro muito grande (ex.: wei real), converte para humano (18 decimais)
-    if (s.length > 21 && /^\d+$/.test(s)) {
-      try { 
-        const weiValue = BigInt(s);
-        const etherValue = Number(weiValue) / 1e18;
-        // Só converter se o resultado for razoável (não astronômico)
-        if (etherValue > 0 && etherValue <= 1000000) {
-          return toTokens(weiValue, 18); 
-        }
-      } catch { /* ignore */ }
-    }
-    
-    return s; // já está humano (ex.: "18")
-  }
-
   /**
    * Preparar transação para atualizar preço de uma listagem (sem enviar)
    * Para ser usada com useSendTransaction hook
@@ -407,24 +415,24 @@ export class MarketplaceService {
       
       const contract = getMarketplaceContract(chainId);
       
-      // ✅ IMPORTANTÍSSIMO:
-      // O wrapper updateListing() da thirdweb espera "preço humano" (string),
-      // e ele mesmo converte para unidades mínimas. NÃO envie wei aqui.
-      const humanPrice = MarketplaceService.normalizeHumanPrice(params.newPricePerToken);
+      // ✅ CORRETO: Converter para Wei e usar pricePerTokenWei
+      const human = MarketplaceService.canonicalHuman(params.newPricePerToken);
+      const wei = MarketplaceService.humanToWeiStrict(human);
       
       console.log('🔄 Preparando transação updateListing...');
       console.log('📋 Parâmetros da transação:', {
         listingId: params.listingId,
-        newPriceHuman: humanPrice,
+        newPriceHuman: human,
+        newPriceWei: wei.toString(),
         contract: contract.address,
         account: account.address
       });
       
-      // ✅ CORRETO: Usar a função updateListing do Thirdweb extensions
+      // ✅ CORRETO: Usar pricePerTokenWei para evitar conversão dupla
       const transaction = await updateListing({
         contract,
         listingId: BigInt(params.listingId),
-        pricePerToken: humanPrice,                // ← string humana ("18")
+        pricePerTokenWei: wei.toString(),          // ← string em Wei
         currencyContractAddress: NATIVE_TOKEN_ADDRESS
       });
 
@@ -484,10 +492,12 @@ export class MarketplaceService {
       
       // ✅ CORRETO: Usar apenas updateListing com novo preço
       console.log('🔄 Usando updateListing do Thirdweb v5...');
-      const humanPrice = MarketplaceService.normalizeHumanPrice(params.newPricePerToken);
+      const human = MarketplaceService.canonicalHuman(params.newPricePerToken);
+      const wei = MarketplaceService.humanToWeiStrict(human);
       console.log('📋 Parâmetros da transação:', {
         listingId: params.listingId,
-        newPriceHuman: humanPrice,
+        newPriceHuman: human,
+        newPriceWei: wei.toString(),
         contract: contract.address,
         account: account.address
       });
@@ -495,7 +505,7 @@ export class MarketplaceService {
       const transaction = await updateListing({
         contract,
         listingId: BigInt(params.listingId),
-        pricePerToken: humanPrice,                // ← string humana ("18")
+        pricePerTokenWei: wei.toString(),          // ← string em Wei
         currencyContractAddress: NATIVE_TOKEN_ADDRESS
       });
 

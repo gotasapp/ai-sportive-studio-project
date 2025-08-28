@@ -44,6 +44,17 @@ export function UpdateListingModal({
       return;
     }
 
+    // ✅ VALIDAÇÃO ADICIONAL: Verificar se não é um valor em Wei
+    const v = newPrice.trim().replace(',', '.');
+    if (!/^\d+(\.\d+)?$/.test(v)) {
+      toast.error('Digite um valor válido (use ponto como decimal).');
+      return;
+    }
+    if (/^\d{15,}$/.test(v)) {
+      toast.error('Esse valor parece estar em wei. Digite em CHZ, ex.: 18 ou 0.25.');
+      return;
+    }
+
     if (!account || !chain) {
       toast.error('Please connect your wallet first.');
       return;
