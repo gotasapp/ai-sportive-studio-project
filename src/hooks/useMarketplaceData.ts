@@ -5,6 +5,8 @@ import { useActiveWalletChain } from 'thirdweb/react';
 import { getThirdwebDataWithFallback } from '@/lib/thirdweb-production-fix';
 import { convertIpfsToHttp } from '@/lib/utils';
 import { USE_CHZ_MAINNET, ACTIVE_CHAIN_ID, NETWORK_NAME } from '@/lib/network-config';
+import { weiToPrice } from '@/lib/marketplace-config';
+// import { toTokens } from 'thirdweb/utils'; // ❌ não é necessário para valores já formatados
 
 function determineNFTCategoryFromMetadata(metadata: any): string {
   if (!metadata) return 'nft';
@@ -333,8 +335,9 @@ export function useMarketplaceData() {
               : auction?.minimumBidCurrencyValue
                 ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol} (Bid)`
                 : 'Not for sale',
-            currency: listing?.currencyValuePerToken?.symbol 
-              ?? auction?.minimumBidCurrencyValue?.symbol 
+            currency:
+              listing?.currencyValuePerToken?.symbol
+              ?? auction?.minimumBidCurrencyValue?.symbol
               ?? (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
             owner: nftOwner,
             creator: nftOwner,
@@ -354,7 +357,9 @@ export function useMarketplaceData() {
             activeOffers: 0,
             listingId: listing?.id.toString(),
             auctionId: auction?.id.toString(),
-            currentBid: auction?.minimumBidAmount?.toString(),
+            currentBid: auction?.minimumBidCurrencyValue
+              ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
+              : undefined,
             endTime: auction?.endTimeInSeconds ? new Date(Number(auction.endTimeInSeconds) * 1000) : undefined,
             source: 'thirdweb'
           };
@@ -378,7 +383,8 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          price: listing.currencyValue 
+          // ✅ usar currencyValue formatado
+          price: listing.currencyValue
             ? `${listing.currencyValue.displayValue} ${listing.currencyValue.symbol}`
             : 'Listed',
           currency: listing.currencyValue?.symbol ?? (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
@@ -413,6 +419,7 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
+          // ✅ usar minimumBidCurrencyValue formatado
           price: auction.minimumBidCurrencyValue
             ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
             : 'Auction',
