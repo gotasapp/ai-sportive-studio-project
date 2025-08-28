@@ -365,12 +365,28 @@ export class MarketplaceService {
   // Se o input vier acidentalmente em wei (número gigante sem ponto), convertemos para humano.
   private static normalizeHumanPrice(input: string): string {
     const s = input.trim();
-    // Se tem ponto/vírgula, tratamos como humano
+    
+    // ✅ Se tem ponto/vírgula, tratamos como humano
     if (/[.,]/.test(s)) return s.replace(',', '.');
-    // Se parece inteiro muito grande (ex.: wei), converte para humano (18 decimais)
-    if (s.length > 21 && /^\d+$/.test(s)) {
-      try { return toTokens(BigInt(s), 18); } catch { /* ignore */ }
+    
+    // ✅ Se é um número pequeno (preço humano), retornar como está
+    const numValue = parseFloat(s);
+    if (!isNaN(numValue) && numValue >= 0 && numValue <= 1000000) {
+      return s; // Preço humano válido (ex.: "18", "1.5", "1000")
     }
+    
+    // ✅ Se parece inteiro muito grande (ex.: wei real), converte para humano (18 decimais)
+    if (s.length > 21 && /^\d+$/.test(s)) {
+      try { 
+        const weiValue = BigInt(s);
+        const etherValue = Number(weiValue) / 1e18;
+        // Só converter se o resultado for razoável (não astronômico)
+        if (etherValue > 0 && etherValue <= 1000000) {
+          return toTokens(weiValue, 18); 
+        }
+      } catch { /* ignore */ }
+    }
+    
     return s; // já está humano (ex.: "18")
   }
 
