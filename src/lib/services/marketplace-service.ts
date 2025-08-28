@@ -376,7 +376,10 @@ export class MarketplaceService {
       console.log('🔄 Preparando transação de atualização de listagem:', params);
       
       const contract = getMarketplaceContract(chainId);
-      const newPrice = priceToWei(params.newPricePerToken);
+      
+      // 🔧 FIX: A função updateListing do Thirdweb já espera o preço em Wei
+      // Não precisamos converter novamente com priceToWei
+      const newPrice = BigInt(Math.floor(parseFloat(params.newPricePerToken) * 1e18));
       
       console.log('🔄 Preparando transação updateListing...');
       console.log('📋 Parâmetros da transação:', {
@@ -447,7 +450,7 @@ export class MarketplaceService {
         creator: currentListing.creatorAddress
       });
       
-      const newPrice = priceToWei(params.newPricePerToken);
+      const newPrice = BigInt(Math.floor(parseFloat(params.newPricePerToken) * 1e18));
       
       // ✅ CORRETO: Usar apenas updateListing com novo preço
       console.log('🔄 Usando updateListing do Thirdweb v5...');
