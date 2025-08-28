@@ -330,11 +330,7 @@ export function useMarketplaceData() {
             description: metadata.description || '',
             image: imageUrlHttp,
             imageUrl: imageUrlHttp,
-            price: listing?.currencyValuePerToken
-              ? `${listing.currencyValuePerToken.displayValue} ${listing.currencyValuePerToken.symbol}`
-              : auction?.minimumBidCurrencyValue
-                ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol} (Bid)`
-                : 'Not for sale',
+            price: listing?.currencyValuePerToken?.displayValue || (auction ? `${auction.minimumBidAmount?.toString()} (Bid)` : 'Not for sale'),
             currency:
               listing?.currencyValuePerToken?.symbol
               ?? auction?.minimumBidCurrencyValue?.symbol
@@ -357,9 +353,7 @@ export function useMarketplaceData() {
             activeOffers: 0,
             listingId: listing?.id.toString(),
             auctionId: auction?.id.toString(),
-            currentBid: auction?.minimumBidCurrencyValue
-              ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
-              : undefined,
+            currentBid: auction?.minimumBidAmount?.toString(),
             endTime: auction?.endTimeInSeconds ? new Date(Number(auction.endTimeInSeconds) * 1000) : undefined,
             source: 'thirdweb'
           };
@@ -383,10 +377,7 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          // ✅ usar currencyValue formatado
-          price: listing.currencyValue
-            ? `${listing.currencyValue.displayValue} ${listing.currencyValue.symbol}`
-            : 'Listed',
+          price: listing.currencyValue?.displayValue + ' ' + listing.currencyValue?.symbol || 'Listed',
           currency: listing.currencyValue?.symbol ?? (USE_CHZ_MAINNET ? 'CHZ' : 'MATIC'),
           owner: listing.sellerAddress || 'Unknown',
           creator: nft?.creator || listing.sellerAddress || 'Unknown',
@@ -419,10 +410,7 @@ export function useMarketplaceData() {
           description: nft?.metadata?.description || '',
           image: convertIpfsToHttp(nft?.metadata?.image || ''),
           imageUrl: convertIpfsToHttp(nft?.metadata?.image || ''),
-          // ✅ usar minimumBidCurrencyValue formatado
-          price: auction.minimumBidCurrencyValue
-            ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
-            : 'Auction',
+          price: auction.minimumBidCurrencyValue?.displayValue + ' ' + auction.minimumBidCurrencyValue?.symbol || 'Auction',
           currency: USE_CHZ_MAINNET ? 'CHZ' : 'MATIC',
           owner: auction.creatorAddress || 'Unknown',
           creator: nft?.creator || auction.creatorAddress || 'Unknown',
@@ -441,9 +429,7 @@ export function useMarketplaceData() {
           isAuction: true,
           activeOffers: 0,
           auctionId: auction.id?.toString(),
-          currentBid: auction.minimumBidCurrencyValue
-            ? `${auction.minimumBidCurrencyValue.displayValue} ${auction.minimumBidCurrencyValue.symbol}`
-            : undefined,
+          currentBid: auction.minimumBidCurrencyValue?.displayValue + ' ' + auction.minimumBidCurrencyValue?.symbol,
           endTime: auction.endTime ? new Date(Number(auction.endTime) * 1000) : undefined,
           source: 'thirdweb'
         };
