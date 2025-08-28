@@ -1,6 +1,7 @@
 import { createThirdwebClient, getContract, prepareContractCall, sendTransaction, readContract, getRpcClient } from 'thirdweb';
 import { getAllValidListings, updateListing } from 'thirdweb/extensions/marketplace';
 import { Account } from 'thirdweb/wallets';
+import { toTokens } from 'thirdweb/utils';
 import { polygonAmoy, defineChain } from 'thirdweb/chains';
 import { getMarketplaceContract, getNFTContract, NATIVE_TOKEN_ADDRESS, getOfferCurrency, priceToWei, weiToPrice } from '../marketplace-config';
 import { toast } from 'sonner';
@@ -360,6 +361,19 @@ export class MarketplaceService {
     }
   }
 
+  // 🔐 Helper: garante que sempre passamos "preço humano" para o wrapper updateListing
+  // Se o input vier acidentalmente em wei (número gigante sem ponto), convertemos para humano.
+  private static normalizeHumanPrice(input: string): string {
+    const s = input.trim();
+    // Se tem ponto/vírgula, tratamos como humano
+    if (/[.,]/.test(s)) return s.replace(',', '.');
+    // Se parece inteiro muito grande (ex.: wei), converte para humano (18 decimais)
+    if (s.length > 21 && /^\d+$/.test(s)) {
+      try { return toTokens(BigInt(s), 18); } catch { /* ignore */ }
+    }
+    return s; // já está humano (ex.: "18")
+  }
+
   /**
    * Preparar transação para atualizar preço de uma listagem (sem enviar)
    * Para ser usada com useSendTransaction hook
@@ -377,14 +391,15 @@ export class MarketplaceService {
       
       const contract = getMarketplaceContract(chainId);
       
-      // 🔧 FIX: A função updateListing do Thirdweb já espera o preço em Wei
-      // Não precisamos converter novamente com priceToWei
-      const newPrice = BigInt(Math.floor(parseFloat(params.newPricePerToken) * 1e18));
+      // ✅ IMPORTANTÍSSIMO:
+      // O wrapper updateListing() da thirdweb espera "preço humano" (string),
+      // e ele mesmo converte para unidades mínimas. NÃO envie wei aqui.
+      const humanPrice = MarketplaceService.normalizeHumanPrice(params.newPricePerToken);
       
       console.log('🔄 Preparando transação updateListing...');
       console.log('📋 Parâmetros da transação:', {
         listingId: params.listingId,
-        newPrice: newPrice.toString(),
+        newPriceHuman: humanPrice,
         contract: contract.address,
         account: account.address
       });
@@ -393,7 +408,8 @@ export class MarketplaceService {
       const transaction = await updateListing({
         contract,
         listingId: BigInt(params.listingId),
-        pricePerToken: newPrice.toString()
+        pricePerToken: humanPrice,                // ← string humana ("18")
+        currencyContractAddress: NATIVE_TOKEN_ADDRESS
       });
 
       console.log('📋 Transação preparada:', transaction);
@@ -450,13 +466,12 @@ export class MarketplaceService {
         creator: currentListing.creatorAddress
       });
       
-      const newPrice = BigInt(Math.floor(parseFloat(params.newPricePerToken) * 1e18));
-      
       // ✅ CORRETO: Usar apenas updateListing com novo preço
       console.log('🔄 Usando updateListing do Thirdweb v5...');
+      const humanPrice = MarketplaceService.normalizeHumanPrice(params.newPricePerToken);
       console.log('📋 Parâmetros da transação:', {
         listingId: params.listingId,
-        newPrice: newPrice.toString(),
+        newPriceHuman: humanPrice,
         contract: contract.address,
         account: account.address
       });
@@ -464,7 +479,8 @@ export class MarketplaceService {
       const transaction = await updateListing({
         contract,
         listingId: BigInt(params.listingId),
-        pricePerToken: newPrice.toString()
+        pricePerToken: humanPrice,                // ← string humana ("18")
+        currencyContractAddress: NATIVE_TOKEN_ADDRESS
       });
 
       console.log('📋 Transação preparada:', transaction);
@@ -1367,7 +1383,7 @@ export class MarketplaceService {
         params: [BigInt(auctionId)]
       });
 
-      const bidAmountInMatic = weiToPrice(result[2]);
+      const bidAmountInMatic = weiToPrice(result[2]); // se estiver na CHZ chain, a UI deve exibir CHZ
       
       console.log('🏆 CURRENT WINNING BID:', {
         auctionId,
@@ -1381,7 +1397,7 @@ export class MarketplaceService {
         bidder: result[0],
         currency: result[1],
         bidAmount: result[2],
-        bidAmountFormatted: `${bidAmountInMatic} MATIC`,
+        bidAmountFormatted: `${bidAmountInMatic} CHZ`, // ajuste o rótulo conforme a rede
         hasValidBid: result[0] !== '0x0000000000000000000000000000000000000000'
       };
     } catch (error: any) {
