@@ -156,9 +156,9 @@ export default function MarketplaceMobileLayout({
     }
     
     if (viewTypeMobile === 'medium') {
-      // Grid 3 columns, medium cards
+      // Horizontal list layout, medium cards
       return (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-row gap-2 overflow-x-auto pb-2">
           {paginatedNFTs.map(item => {
             // 🎯 EXATA MESMA LÓGICA DO DESKTOP NFTGrid
             const isLaunchpadCollection =
