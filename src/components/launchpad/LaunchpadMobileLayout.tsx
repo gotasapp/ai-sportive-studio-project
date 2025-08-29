@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   Filter, 
@@ -18,11 +19,19 @@ import {
   ChevronRight,
   Timer,
   Target,
-  Coins
+  Coins,
+  Settings,
+  Eye,
+  EyeOff,
+  Edit,
+  Trash2,
+  Tag
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
+import { isAdmin } from '@/lib/admin-config';
+import { useActiveAccount } from 'thirdweb/react';
 
 interface LaunchpadCollection {
   _id: string;
@@ -32,7 +41,7 @@ interface LaunchpadCollection {
   price: string;
   totalSupply: number;
   minted: number;
-  status: 'upcoming' | 'active' | 'hidden';
+  status: 'upcoming' | 'active' | 'hidden' | 'pending_launchpad' | 'ended';
   launchDate?: string;
   endDate?: string;
   creator: {
@@ -55,12 +64,16 @@ interface LaunchpadMobileLayoutProps {
   searchTerm: string;
   activeFilter: string;
   loading?: boolean;
+  // 🎯 ADICIONAR PROP DE ADMIN
+  isUserAdmin?: boolean;
 }
 
 const STATUS_LABELS = {
   upcoming: { label: 'Upcoming', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
   active: { label: 'Live', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
-  hidden: { label: 'Ended', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' }
+  hidden: { label: 'Hidden', color: 'bg-gray-500/20 text-gray-400 border-gray-500/30' },
+  pending_launchpad: { label: 'Pending', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' },
+  ended: { label: 'Ended', color: 'bg-red-500/20 text-red-400 border-red-500/30' }
 };
 
 export default function LaunchpadMobileLayout({
@@ -70,14 +83,34 @@ export default function LaunchpadMobileLayout({
   onFilterChange,
   searchTerm,
   activeFilter,
-  loading = false
+  loading = false,
+  isUserAdmin = false
 }: LaunchpadMobileLayoutProps) {
+  const account = useActiveAccount();
+  const address = account?.address;
+  
+  // 🎯 VERIFICAÇÃO DE ADMIN LOCAL (fallback)
+  const [localIsAdmin, setLocalIsAdmin] = useState(false);
+  
+  // Verificar admin status localmente se não foi passado
+  useEffect(() => {
+    if (address && !isUserAdmin) {
+      const adminStatus = isAdmin({ address });
+      setLocalIsAdmin(adminStatus);
+    } else {
+      setLocalIsAdmin(isUserAdmin);
+    }
+  }, [address, isUserAdmin]);
+
   const [activeTab, setActiveTab] = useState('all');
 
-  // Filter collections based on active tab
+  // 🎯 FILTROS COMPLETOS INCLUINDO ADMIN
   const filteredCollections = collections.filter(collection => {
     if (activeTab === 'live') return collection.status === 'active';
     if (activeTab === 'upcoming') return collection.status === 'upcoming';
+    if (activeTab === 'pending' && (isUserAdmin || localIsAdmin)) return collection.status === 'pending_launchpad';
+    if (activeTab === 'hidden' && (isUserAdmin || localIsAdmin)) return collection.status === 'hidden';
+    if (activeTab === 'ended' && (isUserAdmin || localIsAdmin)) return collection.status === 'ended';
     return true; // 'all' tab
   });
 
@@ -102,7 +135,7 @@ export default function LaunchpadMobileLayout({
 
   const renderCollectionCard = (collection: LaunchpadCollection) => {
     const progress = calculateProgress(collection.minted, collection.totalSupply);
-    const statusConfig = STATUS_LABELS[collection.status];
+    const statusConfig = STATUS_LABELS[collection.status] || STATUS_LABELS.upcoming;
     const timeRemaining = formatTimeRemaining(collection.endDate);
     
     return (
@@ -127,16 +160,42 @@ export default function LaunchpadMobileLayout({
               </div>
               
               {/* Time Remaining */}
-              {collection.status === 'active' && (
-                <div className="absolute top-3 right-3">
-                  <Badge className="bg-black/50 text-white border-white/20 text-xs">
-                    <Timer className="w-3 h-3 mr-1" />
-                    {timeRemaining}
-                  </Badge>
+              <div className="absolute top-3 right-3">
+                <Badge className="bg-black/80 text-white text-xs font-medium px-2 py-1 border border-white/30">
+                  <Timer className="w-3 h-3 mr-1" />
+                  {timeRemaining}
+                </Badge>
+              </div>
+              
+              {/* 🎯 ADMIN CONTROLS */}
+              {(isUserAdmin || localIsAdmin) && (
+                <div className="absolute bottom-3 right-3 flex gap-1">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-black/80 text-white hover:bg-black/90 p-1 h-8 w-8"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // TODO: Implement edit functionality
+                    }}
+                  >
+                    <Edit className="w-3 h-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="bg-black/80 text-red-400 hover:bg-black/90 p-1 h-8 w-8"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      // TODO: Implement delete functionality
+                    }}
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
                 </div>
               )}
             </div>
-
+            
             {/* Content */}
             <CardContent className="p-4 space-y-3">
               {/* Title and Creator */}
@@ -180,6 +239,8 @@ export default function LaunchpadMobileLayout({
                 {collection.status === 'upcoming' && 'Coming Soon'}
                 {collection.status === 'active' && 'Mint Now'}
                 {collection.status === 'hidden' && 'Ended'}
+                {collection.status === 'pending_launchpad' && 'Pending Approval'}
+                {collection.status === 'ended' && 'Ended'}
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </CardContent>
@@ -191,102 +252,99 @@ export default function LaunchpadMobileLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518]">
+      <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
         <Header />
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#FF0052]"></div>
-        </div>
+        <main className="container mx-auto px-4 py-8">
+          <div className="space-y-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-[#14101e]/60 rounded-lg h-64"></div>
+              </div>
+            ))}
+          </div>
+        </main>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-[#030303] to-[#0b0518]">
       <Header />
       
-      {/* Mobile Stats Bar - Igual ao Marketplace */}
-      <div className="py-2">
-        <Card className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#181828] border-none shadow-sm w-full max-w-full mx-auto">
-          {/* Total Collections */}
-          <div className="flex flex-col items-start min-w-[90px]">
-            <span className="text-xs text-white/70 font-medium">Collections</span>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-[#FF0052]">{stats.totalCollections}</span>
-            </div>
-          </div>
-          {/* Live Drops */}
-          <div className="flex flex-col items-end min-w-[90px]">
-            <span className="text-xs text-white/70 font-medium">Live Now</span>
-            <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-[#FF0052]">{stats.activeDrops}</span>
-              {stats.activeDrops > 0 && (
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              )}
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Filtros - Igual ao Marketplace */}
-      <div className="flex items-center gap-2 mt-4 mb-2 w-full justify-center">
-        {['All', 'Live', 'Upcoming', 'Ended'].map((filter) => (
-          <button
-            key={filter}
-            onClick={() => {
-              if (filter === 'All') setActiveTab('all');
-              else if (filter === 'Live') setActiveTab('live');
-              else if (filter === 'Upcoming') setActiveTab('upcoming');
-              else setActiveTab('all');
-            }}
-            className={
-              ((filter === 'All' && activeTab === 'all') ||
-               (filter === 'Live' && activeTab === 'live') ||
-               (filter === 'Upcoming' && activeTab === 'upcoming')
-                ? 'bg-[#FF0052] text-white'
-                : 'text-white/80') +
-              ' px-4 py-1.5 rounded-lg font-semibold text-xs border-none min-w-[60px] transition-all duration-150'
-            }
-            style={!((filter === 'All' && activeTab === 'all') ||
-                    (filter === 'Live' && activeTab === 'live') ||
-                    (filter === 'Upcoming' && activeTab === 'upcoming')) ? { background: 'rgba(20,16,30,0.4)' } : {}}
-          >
-            {filter}
-          </button>
-        ))}
-      </div>
-      
-      {/* Search Bar - Igual ao Marketplace */}
-      <div className="flex items-center gap-2 mt-4 mb-2">
-        <div className="relative w-[90%] mx-auto">
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none">
-            <Search className="w-5 h-5" />
-          </span>
-          <Input
-            placeholder="Search collections..."
-            value={searchTerm}
-            onChange={(e) => onSearch(e.target.value)}
-            className="pl-10 pr-3 py-3 rounded-xl bg-[#14101e]/60 border-[#FDFDFD]/10 text-white placeholder:text-[#FDFDFD]/40 focus:border-[#FF0052] w-full"
-          />
+      <main className="container mx-auto px-4 py-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <Card className="cyber-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-[#FDFDFD]/70">Collections</p>
+                  <p className="text-lg font-bold text-[#FDFDFD]">{stats.totalCollections}</p>
+                </div>
+                <Tag className="h-4 w-4 text-[#FF0052]" />
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="cyber-card">
+            <CardContent className="p-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-[#FDFDFD]/70">Live</p>
+                  <p className="text-lg font-bold text-[#FDFDFD]">{stats.activeDrops}</p>
+                </div>
+                <Zap className="h-4 w-4 text-[#FF0052]" />
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Collections Grid - Mantendo o layout atual do Launchpad */}
-      <div className="px-4 pt-4">
-        {filteredCollections.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-[#FDFDFD]/40 mb-2">No collections found</div>
-            <div className="text-[#FDFDFD]/60 text-sm">
-              {activeTab === 'live' && 'No live drops at the moment'}
-              {activeTab === 'upcoming' && 'No upcoming drops scheduled'}
-              {activeTab === 'all' && 'No collections available'}
+        {/* Search */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => onSearch(e.target.value)}
+              placeholder="Search collections..."
+              className="pl-10 bg-[#14101e]/60 border-[#FDFDFD]/20 text-[#FDFDFD] placeholder-[#FDFDFD]/50"
+            />
+          </div>
+        </div>
+
+        {/* 🎯 FILTROS COMPLETOS INCLUINDO ADMIN */}
+        <div className="mb-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className={`grid w-full ${(isUserAdmin || localIsAdmin) ? 'grid-cols-6' : 'grid-cols-3'}`}>
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="live">Live</TabsTrigger>
+              <TabsTrigger value="upcoming">Upcoming</TabsTrigger>
+              {(isUserAdmin || localIsAdmin) && (
+                <>
+                  <TabsTrigger value="pending">Pending</TabsTrigger>
+                  <TabsTrigger value="hidden">Hidden</TabsTrigger>
+                  <TabsTrigger value="ended">Ended</TabsTrigger>
+                </>
+              )}
+            </TabsList>
+          </Tabs>
+        </div>
+
+        {/* Collections Grid */}
+        <div className="space-y-4">
+          {filteredCollections.length > 0 ? (
+            filteredCollections.map(renderCollectionCard)
+          ) : (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 bg-[#14101e]/60 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Star className="w-8 h-8 text-[#FF0052]" />
+              </div>
+              <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">No collections found</h3>
+              <p className="text-[#FDFDFD]/60">Try adjusting your search or filters</p>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-4 pb-6">
-            {filteredCollections.map(renderCollectionCard)}
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

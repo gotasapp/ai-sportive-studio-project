@@ -1359,7 +1359,7 @@ export default function LaunchpadPage() {
             price: c.price || '0',
             totalSupply: c.totalSupply || 0,
             minted: c.minted || 0,
-            status: (['upcoming', 'active', 'hidden'].includes(c.status) ? c.status : 'upcoming') as 'upcoming' | 'active' | 'hidden',
+            status: (['upcoming', 'active', 'hidden', 'pending_launchpad', 'ended'].includes(c.status) ? c.status : 'upcoming') as 'upcoming' | 'active' | 'hidden' | 'pending_launchpad' | 'ended',
             launchDate: c.launchDate ? (typeof c.launchDate === 'string' ? c.launchDate : c.launchDate.toISOString()) : undefined,
             endDate: c.endDate ? (typeof c.endDate === 'string' ? c.endDate : c.endDate.toISOString()) : undefined,
             creator: {
@@ -1374,6 +1374,7 @@ export default function LaunchpadPage() {
         searchTerm={searchTerm}
         activeFilter={statusFilter}
         loading={loading}
+        isUserAdmin={isUserAdmin}
       />
     );
   }
