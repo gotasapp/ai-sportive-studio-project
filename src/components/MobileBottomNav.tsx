@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useActiveAccount, useActiveWallet } from "thirdweb/react";
-import { Shirt, Building2, Trophy, Shield, User, ShoppingBag } from 'lucide-react';
+import { Shirt, Building2, Trophy, Shield, ShoppingBag } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
 import { useScrollDirection } from '@/hooks/useScrollDirection';
@@ -53,10 +53,10 @@ export default function MobileBottomNav() {
 
   const navItems = [
     {
-      href: '/',
+      href: '/jerseys',
       icon: Shirt,
       label: 'Jersey',
-      isActive: pathname === '/'
+      isActive: pathname === '/jerseys' || pathname === '/'
     },
     {
       href: '/stadiums',
@@ -75,12 +75,6 @@ export default function MobileBottomNav() {
       icon: ShoppingBag,
       label: 'Market',
       isActive: pathname === '/marketplace' || pathname.startsWith('/marketplace/')
-    },
-    {
-      href: '/profile',
-      icon: User,
-      label: 'Profile',
-      isActive: pathname === '/profile' || pathname.startsWith('/profile/')
     }
   ];
 
