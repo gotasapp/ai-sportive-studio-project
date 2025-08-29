@@ -24,7 +24,6 @@ import {
   Eye,
   EyeOff,
   Edit,
-  Trash2,
   Tag
 } from "lucide-react";
 import Image from "next/image";
@@ -194,13 +193,13 @@ export default function LaunchpadMobileLayout({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="bg-black/80 text-red-400 hover:bg-black/90 p-1 h-8 w-8"
+                    className="bg-black/80 text-white hover:bg-black/90 p-1 h-8 w-8"
                     onClick={(e) => {
                       e.preventDefault();
-                      // TODO: Implement delete functionality
+                      // TODO: Implement admin controls functionality
                     }}
                   >
-                    <Trash2 className="w-3 h-3" />
+                    <Settings className="w-3 h-3" />
                   </Button>
                 </div>
               )}
