@@ -6,6 +6,7 @@ import MarketplaceStatsBarMobile from "@/components/marketplace/MarketplaceStats
 import LaunchpadCarouselMobile, { LaunchpadItem } from "@/components/marketplace/LaunchpadCarouselMobile";
 import Header from "@/components/Header";
 import MarketplaceCardMobile from "./MarketplaceCardMobile";
+import CollectionOverviewCard from "./CollectionOverviewCard";
 import Link from "next/link";
 
 export type MarketplaceMobileLayoutProps = {
@@ -74,47 +75,82 @@ export default function MarketplaceMobileLayout({
     }
     
     if (viewTypeMobile === 'large') {
-              // Grid 2 columns, large cards
+      // Grid 2 columns, large cards
       return (
         <div className="grid grid-cols-2 gap-3">
-          {paginatedNFTs.map(nft => {
-            // Specific debug for each NFT
-            const nftId = nft._id || nft.id;
-            console.log('🔧 Rendering NFT:', {
-              name: nft.name,
-              nftId,
-              votes: nft.votes,
-              hasNftId: !!nftId,
-              nftKeys: Object.keys(nft)
-            });
+          {paginatedNFTs.map(item => {
+            // 🎯 EXATA MESMA LÓGICA DO DESKTOP NFTGrid
+            // Treat Launchpad as Custom Collection for navigation by collectionId
+            const isLaunchpadCollection =
+              (item.type === 'launchpad' && item.status === 'active') ||
+              item.type === 'launchpad_collection' ||
+              item.collectionType === 'launchpad' ||
+              item.marketplace?.isLaunchpadCollection;
             
+            const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
+            
+                        if (isCollection) {
+              // 🎯 USAR EXATAMENTE O MESMO COMPONENTE DO DESKTOP
+              const computedCollectionId =
+                item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
+              const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
+              
+              // For active launchpads, send to dedicated mint page (igual ao desktop)
+              const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
+                ? `/launchpad/${computedCollectionId}`
+                : undefined;
+              
+              return (
+                <CollectionOverviewCard
+                  key={item.id}
+                  name={item.name}
+                  imageUrl={item.imageUrl || item.image_url}
+                  collection={item.collection || item.category}
+                  category={item.category}
+                  collectionId={computedCollectionId}
+                  isCustomCollection={computedIsCustom}
+                  hrefOverride={hrefOverride}
+                  
+                  // Collection stats from marketplace data (igual ao desktop)
+                  mintedUnits={item.marketplace?.mintedUnits || item.mintedUnits || 0}
+                  totalUnits={item.marketplace?.totalUnits || item.totalUnits || 0}
+                  availableUnits={item.marketplace?.availableUnits || item.availableUnits || 0}
+                  floorPrice={item.price || '0 MATIC'}
+                  uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
+                  listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
+                  auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
+                />
+              );
+            }
+            
+            // 🎯 RENDERIZAR COMO NFT INDIVIDUAL (igual ao desktop)
             return (
-            <MarketplaceCardMobile
-              key={nft.id}
-              name={nft.name}
-              imageUrl={nft.imageUrl || nft.image_url}
-              price={nft.price || 'Not for sale'}
-              collection={nft.collection || nft.category}
-              category={nft.category}
-              tokenId={nft.tokenId || nft.id}
-              assetContract={nft.contractAddress || nft.assetContract}
-              listingId={nft.listingId}
-              isListed={nft.isListed || false}
-              owner={nft.owner || nft.creator}
-              collectionId={nft.customCollectionId || nft._id}
-              isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
-              isAuction={nft.isAuction || false}
-              auctionId={nft.auctionId}
-              currentBid={nft.currentBid}
-              endTime={nft.endTime}
-              activeOffers={nft.activeOffers || 0}
-              viewType="large"
-              onBuy={onBuy}
-              // Voting system
-              nftId={nft._id || nft.id}
-              votes={nft.votes || 0}
-              userVoted={false} // TODO: implement user verification
-            />
+              <MarketplaceCardMobile
+                key={item.id}
+                name={item.name}
+                imageUrl={item.imageUrl || item.image_url}
+                price={item.price || 'Not for sale'}
+                collection={item.collection || item.category}
+                category={item.category}
+                tokenId={item.tokenId || item.id}
+                assetContract={item.contractAddress || item.assetContract}
+                listingId={item.listingId}
+                isListed={item.isListed || false}
+                owner={item.owner || item.creator}
+                collectionId={item.customCollectionId || item._id}
+                isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection'}
+                isAuction={item.isAuction || false}
+                auctionId={item.auctionId}
+                currentBid={item.currentBid}
+                endTime={item.endTime}
+                activeOffers={item.activeOffers || 0}
+                viewType={viewTypeMobile}
+                onBuy={onBuy}
+                // Voting system
+                nftId={item._id || item.id}
+                votes={item.votes || 0}
+                userVoted={false} // TODO: implement user verification
+              />
             );
           })}
         </div>
@@ -125,34 +161,76 @@ export default function MarketplaceMobileLayout({
       // Grid 3 columns, medium cards
       return (
         <div className="grid grid-cols-3 gap-2">
-          {paginatedNFTs.map(nft => (
-            <MarketplaceCardMobile
-              key={nft.id}
-              name={nft.name}
-              imageUrl={nft.imageUrl || nft.image_url}
-              price={nft.price || 'Not for sale'}
-              collection={nft.collection || nft.category}
-              category={nft.category}
-              tokenId={nft.tokenId || nft.id}
-              assetContract={nft.contractAddress || nft.assetContract}
-              listingId={nft.listingId}
-              isListed={nft.isListed || false}
-              owner={nft.owner || nft.creator}
-              collectionId={nft.customCollectionId || nft._id}
-              isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
-              isAuction={nft.isAuction || false}
-              auctionId={nft.auctionId}
-              currentBid={nft.currentBid}
-              endTime={nft.endTime}
-              activeOffers={nft.activeOffers || 0}
-              viewType="medium"
-              onBuy={onBuy}
-              // Voting system
-              nftId={nft._id || nft.id}
-              votes={nft.votes || 0}
-              userVoted={false} // TODO: implement user verification
-            />
-          ))}
+          {paginatedNFTs.map(item => {
+            // 🎯 EXATA MESMA LÓGICA DO DESKTOP NFTGrid
+            const isLaunchpadCollection =
+              (item.type === 'launchpad' && item.status === 'active') ||
+              item.type === 'launchpad_collection' ||
+              item.collectionType === 'launchpad' ||
+              item.marketplace?.isLaunchpadCollection;
+            
+            const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
+            
+            if (isCollection) {
+              const computedCollectionId =
+                item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
+              const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
+              
+              const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
+                ? `/launchpad/${computedCollectionId}`
+                : undefined;
+              
+              return (
+                <CollectionOverviewCard
+                  key={item.id}
+                  name={item.name}
+                  imageUrl={item.imageUrl || item.image_url}
+                  collection={item.collection || item.category}
+                  category={item.category}
+                  collectionId={computedCollectionId}
+                  isCustomCollection={computedIsCustom}
+                  hrefOverride={hrefOverride}
+                  
+                  mintedUnits={item.marketplace?.mintedUnits || item.mintedUnits || 0}
+                  totalUnits={item.marketplace?.totalUnits || item.totalUnits || 0}
+                  availableUnits={item.marketplace?.availableUnits || item.availableUnits || 0}
+                  floorPrice={item.price || '0 MATIC'}
+                  uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
+                  listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
+                  auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
+                />
+              );
+            }
+            
+            return (
+              <MarketplaceCardMobile
+                key={item.id}
+                name={item.name}
+                imageUrl={item.imageUrl || item.image_url}
+                price={item.price || 'Not for sale'}
+                collection={item.collection || item.category}
+                category={item.category}
+                tokenId={item.tokenId || item.id}
+                assetContract={item.contractAddress || item.assetContract}
+                listingId={item.listingId}
+                isListed={item.isListed || false}
+                owner={item.owner || item.creator}
+                collectionId={item.customCollectionId || item._id}
+                isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection'}
+                isAuction={item.isAuction || false}
+                auctionId={item.auctionId}
+                currentBid={item.currentBid}
+                endTime={item.endTime}
+                activeOffers={item.activeOffers || 0}
+                viewType="medium"
+                onBuy={onBuy}
+                // Voting system
+                nftId={item._id || item.id}
+                votes={item.votes || 0}
+                userVoted={false} // TODO: implement user verification
+              />
+            );
+          })}
         </div>
       );
     }
@@ -160,34 +238,76 @@ export default function MarketplaceMobileLayout({
     // Compact: vertical list
     return (
       <div className="flex flex-col gap-2">
-        {paginatedNFTs.map(nft => (
-          <MarketplaceCardMobile
-            key={nft.id}
-            name={nft.name}
-            imageUrl={nft.imageUrl || nft.image_url}
-            price={nft.price || 'Not for sale'}
-            collection={nft.collection || nft.category}
-            category={nft.category}
-            tokenId={nft.tokenId || nft.id}
-            assetContract={nft.contractAddress || nft.assetContract}
-            listingId={nft.listingId}
-            isListed={nft.isListed || false}
-            owner={nft.owner || nft.creator}
-            collectionId={nft.customCollectionId || nft._id}
-            isCustomCollection={!!nft.customCollectionId || nft.type === 'custom_collection'}
-            isAuction={nft.isAuction || false}
-            auctionId={nft.auctionId}
-            currentBid={nft.currentBid}
-            endTime={nft.endTime}
-            activeOffers={nft.activeOffers || 0}
-            viewType="compact"
-                          onBuy={onBuy}
+        {paginatedNFTs.map(item => {
+          // 🎯 EXATA MESMA LÓGICA DO DESKTOP NFTGrid
+          const isLaunchpadCollection =
+            (item.type === 'launchpad' && item.status === 'active') ||
+            item.type === 'launchpad_collection' ||
+            item.collectionType === 'launchpad' ||
+            item.marketplace?.isLaunchpadCollection;
+          
+          const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
+          
+          if (isCollection) {
+            const computedCollectionId =
+              item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
+            const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
+            
+            const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
+              ? `/launchpad/${computedCollectionId}`
+              : undefined;
+            
+            return (
+              <CollectionOverviewCard
+                key={item.id}
+                name={item.name}
+                imageUrl={item.imageUrl || item.image_url}
+                collection={item.collection || item.category}
+                category={item.category}
+                collectionId={computedCollectionId}
+                isCustomCollection={computedIsCustom}
+                hrefOverride={hrefOverride}
+                
+                mintedUnits={item.marketplace?.mintedUnits || item.mintedUnits || 0}
+                totalUnits={item.marketplace?.totalUnits || item.totalUnits || 0}
+                availableUnits={item.marketplace?.availableUnits || item.availableUnits || 0}
+                floorPrice={item.price || '0 MATIC'}
+                uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
+                listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
+                auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
+              />
+            );
+          }
+          
+          return (
+            <MarketplaceCardMobile
+              key={item.id}
+              name={item.name}
+              imageUrl={item.imageUrl || item.image_url}
+              price={item.price || 'Not for sale'}
+              collection={item.collection || item.category}
+              category={item.category}
+              tokenId={item.tokenId || item.id}
+              assetContract={item.contractAddress || item.assetContract}
+              listingId={item.listingId}
+              isListed={item.isListed || false}
+              owner={item.owner || item.creator}
+              collectionId={item.customCollectionId || item._id}
+              isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection'}
+              isAuction={item.isAuction || false}
+              auctionId={item.auctionId}
+              currentBid={item.currentBid}
+              endTime={item.endTime}
+              activeOffers={item.activeOffers || 0}
+              viewType="compact"
+              onBuy={onBuy}
               // Voting system
-              nftId={nft._id || nft.id}
-              votes={nft.votes || 0}
+              nftId={item._id || item.id}
+              votes={item.votes || 0}
               userVoted={false} // TODO: implement user verification
-          />
-        ))}
+            />
+          );
+        })}
       </div>
     );
   };
