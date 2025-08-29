@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sparkles, LayoutGrid, List, Grid3X3, Search, Eye, Tag, Heart, MoreVertical } from "lucide-react";
-import MarketplaceStatsBarMobile from "@/components/marketplace/MarketplaceStatsBarMobile";
 import LaunchpadCarouselMobile, { LaunchpadItem } from "@/components/marketplace/LaunchpadCarouselMobile";
 import Header from "@/components/Header";
 import MarketplaceCardMobile from "./MarketplaceCardMobile";
@@ -19,10 +18,6 @@ export type MarketplaceMobileLayoutProps = {
   onBuy: (nft: any) => void;
   onSearch: (term: string) => void;
   searchTerm: string;
-  volume24h: string;
-  volumeChange: number;
-  sales24h: string;
-  salesChange: number;
   launchpadItems: LaunchpadItem[];
   // ...other handlers and necessary props
 };
@@ -41,10 +36,6 @@ export default function MarketplaceMobileLayout({
   onBuy,
   onSearch,
   searchTerm,
-  volume24h,
-  volumeChange,
-  sales24h,
-  salesChange,
   launchpadItems,
 }: MarketplaceMobileLayoutProps) {
   // Grid type state
@@ -336,14 +327,6 @@ export default function MarketplaceMobileLayout({
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#030303] to-[#0b0518] flex flex-col overflow-x-hidden">
       <Header />
-      <div className="py-2">
-        <MarketplaceStatsBarMobile
-          volume24h={volume24h}
-          volumeChange={volumeChange}
-          sales24h={sales24h}
-          salesChange={salesChange}
-        />
-      </div>
       <div className="px-2 pt-2">
         <LaunchpadCarouselMobile launchpadItems={launchpadItems} />
       </div>

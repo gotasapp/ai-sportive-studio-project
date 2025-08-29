@@ -317,10 +317,6 @@ export default function MarketplacePage() {
         onBuy={handleMobileBuy}
         onSearch={handleMobileSearch}
         searchTerm={searchTerm}
-        volume24h={"$0.00"} // placeholder, ajuste para dados reais
-        volumeChange={0} // placeholder
-        sales24h={"0"} // placeholder
-        salesChange={0} // placeholder
         launchpadItems={launchpadItemsFixed}
       />
     );
