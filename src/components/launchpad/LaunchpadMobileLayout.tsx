@@ -66,6 +66,11 @@ interface LaunchpadMobileLayoutProps {
   loading?: boolean;
   // 🎯 ADICIONAR PROP DE ADMIN
   isUserAdmin?: boolean;
+  // 🎯 ADICIONAR PROPS PARA IMAGENS PENDENTES
+  pendingImages?: any[];
+  pendingLoading?: boolean;
+  onApproveImage?: (imageId: string) => void;
+  onRejectImage?: (imageId: string) => void;
 }
 
 const STATUS_LABELS = {
@@ -84,7 +89,12 @@ export default function LaunchpadMobileLayout({
   searchTerm,
   activeFilter,
   loading = false,
-  isUserAdmin = false
+  isUserAdmin = false,
+  // 🎯 ADICIONAR PROPS PARA IMAGENS PENDENTES
+  pendingImages = [],
+  pendingLoading = false,
+  onApproveImage,
+  onRejectImage
 }: LaunchpadMobileLayoutProps) {
   const account = useActiveAccount();
   const address = account?.address;
@@ -329,6 +339,75 @@ export default function LaunchpadMobileLayout({
             </TabsList>
           </Tabs>
         </div>
+
+        {/* 🎯 SEÇÃO DE IMAGENS PENDENTES PARA ADMIN */}
+        {(isUserAdmin || localIsAdmin) && pendingImages.length > 0 && (
+          <div className="mb-6">
+            <div className="mb-4">
+              <h2 className="text-xl font-bold text-white mb-2">Pending Images for Approval</h2>
+              <p className="text-[#FDFDFD]/60 text-sm">Review and approve images for Launchpad collections</p>
+            </div>
+            
+            {pendingLoading ? (
+              <div className="space-y-4">
+                {[...Array(3)].map((_, index) => (
+                  <div key={index} className="animate-pulse">
+                    <div className="bg-[#14101e]/60 rounded-lg h-48"></div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {pendingImages.map((image) => (
+                  <Card key={image._id} className="bg-[#14101e]/60 border-[#FDFDFD]/10 overflow-hidden">
+                    <div className="aspect-[4/3] relative overflow-hidden">
+                      <Image
+                        src={image.imageUrl}
+                        alt={image.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <h3 className="font-semibold text-white mb-1">{image.name}</h3>
+                        <p className="text-sm text-[#FDFDFD]/60">{image.description}</p>
+                      </div>
+                      
+                      <div className="flex items-center justify-between text-sm">
+                        <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] border-[#FF0052]/30">
+                          {image.category}
+                        </Badge>
+                        <span className="text-[#FDFDFD]/60">
+                          {new Date(image.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => onApproveImage?.(image._id)}
+                          size="sm"
+                          className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          onClick={() => onRejectImage?.(image._id)}
+                          size="sm"
+                          variant="outline"
+                          className="flex-1 border-red-500 text-red-400 hover:bg-red-500/10"
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Collections Grid */}
         <div className="space-y-4">

@@ -1375,6 +1375,16 @@ export default function LaunchpadPage() {
         activeFilter={statusFilter}
         loading={loading}
         isUserAdmin={isUserAdmin}
+        // 🎯 ADICIONAR PROPS PARA IMAGENS PENDENTES
+        pendingImages={pendingImages}
+        pendingLoading={pendingLoading}
+        onApproveImage={(imageId) => {
+          const image = pendingImages.find(img => img._id === imageId);
+          if (image) {
+            openApprovalModal(image);
+          }
+        }}
+        onRejectImage={rejectPendingImage}
       />
     );
   }
