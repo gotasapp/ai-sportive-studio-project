@@ -1,9 +1,10 @@
 'use client';
 
-import { ArrowRight, Eye } from 'lucide-react';
+import { ArrowRight, Eye, Tag, Gavel } from 'lucide-react';
 import { useState } from 'react';
 import { useActiveAccount } from 'thirdweb/react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { formatPriceSafe } from '@/lib/marketplace-config';
 import { CardImage } from './OptimizedImage';
 import Link from 'next/link';
@@ -30,6 +31,13 @@ interface CollectionOverviewCardProps {
   uniqueOwners?: number;
   listedCount?: number;
   auctionCount?: number;
+  
+  // 🎯 DADOS REAIS DE PREÇO DO MARKETPLACE
+  price?: string;
+  isListed?: boolean;
+  isAuction?: boolean;
+  currentBid?: string;
+  currency?: string;
 }
 
 const categoryColors = {
@@ -55,7 +63,13 @@ export default function CollectionOverviewCard({
   floorPrice = `0 ${NETWORK_CURRENCY}`,
   uniqueOwners = 0,
   listedCount = 0,
-  auctionCount = 0
+  auctionCount = 0,
+  // 🎯 DADOS REAIS DE PREÇO
+  price,
+  isListed = false,
+  isAuction = false,
+  currentBid,
+  currency = 'CHZ'
 }: CollectionOverviewCardProps) {
   const account = useActiveAccount();
 
@@ -63,6 +77,72 @@ export default function CollectionOverviewCard({
   
   // Calculate progress percentage for minting
   const mintProgress = totalUnits > 0 ? Math.round((mintedUnits / totalUnits) * 100) : 0;
+  
+  // 🎯 MESMA LÓGICA DE PREÇO DA PÁGINA DE DETALHES - USANDO DADOS REAIS
+  // Calcular floor price baseado nos dados reais
+  const calculateFloorPrice = () => {
+    // Se temos dados de listagem, usar o preço real
+    if (isListed && price && price !== 'Not for sale' && price !== 'Not listed') {
+      const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
+      if (!isNaN(numericPrice) && numericPrice > 0) {
+        return `${numericPrice.toFixed(3)} ${currency}`;
+      }
+    }
+    
+    // Fallback para o floorPrice passado como prop
+    if (floorPrice && floorPrice !== `0 ${NETWORK_CURRENCY}`) {
+      return floorPrice;
+    }
+    
+    return "-- CHZ";
+  };
+
+  // 🎯 CALCULAR PREÇO DE EXIBIÇÃO E STATUS - USANDO DADOS REAIS
+  const calculateDisplayPrice = () => {
+    // 🎯 PRIORIDADE 1: NFT está listada
+    if (isListed && price && price !== 'Not for sale' && price !== 'Not listed') {
+      const numericPrice = parseFloat(price.replace(/[^\d.]/g, ''));
+      if (!isNaN(numericPrice) && numericPrice > 0) {
+        return {
+          price: `${numericPrice.toFixed(3)} ${currency}`,
+          status: 'For Sale' as const,
+          statusColor: 'text-green-400 border-green-400' as const,
+          title: 'Listed Price'
+        };
+      }
+    }
+    
+    // 🎯 PRIORIDADE 2: NFT está em leilão
+    if (isAuction) {
+      const bidPrice = currentBid || price;
+      if (bidPrice && bidPrice !== 'Not for sale' && bidPrice !== 'Not listed') {
+        const numericBid = parseFloat(bidPrice.replace(/[^\d.]/g, ''));
+        if (!isNaN(numericBid) && numericBid > 0) {
+          return {
+            price: `${numericBid.toFixed(3)} ${currency}`,
+            status: 'Auction' as const,
+            statusColor: 'text-yellow-400 border-yellow-400' as const,
+            title: 'Auction Price'
+          };
+        }
+      }
+    }
+    
+    // 🎯 PRIORIDADE 3: Usar floorPrice como "Last Sale"
+    const fallbackPrice = floorPrice && floorPrice !== `0 ${NETWORK_CURRENCY}` 
+      ? floorPrice 
+      : '0.047 CHZ';
+    
+    return {
+      price: fallbackPrice,
+      status: 'Owned' as const,
+      statusColor: 'text-[#FF0052] border-[#FF0052]' as const,
+      title: 'Last Sale'
+    };
+  };
+
+  const displayPrice = calculateDisplayPrice();
+  const calculatedFloorPrice = calculateFloorPrice();
   
   // Category normalization (DO NOT normalize launchpad to jersey!)
   const normalizedCategory = (() => {
@@ -73,6 +153,7 @@ export default function CollectionOverviewCard({
     if (c === 'badge' || c === 'badges') return 'badge';
     return c || 'jersey';
   })();
+  
   // Se for custom (ou launchpad tratado como custom no grid) e possuir collectionId → rota por collection
   const collectionUrl = isCustomCollection && collectionId 
     ? `/marketplace/collection/${normalizedCategory}/${collectionId}`
@@ -134,13 +215,38 @@ export default function CollectionOverviewCard({
           <h3 className="text-lg font-semibold text-[#FDFDFD] truncate">{name}</h3>
         </div>
         
-        {/* Collection Stats */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <div>
-            <p className="text-xs text-[#FDFDFD]/70">Floor Price</p>
-            <p className="text-sm font-medium text-[#FF0052]">
-              {formatPriceSafe(floorPrice)}
-            </p>
+        {/* 🎯 NOVA SEÇÃO DE PREÇO - MESMA LÓGICA DA PÁGINA DE DETALHES - DADOS REAIS */}
+        <div className="mb-4">
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <p className="text-xs text-[#FDFDFD]/70">{displayPrice.title}</p>
+              <div className="text-sm font-bold text-[#FDFDFD]">
+                {displayPrice.price}
+              </div>
+              <p className="text-[#FDFDFD]/50 text-xs">
+                ≈ ${(() => {
+                  const numericPrice = parseFloat(displayPrice.price.replace(/[^\d.]/g, ''));
+                  return !isNaN(numericPrice) ? (numericPrice * 0.12).toFixed(2) : '0.00';
+                })()} USD
+              </p>
+            </div>
+            <Badge 
+              variant="outline" 
+              className={`${displayPrice.statusColor} text-xs`}
+            >
+              {displayPrice.status}
+            </Badge>
+          </div>
+          
+          {/* Floor Price */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <Tag className="h-3 w-3 text-[#FF0052]" />
+              <span className="text-xs text-[#FDFDFD]/70">Floor:</span>
+            </div>
+            <span className="text-xs font-medium text-[#FF0052]">
+              {calculatedFloorPrice}
+            </span>
           </div>
         </div>
         

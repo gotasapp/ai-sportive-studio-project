@@ -95,6 +95,13 @@ export default function NFTGrid({ items, getContractByCategory }: NFTGridProps) 
               uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
               listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
               auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
+              
+              // 🎯 DADOS REAIS DE PREÇO DO MARKETPLACE
+              price={item.price}
+              isListed={item.isListed || false}
+              isAuction={item.isAuction || false}
+              currentBid={item.currentBid}
+              currency={item.currency || NETWORK_CURRENCY}
             />
           );
         }
