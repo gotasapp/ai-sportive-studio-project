@@ -91,15 +91,27 @@ export default function MarketplaceCardMobile({
   
   const color = category ? categoryColors[category as keyof typeof categoryColors] || categoryColors.default : categoryColors.default;
 
+  // 🎯 EXATA MESMA LÓGICA DO DESKTOP
+  // Category normalization (DO NOT normalize launchpad to jersey!)
+  const normalizedCategory = (() => {
+    const c = (category || '').toLowerCase();
+    if (c === 'launchpad' || c === 'launchpad_collection') return 'launchpad';
+    if (c === 'jersey' || c === 'jerseys') return 'jersey';
+    if (c === 'stadium' || c === 'stadiums') return 'stadium';
+    if (c === 'badge' || c === 'badges') return 'badge';
+    return c || 'jersey';
+  })();
+  
+  // Se for custom (ou launchpad tratado como custom no grid) e possuir collectionId → rota por collection
+  const collectionUrl = isCustomCollection && collectionId 
+    ? `/marketplace/collection/${normalizedCategory}/${collectionId}`
+    : `/marketplace/collection/${normalizedCategory}/${collection}`;
+
   // ✅ SIMPLIFICADO: Remover todos os botões de trading, deixar apenas View Collection
-  const renderViewCollectionButton = () => {
+    const renderViewCollectionButton = () => {
     return (
-             <Link 
-         href={
-           isCustomCollection && collectionId 
-             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-             : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
-         }  
+      <Link 
+        href={collectionUrl}
         prefetch={false}
         className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-sm py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
@@ -113,20 +125,12 @@ export default function MarketplaceCardMobile({
   if (viewType === 'compact') {
     return (
       <div className="rounded-xl p-2 flex items-center gap-2 shadow-md min-h-[60px]" style={{ background: 'rgba(20,16,30,0.4)' }}>
-        <Link href={
-          isCustomCollection && collectionId 
-            ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-            : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
-        } prefetch={false} className="flex-shrink-0">
+                 <Link href={collectionUrl} prefetch={false} className="flex-shrink-0">
           <img src={imageUrl} alt={name} className="w-12 h-12 rounded-lg object-cover bg-[#222]" />
         </Link>
         
         <div className="flex-1 min-w-0">
-          <Link href={
-            isCustomCollection && collectionId 
-              ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-              : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
-          } prefetch={false} className="block">
+                     <Link href={collectionUrl} prefetch={false} className="block">
             <div className="font-semibold text-white text-sm leading-tight truncate">{name}</div>
             <div className="text-[11px] text-white/60 leading-tight truncate">{collection}</div>
           </Link>
@@ -165,12 +169,8 @@ export default function MarketplaceCardMobile({
 
   return (
     <div className={`relative rounded-xl ${padding} flex flex-col items-center shadow-md`} style={{ background: 'rgba(20,16,30,0.4)' }}>
-      <Link href={
-        isCustomCollection && collectionId 
-          ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-          : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
-      } prefetch={false} className="w-full">
-        <div className="relative">
+             <Link href={collectionUrl} prefetch={false} className="w-full">
+         <div className="relative">
           <img src={imageUrl} alt={name} className={`w-full ${imageSize} rounded-lg object-cover bg-[#222] mb-2`} />
           
           {/* Status badges */}
@@ -200,12 +200,8 @@ export default function MarketplaceCardMobile({
         </div>
       </Link>
 
-      <Link href={
-        isCustomCollection && collectionId 
-          ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-          : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
-      } prefetch={false} className="w-full">
-        <div className={`font-semibold text-white ${textSize} text-center w-full truncate`}>{name}</div>
+             <Link href={collectionUrl} prefetch={false} className="w-full">
+         <div className={`font-semibold text-white ${textSize} text-center w-full truncate`}>{name}</div>
         <div className={`text-[10px] text-white/60 text-center w-full truncate ${isLargeView ? 'mb-1' : ''}`}>{collection}</div>
       </Link>
       
