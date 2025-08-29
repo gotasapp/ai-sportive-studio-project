@@ -94,12 +94,12 @@ export default function MarketplaceCardMobile({
   // ✅ SIMPLIFICADO: Remover todos os botões de trading, deixar apenas View Collection
   const renderViewCollectionButton = () => {
     return (
-      <Link 
-        href={
-          isCustomCollection && collectionId 
-            ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-            : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
-        } 
+             <Link 
+         href={
+           isCustomCollection && collectionId 
+             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
+             : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
+         }  
         prefetch={false}
         className="w-full bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-sm py-2 rounded-lg flex items-center justify-center gap-2 transition-colors"
       >
@@ -116,7 +116,7 @@ export default function MarketplaceCardMobile({
         <Link href={
           isCustomCollection && collectionId 
             ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-            : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
+            : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
         } prefetch={false} className="flex-shrink-0">
           <img src={imageUrl} alt={name} className="w-12 h-12 rounded-lg object-cover bg-[#222]" />
         </Link>
@@ -125,7 +125,7 @@ export default function MarketplaceCardMobile({
           <Link href={
             isCustomCollection && collectionId 
               ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-              : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
+              : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
           } prefetch={false} className="block">
             <div className="font-semibold text-white text-sm leading-tight truncate">{name}</div>
             <div className="text-[11px] text-white/60 leading-tight truncate">{collection}</div>
@@ -168,7 +168,7 @@ export default function MarketplaceCardMobile({
       <Link href={
         isCustomCollection && collectionId 
           ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-          : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
+          : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
       } prefetch={false} className="w-full">
         <div className="relative">
           <img src={imageUrl} alt={name} className={`w-full ${imageSize} rounded-lg object-cover bg-[#222] mb-2`} />
@@ -203,7 +203,7 @@ export default function MarketplaceCardMobile({
       <Link href={
         isCustomCollection && collectionId 
           ? `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collectionId}`
-          : `/marketplace/collection/${category || collection}/${collection}/${tokenId}`
+          : `/marketplace/collection/${(category === 'jerseys' ? 'jersey' : category) || 'jersey'}/${collection}`
       } prefetch={false} className="w-full">
         <div className={`font-semibold text-white ${textSize} text-center w-full truncate`}>{name}</div>
         <div className={`text-[10px] text-white/60 text-center w-full truncate ${isLargeView ? 'mb-1' : ''}`}>{collection}</div>
