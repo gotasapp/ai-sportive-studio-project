@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sparkles, LayoutGrid, List, Grid3X3, Search, Eye, Tag, Heart, MoreVertical } from "lucide-react";
+import { Sparkles, LayoutGrid, List, Search, Eye, Tag, Heart, MoreVertical } from "lucide-react";
 import LaunchpadCarouselMobile, { LaunchpadItem } from "@/components/marketplace/LaunchpadCarouselMobile";
 import Header from "@/components/Header";
 import MarketplaceCardMobile from "./MarketplaceCardMobile";
@@ -39,7 +39,7 @@ export default function MarketplaceMobileLayout({
   launchpadItems,
 }: MarketplaceMobileLayoutProps) {
   // Grid type state
-  const [viewTypeMobile, setViewTypeMobile] = useState<'large' | 'medium' | 'compact'>('large');
+  const [viewTypeMobile, setViewTypeMobile] = useState<'large' | 'compact'>('large');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
   const totalPages = Math.ceil(nfts.length / itemsPerPage);
@@ -143,91 +143,6 @@ export default function MarketplaceMobileLayout({
                 endTime={item.endTime}
                 activeOffers={item.activeOffers || 0}
                 viewType={viewTypeMobile}
-                onBuy={onBuy}
-                // Voting system
-                nftId={item._id || item.id}
-                votes={item.votes || 0}
-                userVoted={false} // TODO: implement user verification
-              />
-            );
-          })}
-        </div>
-      );
-    }
-    
-    if (viewTypeMobile === 'medium') {
-      // Horizontal list layout, medium cards
-      return (
-        <div className="flex flex-row gap-2 overflow-x-auto pb-2">
-          {paginatedNFTs.map(item => {
-            // 🎯 EXATA MESMA LÓGICA DO DESKTOP NFTGrid
-            const isLaunchpadCollection =
-              (item.type === 'launchpad' && item.status === 'active') ||
-              item.type === 'launchpad_collection' ||
-              item.collectionType === 'launchpad' ||
-              item.marketplace?.isLaunchpadCollection;
-            
-            const isCollection = item.isCollection || item.marketplace?.isCollection || isLaunchpadCollection || false;
-            
-            if (isCollection) {
-              const computedCollectionId =
-                item.collectionId || item.customCollectionId || item.collectionData?._id || item._id;
-              const computedIsCustom = !!(item.isCustomCollection || item.marketplace?.isCustomCollection || isLaunchpadCollection);
-              
-              const hrefOverride = isLaunchpadCollection && item.status === 'active' && computedCollectionId
-                ? `/launchpad/${computedCollectionId}`
-                : undefined;
-              
-              return (
-                <CollectionOverviewCard
-                  key={item.id}
-                  name={item.name}
-                  imageUrl={item.imageUrl || item.image_url}
-                  collection={item.collection || item.category}
-                  category={item.category}
-                  collectionId={computedCollectionId}
-                  isCustomCollection={computedIsCustom}
-                  hrefOverride={hrefOverride}
-                  
-                  mintedUnits={item.marketplace?.mintedUnits || item.mintedUnits || 0}
-                  totalUnits={item.marketplace?.totalUnits || item.totalUnits || 0}
-                  availableUnits={item.marketplace?.availableUnits || item.availableUnits || 0}
-                  floorPrice={item.price || '0 MATIC'}
-                  uniqueOwners={item.marketplace?.uniqueOwners || item.uniqueOwners || 0}
-                  listedCount={item.marketplace?.thirdwebListedCount || item.listedCount || 0}
-                  auctionCount={item.marketplace?.thirdwebAuctionCount || item.auctionCount || 0}
-                  
-                  // 🎯 DADOS REAIS DE PREÇO DO MARKETPLACE
-                  price={item.price}
-                  isListed={item.isListed || false}
-                  isAuction={item.isAuction || false}
-                  currentBid={item.currentBid}
-                  currency={item.currency || 'CHZ'}
-                />
-              );
-            }
-            
-            return (
-              <MarketplaceCardMobile
-                key={item.id}
-                name={item.name}
-                imageUrl={item.imageUrl || item.image_url}
-                price={item.price || 'Not for sale'}
-                collection={item.collection || item.category}
-                category={item.category}
-                tokenId={item.tokenId || item.id}
-                assetContract={item.contractAddress || item.assetContract}
-                listingId={item.listingId}
-                isListed={item.isListed || false}
-                owner={item.owner || item.creator}
-                collectionId={item.customCollectionId || item._id}
-                isCustomCollection={!!item.customCollectionId || item.type === 'custom_collection'}
-                isAuction={item.isAuction || false}
-                auctionId={item.auctionId}
-                currentBid={item.currentBid}
-                endTime={item.endTime}
-                activeOffers={item.activeOffers || 0}
-                viewType="medium"
                 onBuy={onBuy}
                 // Voting system
                 nftId={item._id || item.id}
@@ -373,13 +288,6 @@ export default function MarketplaceMobileLayout({
           onClick={() => setViewTypeMobile('large')}
         >
           <LayoutGrid className="w-5 h-5" />
-        </Button>
-        <Button
-          variant={viewTypeMobile === 'medium' ? 'default' : 'outline'}
-          className={`rounded-full p-2 ${viewTypeMobile === 'medium' ? 'bg-[#FF0052] text-white' : 'bg-white/5 text-white/80 border-white/10'}`}
-          onClick={() => setViewTypeMobile('medium')}
-        >
-          <Grid3X3 className="w-5 h-5" />
         </Button>
         <Button
           variant={viewTypeMobile === 'compact' ? 'default' : 'outline'}
