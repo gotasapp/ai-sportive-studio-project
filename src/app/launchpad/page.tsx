@@ -60,8 +60,6 @@ import { toast } from 'sonner';
 import { Collection, LaunchpadCollection, LaunchpadStatus } from '@/types';
 import { LAUNCHPAD_STATUSES, VISIBLE_LAUNCHPAD_STATUSES } from '@/lib/collection-config';
 import { getCurrentUTC, getCurrentLocalFormatted, addDaysToUTC, isUTCDatePassed } from '@/lib/collection-utils';
-import { useIsMobile } from '@/hooks/useIsMobile';
-import LaunchpadMobileLayout from '@/components/launchpad/LaunchpadMobileLayout';
 
 // Componente do Carrossel Featured (igual ao marketplace)
 function FeaturedLaunchpadCarousel() {
@@ -494,7 +492,6 @@ function LaunchpadCollectionCard({
 export default function LaunchpadPage() {
   // Thirdweb v5 hooks for wallet connection
   const account = useActiveAccount();
-  const isMobile = useIsMobile();
   
   // Use account data directly
   const address = account?.address;
@@ -1337,57 +1334,6 @@ export default function LaunchpadPage() {
       </div>
     );
   };
-
-  // Mobile layout check
-  if (isMobile) {
-    const mobileStats = {
-      totalCollections: filteredCollections.length,
-      activeDrops: filteredCollections.filter(c => c.status === 'active').length,
-      totalVolume: stats.totalVolume,
-      topCreator: 'CHZ Studio'
-    };
-
-    return (
-      <LaunchpadMobileLayout
-        collections={filteredCollections
-          .filter(c => c._id)
-          .map(c => ({
-            _id: c._id!,
-            name: c.name,
-            description: c.description,
-            image: c.image,
-            price: c.price || '0',
-            totalSupply: c.totalSupply || 0,
-            minted: c.minted || 0,
-            status: (['upcoming', 'active', 'hidden', 'pending_launchpad', 'ended'].includes(c.status) ? c.status : 'upcoming') as 'upcoming' | 'active' | 'hidden' | 'pending_launchpad' | 'ended',
-            launchDate: c.launchDate ? (typeof c.launchDate === 'string' ? c.launchDate : c.launchDate.toISOString()) : undefined,
-            endDate: c.endDate ? (typeof c.endDate === 'string' ? c.endDate : c.endDate.toISOString()) : undefined,
-            creator: {
-              name: c.creator?.name || 'Unknown',
-              wallet: c.creator?.wallet || ''
-            },
-            contractAddress: c.contractAddress
-          }))}
-        stats={mobileStats}
-        onSearch={setSearchTerm}
-        onFilterChange={setStatusFilter}
-        searchTerm={searchTerm}
-        activeFilter={statusFilter}
-        loading={loading}
-        isUserAdmin={isUserAdmin}
-        // 🎯 ADICIONAR PROPS PARA IMAGENS PENDENTES
-        pendingImages={pendingImages}
-        pendingLoading={pendingLoading}
-        onApproveImage={(imageId) => {
-          const image = pendingImages.find(img => img._id === imageId);
-          if (image) {
-            openApprovalModal(image);
-          }
-        }}
-        onRejectImage={rejectPendingImage}
-      />
-    );
-  }
 
   return (
     <main className="flex min-h-screen flex-col text-[#FDFDFD] bg-gradient-to-b from-[#030303] to-[#0b0518]">
