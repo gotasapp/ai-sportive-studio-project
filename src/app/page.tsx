@@ -1,7 +1,7 @@
 'use client';
 
-import Header from '@/components/Header';
-import { CommerceHero } from '@/components/commerce-hero';
+import Header from '@/components/navigation/Header';
+import { CommerceHero } from '@/components/core/commerce-hero';
 
 export default function Home() {
   return (

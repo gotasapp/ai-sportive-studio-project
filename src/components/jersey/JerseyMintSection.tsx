@@ -4,7 +4,7 @@ import React from 'react'
 import { Wallet, Zap, Upload, ExternalLink, AlertTriangle, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { getTransactionUrl } from '../../lib/utils'
-import { RequireWallet } from '@/components/RequireWallet'
+import { RequireWallet } from '@/components/navigation/RequireWallet'
 import { toast } from 'sonner';
 import { useEffect } from 'react';
 

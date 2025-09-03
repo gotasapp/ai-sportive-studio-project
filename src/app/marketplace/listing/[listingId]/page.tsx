@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { useActiveWalletChain } from 'thirdweb/react';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import ListingControls from '@/components/marketplace/ListingControls';

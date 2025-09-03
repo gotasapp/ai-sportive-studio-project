@@ -1,7 +1,7 @@
 'use client';
 
-import StadiumEditor from '@/components/StadiumEditor';
-import Header from '@/components/Header';
+import StadiumEditor from '@/components/editors/StadiumEditor';
+import Header from '@/components/navigation/Header';
 
 export default function StadiumsPage() {
   // No more authentication checks - let everyone see the page

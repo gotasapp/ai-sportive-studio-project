@@ -12,7 +12,7 @@ import BuyNowButton from '@/components/marketplace/BuyNowButton';
 import MakeOfferButton from '@/components/marketplace/MakeOfferButton';
 import AuctionBidButton from '@/components/marketplace/AuctionBidButton';
 import { CreateListingModal } from '@/components/marketplace/CreateListingModal';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 import { toast } from 'sonner';
 
 interface NFTDetails {

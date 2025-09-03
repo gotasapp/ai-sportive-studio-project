@@ -1,7 +1,7 @@
 'use client';
 
-import JerseyEditor from '@/components/JerseyEditor';
-import Header from '@/components/Header';
+import JerseyEditor from '@/components/editors/JerseyEditor';
+import Header from '@/components/navigation/Header';
 
 export default function JerseysPage() {
   return (

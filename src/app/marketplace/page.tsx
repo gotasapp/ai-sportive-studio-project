@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 import FeaturedCarousel from '@/components/marketplace/FeaturedCarousel';
 import MarketplaceFilters, { 
   ViewType, 

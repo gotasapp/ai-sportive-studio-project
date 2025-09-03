@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Wallet, AlertTriangle, Check, Minus, Plus, Crown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { RequireWallet } from '@/components/RequireWallet';
+import { RequireWallet } from '@/components/navigation/RequireWallet';
 import { getTransactionUrl } from '@/lib/utils';
 import { useWeb3 } from '@/lib/useWeb3';
 import { useEngine } from '@/lib/useEngine';

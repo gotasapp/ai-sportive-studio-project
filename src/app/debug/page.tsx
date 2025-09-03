@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { ContractRoleChecker } from '@/components/debug/ContractRoleChecker';
-import { RequireWallet } from '@/components/RequireWallet';
+import { RequireWallet } from '@/components/navigation/RequireWallet';
 
 export default function DebugPage() {
   return (

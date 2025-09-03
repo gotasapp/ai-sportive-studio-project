@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 import CollectionUnitsTable from '@/components/marketplace/CollectionUnitsTable';
 import CollectionTraits from '@/components/marketplace/CollectionTraits';
 

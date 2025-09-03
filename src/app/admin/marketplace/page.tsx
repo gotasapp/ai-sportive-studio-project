@@ -10,7 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
-import AdminProtection from '@/components/AdminProtection';
+import AdminProtection from '@/components/core/AdminProtection';
 import {
   Settings,
   ShoppingBag,

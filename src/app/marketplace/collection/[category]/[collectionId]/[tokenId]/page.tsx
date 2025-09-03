@@ -34,7 +34,7 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 import MarketplaceActionButtons from '@/components/marketplace/MarketplaceActionButtons';
 import OptimizedImage from '@/components/marketplace/OptimizedImage';
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';

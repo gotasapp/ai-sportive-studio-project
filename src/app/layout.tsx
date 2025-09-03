@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import AppProviders from "@/lib/AppProviders";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileBottomNav from "@/components/navigation/MobileBottomNav";
 import ClientFooterWrapper from "@/components/layout/ClientFooterWrapper";
 
 const plusJakartaSans = Plus_Jakarta_Sans({ 

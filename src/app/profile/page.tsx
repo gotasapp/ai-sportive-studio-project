@@ -28,10 +28,10 @@ import { AccountName } from '@/components/ui/account-name'
 import { ConnectedProfiles } from '@/components/profile/ConnectedProfiles'
 import { NFTDetailsModal } from '@/components/profile/NFTDetailsModal'
 import { useThirdwebProfiles } from '@/hooks/useThirdwebProfiles'
-import Header from '@/components/Header'
+import Header from '@/components/navigation/Header'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
-import { RequireWallet } from '@/components/RequireWallet'
+import { RequireWallet } from '@/components/navigation/RequireWallet'
 import { convertIpfsToHttp, normalizeIpfsUri } from '@/lib/utils';
 
 interface UserProfile {

@@ -6,7 +6,7 @@ import { Shield, Menu, X } from 'lucide-react';
 import { CgMenuOreos } from 'react-icons/cg';
 import { useState, useEffect } from 'react';
 import { isAdmin, isAdminAsync } from '@/lib/admin-config';
-import NavLink from './ui/NavLink';
+import NavLink from '../ui/NavLink';
 import { client, supportedChains, wallets, chzMainnet } from '@/lib/ThirdwebProvider';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';

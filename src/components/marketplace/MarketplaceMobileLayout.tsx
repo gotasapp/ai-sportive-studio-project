@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sparkles, LayoutGrid, List, Search, Eye, Tag, Heart, MoreVertical } from "lucide-react";
 import LaunchpadCarouselMobile, { LaunchpadItem } from "@/components/marketplace/LaunchpadCarouselMobile";
-import Header from "@/components/Header";
+import Header from "@/components/navigation/Header";
 import MarketplaceCardMobile from "./MarketplaceCardMobile";
 import CollectionOverviewCard from "./CollectionOverviewCard";
 import Link from "next/link";

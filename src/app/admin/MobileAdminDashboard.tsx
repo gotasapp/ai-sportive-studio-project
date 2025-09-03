@@ -1,11 +1,11 @@
 import React from 'react';
-import Header from '@/components/Header';
+import Header from '@/components/navigation/Header';
 // Importe o menu/sidebar Oreo usado no marketplace mobile
 // import OreoSidebar from '@/components/marketplace/OreoSidebar'; // adjust the path if necessary
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
-import MobileBottomNav from '@/components/MobileBottomNav';
+import MobileBottomNav from '@/components/navigation/MobileBottomNav';
 import Link from 'next/link';
 import { Shirt, Award, Building2, Shield, BarChart3, Users, Settings } from 'lucide-react';
 

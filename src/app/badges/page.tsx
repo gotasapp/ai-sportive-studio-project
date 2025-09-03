@@ -1,7 +1,7 @@
 'use client';
 
-import BadgeEditor from '@/components/BadgeEditor';
-import Header from '@/components/Header';
+import BadgeEditor from '@/components/editors/BadgeEditor';
+import Header from '@/components/navigation/Header';
 
 export default function BadgesPage() {
   // No more authentication checks - let everyone see the page
