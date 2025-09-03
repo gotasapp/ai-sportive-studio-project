@@ -11,6 +11,7 @@ This directory contains comprehensive technical documentation for the CHZ Fan To
 - **[UPVOTE_SYSTEM.md](./UPVOTE_SYSTEM.md)** - Community-driven content curation and ranking system
 - **[MARKETPLACE_TRADING.md](./MARKETPLACE_TRADING.md)** - NFT trading engine and marketplace operations
 - **[LAUNCHPAD_SYSTEM.md](./LAUNCHPAD_SYSTEM.md)** - Collection deployment and gasless minting platform
+- **[COMPONENT_ARCHITECTURE.md](./COMPONENT_ARCHITECTURE.md)** - Component organization and refactoring status
 
 ### Architecture Documentation
 
