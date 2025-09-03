@@ -1,8 +1,8 @@
-# 🏟️ Stadium References - Estrutura de Pastas
+# 🏟️ Stadium References - Folder Structure
 
-## 📁 **ONDE COLOCAR SUAS IMAGENS DE REFERÊNCIA**
+## 📁 **WHERE TO PUT YOUR REFERENCE IMAGES**
 
-### **Estrutura de Pastas:**
+### **Folder Structure:**
 ```
 api/stadium_references/
 ├── maracana/
@@ -34,10 +34,10 @@ api/stadium_references/
 
 ---
 
-## 🎯 **NOMES DOS ESTÁDIOS (IDs)**
+## 🎯 **STADIUM NAMES (IDs)**
 
-| Estádio Real | ID da Pasta | Nome para Sistema |
-|--------------|-------------|-------------------|
+| Real Stadium | Folder ID | System Name |
+|--------------|-----------|-------------|
 | **Maracanã** | `maracana` | Maracanã Stadium |
 | **Camp Nou** | `camp_nou` | Camp Nou Stadium |
 | **Allianz Arena (Bayern)** | `allianz_arena_bayern` | Allianz Arena Munich |
@@ -46,71 +46,71 @@ api/stadium_references/
 
 ---
 
-## 📸 **NOMENCLATURA DAS IMAGENS**
+## 📸 **IMAGE NOMENCLATURE**
 
-### **Padrão:** `{stadium_id}_{time}_{atmosphere}.jpg`
+### **Pattern:** `{stadium_id}_{time}_{atmosphere}.jpg`
 
-**Exemplos para Maracanã:**
-- ✅ `maracana_day_crowd.jpg` - Dia com torcida
-- ✅ `maracana_night_lights.jpg` - Noite iluminado
-- ✅ `maracana_sunset_packed.jpg` - Pôr do sol lotado
-- ✅ `maracana_derby_atmosphere.jpg` - Atmosfera de clássico
+**Examples for Maracanã:**
+- ✅ `maracana_day_crowd.jpg` - Day with crowd
+- ✅ `maracana_night_lights.jpg` - Night illuminated
+- ✅ `maracana_sunset_packed.jpg` - Sunset packed
+- ✅ `maracana_derby_atmosphere.jpg` - Derby atmosphere
 
-**Variações recomendadas:**
-- `{stadium}_day_crowd.jpg` - Dia com torcida
-- `{stadium}_night_lights.jpg` - Noite com luzes
-- `{stadium}_sunset_packed.jpg` - Pôr do sol lotado
-- `{stadium}_empty_training.jpg` - Vazio para treino
-- `{stadium}_derby_atmosphere.jpg` - Atmosfera de clássico
-
----
-
-## 🎨 **CARACTERÍSTICAS DESEJADAS**
-
-### **Atmosfera Padrão (Base Prompt):**
-- ✅ **Torcida presente** - Estádio com torcedores
-- ✅ **Noite iluminada** - Refletores e luzes do estádio
-- ✅ **Atmosfera vibrante** - Energia de jogo importante
-- ✅ **Cores do time** - Torcida com cores características
-- ✅ **Arquitetura destacada** - Estrutura do estádio visível
-
-### **Variações por Time/Estádio:**
-- **Maracanã**: Vermelho e preto (Flamengo) ou tricolor (Fluminense)
-- **Camp Nou**: Azul e grená (Barcelona)
-- **Allianz Arena Bayern**: Vermelho (Bayern Munich)
-- **Allianz Parque**: Verde (Palmeiras)
-- **São Januário**: Preto e branco (Vasco)
+**Recommended variations:**
+- `{stadium}_day_crowd.jpg` - Day with crowd
+- `{stadium}_night_lights.jpg` - Night with lights
+- `{stadium}_sunset_packed.jpg` - Sunset packed
+- `{stadium}_empty_training.jpg` - Empty for training
+- `{stadium}_derby_atmosphere.jpg` - Derby atmosphere
 
 ---
 
-## 📋 **CHECKLIST PARA SUAS IMAGENS**
+## 🎨 **DESIRED CHARACTERISTICS**
 
-### **Para cada estádio, inclua:**
-- [ ] **1 imagem diurna** com torcida
-- [ ] **1 imagem noturna** com luzes
-- [ ] **1 imagem atmosfera especial** (clássico, final, etc.)
-- [ ] **Resolução mínima**: 800x600
-- [ ] **Formato**: JPG, PNG ou WEBP
-- [ ] **Vista clara** da arquitetura do estádio
+### **Standard Atmosphere (Base Prompt):**
+- ✅ **Crowd present** - Stadium with spectators
+- ✅ **Night illuminated** - Stadium spotlights and lights
+- ✅ **Vibrant atmosphere** - Important game energy
+- ✅ **Team colors** - Crowd with characteristic colors
+- ✅ **Highlighted architecture** - Stadium structure visible
 
-### **Qualidade desejada:**
-- ✅ Boa iluminação
-- ✅ Torcida visível
-- ✅ Arquitetura destacada
-- ✅ Sem obstruções na vista
-- ✅ Cores vibrantes
+### **Variations by Team/Stadium:**
+- **Maracanã**: Red and black (Flamengo) or tricolor (Fluminense)
+- **Camp Nou**: Blue and burgundy (Barcelona)
+- **Allianz Arena Bayern**: Red (Bayern Munich)
+- **Allianz Parque**: Green (Palmeiras)
+- **São Januário**: Black and white (Vasco)
 
 ---
 
-## 🚀 **COMO USAR**
+## 📋 **CHECKLIST FOR YOUR IMAGES**
 
-1. **Crie as pastas** com os nomes exatos acima
-2. **Coloque suas imagens** seguindo a nomenclatura
-3. **Execute o sistema** - ele vai processar automaticamente
-4. **Metadata será gerada** automaticamente pelo GPT-4 Vision
+### **For each stadium, include:**
+- [ ] **1 daytime image** with crowd
+- [ ] **1 nighttime image** with lights
+- [ ] **1 special atmosphere image** (derby, final, etc.)
+- [ ] **Minimum resolution**: 800x600
+- [ ] **Format**: JPG, PNG or WEBP
+- [ ] **Clear view** of stadium architecture
 
-### **Comando para criar estrutura:**
+### **Desired quality:**
+- ✅ Good lighting
+- ✅ Visible crowd
+- ✅ Highlighted architecture
+- ✅ No view obstructions
+- ✅ Vibrant colors
+
+---
+
+## 🚀 **HOW TO USE**
+
+1. **Create the folders** with the exact names above
+2. **Place your images** following the nomenclature
+3. **Execute the system** - it will process automatically
+4. **Metadata will be generated** automatically by GPT-4 Vision
+
+### **Command to create structure:**
 ```bash
-# Criar todas as pastas de uma vez
+# Create all folders at once
 mkdir -p api/stadium_references/{maracana,camp_nou,allianz_arena_bayern,allianz_parque_palmeiras,sao_januario_vasco}
 ``` 

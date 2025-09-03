@@ -1,3 +1,6 @@
+// Next.js Configuration
+// CHZ Fan Token Studio - Developed by Jefferson Vieira
+// AI-powered NFT platform for sports collectibles
 /** @type {import('next').NextConfig} */
 module.exports = {
   // Disable static generation for API routes to prevent timeouts

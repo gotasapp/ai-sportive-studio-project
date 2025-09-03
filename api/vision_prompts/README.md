@@ -1,56 +1,56 @@
-# Vision Test - Sistema de Prompts Base
+# Vision Test - Base Prompt System
 
-## 📁 Estrutura dos Arquivos
+## 📁 File Structure
 
 ```
 api/vision_prompts/
-├── base_prompts.py      # Prompts organizados em Python
-├── prompts_config.json  # Configuração em JSON (fácil edição)
-├── README.md           # Esta documentação
+├── base_prompts.py      # Organized prompts in Python
+├── prompts_config.json  # JSON configuration (easy editing)
+├── README.md           # This documentation
 ```
 
-## 🏆 Esportes Suportados
+## 🏆 Supported Sports
 
 ### ⚽ **Soccer (Futebol)**
-- ✅ Vista das Costas
-- ✅ Vista da Frente
-- 🎯 Foco: Listras, logos, badges, design clássico
+- ✅ Back View
+- ✅ Front View
+- 🎯 Focus: Stripes, logos, badges, classic design
 
 ### 🏀 **Basketball (NBA)**  
-- ✅ Vista das Costas
-- ✅ Vista da Frente
-- 🎯 Foco: Nome curvado, números grandes, tecido de basquete
+- ✅ Back View
+- ✅ Front View
+- 🎯 Focus: Curved name, large numbers, basketball fabric
 
 ### 🏈 **NFL (American Football)**
-- ✅ Vista das Costas  
-- ✅ Vista da Frente
-- 🎯 Foco: Ombros robustos, números grossos, estilo NFL
+- ✅ Back View  
+- ✅ Front View
+- 🎯 Focus: Robust shoulders, thick numbers, NFL style
 
-## 🎨 Estilos Disponíveis
+## 🎨 Available Styles
 
-| Estilo | Descrição |
-|--------|-----------|
-| **Classic** | Design profissional clássico |
-| **Modern** | Linhas limpas e modernas |
-| **Retro** | Estética vintage esportiva |
-| **Urban** | Estilo urbano street sports |
-| **Premium** | Mercadoria esportiva luxuosa |
-| **Vintage** | Uniforme esportivo clássico |
+| Style | Description |
+|-------|-------------|
+| **Classic** | Classic professional design |
+| **Modern** | Clean and modern lines |
+| **Retro** | Vintage sports aesthetic |
+| **Urban** | Urban street sports style |
+| **Premium** | Luxury sports merchandise |
+| **Vintage** | Classic sports uniform |
 
-## 🔧 Como Usar
+## 🔧 How to Use
 
-### Python (Recomendado)
+### Python (Recommended)
 ```python
 from api.vision_prompts.base_prompts import get_prompt, get_enhanced_prompt
 
-# Prompt básico
+# Basic prompt
 prompt = get_prompt("soccer", "back", "MESSI", "10", "classic")
 
-# Prompt com qualidade melhorada  
+# Enhanced quality prompt  
 enhanced = get_enhanced_prompt("basketball", "front", "JORDAN", "23", "retro", "advanced")
 ```
 
-### JSON (Edição Fácil)
+### JSON (Easy Editing)
 ```python
 import json
 
@@ -60,39 +60,39 @@ with open('api/vision_prompts/prompts_config.json', 'r') as f:
 soccer_back = config['sports']['soccer']['views']['back']['prompt']
 ```
 
-## 🎯 Variáveis do Template
+## 🎯 Template Variables
 
-Todos os prompts suportam estas variáveis:
+All prompts support these variables:
 
-- `{PLAYER_NAME}` - Nome do jogador (será convertido para UPPERCASE)
-- `{PLAYER_NUMBER}` - Número do jogador
-- `{STYLE}` - Descrição do estilo escolhido
+- `{PLAYER_NAME}` - Player name (will be converted to UPPERCASE)
+- `{PLAYER_NUMBER}` - Player number
+- `{STYLE}` - Description of chosen style
 
-## ✨ Melhorias Implementadas
+## ✨ Implemented Improvements
 
-### Baseado no Código Atual CHZ:
-1. ✅ **Negative Prompts** - Evita manequins, logos, baixa qualidade
-2. ✅ **Quality Enhancers** - Melhora textura, iluminação, resolução  
-3. ✅ **Style Themes** - Sistema de estilos expandido
-4. ✅ **Multi-Sport** - Suporte a 3 esportes diferentes
-5. ✅ **Multi-View** - Frente e costas para cada esporte
+### Based on Current CHZ Code:
+1. ✅ **Negative Prompts** - Avoids mannequins, logos, low quality
+2. ✅ **Quality Enhancers** - Improves texture, lighting, resolution  
+3. ✅ **Style Themes** - Expanded style system
+4. ✅ **Multi-Sport** - Support for 3 different sports
+5. ✅ **Multi-View** - Front and back for each sport
 
-### Novos Recursos:
-1. 🆕 **Organização JSON** - Fácil edição sem tocar no código
-2. 🆕 **Utility Functions** - Funções helper para facilitar uso
-3. 🆕 **Testing System** - Testa todos os prompts automaticamente
-4. 🆕 **Enhanced Prompts** - Níveis de qualidade (base/advanced)
+### New Features:
+1. 🆕 **JSON Organization** - Easy editing without touching code
+2. 🆕 **Utility Functions** - Helper functions to facilitate use
+3. 🆕 **Testing System** - Tests all prompts automatically
+4. 🆕 **Enhanced Prompts** - Quality levels (base/advanced)
 
-## 🧪 Testando
+## 🧪 Testing
 
 ```bash
 cd api/vision_prompts
 python base_prompts.py
 ```
 
-Output esperado:
+Expected output:
 ```
-🧪 Testando prompts base...
+🧪 Testing base prompts...
 ✅ SOCCER back: 847 chars
 ✅ SOCCER front: 742 chars  
 ✅ BASKETBALL back: 789 chars
@@ -100,38 +100,38 @@ Output esperado:
 ✅ NFL back: 923 chars
 ✅ NFL front: 834 chars
 
-✅ Teste concluído!
+✅ Test completed!
 ```
 
-## 🔄 Próximos Passos
+## 🔄 Next Steps
 
-1. **Integrar com VisionTestEditor.tsx**
-2. **Adicionar botões de filtro (Esporte/Perspectiva/Estilo)**
-3. **Testar prompts com imagens reais**
-4. **Ajustar prompts baseado nos resultados**
-5. **Expandir para outros esportes conforme necessário**
+1. **Integrate with VisionTestEditor.tsx**
+2. **Add filter buttons (Sport/Perspective/Style)**
+3. **Test prompts with real images**
+4. **Adjust prompts based on results**
+5. **Expand to other sports as needed**
 
-## 📝 Sugestões de Melhorias
+## 📝 Improvement Suggestions
 
-### Baseado no Código CHZ Atual:
+### Based on Current CHZ Code:
 
-1. **Adicionar aos prompts:**
+1. **Add to prompts:**
    ```
    QUALITY: premium fabric texture, professional athletic fit, 
    studio lighting, photorealistic rendering, 4K quality, 
    official sports merchandise style
    ```
 
-2. **Melhorar especificidade:**
-   - Cores mais detalhadas
-   - Texturas específicas por esporte
-   - Posicionamento mais preciso de elementos
+2. **Improve specificity:**
+   - More detailed colors
+   - Sport-specific textures
+   - More precise element positioning
 
-3. **Negative Prompts mais robustos:**
+3. **More robust Negative Prompts:**
    ```
    "blurry, low quality, distorted, amateur, pixelated, 
    watermark, text overlay, logo overlay, multiple jerseys, 
    person wearing, mannequin, human model, body, arms, torso"
    ```
 
-✅ **Sistema pronto para implementação no Vision Test!** 
+✅ **System ready for implementation in Vision Test!** 

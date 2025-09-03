@@ -1,3 +1,6 @@
+// ESLint Configuration
+// CHZ Fan Token Studio - Developed by Jefferson Vieira
+// AI-powered NFT platform for sports collectibles
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 import { FlatCompat } from "@eslint/eslintrc";

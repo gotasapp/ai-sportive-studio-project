@@ -88,9 +88,9 @@
     "tailwindcss": "3.4.1",
     "typescript": "5.3.3"
   },
-  "description": "Chiliz Fan NFT - Gerador de NFTs de camisas de futebol e estádios usando IA para criar tokens únicos de times de futebol.",
+  "description": "Chiliz Fan NFT - AI-powered football jersey and stadium NFT generator for creating unique football team tokens.",
   "main": "postcss.config.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
+  "keywords": ["nft", "football", "jersey", "ai", "chiliz", "blockchain", "web3"],
+  "author": "Jefferson Vieira",
+  "license": "MIT"
 }

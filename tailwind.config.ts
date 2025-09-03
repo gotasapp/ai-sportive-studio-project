@@ -1,3 +1,6 @@
+// Tailwind CSS Configuration
+// CHZ Fan Token Studio - Developed by Jefferson Vieira
+// AI-powered NFT platform for sports collectibles
 import type { Config } from 'tailwindcss';
 
 const config: Config = {

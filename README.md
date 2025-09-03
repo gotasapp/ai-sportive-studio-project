@@ -430,6 +430,20 @@ The project is ready for contributors! Main areas:
 
 ---
 
+## 👨‍💻 **Developer & Credits**
+
+### **Lead Developer**
+**Jefferson Vieira** - Full-stack developer and project architect
+
+- **Role**: Project Lead, Full-Stack Development, AI Integration
+- **Expertise**: Next.js, Python, AI/ML, Web3, Blockchain
+- **Contact**: [GitHub Profile](https://github.com/jeffersonvieira)
+
+### **Project Overview**
+CHZ Fan Token Studio is a comprehensive NFT platform developed by Jefferson Vieira, combining cutting-edge AI technology with blockchain innovation to create the future of sports collectibles.
+
+---
+
 ## 📄 **License**
 
 This project is licensed under the [MIT License](LICENSE).

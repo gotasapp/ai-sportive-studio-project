@@ -1,4 +1,6 @@
 # Frontend Dockerfile
+# CHZ Fan Token Studio - Developed by Jefferson Vieira
+# AI-powered NFT platform for sports collectibles
 FROM node:18-alpine AS base
 
 # Install dependencies only when needed
