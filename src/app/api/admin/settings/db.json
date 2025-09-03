@@ -1,0 +1,38 @@
+{
+  "_id": "app_settings",
+  "siteName": "CHZ Fantoken Studio",
+  "maintenanceMode": false,
+  "apiKeys": {
+    "openai": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "thirdweb": "pk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "cloudinary": "cloudinary://xxxxxxxxxxxx:xxxxxxxxxxxxxxxxxxx@xxxxxxxxx"
+  },
+  "featureFlags": {
+    "enableStadiums": true,
+    "enableBadges": true,
+    "enableLogoUpload": false,
+    "enableGasless": true
+  },
+  "defaults": {
+    "mintPrice": "10",
+    "editionSize": 100,
+    "royaltyPercentage": 7.5
+  },
+  "contentFilters": {
+    "enabled": true,
+    "defaultPrompts": [
+      "sexual content",
+      "nudity",
+      "violence",
+      "weapons",
+      "drugs",
+      "gore",
+      "hate speech",
+      "discriminatory content",
+      "illegal activities",
+      "harmful content"
+    ],
+    "customPrompts": []
+  },
+  "updatedAt": "2025-08-08T18:35:25.586Z"
+}

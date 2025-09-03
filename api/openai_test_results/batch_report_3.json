@@ -1,0 +1,39 @@
+{
+  "batch_test": true,
+  "method": "openai_dalle3_batch",
+  "quality": "standard",
+  "total_generated": 3,
+  "total_cost_usd": 0.12,
+  "cost_per_image": 0.04,
+  "results": [
+    {
+      "order": 1,
+      "team": "Palmeiras",
+      "generated_file": "test_1_Palmeiras.png",
+      "prompt_used": "Professional product photography of a Palmeiras soccer jersey.\n\nflat lay photography of official Palmeiras home jersey 2024,          Adidas sublimated polyester fabric, vibrant green base color with white trim details,         large white number '10' heat-pressed on center back,          white player name 'ARIEL' heat-pressed above number,         Crefisa sponsor logo heat-sealed on chest,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge, Adidas three stripes logo\n\nStudio lighting, clean white background, jersey laid flat in perfect symmetrical position, front view clearly showing team logo and sponsor details, official team colors, high-quality athletic fabric texture, no wrinkles, no shadows, commercial photography style.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "order": 2,
+      "team": "Vasco da Gama",
+      "generated_file": "test_2_Vasco_da_Gama.png",
+      "prompt_used": "Professional product photography of a Vasco da Gama soccer jersey.\n\nflat lay photography of official Vasco da Gama home jersey 2024,         sublimated polyester fabric, black base color with white diagonal sash,         diagonal stripe running from top right shoulder to bottom left,         large white number '8' heat-pressed on center back,         white player name 'JEFF' heat-pressed above number,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge visible\n\nStudio lighting, clean white background, jersey laid flat in perfect symmetrical position, front view clearly showing team logo and sponsor details, official team colors, high-quality athletic fabric texture, no wrinkles, no shadows, commercial photography style.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "order": 3,
+      "team": "Flamengo",
+      "generated_file": "test_3_Flamengo.png",
+      "prompt_used": "Professional product photography of a Flamengo soccer jersey.\n\nflat lay photography of official Flamengo home jersey 2024,         sublimated polyester fabric, red and black horizontal stripes pattern,         alternating red and black bands across entire jersey,         large white number '9' heat-pressed on center back,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge, Adidas three stripes logo\n\nStudio lighting, clean white background, jersey laid flat in perfect symmetrical position, front view clearly showing team logo and sponsor details, official team colors, high-quality athletic fabric texture, no wrinkles, no shadows, commercial photography style.",
+      "status": "success",
+      "cost_usd": 0.04
+    }
+  ],
+  "next_steps": [
+    "review_image_quality",
+    "adjust_prompts_if_needed",
+    "generate_next_batch"
+  ]
+}

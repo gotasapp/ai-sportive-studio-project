@@ -1,0 +1,30 @@
+{
+  "method": "dalle3_via_openrouter",
+  "model": "openai/dall-e-3",
+  "quality": "standard",
+  "total_tests": 3,
+  "successful_generations": 0,
+  "total_cost_usd": 0,
+  "cost_per_image": 0.04,
+  "advantages": [
+    "dalle3_quality_guaranteed",
+    "openrouter_better_pricing",
+    "perfect_jersey_format",
+    "no_training_required",
+    "professional_results"
+  ],
+  "results": [
+    {
+      "team": "Palmeiras",
+      "status": "failed"
+    },
+    {
+      "team": "Vasco da Gama",
+      "status": "failed"
+    },
+    {
+      "team": "Flamengo",
+      "status": "failed"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "stadium_info": {
+    "name": "Allianz Parque Palmeiras",
+    "id": "allianz_parque_palmeiras",
+    "architecture_style": "moderno",
+    "dominant_colors": [
+      "branco",
+      "azul",
+      "preto",
+      "verde",
+      "cinza"
+    ],
+    "architectural_features": [
+      "arquibancadas altas",
+      "grande telão",
+      "estrutura metálica exposta",
+      "assentos em camadas",
+      "estrutura metálica"
+    ]
+  },
+  "atmosphere_variants": {
+    "night_packed_vibrant": {
+      "description": "Noite vibrante no Allianz Parque Palmeiras com torcida animada",
+      "lighting": "artificial intensa",
+      "crowd_energy": "alta",
+      "colors": [
+        "branco",
+        "azul",
+        "preto"
+      ]
+    },
+    "day_classic_atmosphere": {
+      "description": "Atmosfera clássica diurna no Allianz Parque Palmeiras",
+      "lighting": "natural",
+      "crowd_energy": "média",
+      "colors": [
+        "branco",
+        "azul",
+        "preto"
+      ]
+    },
+    "sunset_golden_hour": {
+      "description": "Pôr do sol dourado no Allianz Parque Palmeiras",
+      "lighting": "dourada natural",
+      "crowd_energy": "média-alta",
+      "colors": [
+        "dourado",
+        "laranja",
+        "branco",
+        "azul"
+      ]
+    }
+  },
+  "reference_images": [
+    {
+      "filename": "palmeiras_atsmosphere.jpg",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "parcial",
+        "lighting_quality": "natural",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "tarde",
+        "weather_apparent": "ensolarado",
+        "dominant_colors": [
+          "verde",
+          "branco",
+          "preto"
+        ],
+        "architectural_features": [
+          "arquibancadas altas",
+          "estrutura metálica"
+        ],
+        "unique_elements": "faixas decorativas nas arquibancadas"
+      }
+    },
+    {
+      "filename": "palmeiras_night_light.jpg",
+      "type": "night_lights",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "verde",
+          "branco",
+          "azul"
+        ],
+        "architectural_features": [
+          "estrutura metálica",
+          "grande telão"
+        ],
+        "unique_elements": "design inovador com cobertura completa"
+      }
+    },
+    {
+      "filename": "palmeiras_day_light.png",
+      "type": "day_crowd",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "tarde",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "verde",
+          "branco",
+          "cinza"
+        ],
+        "architectural_features": [
+          "estrutura metálica exposta",
+          "assentos em camadas"
+        ],
+        "unique_elements": "faixas decorativas verdes e brancas"
+      }
+    }
+  ],
+  "generation_prompts": {
+    "base_description": "Estádio moderno com arquitetura característica",
+    "atmosphere_modifiers": [
+      "arquibancadas altas",
+      "grande telão",
+      "estrutura metálica exposta",
+      "assentos em camadas",
+      "estrutura metálica"
+    ],
+    "color_palette": [
+      "branco",
+      "azul",
+      "preto",
+      "verde",
+      "cinza"
+    ]
+  },
+  "created_at": "2024-12-19",
+  "version": "1.0"
+}

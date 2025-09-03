@@ -1,0 +1,74 @@
+{
+  "view_type": "back_view_only",
+  "method": "openai_dalle3_back_optimized",
+  "prompt_source": "chatgpt4_analyzed_references",
+  "quality": "standard",
+  "total_generated": 6,
+  "total_cost_usd": 0.24,
+  "cost_per_image": 0.04,
+  "results": [
+    {
+      "order": 1,
+      "team": "Vasco da Gama",
+      "view": "back",
+      "generated_file": "back_view_Vasco_da_Gama.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"VEGETTI\" in bold uppercase letters. Below it, a large centered number \"10\".\n\nThe jersey must exactly match the official home design of the \"Vasco da Gama\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution. Reference dimensions: 1024x1024, maintain exact flat lay, back view, centered layout.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "order": 2,
+      "team": "Palmeiras",
+      "view": "back",
+      "generated_file": "back_view_Palmeiras.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"MARIO\" in bold uppercase letters. Below it, a large centered number \"10\".\n\nThe jersey must exactly match the official home design of the \"Palmeiras\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution. Reference dimensions: 1024x1024, maintain exact flat lay, back view, centered layout.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "order": 3,
+      "team": "São Paulo",
+      "view": "back",
+      "generated_file": "back_view_São_Paulo.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"ARIEL\" in bold uppercase letters. Below it, a large centered number \"9\".\n\nThe jersey must exactly match the official home design of the \"São Paulo\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "team": "Vasco da Gama",
+      "view": "back",
+      "custom_name": "PEDRO",
+      "custom_number": "7",
+      "generated_file": "back_custom_Vasco_da_Gama_PEDRO_7.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"PEDRO\" in bold uppercase letters. Below it, a large centered number \"7\".\n\nThe jersey must exactly match the official home design of the \"Vasco da Gama\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution. Reference dimensions: 1024x1024, maintain exact flat lay, back view, centered layout.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "team": "Palmeiras",
+      "view": "back",
+      "custom_name": "GABRIEL",
+      "custom_number": "23",
+      "generated_file": "back_custom_Palmeiras_GABRIEL_23.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"GABRIEL\" in bold uppercase letters. Below it, a large centered number \"23\".\n\nThe jersey must exactly match the official home design of the \"Palmeiras\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution. Reference dimensions: 1024x1024, maintain exact flat lay, back view, centered layout.",
+      "status": "success",
+      "cost_usd": 0.04
+    },
+    {
+      "team": "São Paulo",
+      "view": "back",
+      "custom_name": "BRUNO",
+      "custom_number": "11",
+      "generated_file": "back_custom_São_Paulo_BRUNO_11.png",
+      "prompt_used": "A photorealistic back view of a professional soccer jersey on a white studio background, designed for jersey customization interfaces. The jersey is centered and fully visible, with a clean flat fit and realistic texture. At the top, display the player name \"BRUNO\" in bold uppercase letters. Below it, a large centered number \"11\".\n\nThe jersey must exactly match the official home design of the \"São Paulo\" team: use authentic team colors, patterns, sponsors, and jersey layout. Ensure high contrast between text and background for readability. Use realistic lighting and subtle shadows to reflect fabric quality.\n\nDo not show any mannequin, human body, hanger, or background elements. No angled views or tilted perspectives. Avoid front view, 3D rotation, folds, blurs or wrinkles. The format, layout and proportions must exactly match the Vasco da Gama example with \"JEFF\" and number \"8\". Keep the name and number aligned and consistent in size across all generations. 4K resolution.",
+      "status": "success",
+      "cost_usd": 0.04
+    }
+  ],
+  "advantages": [
+    "chatgpt4_optimized_prompts",
+    "back_view_format_perfect",
+    "matches_original_references",
+    "professional_quality"
+  ]
+}

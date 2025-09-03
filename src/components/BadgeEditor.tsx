@@ -1,0 +1,817 @@
+'use client'
+
+import React, { useState, useEffect, useRef } from 'react'
+import { Zap, Gamepad2, Globe, Crown, Palette } from 'lucide-react'
+import { useActiveAccount, useActiveWalletChain } from 'thirdweb/react'
+import { useRouter } from 'next/navigation'
+import { useToast } from '@/hooks/use-toast'
+
+import { Dalle3Service } from '../lib/services/dalle3-service'
+import { IPFSService } from '../lib/services/ipfs-service'
+import { useWeb3 } from '../lib/useWeb3'
+import { useEngine } from '../lib/useEngine'
+import { ImageGenerationRequest } from '../types'
+import { getTransactionUrl } from '../lib/utils'
+import { Button } from '@/components/ui/button'
+import { isAdmin } from '../lib/admin-config'
+
+// Importing the new professional components
+import ProfessionalEditorLayout from '@/components/layouts/ProfessionalEditorLayout'
+import ProfessionalBadgeSidebar from '@/components/badge/ProfessionalBadgeSidebar'
+import ProfessionalBadgeCanvas from '@/components/badge/ProfessionalBadgeCanvas'
+import ProfessionalBadgeActionBar from '@/components/badge/ProfessionalBadgeActionBar'
+import { useIsMobile } from '@/hooks/useIsMobile';
+import BadgeMobileLayout from '@/components/badge/BadgeMobileLayout';
+
+
+const STYLE_FILTERS = [
+  { id: 'modern', label: 'Modern', icon: Zap },
+  { id: 'retro', label: 'Retro', icon: Gamepad2 },
+  { id: 'national', label: 'National', icon: Globe },
+  { id: 'urban', label: 'Urban', icon: Palette },
+  { id: 'classic', label: 'Classic', icon: Crown }
+]
+
+// NEW TYPE DEFINITION for badges from our API
+interface ApiBadge {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
+
+// MarketplaceNFT interface removed - marketplace is no longer used on badge page
+
+export default function BadgeEditor() {
+  const router = useRouter()
+  const account = useActiveAccount()
+  const chain = useActiveWalletChain()
+  const { toast } = useToast()
+  
+  const address = account?.address
+  const isConnected = !!account
+  const chainId = chain?.id
+  
+  const { mintNFTWithMetadata, setClaimConditions } = useWeb3()
+  const { mintGasless, createNFTMetadata, getTransactionStatus } = useEngine()
+
+  const [badgeName, setBadgeName] = useState<string>('CHAMPION')
+  const [customPrompt, setCustomPrompt] = useState<string>('')
+  const [quality, setQuality] = useState<'standard' | 'hd'>('standard')
+  const [selectedStyle, setSelectedStyle] = useState<string>('modern')
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [editionSize, setEditionSize] = useState<number>(100)
+  const [generatedImageBlob, setGeneratedImageBlob] = useState<Blob | null>(null)
+  
+  // Vision System States
+  const [isVisionMode, setIsVisionMode] = useState(false)
+  const [referenceImage, setReferenceImage] = useState<string | null>(null)
+  const [referenceImageBlob, setReferenceImageBlob] = useState<Blob | null>(null)
+  const [analysisResult, setAnalysisResult] = useState<any>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [selectedBadgeView, setSelectedBadgeView] = useState<'logo' | 'emblem'>('logo')
+  const [selectedSport, setSelectedSport] = useState<string>('soccer')
+  
+  const [isMinting, setIsMinting] = useState(false)
+  const [mintError, setMintError] = useState<string | null>(null)
+  const [mintSuccess, setMintSuccess] = useState<string | null>(null)
+  const [mintedTokenId, setMintedTokenId] = useState<string | null>(null)
+  const [mintStatus, setMintStatus] = useState<'idle' | 'pending' | 'success' | 'error'>('idle');
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  
+  // Save to DB state
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
+  // NEW: State for reference generation
+  const [availableBadges, setAvailableBadges] = useState<ApiBadge[]>([]);
+  const [selectedBadge, setSelectedBadge] = useState<string>('custom_only');
+  
+  // Marketplace removed to match Jersey page layout
+  
+  const supportedChainIds = [88888, 88882, 137, 80002]
+  const isOnSupportedChain = supportedChainIds.includes(chainId || 0)
+  
+  const isUserAdmin = isAdmin(account)
+  
+  const canMintLegacy = isConnected && isOnSupportedChain && generatedImage
+  const canMintGasless = generatedImage && badgeName && isUserAdmin
+
+  const handleEngineNormalMint = async () => {
+    if (!canMintGasless || !generatedImageBlob || !address) {
+        setMintError('Missing required data for minting');
+        return;
+    }
+
+    setIsMinting(true);
+    setMintError(null);
+    setMintStatus('pending');
+
+    try {
+        const nftName = `${badgeName} Badge`;
+        const nftDescription = `AI-generated badge. Style: ${selectedStyle}.`;
+
+        const ipfsResult = await IPFSService.uploadComplete(
+            generatedImageBlob,
+            nftName,
+            nftDescription,
+            'Custom',
+            selectedStyle,
+            badgeName,
+            ''
+        );
+
+        const result = await mintGasless({
+            to: address,
+            metadataUri: ipfsResult.metadataUrl,
+            chainId: chainId || 88888, // CHZ Mainnet with fallback
+        });
+
+        setMintSuccess(`Transaction sent! Queue ID: ${result.queueId}`);
+        setMintedTokenId(result.queueId || null);
+    } catch (error: any) {
+        setMintError(error.message || 'Engine mint failed');
+        setMintStatus('error');
+    } finally {
+        setIsMinting(false);
+    }
+  };
+  
+  useEffect(() => {
+    if (mintStatus === 'pending' && mintedTokenId) {
+      const interval = setInterval(async () => {
+        const statusResult = await getTransactionStatus(mintedTokenId);
+        if (statusResult.result?.status === 'mined') {
+            setMintStatus('success');
+            setMintSuccess('NFT successfully created!');
+            setTransactionHash(statusResult.result.transactionHash);
+            clearInterval(interval);
+        } else if (statusResult.result?.status === 'errored') {
+            setMintStatus('error');
+            setMintError(`Transaction failed: ${statusResult.result.errorMessage}`);
+            clearInterval(interval);
+        }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [mintStatus, mintedTokenId, getTransactionStatus]);
+
+  const handleMintNFT = async () => {
+    if (!canMintLegacy || !generatedImageBlob) {
+      setMintError('Missing required data for minting');
+      return
+    }
+
+    setIsMinting(true)
+    setMintError(null)
+    setMintStatus('pending');
+
+    try {
+        const nftName = `${badgeName} Badge`;
+        const nftDescription = `AI-generated badge. Style: ${selectedStyle}.`;
+        const imageFile = new File([generatedImageBlob], `${nftName}.png`, { type: 'image/png' });
+        const attributes = [
+          { trait_type: 'Name', value: badgeName },
+          { trait_type: 'Style', value: selectedStyle },
+          { trait_type: 'Custom Prompt', value: customPrompt || 'None' },
+        ];
+        
+        const result = await mintNFTWithMetadata(nftName, nftDescription, imageFile, attributes, editionSize);
+        setMintStatus('success');
+        setMintSuccess(`Legacy mint successful!`);
+        setTransactionHash(result.transactionHash || 'N/A');
+    } catch (error: any) {
+        setMintStatus('error');
+        setMintError(error.message || 'Minting failed');
+    } finally {
+        setIsMinting(false)
+    }
+  }
+
+  // NEW: useEffect to load available badges from the API
+  useEffect(() => {
+    const loadAvailableBadges = async () => {
+      try {
+        console.log('🔄 Loading available badge references from DB...');
+        const response = await fetch('/api/admin/badges/references');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch badge references: ${response.statusText}`);
+        }
+        const data = await response.json();
+        // data.data is the array of badge references
+        const badges: ApiBadge[] = (data.data || []).map((ref: any) => ({
+          id: ref.teamName, // now id is the teamName
+          name: ref.teamName || 'Unnamed Badge',
+          previewImage: ref.referenceImages && ref.referenceImages.length > 0 ? ref.referenceImages[0].url : null
+        }));
+        setAvailableBadges(badges);
+        if (badges.length > 0) {
+          // You can set the selected badge here if you want
+          // setSelectedBadge(badges[0].id);
+        }
+        console.log(`✅ Loaded ${badges.length} badge references from DB.`);
+      } catch (error) {
+        console.error('❌ Error loading badge references:', error);
+        setAvailableBadges([]);
+      }
+    };
+
+    loadAvailableBadges();
+  }, []);
+
+  // DEBUG LOG: available badges for select
+  console.log('DEBUG availableBadges:', availableBadges);
+
+  const generateContent = async () => {
+    // 🔒 SECURITY VALIDATION: Wallet required - Show toast
+    if (!isConnected) {
+      toast({
+        variant: "destructive",
+        title: "Wallet Required",
+        description: "Connect your wallet to start generating NFTs"
+      })
+      return
+    }
+
+    if (!badgeName.trim()) {
+      setError('Please enter a badge name')
+      return
+    }
+    setIsLoading(true)
+    setError(null)
+    setGeneratedImage(null);
+
+    try {
+      // NEW: Check if reference generation mode is active
+      if (selectedBadge !== 'custom_only') {
+        const payload = {
+          teamName: selectedBadge,
+          quality: quality,
+          sport: 'badge',
+          view: 'default',
+          style: selectedStyle,
+          customPrompt: customPrompt || undefined,
+          prompt: undefined, // If you want to build prompt on frontend, fill here
+          analysis: analysisResult || undefined // If there is vision analysis
+        };
+        // Detailed log of sent payload
+        console.log('[BADGE GENERATION] Payload enviado para /api/generate-from-reference:', payload);
+        const response = await fetch('/api/generate-from-reference', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.detail || 'Failed to generate badge from reference.');
+        }
+
+        const data = await response.json();
+        
+        if (data.image_base64) {
+          const imageUrl = `data:image/png;base64,${data.image_base64}`;
+          setGeneratedImage(imageUrl);
+          
+          const fetchRes = await fetch(imageUrl);
+          const blob = await fetchRes.blob();
+          setGeneratedImageBlob(blob);
+        }
+        console.log('✅ Badge generated successfully from reference.');
+        setIsLoading(false);
+        return; // End execution here for reference mode
+      }
+
+      // If not in reference mode, continue with the existing vision/upload flow
+      if (isVisionMode && referenceImageBlob) {
+        // Vision-enhanced generation flow
+        console.log('🎨 Starting Vision-enhanced badge generation...')
+        
+        // Validate reference image
+        if (!referenceImageBlob || referenceImageBlob.size === 0) {
+          throw new Error('No reference image available. Please upload an image first.')
+        }
+        
+        console.log('📸 Reference image info:', {
+          size: referenceImageBlob.size,
+          type: referenceImageBlob.type,
+          lastModified: referenceImageBlob instanceof File ? referenceImageBlob.lastModified : 'N/A'
+        })
+        
+        // Step 1: Get analysis prompt
+        setIsAnalyzing(true)
+        console.log('📋 Step 1: Getting analysis prompt for badge...')
+        const analysisPromptResponse = await fetch('/api/vision-prompts/analysis', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sport: 'badge',
+            view: selectedBadgeView
+          })
+        })
+
+        if (!analysisPromptResponse.ok) {
+          throw new Error('Failed to get analysis prompt')
+        }
+
+        const analysisPromptData = await analysisPromptResponse.json()
+        console.log('✅ Analysis prompt received')
+
+        // Step 2: Analyze the uploaded image
+        console.log('🔍 Step 2: Analyzing uploaded badge image...')
+        
+        // Convert blob to base64 for vision-test API
+        const imageBase64 = await new Promise<string>((resolve) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.readAsDataURL(referenceImageBlob)
+        })
+
+        // Debug payload
+        const payload = {
+          image_base64: imageBase64,
+          prompt: analysisPromptData.analysis_prompt,
+          model: 'openai/gpt-4o-mini'
+        }
+        
+        console.log('📤 Sending to vision-test API:', {
+          hasImage: !!payload.image_base64,
+          imageLength: payload.image_base64?.length || 0,
+          imagePrefix: payload.image_base64?.substring(0, 30) || 'none',
+          hasPrompt: !!payload.prompt,
+          promptLength: payload.prompt?.length || 0,
+          model: payload.model
+        })
+
+        const analysisResponse = await fetch('/api/vision-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+
+        if (!analysisResponse.ok) {
+          const errorData = await analysisResponse.json().catch(() => ({}))
+          console.error('❌ Vision-test API error response:', errorData)
+          throw new Error(`Analysis failed! Status: ${analysisResponse.status} - ${JSON.stringify(errorData)}`)
+        }
+
+        const analysisData = await analysisResponse.json()
+        console.log('📥 Received from vision-test API:', analysisData)
+        
+        if (!analysisData.success) {
+          throw new Error(`Analysis error: ${analysisData.error}`)
+        }
+
+        console.log('✅ Image analysis completed:', analysisData)
+        setAnalysisResult(analysisData)
+        setIsAnalyzing(false)
+
+        // Step 3: Get base prompt
+        console.log('📝 Step 3: Getting base generation prompt...')
+        const basePromptResponse = await fetch('/api/vision-prompts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sport: 'badge',
+            view: selectedBadgeView,
+            teamName: 'Custom',
+            badgeName: badgeName,
+            badgeNumber: '',
+            style: selectedStyle,
+            qualityLevel: quality === 'hd' ? 'advanced' : 'base'
+          })
+        })
+
+        if (!basePromptResponse.ok) {
+          throw new Error('Failed to get base prompt')
+        }
+
+        const basePromptData = await basePromptResponse.json()
+        console.log('✅ Base prompt received')
+
+        // Step 4: Generate using vision-generate API
+        console.log('🎨 Step 4: Generating badge with Vision...')
+        
+        // Prepare final prompt by combining base prompt with analysis and custom prompt
+        const finalPrompt = `${basePromptData.prompt}
+        
+ORIGINAL DESIGN ANALYSIS: ${analysisData.analysis}
+
+${customPrompt.trim() ? `CUSTOM REQUIREMENTS: ${customPrompt.trim()}` : ''}
+
+QUALITY REQUIREMENTS: Premium badge design, professional graphic design, studio lighting, 4K quality, transparent background, vector-quality edges.`.trim()
+
+        console.log('📝 Final combined prompt ready:', {
+          basePromptLength: basePromptData.prompt.length,
+          analysisLength: analysisData.analysis.length,
+          finalPromptLength: finalPrompt.length,
+          preview: finalPrompt.substring(0, 200) + '...'
+        })
+
+        const visionGenerateResponse = await fetch('/api/vision-generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            prompt: finalPrompt,
+            quality: quality === 'hd' ? 'hd' : 'standard'
+          })
+        })
+
+        if (!visionGenerateResponse.ok) {
+          const errorData = await visionGenerateResponse.json().catch(() => ({}))
+          console.error('❌ Vision-generate API error:', errorData)
+          throw new Error(`Vision generation failed! Status: ${visionGenerateResponse.status} - ${JSON.stringify(errorData)}`)
+        }
+
+        const visionResult = await visionGenerateResponse.json()
+        console.log('✅ Vision generation completed:', visionResult)
+
+        if (visionResult.success && visionResult.image_base64) {
+          setGeneratedImage(`data:image/png;base64,${visionResult.image_base64}`)
+          
+          const response = await fetch(`data:image/png;base64,${visionResult.image_base64}`)
+          const blob = await response.blob()
+          setGeneratedImageBlob(blob)
+
+          // Save to database with vision metadata
+          await saveBadgeToDB({
+            name: `${badgeName} Badge`,
+            prompt: finalPrompt,
+            generationMode: 'vision_enhanced',
+            badgeType: selectedBadgeView,
+            visionModel: 'gpt-4o-mini',
+            analysisData: analysisData.analysis,
+            customPrompt: customPrompt || '',
+            costUsd: visionResult.cost_usd || 0,
+            creatorWallet: address || "N/A",
+            tags: [selectedStyle, badgeName, 'vision_enhanced', selectedBadgeView, ...(customPrompt.trim() ? ['custom'] : [])],
+          }, blob)
+          
+          console.log('✅ Vision-enhanced badge generated and saved!')
+        } else {
+          throw new Error(visionResult.error || 'Vision generation failed')
+        }
+
+      } else {
+        // Standard generation flow
+        const request = {
+          model_id: 'Custom',
+          badge_name: badgeName,
+          badge_number: '',
+          style: selectedStyle,
+          quality: quality,
+          type: 'badge',
+        };
+
+        console.log('Generating badge with unified /api/generate request:', request);
+
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(request)
+        });
+
+        const result = await response.json();
+        console.log('Unified /api/generate result:', result);
+
+        if (result.success && result.image_base64) {
+          console.log('✅ Badge generation successful!');
+          setGeneratedImage(`data:image/png;base64,${result.image_base64}`);
+
+          const response = await fetch(`data:image/png;base64,${result.image_base64}`);
+          const blob = await response.blob();
+          setGeneratedImageBlob(blob);
+
+          await saveBadgeToDB({
+            name: `${badgeName} Badge`,
+            prompt: JSON.stringify(request),
+            generationMode: 'standard',
+            customPrompt: customPrompt || '',
+            creatorWallet: address || "N/A",
+            tags: [selectedStyle, badgeName, ...(customPrompt.trim() ? ['custom'] : [])],
+          }, blob);
+
+        } else {
+          console.error('❌ Badge generation failed:', result.error);
+          setError(result.error || 'Failed to generate badge.');
+        }
+      }
+    } catch (err: any) {
+      console.error('Generation error:', err);
+      setError(err.message || 'Badge generation failed');
+      setIsAnalyzing(false)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const saveBadgeToDB = async (badgeData: any, imageBlob: Blob) => {
+    setIsSaving(true);
+    setSaveError(null);
+    setSaveSuccess(null);
+    try {
+      console.log('🏆 Saving badge to database...');
+      
+      // 1. First, upload image to Cloudinary via our API
+      console.log('📤 Uploading image to Cloudinary...');
+      if (!imageBlob) {
+        throw new Error('No image blob available for upload');
+      }
+
+      const formData = new FormData();
+      formData.append('file', imageBlob, `${badgeData.name}.png`);
+      formData.append('fileName', `badge_${badgeName}_${Date.now()}`);
+      
+      const uploadResponse = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image to Cloudinary');
+      }
+
+      const uploadResult = await uploadResponse.json();
+      console.log('✅ Image uploaded to Cloudinary:', uploadResult.url);
+
+      // 2. Now save to database with Cloudinary URL (not base64)
+      const badgeDataWithCloudinaryUrl = {
+        ...badgeData,
+        imageUrl: uploadResult.url, // Cloudinary URL
+        cloudinaryPublicId: uploadResult.publicId, // For deletion if needed
+      };
+
+      const response = await fetch('/api/badges', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(badgeDataWithCloudinaryUrl),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to save badge to database');
+      }
+
+      const result = await response.json();
+      console.log('✅ Badge saved to DB:', result);
+      setSaveSuccess(`Badge saved successfully! DB ID: ${result.badgeId}`);
+    } catch (error: any) {
+      console.error('❌ Error saving badge to DB:', error);
+      setSaveError(`Image generated, but failed to save: ${error.message}`);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const resetError = () => setError(null);
+
+  // Vision System Functions
+  const handleVisionFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file')
+      return
+    }
+
+    // Validate file size (10MB limit)
+    if (file.size > 10 * 1024 * 1024) {
+      setError('Image size must be less than 10MB')
+      return
+    }
+
+    // Store blob and create preview
+    setReferenceImageBlob(file)
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setReferenceImage(e.target?.result as string)
+      setIsVisionMode(true)
+      setError(null)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const exitVisionMode = () => {
+    setIsVisionMode(false)
+    setReferenceImage(null)
+    setReferenceImageBlob(null)
+    setAnalysisResult(null)
+    setIsAnalyzing(false)
+  }
+
+  // useEffect to load marketplace data
+  useEffect(() => {
+    const loadTopCollectionsData = async () => {
+      try {
+        console.log('🔄 Loading top collections data for badge editor...');
+        
+        // Fetch real data from 3 APIs in parallel
+        const [jerseysResponse, stadiumsResponse, badgesResponse] = await Promise.all([
+          fetch('/api/jerseys'),
+          fetch('/api/stadiums'),
+          fetch('/api/badges')
+        ]);
+
+        // Check if all responses were successful
+        if (!jerseysResponse.ok || !stadiumsResponse.ok || !badgesResponse.ok) {
+          throw new Error(`API Error: Jerseys(${jerseysResponse.status}), Stadiums(${stadiumsResponse.status}), Badges(${badgesResponse.status})`);
+        }
+
+        // Process real data
+        const jerseys = await jerseysResponse.json();
+        const stadiums = await stadiumsResponse.json();
+        const badges = await badgesResponse.json();
+
+        console.log('📊 Raw API data for badges:', { jerseys: jerseys.length, stadiums: stadiums.length, badges: badges.length });
+
+        // Implement "Top Collections" logic with focus on badges
+        // Top 2 most recent Badges (priority for badge page)
+        const topBadges = badges
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map((badge: any) => ({
+            name: badge.name,
+            imageUrl: badge.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
+            description: badge.description || 'AI-generated badge',
+            price: '0.03 CHZ',
+            category: 'badge',
+            createdAt: badge.createdAt
+          }));
+
+        // Top 2 most recent Jerseys
+        const topJerseys = jerseys
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map((jersey: any) => ({
+            name: jersey.name,
+            imageUrl: jersey.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
+            description: jersey.description || 'AI-generated jersey',
+            price: '0.05 CHZ',
+            category: 'jersey',
+            createdAt: jersey.createdAt
+          }));
+
+        // Top 2 most recent Stadiums
+        const topStadiums = stadiums
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 2)
+          .map((stadium: any) => ({
+            name: stadium.name,
+            imageUrl: stadium.imageUrl, // FIXED: MarketplaceCarousel expects imageUrl (without underscore)
+            description: stadium.description || 'AI-generated stadium',
+            price: '0.15 CHZ',
+            category: 'stadium',
+            createdAt: stadium.createdAt
+          }));
+
+        // Combine prioritizing badges first, then others by date
+        const allTopCollections = [
+          ...topBadges,
+          ...topJerseys,
+          ...topStadiums
+        ]
+        .sort((a: any, b: any) => {
+          // Badges first, then by date
+          if (a.category === 'badge' && b.category !== 'badge') return -1;
+          if (a.category !== 'badge' && b.category === 'badge') return 1;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        })
+        .slice(0, 6); // Limit to 6 items in carousel
+
+        console.log('✅ Top Collections compiled for badges:', allTopCollections);
+        // Marketplace was removed from badge page to maintain consistency
+        // with jersey and stadium pages
+        // If APIs fail, keep fallback
+
+      } catch (error) {
+        console.error('❌ Error loading top collections data for badges:', error);
+        console.log('🔄 Keeping fallback NFT data due to API error');
+        // Keep fallback with your real images
+      }
+    };
+
+    loadTopCollectionsData();
+  }, []);
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <BadgeMobileLayout
+        availableBadges={availableBadges}
+        selectedBadge={selectedBadge}
+        setSelectedBadge={setSelectedBadge}
+        badgeStyle={selectedStyle}
+        setBadgeStyle={setSelectedStyle}
+        badgeLevel={''} // Adapt if there is badge level
+        setBadgeLevel={() => {}}
+        customPrompt={customPrompt}
+        setCustomPrompt={setCustomPrompt}
+        isVisionMode={isVisionMode}
+        referenceImage={referenceImage}
+        onFileUpload={handleVisionFileUpload}
+        onClearReference={exitVisionMode}
+        generationCost={null} // Adapt if necessary
+        error={error}
+        onResetError={resetError}
+        generatedImage={generatedImage || ''}
+        isLoading={isLoading}
+        onGenerate={generateContent}
+        isConnected={isConnected}
+        isOnSupportedChain={isOnSupportedChain}
+        isUserAdmin={isUserAdmin}
+        canMintGasless={!!canMintGasless}
+        isMinting={isMinting}
+        mintStatus={mintStatus}
+        mintSuccess={mintSuccess}
+        mintError={mintError}
+        transactionHash={transactionHash}
+        onMintGasless={handleEngineNormalMint}
+        walletAddress={address || ''}
+        nftName={badgeName}
+        hasGeneratedImage={!!generatedImage}
+        metadataUri={''} // Adapt if necessary
+        collection="badges"
+      />
+    );
+  }
+
+  return (
+    <ProfessionalEditorLayout
+      title="Badge Fan NFT"
+      showTitle={true}
+      sidebar={
+        <ProfessionalBadgeSidebar
+          availableBadges={availableBadges}
+          selectedBadge={selectedBadge}
+          setSelectedBadge={setSelectedBadge}
+          badgeName={badgeName}
+          setBadgeName={setBadgeName}
+          selectedStyle={selectedStyle}
+          setSelectedStyle={setSelectedStyle}
+          customPrompt={customPrompt}
+          setCustomPrompt={setCustomPrompt}
+          quality={quality}
+          setQuality={setQuality}
+          isVisionMode={isVisionMode}
+          referenceImage={referenceImage}
+          selectedSport={selectedSport}
+          setSelectedSport={setSelectedSport}
+          selectedBadgeView={selectedBadgeView}
+          setSelectedBadgeView={setSelectedBadgeView}
+          onFileUpload={handleVisionFileUpload}
+          onClearReference={exitVisionMode}
+          error={error}
+          onResetError={resetError}
+        />
+      }
+      canvas={
+        <ProfessionalBadgeCanvas
+          generatedImage={generatedImage}
+          isLoading={isLoading}
+          error={error}
+          onResetError={resetError}
+          badgeName={badgeName}
+          selectedStyle={selectedStyle}
+          quality={quality}
+          customPrompt={customPrompt}
+          referenceImage={referenceImage}
+          isVisionMode={isVisionMode}
+          isAnalyzing={isAnalyzing}
+        />
+      }
+      actionBar={
+        <ProfessionalBadgeActionBar
+          onGenerate={generateContent}
+          isLoading={isLoading || isAnalyzing}
+          canGenerate={!!badgeName.trim()}
+          onMintGasless={handleEngineNormalMint}
+          canMintGasless={!!canMintGasless}
+          isMinting={isMinting}
+          mintStatus={mintStatus}
+          mintSuccess={mintSuccess}
+          mintError={mintError}
+          transactionHash={transactionHash}
+          isConnected={isConnected}
+          isOnSupportedChain={isOnSupportedChain}
+          isUserAdmin={isUserAdmin}
+          getTransactionUrl={getTransactionUrl}
+          isAnalyzing={isAnalyzing}
+          hasGeneratedImage={!!generatedImage}
+          nftName={`Badge Collection #${Date.now()}`}
+          metadataUri={''}
+          walletAddress={address}
+          collection={'badges'}
+          generatedImageBlob={generatedImageBlob || undefined}
+        />
+      }
+
+    />
+  )
+} 

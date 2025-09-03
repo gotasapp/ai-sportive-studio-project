@@ -1,0 +1,74 @@
+[
+  {
+    "filename": "reference_1_Palmeiras_back.png",
+    "team_name": "Palmeiras",
+    "type": "reference",
+    "detailed_prompt": "A soccer jersey laid flat, back view only, vibrant green fabric with white details, large number '10' in white prominently displayed in center back, player name 'ARIEL' in white letters above the number, Crefisa sponsor logo, no body, no mannequin, no person, just the jersey fabric laid flat on clean white background, studio lighting, photorealistic fabric texture, 4K quality, official merchandise style, back view perspective only",
+    "colors": [
+      "green",
+      "white"
+    ],
+    "quality": "high",
+    "source": "user_reference",
+    "style": "dalle3_quality",
+    "prompt_version": "v2_no_body_flat_jersey",
+    "improvements": [
+      "removed_body_mannequin_references",
+      "added_laid_flat_specification",
+      "emphasized_back_view_only",
+      "enhanced_fabric_focus"
+    ],
+    "technical_prompt": "flat lay photography of official Palmeiras home jersey 2024,          Adidas sublimated polyester fabric, vibrant green base color with white trim details,         large white number '10' heat-pressed on center back,          white player name 'ARIEL' heat-pressed above number,         Crefisa sponsor logo heat-sealed on chest,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge, Adidas three stripes logo",
+    "negative_prompt": "\n    person, human, body, mannequin, model, torso, arms, shoulders,\n    side view, front view, angled view, perspective distortion,\n    wrinkled fabric, folded jersey, hanging jersey,\n    shadows, dark background, colored background,\n    blurry, low quality, distorted proportions,\n    cartoon, illustration, drawing, sketch\n    ",
+    "prompt_type": "technical_flat_lay",
+    "camera_settings": "Canon EOS R5, 85mm, studio lighting"
+  },
+  {
+    "filename": "reference_2_Vasco_back.png",
+    "team_name": "Vasco da Gama",
+    "type": "reference",
+    "detailed_prompt": "A soccer jersey laid flat, back view only, black fabric with distinctive white diagonal sash stripe running from top right to bottom left, large number '8' in white prominently displayed in center back, player name 'JEFF' in white letters above the number, no body, no mannequin, no person, just the jersey fabric laid flat on clean white background, studio lighting, photorealistic fabric texture, 4K quality, official merchandise style, back view perspective only",
+    "colors": [
+      "black",
+      "white"
+    ],
+    "quality": "high",
+    "source": "user_reference",
+    "style": "dalle3_quality",
+    "prompt_version": "v2_no_body_flat_jersey",
+    "improvements": [
+      "removed_body_mannequin_references",
+      "added_laid_flat_specification",
+      "emphasized_back_view_only",
+      "enhanced_fabric_focus"
+    ],
+    "technical_prompt": "flat lay photography of official Vasco da Gama home jersey 2024,         sublimated polyester fabric, black base color with white diagonal sash,         diagonal stripe running from top right shoulder to bottom left,         large white number '8' heat-pressed on center back,         white player name 'JEFF' heat-pressed above number,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge visible",
+    "negative_prompt": "\n    person, human, body, mannequin, model, torso, arms, shoulders,\n    side view, front view, angled view, perspective distortion,\n    wrinkled fabric, folded jersey, hanging jersey,\n    shadows, dark background, colored background,\n    blurry, low quality, distorted proportions,\n    cartoon, illustration, drawing, sketch\n    ",
+    "prompt_type": "technical_flat_lay",
+    "camera_settings": "Canon EOS R5, 85mm, studio lighting"
+  },
+  {
+    "filename": "reference_3_Flamengo_back.png",
+    "team_name": "Flamengo",
+    "type": "reference",
+    "detailed_prompt": "A soccer jersey laid flat, back view only, red and black horizontal stripes pattern, large number '9' in white prominently displayed in center back, no body, no mannequin, no person, just the jersey fabric laid flat on clean white background, studio lighting, photorealistic fabric texture, 4K quality, official merchandise style, back view perspective only",
+    "colors": [
+      "red",
+      "black"
+    ],
+    "quality": "high",
+    "source": "user_reference",
+    "style": "dalle3_quality",
+    "prompt_version": "v2_no_body_flat_jersey",
+    "improvements": [
+      "removed_body_mannequin_references",
+      "added_laid_flat_specification",
+      "emphasized_back_view_only",
+      "enhanced_fabric_focus"
+    ],
+    "technical_prompt": "flat lay photography of official Flamengo home jersey 2024,         sublimated polyester fabric, red and black horizontal stripes pattern,         alternating red and black bands across entire jersey,         large white number '9' heat-pressed on center back,         jersey laid completely flat on pure white background,         no body, no mannequin, no person wearing it,         professional product photography, Canon EOS R5, 85mm lens,         studio lighting, zero shadows, 8K resolution,         fabric texture visible, stitching details sharp,         official CBF badge, Adidas three stripes logo",
+    "negative_prompt": "\n    person, human, body, mannequin, model, torso, arms, shoulders,\n    side view, front view, angled view, perspective distortion,\n    wrinkled fabric, folded jersey, hanging jersey,\n    shadows, dark background, colored background,\n    blurry, low quality, distorted proportions,\n    cartoon, illustration, drawing, sketch\n    ",
+    "prompt_type": "technical_flat_lay",
+    "camera_settings": "Canon EOS R5, 85mm, studio lighting"
+  }
+]

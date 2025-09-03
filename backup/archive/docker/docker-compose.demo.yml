@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  # Demo Frontend (porta diferente para não conflitar)
+  demo-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"  # Porta 3001 para demo
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_URL=http://localhost:8001  # Backend demo
+      - NEXT_PUBLIC_THIRDWEB_CLIENT_ID=${NEXT_PUBLIC_THIRDWEB_CLIENT_ID}
+      - NEXT_PUBLIC_ENGINE_URL=http://localhost:3005  # Engine demo
+    depends_on:
+      - demo-backend
+      - engine
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+  # Demo Backend (porta diferente para não conflitar)
+  demo-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8001:8000"  # Porta 8001 para demo
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - MONGODB_URI=${MONGODB_URI}  # Usa MongoDB Atlas atual
+      - CLOUDINARY_URL=${CLOUDINARY_URL}
+      - PINATA_API_KEY=${PINATA_API_KEY}
+      - PINATA_SECRET_KEY=${PINATA_SECRET_KEY}
+    volumes:
+      - ./api:/app/api
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+  # Demo Thirdweb Engine
+  engine:
+    image: thirdweb/engine:latest
+    ports:
+      - "3005:3005"
+    environment:
+      - DATABASE_URL=postgresql://engine:engine_password@postgres:5432/engine
+      - THIRDWEB_API_SECRET_KEY=${THIRDWEB_API_SECRET_KEY}
+      - ENGINE_URL=http://localhost:3005
+      - ADMIN_WALLET_ADDRESS=${ADMIN_WALLET_ADDRESS}
+      - ACCESS_CONTROL_ALLOW_ORIGIN=*
+      - ENABLE_HTTPS=false
+      - LOG_LEVEL=debug
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    volumes:
+      - engine_data:/app/data
+    networks:
+      - demo-network
+
+  # PostgreSQL para Engine
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=engine
+      - POSTGRES_USER=engine
+      - POSTGRES_PASSWORD=engine_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+  # Redis para cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+  # Nginx para proxy reverso
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.demo.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - demo-frontend
+      - demo-backend
+      - engine
+    restart: unless-stopped
+    networks:
+      - demo-network
+
+volumes:
+  engine_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  demo-network:
+    driver: bridge

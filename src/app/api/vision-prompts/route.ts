@@ -1,0 +1,429 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+// ===== ENHANCED BASE PROMPTS COM FIDELIDADE VISUAL =====
+
+type QualityEnhancers = {
+  basic: string;
+  advanced: string;
+  premium: string;
+};
+
+type EnhancedPrompt = {
+  base: string;
+  quality_enhancers: QualityEnhancers;
+};
+
+type SportPromptMap = {
+  [viewOrStyle: string]: EnhancedPrompt;
+};
+
+type EnhancedBasePrompts = {
+  [sport: string]: SportPromptMap;
+};
+
+const ENHANCED_BASE_PROMPTS: EnhancedBasePrompts = {
+  "soccer": {
+    "front": {
+      "base": `A professional soccer jersey front view, centered composition. Team crest on chest, {{style}} design style. Player {{playerName}} #{{{playerNumber}}}. Clean background, high-resolution quality, professional lighting.`,
+
+      "quality_enhancers": {
+        "basic": "Clean design, good proportions",
+        "advanced": "Professional photography quality, studio lighting, premium fabric textures, exact color matching, commercial product presentation",
+        "premium": "Ultra-high quality, magazine-ready photography, perfect lighting, luxurious fabric details, brand-accurate colors, championship-grade presentation"
+      }
+    },
+
+    "back": {
+      "base": `A professional soccer jersey back view, centered composition. Player name "{{playerName}}" at top-back, player number "{{playerNumber}}" prominently displayed center-back. {{style}} design style. Clean background, high-resolution quality, professional lighting.`,
+
+      "quality_enhancers": {
+        "basic": "Clear name and number, good proportions",
+        "advanced": "Professional photography quality, studio lighting, premium fabric textures, perfect name/number positioning, exact color matching",
+        "premium": "Ultra-high quality, magazine-ready photography, perfect lighting, luxurious fabric details, championship-grade typography, brand-accurate presentation"
+      }
+    },
+    // Novo estilo: retro-jersey
+    "retro-jersey": {
+      "base": `A retro-style soccer jersey inspired by the aesthetics of the 80s and 90s. Features thick horizontal or vertical stripes, a soft fabric texture, and a wide ribbed collar (often polo-style) in a contrasting color. Includes vintage stitching details, bold sleeve cuffs, and a looser athletic fit. Displayed floating flat on a clean white background, no mannequin, soft studio lighting, 4K photorealistic quality, with worn color accents and old-school charm. Player {{playerName}} #{{{playerNumber}}}.`,
+      "quality_enhancers": {
+        "basic": "Retro design, visible stripes, vintage collar, soft fabric look",
+        "advanced": "Photorealistic retro jersey, studio lighting, authentic 80s/90s details, worn color accents, premium fabric texture",
+        "premium": "Ultra-high quality, magazine-ready retro jersey, perfect vintage details, luxurious fabric, championship-grade retro presentation"
+      }
+    }
+  },
+  
+  "basketball": {
+    "front": {
+      "base": `Create a professional basketball jersey front view with the following specifications:
+
+JERSEY REQUIREMENTS:
+- Sport: Basketball jersey
+- View: Front view only, centered composition
+- Player: {{playerName}} #{{{playerNumber}}}
+- Style: {{style}} design aesthetic
+- Quality: {{qualityLevel}} professional grade
+
+VISUAL COMPOSITION:
+- Single basketball jersey only, no shorts, no additional clothing
+- Tank top style with armholes, no sleeves
+- Jersey positioned flat and centered in frame
+- Professional product photography style
+- Clean background (white or transparent)
+
+DESIGN ELEMENTS:
+- Team name or logo prominently displayed on chest
+- Front number if applicable to design
+- Proper basketball jersey proportions
+- Armhole design appropriate to style
+- Neckline cut suitable for basketball
+
+TECHNICAL SPECIFICATIONS:
+- Basketball-specific fabric appearance (mesh or smooth)
+- Professional lighting and presentation
+- Accurate basketball jersey proportions
+- High-resolution quality`,
+
+      "quality_enhancers": {
+        "basic": "Clean basketball design, proper armholes",
+        "advanced": "Professional NBA/college quality, studio lighting, authentic basketball fabric textures, perfect team branding",
+        "premium": "Championship-grade presentation, ultra-high quality, professional sports photography, premium basketball materials"
+      }
+    },
+
+    "back": {
+      "base": `Create a professional basketball jersey back view with the following specifications:
+
+JERSEY REQUIREMENTS:
+- Sport: Basketball jersey
+- View: Back view only, centered composition
+- Player: {{playerName}} #{{{playerNumber}}}
+- Style: {{style}} design aesthetic
+- Quality: {{qualityLevel}} professional grade
+
+VISUAL COMPOSITION:
+- Single basketball jersey only, no shorts, no additional clothing
+- Tank top style with armholes, no sleeves
+- Jersey positioned flat and centered in frame
+- Professional product photography style
+
+PLAYER IDENTIFICATION:
+- Player name "{{playerName}}" positioned above number
+- Player number "{{playerNumber}}" prominently displayed center-back
+- Basketball-style typography and proportions
+- Name curved above number (if applicable to style)
+- Professional basketball font standards
+
+TECHNICAL SPECIFICATIONS:
+- Basketball-specific fabric and cut
+- Proper armhole continuation from front
+- Professional basketball jersey proportions
+- High-resolution quality`,
+
+      "quality_enhancers": {
+        "basic": "Clear name and number, basketball proportions",
+        "advanced": "Professional NBA quality, studio lighting, authentic basketball typography, perfect player identification layout",
+        "premium": "Championship-grade presentation, ultra-high quality, professional sports photography, premium basketball aesthetics"
+      }
+    }
+  },
+  
+  "nfl": {
+    "front": {
+      "base": `Create a professional NFL football jersey front view with the following specifications:
+
+JERSEY REQUIREMENTS:
+- Sport: American Football (NFL) jersey
+- View: Front view only, centered composition
+- Player: {{playerName}} #{{{playerNumber}}}
+- Style: {{style}} design aesthetic
+- Quality: {{qualityLevel}} professional grade
+
+VISUAL COMPOSITION:
+- Single NFL jersey only, no pants, no additional clothing
+- Professional football jersey cut and proportions
+- Jersey positioned flat and centered in frame
+- Professional product photography style
+
+DESIGN ELEMENTS:
+- Team logo prominently displayed on chest or shoulder
+- NFL-style collar and neckline
+- Shoulder area design appropriate to team
+- Front number placement if applicable
+- Professional football proportions and cut
+
+TECHNICAL SPECIFICATIONS:
+- NFL-quality fabric appearance (durable, professional)
+- Proper football jersey proportions (broader shoulders)
+- Professional lighting and presentation
+- High-resolution quality`,
+
+      "quality_enhancers": {
+        "basic": "Clean NFL design, proper proportions",
+        "advanced": "Professional NFL quality, studio lighting, authentic football fabric textures, perfect team branding, official NFL standards",
+        "premium": "Super Bowl-grade presentation, ultra-high quality, professional sports photography, premium NFL materials, championship aesthetics"
+      }
+    },
+
+    "back": {
+      "base": `Create a professional NFL football jersey back view with the following specifications:
+
+JERSEY REQUIREMENTS:
+- Sport: American Football (NFL) jersey
+- View: Back view only, centered composition
+- Player: {{playerName}} #{{{playerNumber}}}
+- Style: {{style}} design aesthetic
+- Quality: {{qualityLevel}} professional grade
+
+VISUAL COMPOSITION:
+- Single NFL jersey only, no pants, no additional clothing
+- Professional football jersey cut and proportions
+- Jersey positioned flat and centered in frame
+
+PLAYER IDENTIFICATION:
+- Player name "{{playerName}}" positioned top-back, centered
+- Player number "{{playerNumber}}" prominently displayed center-back
+- NFL-style typography and proportions
+- Name curved or straight per team style
+- Professional NFL font standards
+
+TECHNICAL SPECIFICATIONS:
+- NFL-quality fabric and construction appearance
+- Proper football jersey back proportions
+- Professional shoulder area continuation
+- High-resolution quality`,
+
+      "quality_enhancers": {
+        "basic": "Clear name and number, NFL proportions",
+        "advanced": "Professional NFL quality, studio lighting, authentic NFL typography, perfect player identification, official standards",
+        "premium": "Super Bowl-grade presentation, ultra-high quality, professional sports photography, premium NFL aesthetics, championship typography"
+      }
+    }
+  },
+  "stadium": {
+    "perspective-internal": {
+      "base": `Photorealistic aerial view of a large football stadium interior in daylight. Colorful curved stands surround a vivid green pitch with mowing patterns. Architecture includes tiered seating and structural beams. Sunlight creates realistic shadows. No people. Centered top-down angle, clean lines, sharp 4K lighting, and sense of massive scale.`,
+      "quality_enhancers": {
+        "basic": "Aerial stadium, vivid pitch, colorful stands, clean lines",
+        "advanced": "Photorealistic stadium, 4K lighting, realistic shadows, architectural details, massive scale",
+        "premium": "Ultra-high quality, magazine-ready stadium, perfect aerial perspective, sharp details, championship-grade presentation"
+      }
+    },
+    // ... outros estilos de stadium se houver ...
+  }
+}
+
+// ===== ENHANCED NEGATIVE PROMPTS - CRITICAL CONSTRAINTS =====
+const ENHANCED_NEGATIVE_PROMPTS = {
+  "global": `CRITICAL EXCLUSIONS - NEVER INCLUDE:
+  
+CLOTHING RESTRICTIONS:
+- No shorts, pants, or lower body clothing of any kind
+- No shoes, socks, or footwear
+- No additional clothing items beyond the jersey
+- No multiple jerseys in same image
+- No layered clothing or outerwear
+
+HUMAN ELEMENTS:
+- No people wearing the jersey
+- No human models, mannequins, or body parts
+- No arms, hands, torso, or any body parts
+- No human figures in background
+
+LAYOUT AND COMPOSITION:
+- No multiple jerseys side by side
+- No jersey sets or collections
+- No hangers or clothing displays
+- No retail store settings
+- No changing room environments
+
+VISUAL DISTRACTIONS:
+- No text overlays or watermarks
+- No logos unrelated to the team
+- No background objects or furniture
+- No shadows of people or objects
+- No reflections of unwanted elements
+
+QUALITY ISSUES:
+- No blurry, pixelated, or low-quality rendering
+- No distorted proportions or unrealistic shapes
+- No amateur or sketch-like appearance
+- No cartoonish or non-photorealistic styles
+- No artifacts or rendering errors
+
+SPORTS ACCURACY:
+- No mixing sports elements (soccer with basketball, etc.)
+- No incorrect sport-specific details
+- No wrong jersey cuts for the specified sport
+- No inappropriate materials or fabrics for the sport`,
+
+  "soccer": `SOCCER-SPECIFIC EXCLUSIONS:
+- No soccer shorts or pants
+- No soccer socks or shin guards
+- No soccer balls in frame
+- No field or grass backgrounds
+- No goal posts or field equipment
+- No referee jerseys or non-team jerseys`,
+
+  "basketball": `BASKETBALL-SPECIFIC EXCLUSIONS:
+- No basketball shorts or pants  
+- No basketball shoes or high-tops
+- No basketballs in frame
+- No court or gym backgrounds
+- No basketball hoops or equipment
+- No sleeves (maintain tank top style)`,
+
+  "nfl": `NFL-SPECIFIC EXCLUSIONS:
+- No football pants or gear
+- No helmets or protective equipment
+- No footballs in frame
+- No field or stadium backgrounds
+- No football equipment or pads visible
+- No referee jerseys or non-team jerseys`
+}
+
+// ===== ENHANCED COLOR PRESERVATION SYSTEM =====
+const COLOR_PRESERVATION_PROMPTS = {
+  "high_fidelity": `COLOR FIDELITY REQUIREMENTS:
+- Maintain EXACT colors from reference or specification
+- Preserve color intensity and saturation levels
+- Ensure color consistency across all jersey elements
+- Match brand-specific color requirements precisely
+- Avoid color shifting or tone alterations
+- Professional color accuracy standards`,
+  
+  "pattern_preservation": `PATTERN FIDELITY REQUIREMENTS:
+- Preserve exact stripe patterns and widths
+- Maintain geometric pattern integrity
+- Ensure consistent pattern alignment
+- Preserve gradient directions and intensities
+- Match pattern colors exactly to specifications
+- Professional pattern reproduction standards`
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const { sport, view, playerName = "PLAYER", playerNumber = "10", style = "classic", qualityLevel = "advanced" } = await request.json()
+
+    // Validate required parameters
+    if (!sport || !view) {
+      return NextResponse.json({
+        success: false,
+        error: 'Sport and view parameters are required'
+      }, { status: 400 })
+    }
+
+    // Get enhanced base prompt
+    const sportPrompts = ENHANCED_BASE_PROMPTS[sport as keyof typeof ENHANCED_BASE_PROMPTS]
+    if (!sportPrompts) {
+      return NextResponse.json({
+        success: false,
+        error: `Sport '${sport}' not supported. Available: ${Object.keys(ENHANCED_BASE_PROMPTS).join(', ')}`
+      }, { status: 400 })
+    }
+
+    // Permitir que tanto 'view' quanto 'style' sejam usados como chave
+    const viewPrompt = sportPrompts[view as keyof typeof sportPrompts] || sportPrompts[style as keyof typeof sportPrompts];
+    if (!viewPrompt || typeof viewPrompt !== 'object' || !('base' in viewPrompt)) {
+      return NextResponse.json({
+        success: false,
+        error: `View/style '${view}'/'${style}' not supported for ${sport}. Available: ${Object.keys(sportPrompts).join(', ')}`
+      }, { status: 400 })
+    }
+
+    // Build enhanced prompt with all improvements
+    let enhancedPrompt = viewPrompt.base
+
+    // Apply variable substitution
+    enhancedPrompt = enhancedPrompt
+      .replace(/\{\{playerName\}\}/g, playerName)
+      .replace(/\{\{playerNumber\}\}/g, playerNumber)
+      .replace(/\{\{style\}\}/g, style)
+      .replace(/\{\{qualityLevel\}\}/g, qualityLevel)
+
+    // Add quality enhancers
+    const qualityEnhancer = viewPrompt.quality_enhancers[qualityLevel as keyof typeof viewPrompt.quality_enhancers] || viewPrompt.quality_enhancers.advanced
+    enhancedPrompt += `\n\nQUALITY ENHANCEMENT: ${qualityEnhancer}`
+
+    // Add color and pattern preservation
+    enhancedPrompt += `\n\n${COLOR_PRESERVATION_PROMPTS.high_fidelity}`
+    enhancedPrompt += `\n\n${COLOR_PRESERVATION_PROMPTS.pattern_preservation}`
+
+    // Add comprehensive negative prompts
+    enhancedPrompt += `\n\n${ENHANCED_NEGATIVE_PROMPTS.global}`
+    
+    // Add sport-specific negative prompts
+    const sportNegatives = ENHANCED_NEGATIVE_PROMPTS[sport as keyof typeof ENHANCED_NEGATIVE_PROMPTS]
+    if (sportNegatives) {
+      enhancedPrompt += `\n\n${sportNegatives}`
+    }
+
+    console.log('✅ [ENHANCED BASE PROMPTS] Generated enhanced prompt:', {
+        sport,
+        view,
+      playerName,
+      playerNumber,
+      style,
+      qualityLevel,
+      promptLength: enhancedPrompt.length,
+      hasQualityEnhancers: true,
+      hasColorPreservation: true,
+      hasNegativePrompts: true,
+      enhancementLevel: 'MAXIMUM_FIDELITY'
+      })
+
+      return NextResponse.json({
+        success: true,
+      prompt: enhancedPrompt.trim(),
+        metadata: {
+          sport,
+          view,
+        playerName,
+        playerNumber,
+        style,
+        qualityLevel,
+        enhancement_level: 'MAXIMUM_FIDELITY',
+        features_enabled: [
+          'color_preservation',
+          'pattern_fidelity', 
+          'negative_prompts',
+          'quality_enhancers',
+          'sports_accuracy',
+          'visual_constraints'
+        ],
+        prompt_length: enhancedPrompt.length
+      }
+    })
+
+  } catch (error: any) {
+    console.error('❌ [ENHANCED BASE PROMPTS] Error:', error)
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Failed to generate enhanced base prompt'
+    }, { status: 500 })
+  }
+}
+
+export async function GET() {
+    return NextResponse.json({
+    message: 'Enhanced Vision Base Prompts API',
+    version: '2.0-ENHANCED',
+    enhancement_level: 'MAXIMUM_FIDELITY',
+    supported_sports: Object.keys(ENHANCED_BASE_PROMPTS),
+    supported_views: {
+      soccer: ['front', 'back'],
+      basketball: ['front', 'back'], 
+      nfl: ['front', 'back']
+    },
+    features: [
+      'enhanced_base_prompts',
+      'comprehensive_negative_prompts',
+      'color_preservation_system',
+      'pattern_fidelity_control',
+      'quality_enhancers',
+      'sports_accuracy_constraints',
+      'visual_composition_control'
+    ],
+    quality_levels: ['basic', 'advanced', 'premium']
+  })
+} 

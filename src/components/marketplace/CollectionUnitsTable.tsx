@@ -1,0 +1,610 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useActiveAccount } from 'thirdweb/react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Eye, Tag, Gavel, Clock, User, AlertTriangle } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuctionData } from '@/hooks/useAuctionData';
+
+// Importar TODOS os componentes de trading do backup
+import { CreateListingModal } from './CreateListingModal';
+import { UpdateListingModal } from './UpdateListingModal';
+import { CreateAuctionModal } from './CreateAuctionModal';
+import { CancelListingButton } from './CancelListingButton';
+import { CancelAuctionButton } from './CancelAuctionButton';
+import BuyNowButton from './BuyNowButton';
+import AuctionBidButton from './AuctionBidButton';
+import MakeOfferButton from './MakeOfferButton';
+import { formatPriceSafe, isValidPrice, NFT_CONTRACTS } from '@/lib/marketplace-config';
+import { useActiveWalletChain } from 'thirdweb/react';
+
+interface CollectionUnit {
+  id: string;
+  tokenId: string;
+  name: string;
+  imageUrl: string;
+  contractAddress: string;
+  owner?: string;
+  minterAddress?: string;
+  marketplace: {
+    isListed: boolean;
+    isAuction: boolean;
+    canTrade: boolean;
+    verified: boolean;
+    price: string;
+    listingId?: string;
+    auctionId?: string;
+    auctionEndTime?: Date;
+    thirdwebData?: any;
+    thirdwebAuctionData?: any;
+  };
+}
+
+interface CollectionUnitsTableProps {
+  collectionId: string;
+  category?: string;
+}
+
+export default function CollectionUnitsTable({ collectionId, category }: CollectionUnitsTableProps) {
+  const [units, setUnits] = useState<CollectionUnit[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [stats, setStats] = useState<any>(null);
+  const account = useActiveAccount();
+  const chain = useActiveWalletChain();
+
+  // Helper para obter contrato NFT universal (igual ao MarketplaceCard)
+  const getContractByCategory = (category: string): string => {
+    const chainId = chain?.id || 88888; // Default para CHZ Mainnet
+    const contractAddress = NFT_CONTRACTS[chainId];
+    // If no contract found for current network, use fallback for Polygon Amoy
+    if (!contractAddress) {
+      return NFT_CONTRACTS[88888] || '0x3db78Cf4543cff5c4f514bcDA5a56c3234d5EC78';
+    }
+    return contractAddress;
+  };
+
+  // Estados dos modais (ALINHADO COM MARKETPLACECARD)
+  const [showCreateListing, setShowCreateListing] = useState(false);
+  const [showUpdateListing, setShowUpdateListing] = useState(false);
+  const [showCreateAuction, setShowCreateAuction] = useState(false);
+  const [selectedUnit, setSelectedUnit] = useState<CollectionUnit | null>(null);
+
+  // Fetch collection units
+  useEffect(() => {
+    async function fetchUnits() {
+      try {
+        setLoading(true);
+        console.log('🎯 Fetching collection units:', { collectionId, category });
+        
+        const response = await fetch(
+          `/api/marketplace/collection-units?collectionId=${collectionId}&category=${category || ''}&_t=${Date.now()}`
+        );
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch collection units');
+        }
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          console.log('🎯 RAW API RESPONSE:', result);
+          console.log('🎯 UNITS DATA:', result.data);
+          console.log('🎯 UNITS LENGTH:', result.data?.length);
+          setUnits(result.data);
+          setStats(result.stats);
+          console.log('✅ Collection units loaded:', result.stats);
+        } else {
+          throw new Error(result.error || 'Failed to load units');
+        }
+      } catch (err) {
+        console.error('❌ Error fetching collection units:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load collection units');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (collectionId) {
+      fetchUnits();
+    }
+  }, [collectionId, category]);
+
+  // 🔄 AUTO-REFRESH: Update data every 30 seconds (COPYING LEGACY LOGIC)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        console.log('🔄 Auto-refresh: Atualizando dados da coleção...');
+        
+        const response = await fetch(
+          `/api/marketplace/collection-units?collectionId=${collectionId}&category=${category || ''}&_t=${Date.now()}`
+        );
+        
+        if (response.ok) {
+          const result = await response.json();
+          if (result.success) {
+            setUnits(result.data);
+            setStats(result.stats);
+            console.log('✅ Auto-refresh: Dados atualizados');
+          }
+        }
+      } catch (error) {
+        console.warn('⚠️ Auto-refresh failed:', error);
+      }
+    }, 10000); // 10 seconds (faster)
+
+    return () => clearInterval(interval);
+  }, [collectionId, category]);
+
+  // Refresh after trading actions
+  const refreshUnits = async () => {
+    try {
+      console.log('🔄 Manual refresh: Recarregando dados após trading...');
+      console.log('📋 Parâmetros:', { collectionId, category });
+      
+      const response = await fetch(
+        `/api/marketplace/collection-units?collectionId=${collectionId}&category=${category || ''}&_t=${Date.now()}&forceRefresh=true`
+      );
+      
+      console.log('📋 Response status:', response.status);
+      
+      if (response.ok) {
+        const result = await response.json();
+        console.log('📋 API Response:', result);
+        
+        if (result.success) {
+          console.log('📋 Unidades antes do update:', units.length);
+          setUnits(result.data);
+          setStats(result.stats);
+          console.log('📋 Unidades após update:', result.data?.length);
+          console.log('✅ Manual refresh: Dados atualizados com sucesso');
+        } else {
+          console.error('❌ API retornou success: false:', result.error);
+        }
+      } else {
+        console.error('❌ Response não ok:', response.status, response.statusText);
+      }
+    } catch (error) {
+      console.error('❌ Manual refresh failed:', error);
+    }
+  };
+
+  // Determinar ownership (CORRIGIDO PARA AUCTIONS)
+  const isOwner = (unit: CollectionUnit) => {
+    if (!account?.address) return false;
+    const owner = unit.owner || unit.minterAddress;
+    return owner?.toLowerCase() === account.address.toLowerCase();
+  };
+
+  // 🎯 COMPONENTE DE AUCTION COM DADOS EM TEMPO REAL
+  const AuctionDisplay = ({ unit }: { unit: CollectionUnit }) => {
+    const auctionData = useAuctionData({
+      auctionId: unit.marketplace?.auctionId,
+      isAuction: unit.marketplace?.isAuction,
+      initialBid: unit.marketplace?.price || '0 MATIC',
+      refreshInterval: 30
+    });
+
+    // Use real-time bid if available
+    const displayCurrentBid = auctionData.hasValidBid ? auctionData.currentBid : unit.marketplace?.price;
+    
+    // Verificar se auction expirou
+    const auctionEndTime = unit.marketplace?.thirdwebAuctionData?.endTime ? 
+      new Date(unit.marketplace.thirdwebAuctionData.endTime) : null;
+    const isAuctionEnded = auctionEndTime ? new Date() > auctionEndTime : false;
+
+    return (
+      <div>
+        <Badge className={`mb-1 ${isAuctionEnded ? 'bg-gray-600' : 'bg-orange-600'} text-white`}>
+          <Clock className="h-3 w-3 mr-1" />
+          {isAuctionEnded ? 'Auction Ended' : 'Live Auction'}
+        </Badge>
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-[#FDFDFD]/70">Current Bid</span>
+            {auctionData.isLoading && (
+              <div className="animate-spin h-3 w-3 border border-[#FF0052] border-t-transparent rounded-full"></div>
+            )}
+          </div>
+          <div className="text-sm font-medium text-[#FF0052]">
+            {displayCurrentBid || 'No bids'}
+          </div>
+          {auctionData.lastUpdated && (
+            <div className="text-xs text-[#FDFDFD]/50">
+              Updated: {new Date(auctionData.lastUpdated).toLocaleTimeString()}
+            </div>
+          )}
+          {auctionEndTime && !isAuctionEnded && (
+            <div className="text-xs text-[#FDFDFD]/70">
+              Ends: {auctionEndTime.toLocaleDateString()} {auctionEndTime.toLocaleTimeString()}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  // Determine if is auction creator (NEW FUNCTION)
+  const isAuctionCreator = (unit: CollectionUnit) => {
+    if (!account?.address) return false;
+    // Para auctions, verificar se existe thirdwebAuctionData com creatorAddress
+    const auctionCreator = unit.marketplace?.thirdwebAuctionData?.creatorAddress;
+    return auctionCreator?.toLowerCase() === account.address.toLowerCase();
+  };
+
+  // Render action buttons (SAME LOGIC AS BACKUP)
+  const renderActionButtons = (unit: CollectionUnit) => {
+    const isUserOwner = isOwner(unit);
+    const { isListed, isAuction, listingId, auctionId, auctionEndTime } = unit.marketplace;
+    
+    // Determine state and available actions
+    
+    if (isListed && listingId) {
+      // 🛒 NFT LISTADO - DESIGN PROFISSIONAL
+      const isPriceValid = isValidPrice(unit.marketplace.price);
+      
+      if (isUserOwner) {
+        // Owner: Manage listing
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => {
+                setSelectedUnit(unit);
+                setShowUpdateListing(true);
+              }}
+              className="rounded-full px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium"
+            >
+              Update
+            </Button>
+            <CancelListingButton
+              listingId={listingId}
+              price={unit.marketplace.price}
+              nftName={unit.name}
+              tokenId={unit.tokenId}
+              variant="outline"
+              className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
+              onSuccess={() => {
+                console.log('🔄 CancelListingButton onSuccess chamado!');
+                // Aguardar um pouco para a transação ser confirmada na blockchain
+                setTimeout(() => {
+                  console.log('🔄 Executando refreshUnits após delay...');
+                  refreshUnits();
+                }, 3000); // 3 segundos de delay
+              }}
+            />
+          </div>
+        );
+      } else {
+        // Comprador: Comprar ou fazer oferta
+        return (
+          <div className="flex items-center gap-2">
+            {isPriceValid ? (
+              <BuyNowButton
+                listingId={listingId}
+                price={unit.marketplace.price}
+                className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
+              />
+            ) : (
+              <Button disabled className="rounded-full px-4 py-1.5 bg-red-500/20 text-red-400 text-xs font-medium cursor-not-allowed">
+                <AlertTriangle className="mr-1.5 h-3 w-3" />
+                Invalid
+              </Button>
+            )}
+            <MakeOfferButton
+              assetContract={unit.contractAddress}
+              tokenId={unit.tokenId}
+              nftName={unit.name}
+              className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
+            />
+          </div>
+        );
+      }
+    } else if (isAuction && auctionId) {
+      // 🔨 NFT IN AUCTION - PROFESSIONAL DESIGN
+      const isAuctionEnded = auctionEndTime ? new Date() > auctionEndTime : false;
+      
+      if (isUserOwner) {
+        // Auction creator
+        return (
+          <div className="flex items-center gap-2">
+            {!isAuctionEnded ? (
+              <CancelAuctionButton
+                auctionId={auctionId}
+                nftName={unit.name}
+                variant="outline"
+                className="rounded-full px-4 py-1.5 text-red-500 hover:bg-red-50 text-xs font-medium"
+                onSuccess={refreshUnits}
+              />
+            ) : (
+              <Button disabled variant="outline" className="rounded-full px-4 py-1.5 text-gray-400 text-xs font-medium">
+                Ended
+              </Button>
+            )}
+          </div>
+        );
+      } else {
+        // Auction participant
+        return (
+          <div className="flex items-center gap-2">
+            {!isAuctionEnded ? (
+              <>
+                <AuctionBidButton
+                  auctionId={auctionId}
+                  currentBid="0 MATIC"
+                  minimumBid="0"
+                  endTime={auctionEndTime || new Date()}
+                  currency="MATIC"
+                  className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
+                  onBidSuccess={refreshUnits}
+                />
+                <MakeOfferButton
+                  assetContract={unit.contractAddress}
+                  tokenId={unit.tokenId}
+                  nftName={unit.name}
+                  className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
+                />
+              </>
+            ) : (
+              <MakeOfferButton
+                assetContract={unit.contractAddress}
+                tokenId={unit.tokenId}
+                nftName={unit.name}
+                className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
+              />
+            )}
+          </div>
+        );
+      }
+    } else {
+      // 💎 NFT AVAILABLE - PROFESSIONAL DESIGN
+      if (isUserOwner) {
+        // Owner: List or auction
+        return (
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={() => {
+                console.log('🎯 BUTTON CLICKED - List for Sale:', {
+                  unitId: unit.id,
+                  tokenId: unit.tokenId,
+                  unitContract: unit.contractAddress,
+                  category: category,
+                  fallbackContract: getContractByCategory(category || 'launchpad')
+                });
+                setSelectedUnit(unit);
+                setShowCreateListing(true);
+              }}
+              className="rounded-full px-4 py-1.5 bg-[#FF0052] hover:bg-[#FF0052]/90 text-white text-xs font-medium"
+            >
+              List for Sale
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSelectedUnit(unit);
+                setShowCreateAuction(true);
+              }}
+              className="rounded-full px-4 py-1.5 text-[#FF0052] hover:bg-[#FF0052]/10 text-xs font-medium"
+            >
+              Create Auction
+            </Button>
+          </div>
+        );
+      } else {
+        // Visitante: Fazer oferta
+        return (
+          <div className="flex items-center gap-2">
+            <MakeOfferButton
+              assetContract={unit.contractAddress}
+              tokenId={unit.tokenId}
+              nftName={unit.name}
+              className="rounded-full px-4 py-1.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white text-xs font-medium"
+            />
+          </div>
+        );
+      }
+    }
+  };
+
+
+
+  if (loading) {
+    return (
+      <Card className="bg-transparent border-[#FDFDFD]/10">
+        <CardHeader>
+          <CardTitle className="text-[#FDFDFD]">Collection Units</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4 p-4 border border-[#FDFDFD]/10 rounded-lg">
+                <Skeleton className="w-16 h-16 rounded-lg" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+                <Skeleton className="h-8 w-20" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-transparent border-[#FDFDFD]/10">
+        <CardContent className="p-8 text-center">
+          <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-[#FDFDFD] mb-2">Failed to Load Units</h3>
+          <p className="text-[#FDFDFD]/70 mb-4">{error}</p>
+          <Button onClick={() => window.location.reload()}>
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Stats Header */}
+      {stats && (
+        <Card className="bg-transparent border-[#FDFDFD]/10">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#FDFDFD]">{stats.total}</div>
+                <div className="text-sm text-[#FDFDFD]/70">Total Units</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-500">{stats.listed}</div>
+                <div className="text-sm text-[#FDFDFD]/70">For Sale</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-500">{stats.auctions}</div>
+                <div className="text-sm text-[#FDFDFD]/70">Auctions</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-[#FDFDFD]/70">{stats.notForSale}</div>
+                <div className="text-sm text-[#FDFDFD]/70">Not Listed</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Units Table */}
+      <Card className="bg-transparent border-[#FDFDFD]/10">
+        <CardHeader>
+          <CardTitle className="text-[#FDFDFD] flex items-center gap-2">
+            <Eye className="h-5 w-5" />
+            Individual Units ({units.length})
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {units.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-[#FDFDFD]/70">No units found in this collection.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {units.map((unit) => (
+                <div 
+                  key={unit.id}
+                  className="flex items-center gap-4 p-4 border border-[#FDFDFD]/10 rounded-lg hover:border-[#FDFDFD]/20 transition-colors"
+                >
+                  {/* Image (shadcn Avatar para tamanho consistente) */}
+                  <Avatar className="h-16 w-16 rounded-lg border border-[#FDFDFD]/10">
+                    <AvatarImage src={unit.imageUrl} alt={unit.name} />
+                    <AvatarFallback className="bg-[#FDFDFD]/5 text-[#FDFDFD]/50">
+                      <Eye className="h-6 w-6" />
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 text-xs text-[#FDFDFD]/70">
+                      <span className="truncate">Rank: {unit.tokenId || '-'}</span>
+                    </div>
+                    <h4 className="font-medium text-[#FDFDFD] truncate">{unit.name}</h4>
+                    <div className="flex items-center gap-2 mt-0.5 text-xs text-[#FDFDFD]/60">
+                      <span>#{unit.tokenId}</span>
+                      {isOwner(unit) && (
+                        <Badge variant="secondary" className="bg-[#FF0052]/20 text-[#FF0052] rounded-full px-2 py-0.5">
+                          <User className="h-3 w-3 mr-1" />
+                          Owned
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Price + Actions Compact */}
+                  <div className="ml-auto flex items-center gap-3 flex-wrap justify-end">
+                    {/* Preço sempre visível quando listado ou em leilão */}
+                    {(unit.marketplace.isListed || unit.marketplace.isAuction) && (
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-[#FDFDFD]">
+                          {unit.marketplace.price}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Botões de ação */}
+                    <div className="flex items-center gap-2">
+                      {renderActionButtons(unit)}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Modais de Trading (ALINHADO COM MARKETPLACECARD) */}
+      {showCreateListing && selectedUnit && (
+        <>
+          {console.log('🎯 MODAL DATA:', {
+            selectedUnit,
+            originalContract: selectedUnit.contractAddress,
+            fallbackContract: getContractByCategory(category || 'launchpad'),
+            finalContract: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
+            category: category
+          })}
+          <CreateListingModal
+            isOpen={showCreateListing}
+            onOpenChange={setShowCreateListing}
+            nft={{
+              assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
+              tokenId: selectedUnit.tokenId,
+              name: selectedUnit.name,
+              imageUrl: selectedUnit.imageUrl
+            }}
+            onSuccess={() => {
+              setShowCreateListing(false);
+              refreshUnits();
+            }}
+          />
+        </>
+      )}
+
+      {showUpdateListing && selectedUnit && (
+        <UpdateListingModal
+          isOpen={showUpdateListing}
+          onOpenChange={setShowUpdateListing}
+          listingId={selectedUnit.marketplace?.listingId || ''}
+          currentPrice={selectedUnit.marketplace?.price || '0'}
+          nftName={selectedUnit.name}
+          tokenId={selectedUnit.tokenId}
+          onSuccess={() => {
+            setShowUpdateListing(false);
+            refreshUnits();
+          }}
+        />
+      )}
+
+      {showCreateAuction && selectedUnit && (
+        <CreateAuctionModal
+          isOpen={showCreateAuction}
+          onOpenChange={setShowCreateAuction}
+          nft={{
+            assetContractAddress: selectedUnit.contractAddress || getContractByCategory(category || 'launchpad'),
+            tokenId: selectedUnit.tokenId,
+            name: selectedUnit.name,
+            imageUrl: selectedUnit.imageUrl
+          }}
+          onSuccess={() => {
+            setShowCreateAuction(false);
+            refreshUnits();
+          }}
+        />
+      )}
+    </div>
+  );
+}

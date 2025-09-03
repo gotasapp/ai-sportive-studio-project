@@ -1,0 +1,498 @@
+[
+  {
+    "filename": "ac_milan_home.jpg",
+    "team_name": "Ac Milan",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "black"
+    },
+    "file_path": "dataset_v2/jerseys/home\\ac_milan_home.jpg"
+  },
+  {
+    "filename": "arsenal_home.jpg",
+    "team_name": "Arsenal",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\arsenal_home.jpg"
+  },
+  {
+    "filename": "bayern_munich_home.jpg",
+    "team_name": "Bayern Munich",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\bayern_munich_home.jpg"
+  },
+  {
+    "filename": "chelsea_home.jpg",
+    "team_name": "Chelsea",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "blue",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\chelsea_home.jpg"
+  },
+  {
+    "filename": "juventus_home.jpg",
+    "team_name": "Juventus",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "black",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\juventus_home.jpg"
+  },
+  {
+    "filename": "liverpool_home.jpg",
+    "team_name": "Liverpool",
+    "type": "home",
+    "colors": [
+      [
+        247,
+        247,
+        247
+      ],
+      [
+        240,
+        240,
+        240
+      ],
+      [
+        242,
+        242,
+        242
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\liverpool_home.jpg"
+  },
+  {
+    "filename": "manchester_united_home.jpg",
+    "team_name": "Manchester United",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/home\\manchester_united_home.jpg"
+  },
+  {
+    "filename": "psg_home.jpg",
+    "team_name": "Psg",
+    "type": "home",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "blue",
+      "secondary": "red"
+    },
+    "file_path": "dataset_v2/jerseys/home\\psg_home.jpg"
+  },
+  {
+    "filename": "ac_milan_away.jpg",
+    "team_name": "Ac Milan",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "black"
+    },
+    "file_path": "dataset_v2/jerseys/away\\ac_milan_away.jpg"
+  },
+  {
+    "filename": "arsenal_away.jpg",
+    "team_name": "Arsenal",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\arsenal_away.jpg"
+  },
+  {
+    "filename": "bayern_munich_away.jpg",
+    "team_name": "Bayern Munich",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\bayern_munich_away.jpg"
+  },
+  {
+    "filename": "chelsea_away.jpg",
+    "team_name": "Chelsea",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "blue",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\chelsea_away.jpg"
+  },
+  {
+    "filename": "juventus_away.jpg",
+    "team_name": "Juventus",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "black",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\juventus_away.jpg"
+  },
+  {
+    "filename": "liverpool_away.jpg",
+    "team_name": "Liverpool",
+    "type": "away",
+    "colors": [
+      [
+        247,
+        247,
+        247
+      ],
+      [
+        240,
+        240,
+        240
+      ],
+      [
+        242,
+        242,
+        242
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\liverpool_away.jpg"
+  },
+  {
+    "filename": "manchester_united_away.jpg",
+    "team_name": "Manchester United",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "red",
+      "secondary": "white"
+    },
+    "file_path": "dataset_v2/jerseys/away\\manchester_united_away.jpg"
+  },
+  {
+    "filename": "psg_away.jpg",
+    "team_name": "Psg",
+    "type": "away",
+    "colors": [
+      [
+        254,
+        254,
+        254
+      ],
+      [
+        5,
+        1,
+        2
+      ],
+      [
+        111,
+        109,
+        109
+      ]
+    ],
+    "patterns": [
+      "vertical_stripes",
+      "horizontal_stripes"
+    ],
+    "team_colors": {
+      "primary": "blue",
+      "secondary": "red"
+    },
+    "file_path": "dataset_v2/jerseys/away\\psg_away.jpg"
+  }
+]

@@ -1,0 +1,369 @@
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
+
+export async function POST(request: NextRequest) {
+  try {
+    console.log('🎨 [ENHANCED VISION GENERATE] Advanced jersey generation with fidelity constraints');
+    
+    const requestBody = await request.json();
+    console.log('📋 [DEBUG] Request body received:', Object.keys(requestBody));
+    
+    const { 
+      prompt, 
+      model = 'dall-e-3',
+      size = '1024x1024',
+      quality = 'hd',
+      style = 'vivid',
+      enhanced_constraints = true,
+      color_fidelity = 'high',
+      pattern_accuracy = 'high',
+      sport = 'soccer',
+      view = 'back'
+    } = requestBody;
+
+    if (!prompt) {
+      return NextResponse.json({
+        success: false,
+        error: 'Prompt is required'
+      }, { status: 400 });
+    }
+
+    console.log('📋 [ENHANCED VISION GENERATE] Request details:', {
+      promptLength: prompt.length,
+      model,
+      size,
+      quality,
+      style,
+      enhancedConstraints: enhanced_constraints,
+      colorFidelity: color_fidelity,
+      patternAccuracy: pattern_accuracy,
+      sport,
+      view,
+      timestamp: new Date().toISOString()
+    });
+
+    // ===== ENHANCED GENERATION CONSTRAINTS =====
+    let enhancedPrompt = prompt;
+
+    if (enhanced_constraints) {
+      console.log('🔧 [DEBUG] Applying enhanced constraints...');
+      
+      try {
+        // Add sport-specific generation constraints
+        console.log('🏃 [DEBUG] Getting sport constraints...');
+        const sportConstraints = getSportSpecificConstraints(sport, view);
+        
+        console.log('🎨 [DEBUG] Getting visual constraints...');
+        const visualConstraints = getVisualQualityConstraints(quality, color_fidelity, pattern_accuracy);
+        
+        console.log('❌ [DEBUG] Getting negative constraints...');
+        const negativeConstraints = getComprehensiveNegativePrompts(sport);
+
+        enhancedPrompt = `${prompt}
+
+${sportConstraints}
+
+${visualConstraints}
+
+${negativeConstraints}`;
+
+        // ===== DALL-E 3 PROMPT LENGTH OPTIMIZATION =====
+        const MAX_PROMPT_LENGTH = 4000;
+        if (enhancedPrompt.length > MAX_PROMPT_LENGTH) {
+          console.log('⚠️ [PROMPT OPTIMIZATION] Prompt too long, optimizing...');
+          
+          // Priority: Keep core prompt + essential constraints
+          const corePrompt = prompt.substring(0, Math.min(prompt.length, 2000));
+          const essentialConstraints = `
+CRITICAL CONSTRAINTS:
+- ${sport} jersey ONLY, no shorts/pants
+- ${view} view, centered
+- Professional quality, realistic fabric
+- Player name/number if specified
+- NO people, equipment, or backgrounds`;
+
+          enhancedPrompt = `${corePrompt}${essentialConstraints}`;
+          
+          // If still too long, truncate core prompt
+          if (enhancedPrompt.length > MAX_PROMPT_LENGTH) {
+            const availableSpace = MAX_PROMPT_LENGTH - essentialConstraints.length - 50;
+            enhancedPrompt = `${prompt.substring(0, availableSpace)}${essentialConstraints}`;
+          }
+        }
+
+        console.log('✅ [ENHANCED VISION GENERATE] Applied enhanced constraints:', {
+          originalLength: prompt.length,
+          enhancedLength: enhancedPrompt.length,
+          wasOptimized: enhancedPrompt.length !== (prompt.length + sportConstraints.length + visualConstraints.length + negativeConstraints.length),
+          constraintsAdded: {
+            sportSpecific: !!sportConstraints,
+            visualQuality: !!visualConstraints,
+            negativePrompts: !!negativeConstraints
+          }
+        });
+      } catch (constraintError: any) {
+        console.error('❌ [DEBUG] Error in constraints:', constraintError);
+        throw new Error(`Constraint generation failed: ${constraintError.message}`);
+      }
+    }
+
+    // Enhanced OpenAI API call
+    const openaiApiKey = process.env.OPENAI_API_KEY;
+    if (!openaiApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
+    console.log('🌐 [ENHANCED VISION GENERATE] Calling OpenAI DALL-E API with enhanced parameters...');
+
+    const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model,
+        prompt: enhancedPrompt,
+        n: 1,
+        size,
+        quality,
+        style,
+        response_format: 'url'
+      }),
+    });
+
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json();
+      console.error('❌ [ENHANCED VISION GENERATE] OpenAI API error:', errorData);
+      
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const result = await openaiResponse.json();
+    
+    if (!result.data || result.data.length === 0) {
+      throw new Error('No image generated by OpenAI API');
+    }
+
+    const imageUrl = result.data[0].url;
+    const revisedPrompt = result.data[0].revised_prompt;
+
+    console.log('✅ [ENHANCED VISION GENERATE] Image generated successfully, downloading...');
+
+    // Download image from DALL-E URL (bypass CORS)
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to download image: ${imageResponse.status}`);
+    }
+
+    const imageBuffer = await imageResponse.arrayBuffer();
+    const imageBase64 = Buffer.from(imageBuffer).toString('base64');
+
+    console.log('✅ [ENHANCED VISION GENERATE] Image downloaded and converted:', {
+      originalUrl: !!imageUrl,
+      hasRevisedPrompt: !!revisedPrompt,
+      imageSize: imageBase64.length,
+      model,
+      size,
+      quality,
+      enhancementLevel: enhanced_constraints ? 'MAXIMUM_FIDELITY' : 'STANDARD'
+    });
+
+    return NextResponse.json({
+      success: true,
+      image_url: imageUrl, // Keep original URL for reference
+      image_base64: imageBase64, // Add base64 for direct use
+      revised_prompt: revisedPrompt,
+      model_used: model,
+      parameters: {
+        size,
+        quality,
+        style,
+        enhanced_constraints,
+        color_fidelity,
+        pattern_accuracy,
+        sport,
+        view
+      },
+      enhancement_level: enhanced_constraints ? 'MAXIMUM_FIDELITY' : 'STANDARD',
+      prompt_length: enhancedPrompt.length,
+      constraints_applied: enhanced_constraints
+    });
+
+  } catch (error: any) {
+    console.error('❌ [ENHANCED VISION GENERATE] Error:', error);
+    
+    return NextResponse.json({
+      success: false,
+      error: error.message || 'Enhanced vision generation failed',
+      enhancement_level: 'ERROR'
+    }, { status: 500 });
+  }
+}
+
+// ===== SPORT-SPECIFIC GENERATION CONSTRAINTS =====
+function getSportSpecificConstraints(sport: string, view: string): string {
+  const constraints = {
+    soccer: {
+      front: `
+SOCCER JERSEY FRONT CONSTRAINTS:
+- Soccer jersey ONLY, no shorts or pants visible
+- Front view, perfectly centered composition
+- Team badge/crest on left chest (viewer's right)
+- Sponsor logo center chest if applicable
+- Short sleeves with proper athletic cut
+- Crew neck or V-neck collar appropriate for soccer
+- Professional soccer jersey proportions and fit
+- No soccer balls, fields, or equipment in frame`,
+
+      back: `
+SOCCER JERSEY BACK CONSTRAINTS:
+- Soccer jersey ONLY, no shorts or pants visible  
+- Back view, perfectly centered composition
+- Player name positioned top-back, centered above number
+- Player number large and prominent center-back
+- Professional soccer typography and spacing
+- Consistent colors and pattern from front view
+- No soccer equipment or field elements
+- Clean professional soccer jersey back design`
+    },
+
+    basketball: {
+      front: `
+BASKETBALL JERSEY FRONT CONSTRAINTS:
+- Basketball jersey ONLY, no shorts visible
+- Tank top style with large armholes, no sleeves
+- Front view, perfectly centered composition
+- Team name/logo prominent on chest
+- Basketball-specific proportions and cut
+- Professional basketball fabric appearance
+- No basketballs, courts, or hoops in frame
+- Athletic mesh or smooth fabric finish`,
+
+      back: `
+BASKETBALL JERSEY BACK CONSTRAINTS:
+- Basketball jersey ONLY, no shorts visible
+- Tank top style with large armholes, no sleeves
+- Back view, perfectly centered composition
+- Player name curved above number (if applicable)
+- Large prominent player number center-back
+- Professional basketball typography
+- Consistent armhole design from front
+- No basketball equipment in frame`
+    },
+
+    nfl: {
+      front: `
+NFL JERSEY FRONT CONSTRAINTS:
+- NFL jersey ONLY, no pants or equipment visible
+- Professional football jersey cut and proportions
+- Front view, perfectly centered composition
+- Team logo on chest or shoulder area
+- NFL-style collar and neckline design
+- Broader shoulder emphasis typical of football
+- Durable fabric appearance suitable for NFL
+- No helmets, footballs, or field elements`,
+
+      back: `
+NFL JERSEY BACK CONSTRAINTS:
+- NFL jersey ONLY, no pants or equipment visible
+- Professional football jersey cut and proportions
+- Back view, perfectly centered composition
+- Player name top-back, centered (curved or straight)
+- Large prominent player number center-back
+- NFL professional typography standards
+- Broader shoulder design continuation
+- No football equipment or field elements`
+    }
+  };
+
+  return (constraints as any)[sport]?.[view] || constraints.soccer.back;
+}
+
+// ===== VISUAL QUALITY CONSTRAINTS =====
+function getVisualQualityConstraints(quality: string, colorFidelity: string, patternAccuracy: string): string {
+  return `
+VISUAL QUALITY REQUIREMENTS:
+- ${quality === 'hd' ? 'Ultra-high resolution' : 'High resolution'} professional quality
+- Studio lighting with professional photography appearance
+- ${colorFidelity === 'high' ? 'EXACT color matching to specifications' : 'Accurate color representation'}
+- ${patternAccuracy === 'high' ? 'PRECISE pattern reproduction' : 'Consistent pattern design'}
+- Clean background (white or transparent preferred)
+- Professional product photography style
+- Sharp focus with no blurriness or distortion
+- Realistic fabric texture and material appearance
+- Perfect jersey proportions and athletic fit
+- Commercial-grade presentation quality`;
+}
+
+// ===== COMPREHENSIVE NEGATIVE PROMPTS =====
+function getComprehensiveNegativePrompts(sport: string): string {
+  const globalNegatives = `
+CRITICAL EXCLUSIONS - ABSOLUTELY FORBIDDEN:
+- No shorts, pants, or lower body clothing of any kind
+- No shoes, socks, cleats, or footwear
+- No people wearing jerseys or human models
+- No mannequins, hangers, or clothing displays
+- No multiple jerseys in the same image
+- No arms, hands, torso, or body parts
+- No sports equipment (balls, goals, hoops, etc.)
+- No field, court, or venue backgrounds
+- No text overlays, watermarks, or unrelated logos
+- No blurry, pixelated, or low-quality rendering
+- No amateur or sketch-like appearance
+- No cartoon or non-photorealistic styles
+- No color alterations from specifications
+- No pattern modifications from design
+- No incorrect proportions or unrealistic shapes`;
+
+  const sportSpecificNegatives = {
+    soccer: `
+SOCCER-SPECIFIC EXCLUSIONS:
+- No soccer balls, cleats, or shin guards
+- No soccer fields, grass, or goal posts
+- No referee jerseys or non-team jerseys
+- No soccer shorts or training pants`,
+
+    basketball: `
+BASKETBALL-SPECIFIC EXCLUSIONS:
+- No basketballs or basketball shoes
+- No basketball courts or hoops
+- No sleeves (maintain tank top style)
+- No basketball shorts or warm-ups`,
+
+    nfl: `
+NFL-SPECIFIC EXCLUSIONS:
+- No helmets, pads, or protective gear
+- No footballs or field equipment
+- No football pants or uniform pants
+- No stadium or field backgrounds`
+  };
+
+  return `${globalNegatives}
+
+${(sportSpecificNegatives as any)[sport] || sportSpecificNegatives.soccer}`;
+}
+
+export async function GET() {
+  return NextResponse.json({
+    message: 'Enhanced Vision Generation API',
+    version: '2.0-ENHANCED',
+    enhancement_level: 'MAXIMUM_FIDELITY',
+    features: [
+      'enhanced_generation_constraints',
+      'sport_specific_requirements',
+      'visual_quality_control',
+      'comprehensive_negative_prompts',
+      'color_fidelity_preservation',
+      'pattern_accuracy_control'
+    ],
+    supported_models: ['dall-e-3', 'dall-e-2'],
+    supported_sizes: ['1024x1024', '1024x1792', '1792x1024'],
+    quality_levels: ['standard', 'hd'],
+    style_options: ['vivid', 'natural'],
+    constraint_levels: {
+      enhanced_constraints: 'Maximum fidelity with comprehensive constraints',
+      standard: 'Basic generation without enhanced constraints'
+    }
+  });
+} 

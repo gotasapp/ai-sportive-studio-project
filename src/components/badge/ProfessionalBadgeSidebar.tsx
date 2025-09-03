@@ -1,0 +1,454 @@
+'use client'
+
+import React, { useRef } from 'react'
+import { 
+  Upload, X, Zap, Gamepad2, Globe, Crown, Palette,
+  FileImage, Settings, MessageSquare, ChevronDown, ChevronUp, User, Hash, Award, Sparkles
+} from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+// NEW TYPE DEFINITION
+interface ApiBadge {
+  id: string;
+  name: string;
+  previewImage: string | null;
+}
+
+const SPORTS_OPTIONS = [
+  { id: 'soccer', name: 'Soccer', description: 'Soccer badge' },
+  { id: 'basketball', name: 'Basketball', description: 'Basketball badge' },
+  { id: 'nfl', name: 'American Football', description: 'NFL badge' }
+]
+
+const VIEW_OPTIONS = [
+  { id: 'logo', name: 'Logo View', description: 'Badge logo design' },
+  { id: 'emblem', name: 'Emblem View', description: 'Badge emblem design' }
+]
+
+const STYLE_FILTERS = [
+  { id: 'modern', label: 'Modern' },
+  { id: 'retro', label: 'Retro' },
+  { id: 'national', label: 'National' },
+  { id: 'urban', label: 'Urban' },
+  { id: 'classic', label: 'Classic' }
+]
+
+interface ProfessionalBadgeSidebarProps {
+  availableBadges: ApiBadge[];
+  selectedBadge: string;
+  setSelectedBadge: (badge: string) => void;
+  badgeName: string
+  setBadgeName: (name: string) => void
+  selectedStyle: string
+  setSelectedStyle: (style: string) => void
+  customPrompt: string
+  setCustomPrompt: (prompt: string) => void
+  quality: 'standard' | 'hd'
+  setQuality: (quality: 'standard' | 'hd') => void
+  isVisionMode: boolean
+  referenceImage: string | null
+  selectedSport: string
+  setSelectedSport: (sport: string) => void
+  selectedBadgeView: 'logo' | 'emblem'
+  setSelectedBadgeView: (view: 'logo' | 'emblem') => void
+  onFileUpload: (event: React.ChangeEvent<HTMLInputElement>) => void
+  onClearReference: () => void
+  generationCost?: number | null
+  error: string | null
+  onResetError: () => void
+}
+
+export default function ProfessionalBadgeSidebar({
+  availableBadges = [], // Default para array vazio
+  selectedBadge,
+  setSelectedBadge,
+  badgeName,
+  setBadgeName,
+  selectedStyle,
+  setSelectedStyle,
+  customPrompt,
+  setCustomPrompt,
+  quality,
+  setQuality,
+  isVisionMode,
+  referenceImage,
+  selectedSport,
+  setSelectedSport,
+  selectedBadgeView,
+  setSelectedBadgeView,
+  onFileUpload,
+  onClearReference,
+  generationCost,
+  error,
+  onResetError
+}: ProfessionalBadgeSidebarProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [expandedSections, setExpandedSections] = React.useState({
+    vision: false,
+    prompt: false,
+    template: true,
+    details: true,
+    style: true,
+    settings: false
+  })
+
+  const toggleSection = (section: keyof typeof expandedSections) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
+  const SectionHeader = ({ 
+    title, 
+    section, 
+    icon: Icon, 
+    required = false,
+    badge,
+    onClick,
+    expanded
+  }: { 
+    title: string
+    section: keyof typeof expandedSections
+    icon: React.ComponentType<any>
+    required?: boolean
+    badge?: string
+    onClick?: () => void
+    expanded?: boolean
+  }) => (
+    <button
+      onClick={onClick || (() => toggleSection(section))}
+      className="w-full flex items-center justify-between p-3 hover:bg-[#333333]/30 rounded-lg transition-colors group"
+    >
+      <div className="flex items-center gap-3">
+        <Icon className="h-4 w-4 text-[#ADADAD]" />
+        <span className="text-sm font-medium text-[#FDFDFD]">{title}</span>
+        {/* Remover badge do SectionHeader */}
+        {/* {badge && (
+          <Badge variant="secondary" className="text-xs bg-transparent text-[#ADADAD] border-[#333333]" style={{ borderWidth: '0.5px', borderColor: '#333333' }}>
+            {badge}
+          </Badge>
+        )} */}
+      </div>
+      {expanded ? (
+        <ChevronUp className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
+      ) : (
+        <ChevronDown className="h-4 w-4 text-[#ADADAD] group-hover:text-[#FDFDFD]" />
+      )}
+    </button>
+  )
+
+  return (
+    <TooltipProvider>
+      <div className="space-y-4">
+        {/* Error Display */}
+        {error && (
+          <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-lg">
+            <div className="flex items-start justify-between">
+              <p className="text-sm text-red-400 flex-1">{error}</p>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onResetError}
+                className="text-red-400 hover:text-red-300 hover:bg-red-500/10 p-1 h-auto"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* NEW: Team Selection (Badge reference) */}
+        <div className="space-y-2">
+          {/* Select com placeholder interno (ícone + título) */}
+          <div className="relative">
+            {(!selectedBadge || selectedBadge === 'custom_only') && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Globe className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Teams</span>
+              </div>
+            )}
+            <select
+              value={selectedBadge === 'custom_only' ? '' : selectedBadge}
+              onChange={(e) => setSelectedBadge(e.target.value)}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                (!selectedBadge || selectedBadge === 'custom_only') ? "text-transparent" : "text-[#FDFDFD]"
+              )}
+            >
+              <option value="" disabled hidden></option>
+              {availableBadges.map((badge) => (
+                <option key={badge.id} value={badge.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {badge.name}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
+        </div>
+
+        {/* Badge Details */}
+        <div className="space-y-2">
+          {/* Sem título externo para evitar duplicação */}
+          <div>
+            {/* Label removido; usar placeholder */}
+            <div className="relative">
+              <Hash className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ADADAD]" />
+              <input
+                type="text"
+                value={badgeName}
+                onChange={(e) => setBadgeName(e.target.value.toUpperCase())}
+                placeholder="Badge Name"
+                maxLength={15}
+                className={cn(
+                  "w-full pl-10 pr-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors",
+                  badgeName ? "text-[#707070]" : "text-[#FDFDFD]"
+                )}
+              />
+            </div>
+          </div>
+          <p className="text-xs text-[#ADADAD]">Name: max 15 characters</p>
+        </div>
+        
+        {/* Badge Style */}
+        <div className="space-y-2">
+          {/* Style select com placeholder interno */}
+          <div className="relative">
+            {!selectedStyle && (
+              <div className="pointer-events-none absolute inset-0 flex items-center gap-2 pl-3">
+                <div
+                  className="w-6 h-6 rounded-[6px] flex items-center justify-center"
+                  style={{ background: 'linear-gradient(180deg,#14101E 0%, rgba(20,16,30,0) 100%)' }}
+                >
+                  <Palette className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-sm text-[#ADADAD]">Style</span>
+              </div>
+            )}
+            <select
+              value={selectedStyle}
+              onChange={(e) => setSelectedStyle(e.target.value)}
+              className={cn(
+                "w-full appearance-none px-3 py-2 cyber-select text-sm rounded-[6px] bg-transparent border border-[#2A2A2A]",
+                selectedStyle ? "text-[#FDFDFD]" : "text-transparent"
+              )}
+            >
+              <option value="" disabled hidden></option>
+              {STYLE_FILTERS.map((style) => (
+                <option key={style.id} value={style.id} className="bg-[#1C1C1C] text-[#FDFDFD]">
+                  {style.label}
+                </option>
+              ))}
+            </select>
+            <span className="pointer-events-none absolute right-3 inset-y-0 flex items-center text-[#ADADAD]">▾</span>
+          </div>
+        </div>
+
+        {/* Upload Image */}
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Upload Image" 
+            section="vision" 
+            icon={FileImage}
+            badge={referenceImage ? "Active" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, vision: !prev.vision }))}
+            expanded={expandedSections.vision}
+          />
+          {expandedSections.vision && (
+            <>
+              {!referenceImage ? (
+                <div
+                  className="flex flex-col items-center justify-center w-full p-4 border-2 border-dashed border-[#333333] rounded-lg text-center cursor-pointer hover:border-[#FF0052] hover:bg-[#FF0052]/5 transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    onChange={onFileUpload}
+                    accept="image/png, image/jpeg, image/webp"
+                  />
+                  <FileImage className="w-6 h-6 text-[#ADADAD] mb-2" />
+                  <p className="text-sm font-medium text-[#FDFDFD] mb-1">Upload Reference</p>
+                  <p className="text-xs text-[#ADADAD]">PNG, JPG, WEBP up to 10MB</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <img
+                      src={referenceImage}
+                      alt="Reference"
+                      className="w-full h-24 object-cover rounded-lg border border-[#333333]"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={onClearReference}
+                      className="absolute top-1 right-1 bg-black/50 hover:bg-black/70 text-white p-1 h-auto"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">Sport</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {SPORTS_OPTIONS.map(sport => (
+                          <button
+                            key={sport.id}
+                            onClick={() => setSelectedSport(sport.id)}
+                            className={cn(
+                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              selectedSport === sport.id
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{sport.name}</div>
+                            <div className="text-xs opacity-70">{sport.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-medium text-[#ADADAD] mb-1">View</label>
+                      <div className="grid grid-cols-1 gap-1">
+                        {VIEW_OPTIONS.map(view => (
+                          <button
+                            key={view.id}
+                            onClick={() => setSelectedBadgeView(view.id as 'logo' | 'emblem')}
+                            className={cn(
+                              "p-2 rounded-lg border text-left transition-all duration-200",
+                              selectedBadgeView === view.id
+                                ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
+                                : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                            )}
+                          >
+                            <div className="text-xs font-medium">{view.name}</div>
+                            <div className="text-xs opacity-70">{view.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Custom Prompt */}
+        <div className="space-y-2">
+          <SectionHeader 
+            title="Custom Prompt" 
+            section="prompt" 
+            icon={Sparkles}
+            badge={customPrompt ? "Added" : undefined}
+            onClick={() => setExpandedSections(prev => ({ ...prev, prompt: !prev.prompt }))}
+            expanded={expandedSections.prompt}
+          />
+          {expandedSections.prompt && (
+            <>
+              <div>
+                <label className="block text-xs font-medium text-[#ADADAD] mb-1">
+                  Additional Instructions (Optional)
+                </label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., add golden elements, vintage style, medieval theme..."
+                  rows={3}
+                  maxLength={200}
+                  className={cn(
+                    "w-full px-3 py-2 cyber-select text-sm placeholder-[#ADADAD] transition-colors resize-none",
+                    customPrompt ? "text-[#707070]" : "text-[#FDFDFD]"
+                  )}
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <p className="text-xs text-[#ADADAD]">
+                    Custom instructions for AI generation
+                  </p>
+                  <span className="text-xs text-[#ADADAD]">
+                    {customPrompt.length}/200
+                  </span>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Quality Settings - HIDDEN: Moved to Admin Panel Moderation */}
+        {/* 
+        <Card className="bg-[#333333]/20 border-[#333333] shadow-lg">
+          <CardHeader className="p-0">
+            <SectionHeader 
+              title="Quality" 
+              section="settings" 
+              icon={Settings}
+              badge={quality.toUpperCase()}
+            />
+          </CardHeader>
+          {expandedSections.settings && (
+            <CardContent className="p-4 pt-0">
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setQuality('standard')}
+                  className={cn(
+                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
+                    quality === 'standard'
+                      ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
+                      : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                  )}
+                  style={{ 
+                    pointerEvents: 'auto',
+                    zIndex: 10,
+                    position: 'relative'
+                  }}
+                >
+                  <div className="text-sm font-medium">Standard</div>
+                  <div className="text-xs opacity-70">Fast generation</div>
+                </button>
+                <button
+                  onClick={() => setQuality('hd')}
+                  className={cn(
+                    "p-3 rounded-lg border transition-all duration-200 text-center pointer-events-auto relative",
+                    quality === 'hd'
+                      ? "border-[#FF0052] bg-[#FF0052]/10 text-[#FF0052]"
+                      : "border-[#333333] bg-[#333333]/20 text-[#ADADAD] hover:border-[#ADADAD] hover:text-[#FDFDFD]"
+                  )}
+                  style={{ 
+                    pointerEvents: 'auto',
+                    zIndex: 10,
+                    position: 'relative'
+                  }}
+                >
+                  <div className="text-sm font-medium">HD</div>
+                  <div className="text-xs opacity-70">High quality</div>
+                </button>
+              </div>
+              {generationCost && (
+                <div className="mt-3 p-2 cyber-select">
+                  <div className="text-xs text-[#ADADAD]">Estimated Cost</div>
+                  <div className="text-sm font-medium text-[#FF0052]">${generationCost.toFixed(3)}</div>
+                </div>
+              )}
+            </CardContent>
+          )}
+        </Card>
+        */}
+      </div>
+    </TooltipProvider>
+  )
+} 

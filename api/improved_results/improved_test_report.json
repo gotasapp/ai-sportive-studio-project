@@ -1,0 +1,31 @@
+{
+  "test_type": "improved_system",
+  "total_teams": 3,
+  "successful_generations": 3,
+  "improvements": [
+    "technical_prompts",
+    "negative_prompts",
+    "flat_lay_specification",
+    "camera_settings"
+  ],
+  "results": [
+    {
+      "team": "Palmeiras",
+      "filename": "improved_Palmeiras.png",
+      "prompt_type": "technical",
+      "status": "success"
+    },
+    {
+      "team": "Vasco da Gama",
+      "filename": "improved_Vasco_da_Gama.png",
+      "prompt_type": "technical",
+      "status": "success"
+    },
+    {
+      "team": "Flamengo",
+      "filename": "improved_Flamengo.png",
+      "prompt_type": "technical",
+      "status": "success"
+    }
+  ]
+}

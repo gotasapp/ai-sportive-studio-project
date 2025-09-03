@@ -1,0 +1,165 @@
+"use client";
+
+import { ArrowUpRight } from "lucide-react";
+import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+
+const categories = [
+  {
+    title: "Jerseys",
+    image:"https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201840/T-Shirt_with_Background__2_-removebg-preview_mhywqw.png",
+    href: "/jerseys",
+  },
+  {
+    title: "Stadiums",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201830/Stadion_without_Background-removebg-preview_mzor0r.png",
+    href: "/stadiums",
+  },
+  {
+    title: "Badges",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201820/Badge_with_background-removebg-preview_nbdfqm.png",
+    href: "/badges",
+  },
+  {
+    title: "Marketplace",
+    image: "https://res.cloudinary.com/dpilz4p6g/image/upload/v1755201870/Kart_with_Background-removebg-preview_ame0qx.png",
+    href: "/marketplace",
+  },
+];
+
+export function CommerceHero() {
+  return (
+    <div className="w-full relative px-4 sm:px-6 md:px-12 lg:px-16 xl:px-20 min-h-screen">
+
+        {/* Hero Section with Text Left and Video Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-8 items-center min-h-[60vh] py-4 sm:py-6">
+          
+          {/* Left Column - Text Content (4/7 of space with left margin) */}
+          <motion.div
+            className="text-center lg:text-left lg:col-span-4 ml-0 pl-0 sm:ml-4 md:ml-8 lg:ml-12 xl:ml-16"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
+              <motion.h1
+              className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-4 sm:mb-6 leading-tight"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+              >
+              <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent block mb-2 sm:mb-4">
+                CREATE
+              </span>
+              <span className="bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent block mb-2 sm:mb-4">
+                FAN SPORTS
+                </span>
+              <span className="bg-gradient-to-r from-[#FF0052] via-[#FF0052]/90 to-[#FF0052]/70 bg-clip-text text-transparent block">
+                NFTs
+                </span>
+              </motion.h1>
+            
+              <motion.p
+              className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-400 max-w-xl mb-4 sm:mb-6 leading-relaxed mx-auto lg:mx-0"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
+              >
+              Generate jerseys, stadiums, and badges with technology.
+              Trade and collect unique sports NFTs on the CHZ blockchain.
+              </motion.p>
+
+            <motion.div
+              className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6 justify-center lg:justify-start"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+            >
+              <a href="/marketplace" className="inline-block w-full sm:w-auto">
+                <button className="w-full sm:w-auto px-6 py-2.5 bg-[#FF0052] hover:bg-[#8B0128] text-white rounded-full font-medium transition-all transform hover:scale-105 text-sm">
+                  MARKETPLACE
+                </button>
+              </a>
+              <a href="/jerseys" className="inline-block w-full sm:w-auto">
+                <button className="w-full sm:w-auto px-6 py-2.5 border border-[#FF0052] text-[#FF0052] hover:bg-[#FF0052] hover:text-white rounded-full font-medium transition-all text-sm">
+                  CREATE
+                </button>
+              </a>
+            </motion.div>
+
+            {/* User avatars */}
+            <motion.div
+              className="flex items-center justify-center lg:justify-start gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+            >
+              <div className="flex -space-x-2">
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#8B0128] to-[#FF0052] border-2 border-[#14101e]"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#FF0052] to-[#FF1744] border-2 border-[#14101e]"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-[#FF1744] to-white border-2 border-[#14101e]"></div>
+                <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-white border-2 border-[#14101e] flex items-center justify-center text-xs text-[#FF0052] font-semibold">
+                  +50
+                </div>
+              </div>
+              <div className="text-gray-400 text-xs sm:text-sm">
+                <span className="text-white font-bold">100+</span> NFTs Created
+              </div>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Column - Video */}
+          <motion.div
+            className="relative lg:col-span-3 lg:-ml-16 order-first lg:order-last"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
+          >
+            <div className="relative w-full h-[180px] sm:h-[220px] md:h-[260px] lg:h-[350px] bg-transparent">
+              <video
+                className="w-full h-full object-contain"
+                autoPlay
+                loop
+                muted
+                playsInline
+                src="https://res.cloudinary.com/dpilz4p6g/video/upload/v1755042089/exported-video-pro_2_ljszrz.mp4"
+              />
+            </div>
+          </motion.div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 px-2 sm:px-0 mx-auto" style={{ maxWidth: 'calc(80rem * 1.1)' }}>
+          {categories.map((category, index) => (
+            <motion.div
+              key={category.title}
+              className="group relative rounded min-h-[10rem] sm:min-h-[12rem] md:min-h-[14rem] lg:min-h-[16rem] w-full max-w-full mx-auto overflow-hidden transition-all duration-500 border border-[#3B3644] hover:border-[#FF0052]/30"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: index * 0.1, ease: "easeOut" }}
+            >
+              <a href={category.href} className="absolute inset-0 z-20">
+                {/* Imagem centralizada e reduzida (50%) com fundo transparente */}
+                <div className="absolute inset-0 flex items-center justify-center bg-transparent">
+                  <img
+                    src={category.image}
+                    alt={category.title}
+                    className="max-w-[70%] max-h-[70%] sm:max-w-[60%] sm:max-h-[60%] md:max-w-[50%] md:max-h-[50%] object-contain transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                
+                {/* Título centralizado na base do card */}
+                <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 z-10">
+                  <h2 className="text-center text-base sm:text-lg md:text-xl lg:text-[clamp(0.9rem,2.1vw,1.4rem)] font-bold text-white drop-shadow-lg">
+                    {category.title}
+                  </h2>
+                </div>
+                {/* Botão de navegação no canto inferior direito (forma anterior) */}
+                <div className="absolute bottom-3 sm:bottom-4 right-3 sm:right-4 w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center z-10 group-hover:bg-white/30 group-hover:scale-110 transition-all duration-300">
+                  <ArrowUpRight className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 text-white" />
+                </div>
+              </a>
+            </motion.div>
+          ))}
+        </div>
+    </div>
+  );
+}

@@ -1,0 +1,171 @@
+{
+  "stadium_info": {
+    "name": "Camp Nou",
+    "id": "camp_nou",
+    "architecture_style": "moderno",
+    "dominant_colors": [
+      "vermelho",
+      "azul",
+      "amarelo"
+    ],
+    "architectural_features": [
+      "arquitetura em anel",
+      "escadas largas",
+      "arquibancadas em camadas",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "arquitetura curva",
+      "estrutura metálica"
+    ]
+  },
+  "atmosphere_variants": {
+    "night_packed_vibrant": {
+      "description": "Noite vibrante no Camp Nou com torcida animada",
+      "lighting": "artificial intensa",
+      "crowd_energy": "alta",
+      "colors": [
+        "vermelho",
+        "azul",
+        "amarelo"
+      ]
+    },
+    "day_classic_atmosphere": {
+      "description": "Atmosfera clássica diurna no Camp Nou",
+      "lighting": "natural",
+      "crowd_energy": "média",
+      "colors": [
+        "vermelho",
+        "azul",
+        "amarelo"
+      ]
+    },
+    "sunset_golden_hour": {
+      "description": "Pôr do sol dourado no Camp Nou",
+      "lighting": "dourada natural",
+      "crowd_energy": "média-alta",
+      "colors": [
+        "dourado",
+        "laranja",
+        "vermelho",
+        "azul"
+      ]
+    }
+  },
+  "reference_images": [
+    {
+      "filename": "th (13).jpg",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "parcial",
+        "lighting_quality": "mista",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "crepúsculo",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "azul",
+          "vermelho",
+          "amarelo"
+        ],
+        "architectural_features": [
+          "arquitetura em anel",
+          "escadas largas"
+        ],
+        "unique_elements": "telas de mosaico com cores do time"
+      }
+    },
+    {
+      "filename": "th (14).jpg",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "parcial",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "amarelo",
+          "azul"
+        ],
+        "architectural_features": [
+          "arquitetura curva",
+          "estrutura metálica"
+        ],
+        "unique_elements": "tela de LED e mosaico de torcedores"
+      }
+    },
+    {
+      "filename": "th (9).jpg",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "gigante",
+        "roof_type": "parcial",
+        "lighting_quality": "natural",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "azul",
+          "vermelho",
+          "amarelo"
+        ],
+        "architectural_features": [
+          "arquitetura em anel",
+          "estrutura metálica exposta"
+        ],
+        "unique_elements": "telas de mosaico com as cores do clube"
+      }
+    },
+    {
+      "filename": "ChatGPT Image 21_06_2025, 18_48_00.png",
+      "type": "general",
+      "analysis": {
+        "architecture_style": "moderno",
+        "capacity_apparent": "grande",
+        "roof_type": "fechada",
+        "lighting_quality": "artificial",
+        "crowd_density": "lotado",
+        "atmosphere_type": "intensa",
+        "time_of_day": "noite",
+        "weather_apparent": "limpo",
+        "dominant_colors": [
+          "vermelho",
+          "azul",
+          "amarelo"
+        ],
+        "architectural_features": [
+          "arquibancadas em camadas",
+          "iluminação LED"
+        ],
+        "unique_elements": "logotipo da UEFA Champions League no centro do campo"
+      }
+    }
+  ],
+  "generation_prompts": {
+    "base_description": "Estádio moderno com arquitetura característica",
+    "atmosphere_modifiers": [
+      "arquitetura em anel",
+      "escadas largas",
+      "arquibancadas em camadas",
+      "iluminação LED",
+      "estrutura metálica exposta",
+      "arquitetura curva",
+      "estrutura metálica"
+    ],
+    "color_palette": [
+      "vermelho",
+      "azul",
+      "amarelo"
+    ]
+  },
+  "created_at": "2024-12-19",
+  "version": "1.0"
+}

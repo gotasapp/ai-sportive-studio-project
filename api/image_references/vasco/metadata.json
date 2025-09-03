@@ -1,0 +1,16 @@
+{
+  "home": {
+    "TEAM_NAME": "Club de Regatas Vasco da Gama (Uniforme 1)",
+    "TEAM_COLORS": "preto com uma faixa diagonal branca",
+    "PATTERN_DESCRIPTION": "uma faixa diagonal branca que vai do ombro esquerdo ao lado direito da cintura",
+    "COLLAR_STYLE": "gola em V preta",
+    "TEXT_COLOR": "red"
+  },
+  "away": {
+    "TEAM_NAME": "Club de Regatas Vasco da Gama (Uniforme 2)",
+    "TEAM_COLORS": "branco com uma faixa diagonal preta",
+    "PATTERN_DESCRIPTION": "uma faixa diagonal preta que vai do ombro esquerdo ao lado direito da cintura",
+    "COLLAR_STYLE": "gola em V branca com detalhes em preto",
+    "TEXT_COLOR": "red"
+  }
+} 
